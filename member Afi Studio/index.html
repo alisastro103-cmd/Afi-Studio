@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Afi-Studio</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-primary: 'Outfit', sans-serif;
+            --font-secondary: 'DM Sans', sans-serif;
+            --font-logo: 'Dancing Script', cursive; /* Tambahan font logo dari halaman utama */
+        }
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #1a1c20;
+            font-family: var(--font-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            width: 100%;
+            background-color: #121418;
+            padding: 5px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-left { display: flex; align-items: center; }
+        .nav-right { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            position: relative;
+        }
+        .nav-text-right { color: white; font-size: 16px; font-weight: bold; font-family: var(--font-primary); }
+        .nav-icon-right { width: 42px; height: auto; cursor: pointer; transition: transform 0.2s; }
+        .nav-icon-right:active { transform: scale(0.9); }
+
+        .chat-bubble {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: white;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 15px 5px 15px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            width: max-content;
+            max-width: 200px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            font-family: var(--font-secondary);
+        }
+        .chat-bubble.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .content { text-align: center; margin-top: 20px; }
+        
+        .title-img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+
+        .folder-group { display: flex; flex-direction: column; }
+        .folder {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: var(--font-primary);
+            cursor: pointer;
+            width: 100%;
+            user-select: none;
+        }
+        .arrow-icon { transition: transform 0.3s ease; }
+        .folder.active .arrow-icon { transform: rotate(90deg); }
+        .folder-divider { height: 1px; background-color: rgba(255, 255, 255, 0.2); width: 100%; }
+
+        .member-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, padding 0.5s ease;
+            padding: 0;
+        }
+        .folder.active + .member-container { 
+            max-height: 2000px; 
+            opacity: 1;
+            padding: 15px 0;
+        }
+
+        .id-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .id-card:active { transform: scale(0.95); }
+        .profile-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background-color: #222; }
+        
+        .member-name-box { 
+            background-color: #cccccc; 
+            padding: 8px 2px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 35px;
+        }
+        .member-name { 
+            color: #333; 
+            font-size: 14px;
+            font-weight: bold; 
+            font-family: var(--font-primary);
+            line-height: 1.1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            inset: 0;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .modal.active { display: flex; opacity: 1; }
+        .modal-content {
+            background-color: #f0f0f0; 
+            width: 85%;
+            max-width: 340px;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal.active .modal-content { transform: translateY(0); }
+        .modal-banner { width: 100%; height: auto; overflow: hidden; }
+        .modal-banner img { width: 100%; height: auto; display: block; object-fit: cover; }
+        .modal-details { padding: 20px; background: #f0f0f0; position: relative; text-align: left; }
+        .modal-name { font-family: var(--font-primary); font-weight: 800; font-size: 32px; color: #1a1a1a; text-transform: uppercase; line-height: 1; }
+        
+        .modal-divider {
+            height: 1px;
+            background-color: #cccccc;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        /* --- BAGIAN YANG DIPERBAIKI --- */
+        .status-icon { 
+            position: absolute; 
+            right: 20px; 
+            top: 15px; 
+            font-size: 32px; 
+        }
+        /* ---------------------------- */
+
+        .modal-subtext { font-family: var(--font-secondary); font-size: 14px; color: #555; margin-top: 5px; line-height: 1.3; }
+
+        .social-container { display: flex; flex-direction: row; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+        .social-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 8px;
+            text-decoration: none; transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .social-btn:hover { transform: translateY(-2px); }
+        .social-btn svg { width: 18px; height: 18px; fill: #ffffff; }
+
+        .footer { margin-top: auto; display: flex; justify-content: center; padding-bottom: 30px; padding-top: 40px; }
+        .selection-btn { 
+            background-color: #52c494; color: white; border: none; padding: 12px 60px; 
+            border-radius: 12px; font-size: 18px; font-weight: bold; font-family: var(--font-primary);
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="../index.html" class="back-link-nav">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+        </div>
+        <div class="nav-right">
+            <span class="nav-text-right">Member Afi-Studio</span>
+            <img src="icon.png" alt="Icon" class="nav-icon-right" onclick="showChatBubble()">
+            <div id="chatBubble" class="chat-bubble"></div>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <div class="content">
+            <img src="title.png" alt="Member Afi-Studio" class="title-img">
+            <div class="folder-group">
+                <div class="folder" onclick="toggleFolder(this)">
+                    <span>Generasi 1st</span>
+                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div id="gen-1" class="member-container"></div>
+                <div class="folder-divider"></div>
+
+                <div class="folder" onclick="toggleFolder(this)">
+                    <span>Generasi 2nd</span>
+                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div id="gen-2" class="member-container"></div>
+                <div class="folder-divider"></div>
+
+                <div class="folder" onclick="toggleFolder(this)">
+                    <span>Generasi 3rd</span>
+                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div id="gen-3" class="member-container"></div>
+                <div class="folder-divider"></div>
+
+                <div class="folder" onclick="toggleFolder(this)">
+                    <span>Orang Random</span>
+                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </div>
+                <div id="orang-random" class="member-container"></div>
+                <div class="folder-divider"></div>
+            </div>
+        </div>
+        <div class="footer">
+            <button class="selection-btn">Seleksi Member</button>
+        </div>
+    </div>
+
+    <div id="memberModal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
