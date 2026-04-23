@@ -14,16 +14,8 @@
     html, body { height: 100%; font-family: 'DM Sans', sans-serif; }
     h1, h2, h3 { font-family: 'Outfit', sans-serif; font-weight: 600; }
 
+    /* Perubahan dilakukan di sini untuk menerapkan tema gelap secara default */
     :root {
-      --bg: #ffffff;
-      --text: #1a1a1a;
-      --text-light: #4a4a4a;
-      --border: #d4d4d4;
-      --accent: #1a1a1a;
-      --disabled: #cccccc;
-    }
-
-    .dark {
       --bg: #1a1a1a;
       --text: #f5f5f5;
       --text-light: #b0b0b0;
@@ -36,7 +28,6 @@
       background: var(--bg); 
       color: var(--text); 
       transition: background 0.3s, color 0.3s;
-      /* Mengatur spasi baris menjadi sedikit lebih rapat (dari 1.6 ke 1.4) */
       line-height: 1.4;
     }
 
@@ -103,7 +94,6 @@
     .rule-text {
       font-size: 14px;
       color: var(--text-light);
-      /* Memberikan sedikit spasi ekstra pada teks isi agar tetap mudah dibaca */
       line-height: 1.5;
       margin-bottom: 0;
       display: inline;
