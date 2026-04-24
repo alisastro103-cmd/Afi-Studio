@@ -1,6 +1,22 @@
 // DATA MEMBER AFI STUDIO
 const dataMember = {
-    "gen-1": [],
+    "gen-1": [
+    { 
+            nama: "IanAfi", 
+            foto: "profile/IanAdhi.png", 
+            spesialis: "Animator, Modeller, Render, dan designer", 
+            identitas: "🍁",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://youtube.com/@ianafii?si=iQzheWQtm4_hTYWD",
+                ig: "https://www.instagram.com/ianafii_?igsh=Y3kyeXI1MW5mdWZi",
+                fb: "",
+                tk: "https://www.tiktok.com/@ian_akihiko?_r=1&_t=ZS-95XAhU7op1T",
+                wa: "https://whatsapp.com/channel/0029VbB6Gm6Lo4hl15PcOv1R",
+                dc: "https://discord.gg/AUE5YDHQ"
+            }
+        }
+    ],
     "gen-2": [
         { 
             nama: "kenzuu", 
@@ -15,6 +31,22 @@ const dataMember = {
                 tk: "https://www.tiktok.com/@kenjuuk?_r=1&_t=ZS-95VGWPigg0P",
                 wa: "https://whatsapp.com/channel/0029VbB2PvsCBtxAJaIXRi3L",
                 dc: ""
+            }
+        },
+    
+        { 
+            nama: "Varelion <kaishiro>", 
+            foto: "profile/varel.png", 
+            spesialis: "VA, Render, Design Graphics", 
+            identitas: "📈",
+            generasi: "Generasi ke-2",
+            socials: {
+                yt: "https://youtube.com/@varelion.greyrat",
+                ig: "https://www.instagram.com/rel.banana",
+                fb: "",
+                tk: "",
+                wa: "https://whatsapp.com/channel/0029VacNvlJG3R3aHkt9m82d",
+                dc: "https://discord.com/users/varelion.zip"
             }
         },
     
@@ -33,7 +65,21 @@ const dataMember = {
                 dc: "https://discord.com/users/947990324251328564"
             }
         },
-    
+    { 
+            nama: "ASTR-0123", 
+            foto: "profile/ali.png", 
+            spesialis: "Programmer, Designer Graphics, modeller", 
+            identitas: "📷",
+            generasi: "Generasi ke-2",
+            socials: {
+                yt: "https://www.youtube.com/@Alisastro123",
+                ig: "https://www.instagram.com/alisastro123?igsh=MTZoZmR0ZGJkeWM3NA==",
+                fb: "https://www.facebook.com/profile.php?id=61585596517467&mibextid=ZbWKwL",
+                tk: "https://tiktok.com/@alisastro123",
+                wa: "https://whatsapp.com/channel/0029Vb6ytmg8F2pIMwr2ZH1i",
+                dc: "https://discord.com/users/alisastro123"
+            }
+        },
         { 
             nama: "Excha", 
             foto: "profile/excha.png", 
@@ -97,6 +143,21 @@ const dataMember = {
                 tk: "https://www.tiktok.com/@zena_aja1?_r=1&_t=ZS-95UhZ9dzpIt",
                 wa: "https://whatsapp.com/channel/0029VbCcPHHLCoX5BDcYlo3A",
                 dc: "https://discord.gg/PUhGCyzy"
+            }
+        },
+    { 
+            nama: "Emcas (MCAZ)", 
+            foto: "profile/azid.png", 
+            spesialis: "Editor, Animator, dan Modeler", 
+            identitas: "🎬",
+            generasi: "Generasi ke-3",
+            socials: {
+                yt: "https://www.youtube.com/@mcaz_096",
+                ig: "https://www.instagram.com/mcaz096?igsh=aTNuaDA0Ym1xYmE=",
+                fb: "",
+                tk: "https://tiktok.com/@mcaz_096",
+                wa: "https://whatsapp.com/channel/0029VbAzxOE4tRrnoIzQlw0D",
+                dc: ""
             }
         }
     ],
