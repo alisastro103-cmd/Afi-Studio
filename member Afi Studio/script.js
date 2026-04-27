@@ -15,8 +15,114 @@ const dataMember = {
                 wa: "https://whatsapp.com/channel/0029VbB6Gm6Lo4hl15PcOv1R",
                 dc: "https://discord.gg/AUE5YDHQ"
             }
+        },
+        { 
+            nama: "LanaMC", 
+            foto: "profile/lana.png", 
+            spesialis: "Designing, Editor, dan Rendering", 
+            identitas: "💤",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://www.youtube.com/@Lana%E5%B1%B1%E6%9C%ACMC",
+                ig: "https://www.instagram.com/atlana_yamamoto?igsh=N2s0d3B5NDFtdzhs",
+                fb: "",
+                tk: "https://www.tiktok.com/@lana.nih1?_r=1&_t=ZS-95pj4iVoI5t",
+                wa: "https://whatsapp.com/channel/0029Vb08dymBKfi2YAxMJD42",
+                dc: "https://discord.gg/rVGmNG6b"
+            }
+        },
+        { 
+            nama: "Akira Xeyni", 
+            foto: "profile/yenxi.png", 
+            spesialis: "Animation dan PVP", 
+            identitas: "🍒",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://youtube.com/@akairi_xeinii?si=DkSPztNT2929sgMU",
+                ig: "",
+                fb: "",
+                tk: "https://www.tiktok.com/@akairi_xeinii?_r=1&_t=ZS-95piEdLeI0T",
+                wa: "https://whatsapp.com/channel/0029VbCDdZbJuyABRLkeax1s",
+                dc: "https://discord.gg/Mcy8sV8X5"
+            }
+        },
+        { 
+            nama: "Alynatha", 
+            foto: "profile/alynatha.png", 
+            spesialis: "Animator, Render, Modeling, dan artist", 
+            identitas: "💠",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://youtube.com/@linatha.studio?si=JZthfrOpHMRbf3b5",
+                ig: "https://www.instagram.com/linathastudio.presents?igsh=MWhydnVmMGFwMjVtaw==",
+                fb: "",
+                tk: "https://www.tiktok.com/@lyn.itshere",
+                wa: "https://whatsapp.com/channel/0029VbBZXBEFMqrf87ajgc42",
+                dc: ""
+            }
+        },
+        { 
+            nama: "MichiYuzuru", 
+            foto: "profile/michi.png", 
+            spesialis: "Rendering", 
+            identitas: "🍩",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://www.youtube.com/@michii_354",
+                ig: "",
+                fb: "",
+                tk: "https://www.tiktok.com/@michii_354?_r=1&_t=ZS-95pjDHOEDPY",
+                wa: "",
+                dc: ""
+            }
+        },
+        { 
+            nama: "Nezhai", 
+            foto: "profile/zhai.png", 
+            spesialis: "Animator, Artist, dan Render", 
+            identitas: "🎐",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://www.youtube.com/@Its_Nezh",
+                ig: "https://www.instagram.com/zay_pop.es?igsh=bXBoY3F0NmxhZzQ0",
+                fb: "",
+                tk: "https://tiktok.com/@ne.zxh_21",
+                wa: "https://whatsapp.com/channel/0029Vb5vypEChq6USkdt7Y0i",
+                dc: "https://discord.gg/BSc4AJDp"
+            }
+        },
+        { 
+            nama: "Rena Astoria", 
+            foto: "profile/rena.png", 
+            spesialis: "Animation dan Render", 
+            identitas: "🐉",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://www.youtube.com/@RenaSiAstor",
+                ig: "",
+                fb: "",
+                tk: "",
+                wa: "https://whatsapp.com/channel/0029Vb65dgP42DcdqiHVoC1D",
+                dc: "https://discord.gg/m2Z525a2"
+            }
+        },
+        { 
+            nama: "Puspa", 
+            foto: "profile/puspa.png", 
+            spesialis: "Render", 
+            identitas: "♠️",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://www.youtube.com/@Pus79N.X",
+                ig: "",
+                fb: "https://www.facebook.com/share/1GU5G1gdvq/",
+                tk: "https://vm.tiktok.com/ZSHT5bQtUTFT6-Qg9Vs/",
+                wa: "https://whatsapp.com/channel/0029Vb6WnPe8F2p8iHbuir0t",
+                dc: ""
+            }
         }
     ],
+    
     "gen-2": [
         { 
             nama: "kenzuu", 
@@ -33,7 +139,51 @@ const dataMember = {
                 dc: ""
             }
         },
-    
+        { 
+            nama: "Najwa_no.6", 
+            foto: "profile/najwa.png", 
+            spesialis: "animate, convert add-on, render, dan artist", 
+            identitas: "🧃",
+            generasi: "Generasi ke-2",
+            socials: {
+                yt: "https://youtube.com/@nafinar_2917?si=xNW2WFJJFPZrXK6q",
+                ig: "https://www.instagram.com/nafinar_2917?igsh=MTk1MzRpMWd4NTdpcA==",
+                fb: "https://www.facebook.com/share/1DsbQssLR7/",
+                tk: "https://www.tiktok.com/@najwa_nor.6?_t=ZS-907a3avJi8w&_r=1",
+                wa: "https://whatsapp.com/channel/0029Vb6i3jx7tkj7nnMzNA1K",
+                dc: "https://discord.gg/AmKvnBUU"
+            }
+        },
+        { 
+            nama: "YavitsDesu", 
+            foto: "profile/Yavis.png", 
+            spesialis: "Animasi dan dubbing", 
+            identitas: "🌊",
+            generasi: "Generasi ke-2",
+            socials: {
+                yt: "https://youtube.com/@yavitsdesu?si=gx3cz9qstwgJoCLc",
+                ig: "https://www.instagram.com/yavits_plenger?igsh=MWg5M21kbzRlcmc2Ng==",
+                fb: "",
+                tk: "https://www.tiktok.com/@yavitsdesu?_r=1&_t=ZS-95ph1EUQSxz",
+                wa: "https://whatsapp.com/channel/0029Vb7iXojK5cDFTSLfCt1X",
+                dc: "https://discord.gg/3UQ4KwHd"
+            }
+        },
+        { 
+            nama: "Raffenokio", 
+            foto: "profile/rafe.png", 
+            spesialis: "Animation, dan modeling", 
+            identitas: "🍅",
+            generasi: "Generasi ke-2",
+            socials: {
+                yt: "https://youtube.com/@raffenokio9662?si=_Fo33HQDVZlqShYm",
+                ig: "",
+                fb: "",
+                tk: "https://www.tiktok.com/@enomon966?_r=1&_t=ZS-951ktJOkRLY",
+                wa: "https://whatsapp.com/channel/0029Vb3VAH8CnA7oZXr7gB26",
+                dc: "https://discord.com/users/1237999241000124416"
+            }
+        },
         { 
             nama: "Varelion <kaishiro>", 
             foto: "profile/varel.png", 
@@ -49,8 +199,22 @@ const dataMember = {
                 dc: "https://discord.com/users/varelion.zip"
             }
         },
-    
-      { 
+        { 
+            nama: "Sichi", 
+            foto: "profile/sichi.png", 
+            spesialis: "Render, Modelling, dan Skin Maker", 
+            identitas: "🍚",
+            generasi: "Generasi ke-2",
+            socials: {
+                yt: "",
+                ig: "https://www.instagram.com/sichi0836?igsh=MTlja3JmeWs5MGwwcw==",
+                fb: "",
+                tk: "",
+                wa: "",
+                dc: ""
+            }
+        },
+        { 
             nama: "Brentt", 
             foto: "profile/breent.png", 
             spesialis: "Animation, 3D Modeling, Music Producer, Editing, dan render maker", 
@@ -65,7 +229,7 @@ const dataMember = {
                 dc: "https://discord.com/users/947990324251328564"
             }
         },
-    { 
+        { 
             nama: "ASTR-0123", 
             foto: "profile/ali.png", 
             spesialis: "Programmer, Designer Graphics, modeller", 
@@ -113,7 +277,6 @@ const dataMember = {
                 dc: "https://discordapp.com/users/780727070610554880"
             }
         },
-    
         { 
             nama: "Zipixe", 
             foto: "profile/zin.png", 
@@ -129,7 +292,51 @@ const dataMember = {
                 dc: ""
             }
         },
-    
+        { 
+            nama: "Afree", 
+            foto: "profile/afree.png", 
+            spesialis: "Ceria Kepedean cukurukuk, tampil depan publik, si sepuhh", 
+            identitas: "🍪",
+            generasi: "Generasi ke-3",
+            socials: {
+                yt: "https://youtube.com/@afrimcgames",
+                ig: "https://www.instagram.com/just.freeday_?igsh=OXZtYnpsM3hyeTh2",
+                fb: "",
+                tk: "https://www.tiktok.com/@afrimctiktok_",
+                wa: "https://whatsapp.com/channel/0029Vb5hEaS90x31HCpXCH0j",
+                dc: "https://discord.com/users/760376556110610482"
+            }
+        },
+        { 
+            nama: "Carana", 
+            foto: "profile/carana.png", 
+            spesialis: "Animation", 
+            identitas: "🐦‍🔥",
+            generasi: "Generasi ke-3",
+            socials: {
+                yt: "https://youtube.com/@carana_anim?si=LUCz1huD9gtm5JDc",
+                ig: "",
+                fb: "",
+                tk: "https://www.tiktok.com/@carana_anim?_r=1&_t=ZS-95phisX5huT",
+                wa: "https://whatsapp.com/channel/0029Vb6cmQOKQuJIFZHe062q",
+                dc: ""
+            }
+        },
+        { 
+            nama: "Nicko", 
+            foto: "profile/nicko.png", 
+            spesialis: "Render, Convert, dan modelling", 
+            identitas: "🐋",
+            generasi: "Generasi ke-3",
+            socials: {
+                yt: "https://youtube.com/@nickomc62?si=EuFPS25itx3ARq5S",
+                ig: "",
+                fb: "",
+                tk: "",
+                wa: "https://wa.me/qr/NIV2DV4O5WI2I1",
+                dc: ""
+            }
+        },
         { 
             nama: "Zena", 
             foto: "profile/zena.png", 
@@ -145,7 +352,7 @@ const dataMember = {
                 dc: "https://discord.gg/PUhGCyzy"
             }
         },
-    { 
+        { 
             nama: "Emcas (MCAZ)", 
             foto: "profile/azid.png", 
             spesialis: "Editor, Animator, dan Modeler", 
@@ -167,7 +374,7 @@ const dataMember = {
             foto: "profile/dina.png", 
             spesialis: "Rendering", 
             identitas: "🦖",
-            generasi: "-",
+            generasi: "Penyuka Mie ayam cukurukuk😋",
             socials: {
                 yt: "https://youtube.com/@dina_ganteng?si=7SpHDaCnVBpLRlow",
                 ig: "https://www.instagram.com/dina_ganteng1?igsh=cW8yYzZnbjZlcm93",
@@ -176,7 +383,23 @@ const dataMember = {
                 wa: "https://whatsapp.com/channel/0029VbBP03J4CrfoKdu7CF2k",
                 dc: "https://discord.gg/pt3zKCDU"
             }
+        },
+        { 
+            nama: "Bedrocky", 
+            foto: "profile/gara.png", 
+            spesialis: "Modelling dan Render", 
+            identitas: "🛌",
+            generasi: "Sisepuhh prismatridi",
+            socials: {
+                yt: "https://youtube.com/@garaokii?si=05DL2XlKwbFB32-I",
+                ig: "https://www.instagram.com/bedrok.oki?igsh=cHR4Mm10a3hzcHkx",
+                fb: "https://www.facebook.com/share/1Ha48U3ki7/",
+                tk: "https://www.tiktok.com/@bedrocky.mc?_r=1&_t=ZS-95aYa8qBNv3",
+                wa: "",
+                dc: ""
+            }
         }
+    
     ] // Tempat untuk menambahkan data orang random di masa depan
 };
 

@@ -14,6 +14,13 @@
             --font-primary: 'Outfit', sans-serif;
             --font-secondary: 'DM Sans', sans-serif;
             --font-logo: 'Dancing Script', cursive; /* Tambahan font logo dari halaman utama */
+
+            --accent: #99FFD9;
+            --bg: #0f0f17;
+            --surface: #1a1a2e;
+            --text: #f0f0f5;
+            --text-sub: #9ca3af;
+            --border: #2a2a3e;
         }
 
         * { 
@@ -24,7 +31,7 @@
         }
 
         body {
-            background-color: #1a1c20;
+            background-color: var(--bg);
             font-family: var(--font-secondary);
             display: flex;
             flex-direction: column;
@@ -34,7 +41,7 @@
 
         .navbar {
             width: 100%;
-            background-color: #121418;
+            background-color: var(--surface);
             padding: 5px 20px;
             display: flex;
             justify-content: space-between;
@@ -42,6 +49,7 @@
             position: sticky;
             top: 0;
             z-index: 1000;
+            border-bottom: 1px solid var(--border);
         }
         .nav-left { display: flex; align-items: center; }
         .nav-right { 
@@ -50,7 +58,7 @@
             gap: 10px; 
             position: relative;
         }
-        .nav-text-right { color: white; font-size: 16px; font-weight: bold; font-family: var(--font-primary); }
+        .nav-text-right { color: var(--text); font-size: 16px; font-weight: bold; font-family: var(--font-primary); }
         .nav-icon-right { width: 42px; height: auto; cursor: pointer; transition: transform 0.2s; }
         .nav-icon-right:active { transform: scale(0.9); }
 
@@ -58,8 +66,8 @@
             position: absolute;
             top: 50px;
             right: 0;
-            background-color: white;
-            color: #333;
+            background-color: var(--surface);
+            color: var(--text);
             padding: 10px 15px;
             border-radius: 15px 5px 15px 15px;
             font-size: 13px;
@@ -67,6 +75,7 @@
             width: max-content;
             max-width: 200px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
             z-index: 1001;
             opacity: 0;
             transform: translateY(-10px);
@@ -85,7 +94,7 @@
             right: 15px;
             border-left: 8px solid transparent;
             border-right: 8px solid transparent;
-            border-bottom: 8px solid white;
+            border-bottom: 8px solid var(--border);
         }
 
         .app-container {
@@ -112,7 +121,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px 5px;
-            color: white;
+            color: var(--text);
             font-size: 20px;
             font-weight: bold;
             font-family: var(--font-primary);
@@ -122,7 +131,7 @@
         }
         .arrow-icon { transition: transform 0.3s ease; }
         .folder.active .arrow-icon { transform: rotate(90deg); }
-        .folder-divider { height: 1px; background-color: rgba(255, 255, 255, 0.2); width: 100%; }
+        .folder-divider { height: 1px; background-color: var(--border); width: 100%; }
 
         .member-container {
             display: grid;
@@ -142,20 +151,21 @@
         }
 
         .id-card {
-            background-color: #ffffff;
+            background-color: var(--surface);
             border-radius: 8px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
             cursor: pointer;
             transition: transform 0.2s;
         }
         .id-card:active { transform: scale(0.95); }
-        .profile-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background-color: #222; }
+        .profile-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background-color: var(--bg); }
         
         .member-name-box { 
-            background-color: #cccccc; 
+            background-color: var(--accent); 
             padding: 8px 2px;
             text-align: center;
             display: flex;
@@ -164,7 +174,7 @@
             min-height: 35px;
         }
         .member-name { 
-            color: #333; 
+            color: #000; 
             font-size: 14px;
             font-weight: bold; 
             font-family: var(--font-primary);
@@ -185,11 +195,12 @@
         }
         .modal.active { display: flex; opacity: 1; }
         .modal-content {
-            background-color: #f0f0f0; 
+            background-color: var(--surface); 
             width: 85%;
             max-width: 340px;
             border-radius: 24px;
             overflow: hidden;
+            border: 1px solid var(--border);
             position: relative;
             transform: translateY(20px);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -197,12 +208,12 @@
         .modal.active .modal-content { transform: translateY(0); }
         .modal-banner { width: 100%; height: auto; overflow: hidden; }
         .modal-banner img { width: 100%; height: auto; display: block; object-fit: cover; }
-        .modal-details { padding: 20px; background: #f0f0f0; position: relative; text-align: left; }
-        .modal-name { font-family: var(--font-primary); font-weight: 800; font-size: 32px; color: #1a1a1a; text-transform: uppercase; line-height: 1; }
+        .modal-details { padding: 20px; background: var(--surface); position: relative; text-align: left; }
+        .modal-name { font-family: var(--font-primary); font-weight: 800; font-size: 32px; color: var(--text); text-transform: uppercase; line-height: 1; }
         
         .modal-divider {
             height: 1px;
-            background-color: #cccccc;
+            background-color: var(--border);
             margin: 10px 0;
             width: 100%;
         }
@@ -216,7 +227,7 @@
         }
         /* ---------------------------- */
 
-        .modal-subtext { font-family: var(--font-secondary); font-size: 14px; color: #555; margin-top: 5px; line-height: 1.3; }
+        .modal-subtext { font-family: var(--font-secondary); font-size: 14px; color: var(--text-sub); margin-top: 5px; line-height: 1.3; }
 
         .social-container { display: flex; flex-direction: row; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
         .social-btn {
@@ -230,7 +241,7 @@
 
         .footer { margin-top: auto; display: flex; justify-content: center; padding-bottom: 30px; padding-top: 40px; }
         .selection-btn { 
-            background-color: #52c494; color: white; border: none; padding: 12px 60px; 
+            background-color: var(--accent); color: #000; border: none; padding: 12px 60px; 
             border-radius: 12px; font-size: 18px; font-weight: bold; font-family: var(--font-primary);
             cursor: pointer; 
         }
@@ -256,28 +267,28 @@
             <div class="folder-group">
                 <div class="folder" onclick="toggleFolder(this)">
                     <span>Generasi 1st</span>
-                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
                 <div id="gen-1" class="member-container"></div>
                 <div class="folder-divider"></div>
 
                 <div class="folder" onclick="toggleFolder(this)">
                     <span>Generasi 2nd</span>
-                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
                 <div id="gen-2" class="member-container"></div>
                 <div class="folder-divider"></div>
 
                 <div class="folder" onclick="toggleFolder(this)">
                     <span>Generasi 3rd</span>
-                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
                 <div id="gen-3" class="member-container"></div>
                 <div class="folder-divider"></div>
 
                 <div class="folder" onclick="toggleFolder(this)">
                     <span>Orang Random</span>
-                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
                 <div id="orang-random" class="member-container"></div>
                 <div class="folder-divider"></div>
