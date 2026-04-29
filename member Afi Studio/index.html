@@ -245,6 +245,129 @@
             border-radius: 12px; font-size: 18px; font-weight: bold; font-family: var(--font-primary);
             cursor: pointer; 
         }
+ 
+        /* =============================================
+           RESPONSIVE — Desktop & Tablet
+           Tidak ada fungsi / struktur HTML yang diubah.
+           Hanya penambahan media query untuk layout.
+        ============================================= */
+ 
+        /* Tablet: 501px – 900px */
+        @media (min-width: 501px) {
+            .app-container {
+                max-width: 700px;
+                padding: 20px 24px;
+            }
+ 
+            .member-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+ 
+            .member-name {
+                font-size: 13px;
+            }
+ 
+            .modal-content {
+                max-width: 380px;
+            }
+ 
+            .modal-name {
+                font-size: 28px;
+            }
+        }
+ 
+        /* Desktop: 901px ke atas */
+        @media (min-width: 901px) {
+            body {
+                /* Subtle grid background untuk desktop */
+                background-image: radial-gradient(circle at 20% 30%, rgba(74,144,217,0.06) 0%, transparent 50%),
+                                  radial-gradient(circle at 80% 70%, rgba(74,144,217,0.04) 0%, transparent 50%);
+            }
+ 
+            .navbar {
+                padding: 8px 40px;
+            }
+ 
+            .nav-text-right {
+                font-size: 18px;
+            }
+ 
+            .app-container {
+                max-width: 900px;
+                padding: 30px 32px;
+            }
+ 
+            .title-img {
+                max-width: 480px;
+                margin-bottom: 36px;
+            }
+ 
+            .folder {
+                font-size: 22px;
+                padding: 18px 8px;
+            }
+ 
+            .member-container {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 14px;
+            }
+ 
+            .member-name {
+                font-size: 13px;
+            }
+ 
+            .id-card {
+                border-radius: 10px;
+            }
+ 
+            /* Hover hanya untuk perangkat pointer (mouse), bukan touch */
+            @media (hover: hover) {
+                .id-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 10px 24px rgba(74,144,217,0.2);
+                    border-color: rgba(74,144,217,0.4);
+                }
+ 
+                .selection-btn:hover {
+                    background-color: #3a7ec4;
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(74,144,217,0.35);
+                }
+            }
+ 
+            .selection-btn {
+                padding: 14px 80px;
+                font-size: 19px;
+                border-radius: 14px;
+                transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            }
+ 
+            /* Modal lebih besar di desktop */
+            .modal-content {
+                max-width: 420px;
+            }
+ 
+            .modal-name {
+                font-size: 34px;
+            }
+ 
+            .modal-details {
+                padding: 24px;
+            }
+        }
+ 
+        /* Wide desktop: 1200px ke atas */
+        @media (min-width: 1200px) {
+            .app-container {
+                max-width: 1040px;
+            }
+ 
+            .member-container {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 16px;
+            }
+        }
     </style>
 </head>
 <body>
