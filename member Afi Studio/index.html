@@ -8,28 +8,28 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-
+ 
     <style>
         :root {
             --font-primary: 'Outfit', sans-serif;
             --font-secondary: 'DM Sans', sans-serif;
             --font-logo: 'Dancing Script', cursive; /* Tambahan font logo dari halaman utama */
-
-            --accent: #99FFD9;
+ 
+            --accent: #4A90D9;
             --bg: #0f0f17;
             --surface: #1a1a2e;
             --text: #f0f0f5;
             --text-sub: #9ca3af;
             --border: #2a2a3e;
         }
-
+ 
         * { 
             margin: 0; 
             padding: 0; 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent;
         }
-
+ 
         body {
             background-color: var(--bg);
             font-family: var(--font-secondary);
@@ -38,7 +38,7 @@
             align-items: center;
             min-height: 100vh;
         }
-
+ 
         .navbar {
             width: 100%;
             background-color: var(--surface);
@@ -61,7 +61,7 @@
         .nav-text-right { color: var(--text); font-size: 16px; font-weight: bold; font-family: var(--font-primary); }
         .nav-icon-right { width: 42px; height: auto; cursor: pointer; transition: transform 0.2s; }
         .nav-icon-right:active { transform: scale(0.9); }
-
+ 
         .chat-bubble {
             position: absolute;
             top: 50px;
@@ -96,7 +96,7 @@
             border-right: 8px solid transparent;
             border-bottom: 8px solid var(--border);
         }
-
+ 
         .app-container {
             width: 100%;
             max-width: 500px;
@@ -105,7 +105,7 @@
             flex-direction: column;
             flex-grow: 1;
         }
-
+ 
         .content { text-align: center; margin-top: 20px; }
         
         .title-img {
@@ -114,7 +114,7 @@
             height: auto;
             margin-bottom: 30px;
         }
-
+ 
         .folder-group { display: flex; flex-direction: column; }
         .folder {
             display: flex;
@@ -132,7 +132,7 @@
         .arrow-icon { transition: transform 0.3s ease; }
         .folder.active .arrow-icon { transform: rotate(90deg); }
         .folder-divider { height: 1px; background-color: var(--border); width: 100%; }
-
+ 
         .member-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -149,7 +149,7 @@
             opacity: 1;
             padding: 15px 0;
         }
-
+ 
         .id-card {
             background-color: var(--surface);
             border-radius: 8px;
@@ -174,13 +174,13 @@
             min-height: 35px;
         }
         .member-name { 
-            color: #000; 
+            color: #fff; 
             font-size: 14px;
             font-weight: bold; 
             font-family: var(--font-primary);
             line-height: 1.1;
         }
-
+ 
         .modal {
             display: none;
             position: fixed;
@@ -217,7 +217,7 @@
             margin: 10px 0;
             width: 100%;
         }
-
+ 
         /* --- BAGIAN YANG DIPERBAIKI --- */
         .status-icon { 
             position: absolute; 
@@ -226,9 +226,9 @@
             font-size: 32px; 
         }
         /* ---------------------------- */
-
+ 
         .modal-subtext { font-family: var(--font-secondary); font-size: 14px; color: var(--text-sub); margin-top: 5px; line-height: 1.3; }
-
+ 
         .social-container { display: flex; flex-direction: row; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
         .social-btn {
             display: flex; align-items: center; justify-content: center;
@@ -238,10 +238,10 @@
         }
         .social-btn:hover { transform: translateY(-2px); }
         .social-btn svg { width: 18px; height: 18px; fill: #ffffff; }
-
+ 
         .footer { margin-top: auto; display: flex; justify-content: center; padding-bottom: 30px; padding-top: 40px; }
         .selection-btn { 
-            background-color: var(--accent); color: #000; border: none; padding: 12px 60px; 
+            background-color: var(--accent); color: #fff; border: none; padding: 12px 60px; 
             border-radius: 12px; font-size: 18px; font-weight: bold; font-family: var(--font-primary);
             cursor: pointer; 
         }
@@ -260,7 +260,7 @@
             <div id="chatBubble" class="chat-bubble"></div>
         </div>
     </nav>
-
+ 
     <div class="app-container">
         <div class="content">
             <img src="title.png" alt="Member Afi-Studio" class="title-img">
@@ -271,21 +271,21 @@
                 </div>
                 <div id="gen-1" class="member-container"></div>
                 <div class="folder-divider"></div>
-
+ 
                 <div class="folder" onclick="toggleFolder(this)">
                     <span>Generasi 2nd</span>
                     <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
                 <div id="gen-2" class="member-container"></div>
                 <div class="folder-divider"></div>
-
+ 
                 <div class="folder" onclick="toggleFolder(this)">
                     <span>Generasi 3rd</span>
                     <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
                 <div id="gen-3" class="member-container"></div>
                 <div class="folder-divider"></div>
-
+ 
                 <div class="folder" onclick="toggleFolder(this)">
                     <span>Orang Random</span>
                     <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -298,7 +298,7 @@
             <button class="selection-btn">Seleksi Member</button>
         </div>
     </div>
-
+ 
     <div id="memberModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div id="modalBody"></div>
