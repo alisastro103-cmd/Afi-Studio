@@ -2,9 +2,10 @@ const NEWS_TEXTS = [
     "Afi Studio sedang <b>open member</b>.",
     "Pembukaan event Render akan dimulai pada tanggal <b>1 Mei 2026</b>.",
     "Menunggu Animasi serial \"Lintas Dimensi\" dari breent.",
-    "Join <b>Saluran WhatsApp</b> kami!!"
+    "Join <b>Saluran WhatsApp</b> kami!!",
+    "HARI INI DI JOGJA SAYA SAMPAIKAN, SAYA AKAN LAWAN!!"
 ];
-
+ 
 const bannerData = [
             { img: "Banner1.jpg", url: "https://www.contoh.com/" },
             { img: "Banner2.jpg", url: "event/index.html" },
@@ -12,7 +13,7 @@ const bannerData = [
             { img: "Banner4.jpg", url: "#" },
             { img: "Banner5.jpg", url: "#"}
         ];
-
+ 
 const MODELS = [
     {
         name: 'Rig Mob Minecraft',
@@ -78,14 +79,12 @@ const MODELS = [
         link: 'https://youtu.be/8G6r_OuBpUw?si=ymUXbGYA0t_Hl9nO'
      }
 ];
-
-// --- AKSEN WARNA ---
-const ACCENTS = ['#99FFD9', '#C0FF8D', '#FF8AB5', '#D07FFF', '#FF0021', '#8DD1FF', '#7FFFF8', '#FFC97F'];
-let currentModel = null, currentTheme = 'dark', currentAccent = '#99FFD9'; 
-
+ 
+let currentModel = null;
+ 
 const CATEGORIES = ["Semua", "Furniture", "Map", "Items", "Rig", "tools", "cosmetic"];
 let activeCategory = "Semua";
-
+ 
 // Merender tombol filter kategori
 function renderCategoryButtons() {
     const container = document.getElementById('category-filter');
@@ -97,7 +96,7 @@ function renderCategoryButtons() {
         </button>
     `).join('');
 }
-
+ 
 // Fungsi filter berdasarkan kategori
 function filterByCategory(cat) {
     activeCategory = cat;
@@ -110,7 +109,7 @@ function filterByCategory(cat) {
     const searchTerm = searchInput ? searchInput.value : '';
     renderModels(searchTerm);
 }
-
+ 
 // Merender teks berjalan (marquee)
 function renderMarquee() {
     const marquee = document.getElementById('news-marquee');
@@ -121,12 +120,12 @@ function renderMarquee() {
         marquee.innerHTML = `${separator}${joinedContent}${separator}`;
     }
 }
-
+ 
 // Merender kartu model ke grid utama
 function renderModels(filter = '') {
     const grid = document.getElementById('content-grid');
     if (!grid) return;
-
+ 
     const filtered = MODELS.filter(m => {
         const s = filter.toLowerCase();
         const categoriesArray = Array.isArray(m.category) ? m.category : [m.category];
@@ -141,7 +140,7 @@ function renderModels(filter = '') {
             
         return categoryMatch && textMatch;
     });
-
+ 
     if (filtered.length === 0) {
         grid.innerHTML = `
             <div class="col-span-full flex flex-col items-center justify-center py-20 text-center opacity-60">
@@ -161,7 +160,7 @@ function renderModels(filter = '') {
     }
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
-
+ 
 // Fungsi Modal
 function openModal(index) {
     currentModel = MODELS[index];
@@ -182,42 +181,23 @@ function openModal(index) {
     if (infoBox) infoBox.innerHTML = infoHtml;
     document.getElementById('modal-overlay').classList.add('active');
 }
-
+ 
 function closeModal() {
     const modal = document.getElementById('modal-overlay');
     if (modal) modal.classList.remove('active');
 }
-
+ 
 // Pengaturan
 function toggleSettings() {
     const panel = document.getElementById('settings-panel');
     if (panel) panel.classList.toggle('open');
 }
-
-function setTheme(theme) {
-    currentTheme = theme;
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    const lightBtn = document.getElementById('theme-light');
-    const darkBtn = document.getElementById('theme-dark');
-    if(lightBtn) lightBtn.style.borderColor = theme === 'light' ? currentAccent : 'var(--border)';
-    if(darkBtn) darkBtn.style.borderColor = theme === 'dark' ? currentAccent : 'var(--border)';
-}
-
-function setAccent(color) {
-    currentAccent = color;
-    document.documentElement.style.setProperty('--accent', color);
-    document.querySelectorAll('.accent-dot').forEach(dot => {
-        dot.classList.toggle('active', dot.dataset.color === color);
-    });
-    setTheme(currentTheme);
-    renderMarquee();
-}
-
+ 
 // Fungsi Download & Copy Link
 function handleDownload() { 
     if (currentModel) window.open(currentModel.link, '_blank'); 
 }
-
+ 
 function handleCopyLink() {
     if (!currentModel) return;
     navigator.clipboard.writeText(currentModel.link).then(() => {
@@ -228,34 +208,23 @@ function handleCopyLink() {
         }
     });
 }
-
+ 
 // Event Listeners
 const searchInputEl = document.getElementById('search-input');
 if (searchInputEl) {
     searchInputEl.addEventListener('input', (e) => renderModels(e.target.value));
 }
-
+ 
 const settingsBtn = document.getElementById('settings-btn');
 if (settingsBtn) {
     settingsBtn.addEventListener('click', toggleSettings);
 }
-
+ 
 // Inisialisasi
 (function init() {
-    const container = document.getElementById('accent-dots');
-    if (container) {
-        ACCENTS.forEach(color => {
-            const dot = document.createElement('div');
-            dot.className = 'accent-dot';
-            dot.dataset.color = color;
-            dot.style.background = color;
-            dot.onclick = () => setAccent(color);
-            container.appendChild(dot);
-        });
-    }
     renderCategoryButtons();
     renderModels();
     renderMarquee();
-    setTheme('dark'); 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 })();
+ 
