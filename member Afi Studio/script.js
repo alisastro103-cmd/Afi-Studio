@@ -63,7 +63,7 @@ const dataMember = {
         },
         { 
             nama: "MichiYuzuru", 
-            foto: "profile/michi.png", 
+            foto: "profile/Michi.png", 
             spesialis: "Rendering", 
             identitas: "🍩",
             generasi: "Generasi ke-1",
@@ -156,7 +156,7 @@ const dataMember = {
         },
         { 
             nama: "YavitsDesu", 
-            foto: "profile/Yavis.png", 
+            foto: "profile/yavis.png", 
             spesialis: "Animasi dan dubbing", 
             identitas: "🌊",
             generasi: "Generasi ke-2",
