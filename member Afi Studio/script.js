@@ -421,7 +421,7 @@ const dataMember = {
             foto: "profile/lusvia.png", 
             spesialis: "Render, dan Art", 
             identitas: "🧡",
-            generasi: "Princess 🧡🖤✨",
+            generasi: "The Princess belongs to the Knight🧡🖤✨",
             socials: {
                 yt: "https://youtube.com/@lusvia_4?si=KDAJFwGzYVTvUb5P",
                 ig: "https://www.instagram.com/lusvia_4?igsh=cmV0MThrb3RjeWdr",
