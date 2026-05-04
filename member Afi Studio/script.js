@@ -17,6 +17,21 @@ const dataMember = {
             }
         },
         { 
+            nama: "Yui Aizawa", 
+            foto: "profile/yui.png", 
+            spesialis: "Healer", 
+            identitas: "🌸",
+            generasi: "Generasi ke-1",
+            socials: {
+                yt: "https://youtube.com/@yuiaizawaa?si=LC1aBi112kqY_aVn",
+                ig: "",
+                fb: "",
+                tk: "https://www.tiktok.com/@yui.aizawa?_r=1&_t=ZS-95ojHTGmKfs",
+                wa: "",
+                dc: "https://discord.com/users/yuiaizawaa"
+            }
+        },
+        { 
             nama: "LanaMC", 
             foto: "profile/lana.png", 
             spesialis: "Designing, Editor, dan Rendering", 
@@ -368,6 +383,7 @@ const dataMember = {
             }
         }
     ],
+
     "orang-random": [
     { 
             nama: "RPC.Dina", 
@@ -398,8 +414,53 @@ const dataMember = {
                 wa: "",
                 dc: ""
             }
+        },
+
+        { 
+            nama: "Lusvia", 
+            foto: "profile/lusvia.png", 
+            spesialis: "Render, dan Art", 
+            identitas: "🧡",
+            generasi: "Princess 🧡🖤✨",
+            socials: {
+                yt: "https://youtube.com/@lusvia_4?si=KDAJFwGzYVTvUb5P",
+                ig: "https://www.instagram.com/lusvia_4?igsh=cmV0MThrb3RjeWdr",
+                fb: "",
+                tk: "https://www.tiktok.com/@lusvia_0g?_r=1&_t=ZS-9617T0lW1gr",
+                wa: "https://whatsapp.com/channel/0029VbCRwYJ7IUYRGQel8g3T",
+                dc: "https://discord.com/users/wr1ter_0g"
+            }
+        },
+        { 
+            nama: "Amethio", 
+            foto: "profile/theo.png", 
+            spesialis: "Render dan Modeling", 
+            identitas: "🫟",
+            generasi: "Randy's Brother",
+            socials: {
+                yt: "https://www.youtube.com/@Amethio009",
+                ig: "",
+                fb: "",
+                tk: "",
+                wa: "https://whatsapp.com/channel/0029VbCSPxmLSmbZZlLI7s0C",
+                dc: ""
+            }
+        },
+        { 
+            nama: "Ell", 
+            foto: "profile/zai.png", 
+            spesialis: "Animasi, Render, Modeling, dan skin maker", 
+            identitas: "🗿",
+            generasi: "Randy's brother",
+            socials: {
+                yt: "https://youtube.com/@lapar-t4i?si=PA8PWYn5R2XNwiJa",
+                ig: "https://www.instagram.com/el_lapar8?igsh=N2Flc25tdTBwdXFo",
+                fb: "",
+                tk: "https://www.tiktok.com/@ell_lanang?_r=1&_d=eb2ld59bdd1ikb&sec_uid=MS4wLjABAAAACtY7R_lysRL75TdlpOJoEJHq9iMxZ7nWW-7Cr1mRZvZxHbMfP3nAlPqVXsotQIAf&share_author_id=7526117966753989650&sharer_language=id&source=h5_t&u_code=el9jlk1839g6ml&timestamp=1777474281&user_id=7526117966753989650&sec_user_id=MS4wLjABAAAACtY7R_lysRL75TdlpOJoEJHq9iMxZ7nWW-7Cr1mRZvZxHbMfP3nAlPqVXsotQIAf&item_author_type=1&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7629605726251632405&share_link_id=7dfb8169-90dc-4bba-ba4c-8827dcf8c6e4&share_app_id=1180&ugbiz_name=ACCOUNT&ug_btm=b8727%2Cb7360&social_share_type=5&enable_checksum=1",
+                wa: "https://whatsapp.com/channel/0029Vb7APNf5a245CYazTi1q",
+                dc: ""
+            }
         }
-    
     ] // Tempat untuk menambahkan data orang random di masa depan
 };
 
