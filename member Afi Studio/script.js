@@ -274,8 +274,8 @@ const dataMember = {
                 dc: "https://discord.com/users/947990324251328564"
             }
         }
-    
     ],
+    
     "gen-3": [
         { 
             nama: "NUKE51", 
@@ -350,6 +350,21 @@ const dataMember = {
                 tk: "",
                 wa: "https://wa.me/qr/NIV2DV4O5WI2I1",
                 dc: ""
+            }
+        },
+        { 
+            nama: "Hikari", 
+            foto: "profile/hikari.png", 
+            spesialis: "Art, Skin, Render, dan Modelling", 
+            identitas: "🍥",
+            generasi: "Generasi ke-3",
+            socials: {
+                yt: "https://youtube.com/@kaily_rhetbun?si=mlDMjelxUMwPhZ4K",
+                ig: "",
+                fb: "",
+                tk: "https://www.tiktok.com/@rhetbu?_r=1&_t=ZS-95uSxDj4VBR",
+                wa: "https://wa.me/62856-0473-9311",
+                dc: "https://discord.com/users/laily_sy"
             }
         },
         { 
@@ -431,7 +446,7 @@ const dataMember = {
                 dc: "https://discord.com/users/wr1ter_0g"
             }
         },
-        { 
+        {
             nama: "Amethio", 
             foto: "profile/theo.png", 
             spesialis: "Render dan Modeling", 
