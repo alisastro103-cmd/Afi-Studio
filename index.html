@@ -35,7 +35,15 @@
             --border: #2a2a3e;
         }
  
-        body { background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
+        body { 
+            background-color: var(--bg); 
+            background-image: 
+                linear-gradient(rgba(128,128,128,0.30) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(128,128,128,0.30) 1px, transparent 1px);
+            background-size: 32px 32px;
+            color: var(--text); 
+            transition: background 0.3s, color 0.3s; 
+        }
  
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
         
