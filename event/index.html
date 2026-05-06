@@ -35,7 +35,11 @@
     }
  
     body { 
-      background: var(--bg); 
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(128,128,128,0.30) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(128,128,128,0.30) 1px, transparent 1px);
+      background-size: 32px 32px;
       color: var(--text); 
       transition: background 0.3s, color 0.3s; 
       line-height: 1.4;
