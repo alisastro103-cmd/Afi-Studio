@@ -28,6 +28,18 @@
         }
  
         body { background: var(--bg); color: var(--text); }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(128,128,128,0.30) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(128,128,128,0.30) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: -1;
+        }
  
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
         
@@ -129,6 +141,7 @@
                         <i data-lucide="arrow-left" style="width: 24px;"></i>
                     </a>
                     <div class="cursor-pointer flex items-center gap-1">
+                        <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
                         <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
                             Afi-Studio
                         </div>
