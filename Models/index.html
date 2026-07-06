@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afi Studio - Filter & Search</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="favicon.png">
+
+    <!-- Open Graph -->
+    <link rel="canonical" href="https://afi-studio.vercel.app/Models/">
+    <meta name="description" content="Cari dan unduh koleksi rig & model 3D Minecraft dari komunitas Afi Studio. Filter berdasarkan kategori untuk temukan aset yang kamu butuhkan.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/Models/">
+    <meta property="og:title" content="Afi Studio - Filter & Search Models">
+    <meta property="og:site_name" content="Afi Studio">
+    <meta property="og:description" content="Temukan dan unduh koleksi rig & 3D model Minecraft dari komunitas Afi Studio.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Filter & Search Models">
+    <meta name="twitter:description" content="Temukan dan unduh koleksi rig & 3D model Minecraft dari komunitas Afi Studio.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+ 
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <link rel="stylesheet" href="/fonts/fonts.css">
+ 
+    <style>
+        /* CSS TETAP SESUAI ASLINYA */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'DM Sans', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+ 
+        :root {
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+        }
+
+        html.dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+        }
+ 
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: -1;
+        }
+ 
+        .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+        
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 5px;
+            margin-right: 10px;
+        }
+ 
+        .search-container { 
+            position: relative; 
+            margin-bottom: 24px; 
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-10px);
+        }
+        .search-container.active {
+            max-height: 100px;
+            opacity: 1;
+            transform: translateY(0);
+            margin-top: 20px;
+        }
+ 
+        .search-input { width: 100%; padding: 14px 18px 14px 48px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text); outline: none; font-size: 14px; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .filter-btn { 
+            padding: 8px 16px; 
+            border-radius: 3px; 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            font-size: 13px; 
+            font-weight: 600; 
+            white-space: nowrap; 
+            transition: all 0.3s ease; 
+            color: var(--text);
+            opacity: 0.6; 
+        }
+        .filter-btn.active { 
+            background: var(--accent); 
+            color: #fff; 
+            border-color: var(--accent); 
+            opacity: 1; 
+        }
+ 
+        /* Styling untuk Card Model agar konsisten */
+        .model-card { 
+            cursor: pointer; 
+            border-radius: 3px; 
+            overflow: hidden; 
+            transition: transform 0.2s, border-color 0.3s; 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+        }
+        .model-card:hover { 
+            transform: translateY(-4px); 
+            border-color: var(--accent-hover);
+        }
+        .card-image { aspect-ratio: 16/9; object-fit: cover; width: 100%; }
+        .card-content { padding: 12px; }
+        .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+        .card-caption { font-size: 12px; color: var(--text-sub); line-height: 1.4; }
+ 
+        /* Modal Styling */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+ 
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Outfit', sans-serif;
+        }
+        .category-header::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+            opacity: 0.6;
+        }
+
+        .footer-text {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 40px;
+            padding-bottom: 24px;
+            font-weight: 500;
+        }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+    </style>
+</head>
+ 
+<body class="h-full">
+    <div id="app" class="h-full overflow-auto w-full flex flex-col justify-between">
+        <div>
+            <nav class="nav-bar">
+                <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <a href="../index.html" class="back-btn">
+                            <i data-lucide="arrow-left" style="width: 24px;"></i>
+                        </a>
+                        <div class="cursor-pointer flex items-center gap-1">
+                            <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                            <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
+                                Afi-Studio
+                            </div>
+                        </div>
+                    </div>
+     
+                    <div class="flex gap-4"> 
+                        <button id="search-toggle-btn" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                            <i data-lucide="search" style="width: 20px;"></i>
+                        </button>
+
+                        <a href="../bantuan/index.html" aria-label="Bantuan" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                            <i data-lucide="help-circle" style="width: 20px;"></i>
+                        </a>
+
+                        <a href="../feedback/index.html" aria-label="Feedback" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                            <i data-lucide="message-square" style="width: 20px;"></i>
+                        </a>
+
+                        <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                            <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+     
+            <main class="max-w-6xl mx-auto px-4 pt-4 pb-6 sm:px-6">
+                <div id="search-wrapper" class="search-container">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="Cari Model, Kategori, Creator...">
+                </div>
+     
+                <div class="mt-2 mb-2">
+                    <h2 id="category-title" class="category-header text-xs font-bold uppercase tracking-widest opacity-60">SEMUA ITEM</h2>
+                </div>
+     
+                <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar" id="category-filter">
+                    </div>
+     
+                <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" id="content-grid">
+                    </section>
+            </main>
+        </div>
+
+        <footer class="footer-text">
+            <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+        </footer>
+    </div>
+ 
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <img id="modal-thumb" src="" class="w-full aspect-video object-cover">
+            <div class="p-5">
+                <h2 id="modal-title" class="text-xl font-bold mb-2"></h2>
+                <p id="modal-caption" class="text-xs mb-4 opacity-70"></p>
+                <div id="info-container" class="rounded-xl p-4 mb-5 text-xs space-y-2" style="background: color-mix(in srgb, var(--accent) 10%, var(--surface));"></div>
+                <div class="flex flex-col gap-2">
+                    <button class="w-full py-3.5 rounded-xl font-bold bg-[var(--accent)] text-white" onclick="handleDownload()">Download Now</button>
+                    <button class="w-full py-3.5 rounded-xl font-bold border border-[var(--border)]" onclick="handleCopyLink()">Copy Link</button>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--accent)] text-white px-6 py-3 rounded-full font-bold text-sm translate-y-20 transition-transform shadow-lg" style="z-index: 200;">Link Disalin!</div>
+ 
+    <script src="script.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+ 
+    <script>
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+ 
+        // Logika Toggle Pencarian (Visual Only)
+        const searchToggleBtn = document.getElementById('search-toggle-btn');
+        const searchWrapper = document.getElementById('search-wrapper');
+        const searchInput = document.getElementById('search-input');
+ 
+        if (searchToggleBtn) {
+            searchToggleBtn.addEventListener('click', () => {
+                searchWrapper.classList.toggle('active');
+                if (searchWrapper.classList.contains('active')) {
+                    setTimeout(() => searchInput.focus(), 300);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

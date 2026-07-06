@@ -1,0 +1,85 @@
+/*
+  fonts.css — pengganti lokal untuk Google Fonts CDN
+  (sebelumnya: https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=Dancing+Script:wght@700&display=swap)
+
+  Status: SEMUA weight di bawah sudah lokal (diambil dari paket npm @fontsource,
+  bukan dari CDN Google) — Outfit 400/500/600/700/800, DM Sans 400/500/600,
+  Dancing Script 700. Tidak ada request keluar sama sekali saat halaman dibuka.
+
+  Pemakaian di seluruh halaman:
+  - Outfit         -> heading (h1-h4), label uppercase kecil, angka/statistik, tombol, nav
+  - DM Sans        -> body text, deskripsi, caption, paragraf, footer
+  - Dancing Script -> logo/wordmark "Afi-Studio" saja
+*/
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Outfit-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/Outfit-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Outfit-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/Outfit-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/Outfit-800.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/DMSans-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/DMSans-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/DMSans-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Dancing Script';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/DancingScript-700.woff2') format('woff2');
+}

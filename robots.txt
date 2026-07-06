@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://afi-studio.vercel.app/sitemap.xml

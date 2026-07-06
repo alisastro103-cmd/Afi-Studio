@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Afi-Studio</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Open Graph -->
+    <link rel="canonical" href="https://afi-studio.vercel.app/member-Afi-Studio/">
+    <meta name="description" content="Kenali para member aktif komunitas Afi Studio beserta karya-karya yang telah mereka buat.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/member-Afi-Studio/">
+    <meta property="og:title" content="Afi Studio - Daftar Member">
+    <meta property="og:description" content="Kenali para member aktif komunitas Afi Studio dan karya-karya mereka.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Daftar Member">
+    <meta name="twitter:description" content="Kenali para member aktif komunitas Afi Studio dan karya-karya mereka.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+            <link rel="stylesheet" href="/fonts/fonts.css">
+ 
+    <style>
+        :root {
+            --font-primary: 'Outfit', sans-serif;
+            --font-secondary: 'DM Sans', sans-serif;
+            --font-logo: 'Dancing Script', cursive; /* Tambahan font logo dari halaman utama */
+ 
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+        }
+
+        html.dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+        }
+ 
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
+ 
+        body {
+            background-color: var(--bg);
+            font-family: var(--font-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: -1;
+        }
+ 
+        .navbar {
+            width: 100%;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-left { display: flex; align-items: center; gap: 4px; }
+        .nav-right { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            position: relative;
+        }
+        .nav-text-right { color: var(--text); font-size: 16px; font-weight: bold; font-family: var(--font-primary); }
+        .nav-icon-right { width: 42px; height: auto; cursor: pointer; transition: transform 0.2s; }
+        .nav-icon-right:active { transform: scale(0.9); }
+        .nav-logo-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        #theme-toggle-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+        /* Menu pindah halaman */
+        .page-menu-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            min-width: 190px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 1002;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+ 
+        .chat-bubble {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: var(--surface);
+            color: var(--text);
+            padding: 10px 15px;
+            border-radius: 15px 5px 15px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            width: max-content;
+            max-width: 200px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            font-family: var(--font-secondary);
+        }
+        .chat-bubble.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .chat-bubble::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid var(--border);
+        }
+ 
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+ 
+        .content { text-align: center; margin-top: 20px; }
+        
+        .title-img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+ 
+        .folder-group { display: flex; flex-direction: column; }
+        .folder {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5px;
+            color: var(--text);
+            font-size: 20px;
+            font-weight: bold;
+            font-family: var(--font-primary);
+            width: 100%;
+            user-select: none;
+        }
+        .folder-count {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-sub);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-family: var(--font-secondary);
+        }
+        .folder-divider { height: 1px; background-color: var(--border); width: 100%; }
+ 
+        .member-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            padding: 15px 0;
+        }
+ 
+        .id-card {
+            background-color: var(--surface);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.2s;
+            opacity: 0;
+            transform: translateY(12px);
+            animation: card-fade-in 0.45s ease forwards;
+        }
+        .id-card:active { transform: scale(0.95); }
+        @keyframes card-fade-in {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Transisi masuk konten halaman, senada dengan halaman lain (root) */
+        .content, .folder-group > .folder, .folder-group > .folder-divider {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: section-fade-in 0.5s ease forwards;
+        }
+        .content { animation-delay: 0s; }
+        @keyframes section-fade-in {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .profile-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; background-color: var(--bg); }
+        
+        .member-name-box { 
+            background-color: var(--accent); 
+            padding: 8px 2px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 35px;
+        }
+        .member-name { 
+            color: #fff; 
+            font-size: 14px;
+            font-weight: bold; 
+            font-family: var(--font-primary);
+            line-height: 1.1;
+        }
+ 
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            inset: 0;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .modal.active { display: flex; opacity: 1; }
+        .toast-popup {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translate(-50%, 80px);
+            background: var(--accent, #6c5ce7);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+        }
+        .toast-popup.show { transform: translate(-50%, 0); }
+        .modal-content {
+            background-color: var(--surface); 
+            width: 85%;
+            max-width: 340px;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal.active .modal-content { transform: translateY(0); }
+        .modal-banner { width: 100%; height: auto; overflow: hidden; }
+        .modal-banner img { width: 100%; height: auto; display: block; object-fit: cover; }
+        .modal-details { padding: 20px; background: var(--surface); position: relative; text-align: left; }
+        .modal-name { font-family: var(--font-primary); font-weight: 800; font-size: 32px; color: var(--text); text-transform: uppercase; line-height: 1; }
+        
+        .modal-divider {
+            height: 1px;
+            background-color: var(--border);
+            margin: 10px 0;
+            width: 100%;
+        }
+ 
+        /* --- BAGIAN YANG DIPERBAIKI --- */
+        .status-icon { 
+            position: absolute; 
+            right: 20px; 
+            top: 15px; 
+            font-size: 32px; 
+        }
+        /* ---------------------------- */
+ 
+        .modal-subtext { font-family: var(--font-secondary); font-size: 14px; color: var(--text-sub); margin-top: 5px; line-height: 1.3; }
+ 
+        .social-container { display: flex; flex-direction: row; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+        .social-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 8px;
+            text-decoration: none; transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .social-btn:hover { transform: translateY(-2px); }
+        .social-btn svg { width: 18px; height: 18px; fill: #ffffff; }
+ 
+        .footer { margin-top: auto; display: flex; justify-content: center; padding-bottom: 30px; padding-top: 40px; }
+        .selection-btn { 
+            background-color: var(--accent); color: #fff; border: none; padding: 12px 60px; 
+            border-radius: 12px; font-size: 18px; font-weight: bold; font-family: var(--font-primary);
+            cursor: pointer; 
+        }
+ 
+        /* =============================================
+           RESPONSIVE — Desktop & Tablet
+           Tidak ada fungsi / struktur HTML yang diubah.
+           Hanya penambahan media query untuk layout.
+        ============================================= */
+ 
+        /* Tablet: 501px – 900px */
+        @media (min-width: 501px) {
+            .app-container {
+                max-width: 700px;
+                padding: 20px 24px;
+            }
+ 
+            .member-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+ 
+            .member-name {
+                font-size: 13px;
+            }
+ 
+            .modal-content {
+                max-width: 380px;
+            }
+ 
+            .modal-name {
+                font-size: 28px;
+            }
+        }
+ 
+        /* Desktop: 901px ke atas */
+        @media (min-width: 901px) {
+            body {
+                /* Subtle grid background untuk desktop */
+                background-image: radial-gradient(circle at 20% 30%, rgba(74,144,217,0.06) 0%, transparent 50%),
+                                  radial-gradient(circle at 80% 70%, rgba(74,144,217,0.04) 0%, transparent 50%);
+            }
+ 
+            .navbar {
+                padding: 6px 40px;
+            }
+ 
+            .nav-text-right {
+                font-size: 18px;
+            }
+ 
+            .app-container {
+                max-width: 900px;
+                padding: 30px 32px;
+            }
+ 
+            .title-img {
+                max-width: 480px;
+                margin-bottom: 36px;
+            }
+ 
+            .folder {
+                font-size: 22px;
+                padding: 18px 8px;
+            }
+ 
+            .member-container {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 14px;
+            }
+ 
+            .member-name {
+                font-size: 13px;
+            }
+ 
+            .id-card {
+                border-radius: 10px;
+            }
+ 
+            /* Hover hanya untuk perangkat pointer (mouse), bukan touch */
+            @media (hover: hover) {
+                .id-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 10px 24px rgba(74,144,217,0.2);
+                    border-color: rgba(74,144,217,0.4);
+                }
+ 
+                .selection-btn:hover {
+                    background-color: #3a7ec4;
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(74,144,217,0.35);
+                }
+            }
+ 
+            .selection-btn {
+                padding: 14px 80px;
+                font-size: 19px;
+                border-radius: 14px;
+                transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            }
+ 
+            /* Modal lebih besar di desktop */
+            .modal-content {
+                max-width: 420px;
+            }
+ 
+            .modal-name {
+                font-size: 34px;
+            }
+ 
+            .modal-details {
+                padding: 24px;
+            }
+        }
+ 
+        /* Wide desktop: 1200px ke atas */
+        @media (min-width: 1200px) {
+            .app-container {
+                max-width: 1040px;
+            }
+ 
+            .member-container {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 16px;
+            }
+        }
+    </style>
+    <script>
+        // ====================================================
+        // PENGATURAN MANUAL: Buka/Tutup link "Seleksi Member"
+        // true  = link AKTIF (boleh dibuka ke Google Form)
+        // false = link DIBLOKIR (muncul notif "Segera Hadir")
+        // ====================================================
+        const isSeleksiMemberOpen = false;
+    </script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="../index.html" style="display:flex; align-items:center; color: var(--text); padding: 5px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+            <img src="icon.png" alt="Logo" style="width:40px; height:40px; object-fit:contain;">
+            <span class="nav-logo-text">Afi-Studio</span>
+        </div>
+        <div class="nav-right">
+            <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+            </button>
+            <div id="page-menu-dropdown" class="page-menu-dropdown">
+                <a href="../index.html" class="page-menu-item">Beranda</a>
+                <a href="../member-Afi-Studio/index.html" class="page-menu-item active">Member Afi-Studio</a>
+                <a href="../event/index.html" class="page-menu-item">Event Render</a>
+                <a href="../ranking/index.html" class="page-menu-item">Ranking Render</a>
+                <a href="../bantuan/index.html" class="page-menu-item">Bantuan</a>
+                <a href="../feedback/index.html" class="page-menu-item">Feedback</a>
+            </div>
+            <button id="theme-toggle-btn" aria-label="Ganti tema">
+                <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+            </button>
+            <div id="chatBubble" class="chat-bubble"></div>
+        </div>
+    </nav>
+ 
+    <div class="app-container">
+        <div class="content">
+            <img src="title.png" alt="Member Afi-Studio" class="title-img">
+            <div class="folder-group">
+                <div class="folder" style="animation-delay: 0.05s;">
+                    <span>Generasi 1st</span>
+                    <span class="folder-count" id="count-gen-1">0 member</span>
+                </div>
+                <div id="gen-1" class="member-container"></div>
+                <div class="folder-divider" style="animation-delay: 0.05s;"></div>
+ 
+                <div class="folder" style="animation-delay: 0.1s;">
+                    <span>Generasi 2nd</span>
+                    <span class="folder-count" id="count-gen-2">0 member</span>
+                </div>
+                <div id="gen-2" class="member-container"></div>
+                <div class="folder-divider" style="animation-delay: 0.1s;"></div>
+ 
+                <div class="folder" style="animation-delay: 0.15s;">
+                    <span>Generasi 3rd</span>
+                    <span class="folder-count" id="count-gen-3">0 member</span>
+                </div>
+                <div id="gen-3" class="member-container"></div>
+                <div class="folder-divider" style="animation-delay: 0.15s;"></div>
+ 
+                <div class="folder" style="animation-delay: 0.2s;">
+                    <span>Orang Random</span>
+                    <span class="folder-count" id="count-orang-random">0 member</span>
+                </div>
+                <div id="orang-random" class="member-container"></div>
+                <div class="folder-divider" style="animation-delay: 0.2s;"></div>
+            </div>
+        </div>
+        <div class="footer">
+            <button class="selection-btn" onclick="if(isSeleksiMemberOpen){ window.open('https://forms.gle/JmYJ1S5GFCEscAnU7', '_blank'); } else { var t=document.getElementById('toast-soon'); if(t){t.classList.add('show'); setTimeout(function(){t.classList.remove('show');}, 2000);} }">Seleksi Member</button>
+        </div>
+        <p style="text-align: center; font-size: 11px; color: var(--text-sub); padding: 16px 0 28px; font-weight: 500; font-family: var(--font-secondary);">© 2026 Afi-Studio™ — All rights reserved.</p>
+    </div>
+ 
+    <div id="memberModal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    <div id="toast-soon" class="toast-popup">Segera Hadir</div>
+    <script>
+        (function () {
+            const menuBtn = document.getElementById('page-menu-btn');
+            const menuDropdown = document.getElementById('page-menu-dropdown');
+            menuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                menuDropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', function () {
+                menuDropdown.classList.remove('open');
+            });
+        })();
+    </script>
+    <script src="script.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+</body>
+</html>

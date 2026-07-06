@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afi Studio - Album Juara Render</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="favicon.png">
+
+    <!-- Open Graph -->
+    <link rel="canonical" href="https://afi-studio.vercel.app/ranking/">
+    <meta name="description" content="Lihat album juara render terbaik dari event kompetisi Afi Studio, hasil karya terbaik komunitas.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/ranking/">
+    <meta property="og:title" content="Afi Studio - Album Juara Render">
+    <meta property="og:description" content="Lihat koleksi render terbaik pemenang event kompetisi Afi Studio.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Album Juara Render">
+    <meta name="twitter:description" content="Lihat koleksi render terbaik pemenang event kompetisi Afi Studio.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+    <link rel="stylesheet" href="/fonts/fonts.css">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'DM Sans', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        :root {
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+        }
+
+        html.dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+        }
+
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+
+        .footer-text {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 40px;
+            padding-bottom: 24px;
+            font-weight: 500;
+        }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        /* Menu pindah halaman */
+        .page-menu { position: relative; }
+        .page-menu-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            min-width: 190px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+        /* ── Rank label warna ── */
+        .rank-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .rank-1  { color: #FFD700; }
+        .rank-2  { color: #C0C0C0; }
+        .rank-3  { color: #CD7F32; }
+        .rank-4 , .rank-5 , .rank-6 ,
+        .rank-7 , .rank-8 , .rank-9 , .rank-10 { color: var(--text-sub); }
+
+        /* ── Frame gambar 1:1 ── */
+        .frame-wrap {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.25s, transform 0.2s;
+            background: var(--surface);
+        }
+        .frame-wrap:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+        .frame-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s;
+        }
+        .frame-wrap:hover img { transform: scale(1.04); }
+
+        /* Badge rank di atas gambar */
+        .frame-badge {
+            position: absolute;
+            top: 7px;
+            left: 7px;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(6px);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            pointer-events: none;
+        }
+
+        /* ── Popup / Lightbox ── */
+        .lightbox-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0,0,0,0.90);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+            padding: 16px;
+        }
+        .lightbox-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .lightbox-img-wrap {
+            position: relative;
+            max-width: 100%;
+            max-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lightbox-img-wrap img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.12);
+            object-fit: contain;
+            display: block;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        }
+        .lightbox-caption {
+            margin-top: 16px;
+            text-align: center;
+            max-width: 480px;
+        }
+        .lightbox-caption .lb-rank {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.05em;
+        }
+        .lightbox-caption .lb-msg {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-top: 5px;
+            line-height: 1.55;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+
+        /* Section divider */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.55;
+            margin-bottom: 16px;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+    </style>
+</head>
+
+<body class="h-full">
+<div id="app" class="h-full overflow-auto w-full flex flex-col justify-between">
+    <div>
+        <nav class="nav-bar">
+            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="../index.html" class="back-btn">
+                        <i data-lucide="arrow-left" style="width:24px;"></i>
+                    </a>
+                    <div class="cursor-pointer flex items-center gap-1">
+                        <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                        <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">
+                            Afi-Studio
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="page-menu">
+                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+                        </button>
+                        <div id="page-menu-dropdown" class="page-menu-dropdown">
+                            <a href="../index.html" class="page-menu-item">Beranda</a>
+                            <a href="../member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
+                            <a href="../event/index.html" class="page-menu-item">Event Render</a>
+                            <a href="../ranking/index.html" class="page-menu-item active">Ranking Render</a>
+                            <a href="../bantuan/index.html" class="page-menu-item">Bantuan</a>
+                            <a href="../feedback/index.html" class="page-menu-item">Feedback</a>
+                        </div>
+                    </div>
+                    <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-5xl mx-auto px-4 pt-8 pb-10 sm:px-6">
+
+            <div class="text-center mb-4">
+                <p style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);opacity:0.8;margin-bottom:6px;">Galeri Render</p>
+                <h1 style="font-family:'Outfit',sans-serif;font-size:48px;font-weight:800;line-height:1.15;letter-spacing:-0.02em;">Render Terbaik di Bulan Ini</h1>
+                <p style="font-size:15px;color:var(--text-sub);margin-top:10px;">Ketuk gambar untuk melihat detail penuh</p>
+            </div>
+
+            <div class="section-divider">Top 3</div>
+            <div class="grid grid-cols-3 gap-4 sm:gap-6 mb-10">
+
+                <div class="flex flex-col items-center gap-2" onclick="openLightbox(1)">
+                    <div class="frame-wrap w-full" style="border-color:rgba(255,215,0,0.45);">
+                        <img src="coming_soon.webp" alt="Juara 1" loading="lazy">
+                        <div class="frame-badge rank-1">1st</div>
+                    </div>
+                    <span class="rank-label rank-1">1st Place</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2" onclick="openLightbox(2)">
+                    <div class="frame-wrap w-full">
+                        <img src="coming_soon.webp" alt="Juara 2" loading="lazy">
+                        <div class="frame-badge rank-2">2nd</div>
+                    </div>
+                    <span class="rank-label rank-2">2nd Place</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-2" onclick="openLightbox(3)">
+                    <div class="frame-wrap w-full">
+                        <img src="coming_soon.webp" alt="Juara 3" loading="lazy">
+                        <div class="frame-badge rank-3">3rd</div>
+                    </div>
+                    <span class="rank-label rank-3">3rd Place</span>
+                </div>
+
+            </div>
+
+            <div class="section-divider">Runner Up</div>
+            <div class="grid grid-cols-2 gap-3 sm:gap-4" id="runner-up-grid">
+            </div>
+
+            <div class="text-center mt-6 px-4" style="color:var(--text-sub);font-family:'DM Sans',sans-serif;">
+                <p class="text-xs font-semibold mb-1 opacity-80">Catatan:</p>
+                <p class="text-xs leading-relaxed opacity-70">
+                    Eksibisi ini merupakan <strong>wadah hiburan, evaluasi, dan media pembelajaran komunitas</strong> (bukan acara berskala besar).
+                    Karya terpilih dipamerkan di website Afi Studio, dan seluruh hasil render serta susunan peringkat juara akan <strong>diperbarui setiap bulan</strong>.
+                    Eksibisi ini <strong>tidak menyediakan hadiah atau imbalan materi</strong> dalam bentuk apa pun.
+                </p>
+            </div>
+
+        </main>
+    </div>
+
+    <footer class="footer-text">
+        <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+    </footer>
+</div>
+
+<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+    </button>
+    <div class="lightbox-img-wrap" onclick="event.stopPropagation()">
+        <img id="lb-img" src="" alt="" loading="lazy" decoding="async">
+    </div>
+    <div class="lightbox-caption" onclick="event.stopPropagation()">
+        <div id="lb-rank" class="lb-rank"></div>
+        <div id="lb-msg"  class="lb-msg"></div>
+    </div>
+</div>
+
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    (function () {
+        const menuBtn = document.getElementById('page-menu-btn');
+        const menuDropdown = document.getElementById('page-menu-dropdown');
+        menuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            menuDropdown.classList.toggle('open');
+        });
+        document.addEventListener('click', function () {
+            menuDropdown.classList.remove('open');
+        });
+    })();
+
+    /* ── Data setiap juara ── */
+    const juara = [
+        { rank: 1,  label: '1st Place', color: '#FFD700',
+          msg: 'Keren banget karya kamu! Detailnya luar biasa dan atmosfernya dapet banget. Pertahankan yaa' },
+        { rank: 2,  label: '2nd Place', color: '#C0C0C0',
+          msg: 'Rendermu memukau! Komposisi dan pencahayaannya keren abis. Terus berkarya!' },
+        { rank: 3,  label: '3rd Place', color: '#CD7F32',
+          msg: 'Top banget! Texturing dan angle kamu mantap. Semangat terus dan tingkatkan lagi!' },
+        { rank: 4,  label: '4th Place', color: '#9ca3af',
+          msg: 'Hampir podium! Karyamu keren dan potensialnya besar. Terus latihan yaa!' },
+        { rank: 5,  label: '5th Place', color: '#9ca3af',
+          msg: 'Render yang solid! Kamu punya skill yang bagus, keep it up!' },
+        { rank: 6,  label: '6th Place', color: '#9ca3af',
+          msg: 'Karyamu mengesankan! Jangan berhenti bereksperimen dan berkreasi yaa.' },
+        { rank: 7,  label: '7th Place', color: '#9ca3af',
+          msg: 'Bagus banget! Dengan semangat ini, podium menunggumu di event selanjutnya!' },
+        { rank: 8,  label: '8th Place', color: '#9ca3af',
+          msg: 'Rendermu eye-catching! Gaya kamu unik, kembangkan terus ya!' },
+        { rank: 9,  label: '9th Place', color: '#9ca3af',
+          msg: 'Keren! Terus eksplorasi teknik baru dan jangan lupa nikmati prosesnya!' },
+        { rank: 10, label: '10th Place', color: '#9ca3af',
+          msg: 'Masuk top 10 itu udah keren banget! Semangat terus dan buktiin di next event!' },
+    ];
+
+    /* ── Render runner-up grid (4–10) ── */
+    const grid = document.getElementById('runner-up-grid');
+    juara.slice(3).forEach(j => {
+        const col = document.createElement('div');
+        col.className = 'flex flex-col items-center gap-2';
+        col.style.cursor = 'pointer';
+        col.innerHTML = `
+            <div class="frame-wrap w-full">
+                <img src="coming_soon.webp" alt="Juara ${j.rank}" loading="lazy">
+                <div class="frame-badge" style="color:${j.color};">${j.rank}th</div>
+            </div>
+            <span class="rank-label" style="color:${j.color};">${j.label}</span>
+        `;
+        col.addEventListener('click', () => openLightbox(j.rank));
+        grid.appendChild(col);
+    });
+
+    /* ── Lightbox logic ── */
+    function openLightbox(rank) {
+        const j = juara[rank - 1];
+        document.getElementById('lb-img').src  = `coming_soon.webp`;
+        document.getElementById('lb-img').alt  = `Juara ${rank}`;
+        document.getElementById('lb-rank').textContent = j.label;
+        document.getElementById('lb-rank').style.color = j.color;
+        document.getElementById('lb-msg').textContent  = `${rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : rank + 'th'} : ${j.msg}`;
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+</script>
+</body>
+</html>

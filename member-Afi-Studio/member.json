@@ -1,0 +1,475 @@
+{
+  "gen-1": [
+    {
+      "nama": "IanAfi",
+      "foto": "profile/IanAdhi.webp",
+      "spesialis": "Animator, Modeller, Render, dan designer",
+      "identitas": "🍁",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://youtube.com/@ianafii?si=iQzheWQtm4_hTYWD",
+        "ig": "https://www.instagram.com/ianafii_?igsh=Y3kyeXI1MW5mdWZi",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@ian_akihiko?_r=1&_t=ZS-95XAhU7op1T",
+        "wa": "https://whatsapp.com/channel/0029VbB6Gm6Lo4hl15PcOv1R",
+        "dc": "https://discord.gg/AUE5YDHQ"
+      }
+    },
+    {
+      "nama": "Yui Aizawa",
+      "foto": "profile/yui.webp",
+      "spesialis": "Healer",
+      "identitas": "🌸",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://youtube.com/@yuiaizawaa?si=LC1aBi112kqY_aVn",
+        "ig": "",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@yui.aizawa?_r=1&_t=ZS-95ojHTGmKfs",
+        "wa": "",
+        "dc": "https://discord.com/users/yuiaizawaa"
+      }
+    },
+    {
+      "nama": "LanaMC",
+      "foto": "profile/lana.webp",
+      "spesialis": "Designing, Editor, dan Rendering",
+      "identitas": "💤",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://www.youtube.com/@Lana%E5%B1%B1%E6%9C%ACMC",
+        "ig": "https://www.instagram.com/atlana_yamamoto?igsh=N2s0d3B5NDFtdzhs",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@lana.nih1?_r=1&_t=ZS-95pj4iVoI5t",
+        "wa": "https://whatsapp.com/channel/0029Vb08dymBKfi2YAxMJD42",
+        "dc": "https://discord.gg/rVGmNG6b"
+      }
+    },
+    {
+      "nama": "Akira Xeyni",
+      "foto": "profile/yenxi.webp",
+      "spesialis": "Animation dan PVP",
+      "identitas": "🍒",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://youtube.com/@akairi_xeinii?si=DkSPztNT2929sgMU",
+        "ig": "",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@akairi_xeinii?_r=1&_t=ZS-95piEdLeI0T",
+        "wa": "https://whatsapp.com/channel/0029VbCDdZbJuyABRLkeax1s",
+        "dc": "https://discord.gg/Mcy8sV8X5"
+      }
+    },
+    {
+      "nama": "Alynatha",
+      "foto": "profile/alynatha.webp",
+      "spesialis": "Animator, Render, Modeling, dan artist",
+      "identitas": "💠",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://youtube.com/@linatha.studio?si=JZthfrOpHMRbf3b5",
+        "ig": "https://www.instagram.com/linathastudio.presents?igsh=MWhydnVmMGFwMjVtaw==",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@lyn.itshere",
+        "wa": "https://whatsapp.com/channel/0029VbBZXBEFMqrf87ajgc42",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "MichiYuzuru",
+      "foto": "profile/Michi.webp",
+      "spesialis": "Rendering",
+      "identitas": "🍩",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://www.youtube.com/@michii_354",
+        "ig": "",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@michii_354?_r=1&_t=ZS-95pjDHOEDPY",
+        "wa": "",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "Nezhai",
+      "foto": "profile/zhai.webp",
+      "spesialis": "Animator, Artist, dan Render",
+      "identitas": "🎐",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://www.youtube.com/@Its_Nezh",
+        "ig": "https://www.instagram.com/zay_pop.es?igsh=bXBoY3F0NmxhZzQ0",
+        "fb": "",
+        "tk": "https://tiktok.com/@ne.zxh_21",
+        "wa": "https://whatsapp.com/channel/0029Vb5vypEChq6USkdt7Y0i",
+        "dc": "https://discord.gg/BSc4AJDp"
+      }
+    },
+    {
+      "nama": "Rena Astoria",
+      "foto": "profile/rena.webp",
+      "spesialis": "Animation dan Render",
+      "identitas": "🐉",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://www.youtube.com/@RenaSiAstor",
+        "ig": "",
+        "fb": "",
+        "tk": "",
+        "wa": "https://whatsapp.com/channel/0029Vb65dgP42DcdqiHVoC1D",
+        "dc": "https://discord.gg/m2Z525a2"
+      }
+    },
+    {
+      "nama": "Puspa",
+      "foto": "profile/puspa.webp",
+      "spesialis": "Render",
+      "identitas": "♠️",
+      "generasi": "Generasi ke-1",
+      "socials": {
+        "yt": "https://www.youtube.com/@Pus79N.X",
+        "ig": "",
+        "fb": "https://www.facebook.com/share/1GU5G1gdvq/",
+        "tk": "https://vm.tiktok.com/ZSHT5bQtUTFT6-Qg9Vs/",
+        "wa": "https://whatsapp.com/channel/0029Vb6WnPe8F2p8iHbuir0t",
+        "dc": ""
+      }
+    }
+  ],
+  "gen-2": [
+    {
+      "nama": "kenzuu",
+      "foto": "profile/kenzuu.webp",
+      "spesialis": "Artist, Animator, dan Render",
+      "identitas": "🦈",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "https://youtube.com/@ikenjuk?si=DqqQaChmE1ZD7iZ5",
+        "ig": "",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@kenjuuk?_r=1&_t=ZS-95VGWPigg0P",
+        "wa": "https://whatsapp.com/channel/0029VbB2PvsCBtxAJaIXRi3L",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "Najwa_no.6",
+      "foto": "profile/najwa.webp",
+      "spesialis": "animate, convert add-on, render, dan artist",
+      "identitas": "🧃",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "https://youtube.com/@nafinar_2917?si=xNW2WFJJFPZrXK6q",
+        "ig": "https://www.instagram.com/nafinar_2917?igsh=MTk1MzRpMWd4NTdpcA==",
+        "fb": "https://www.facebook.com/share/1DsbQssLR7/",
+        "tk": "https://www.tiktok.com/@najwa_nor.6?_t=ZS-907a3avJi8w&_r=1",
+        "wa": "https://whatsapp.com/channel/0029Vb6i3jx7tkj7nnMzNA1K",
+        "dc": "https://discord.gg/AmKvnBUU"
+      }
+    },
+    {
+      "nama": "YavitsDesu",
+      "foto": "profile/yavis.webp",
+      "spesialis": "Animasi dan dubbing",
+      "identitas": "🌊",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "https://youtube.com/@yavitsdesu?si=gx3cz9qstwgJoCLc",
+        "ig": "https://www.instagram.com/yavits_plenger?igsh=MWg5M21kbzRlcmc2Ng==",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@yavitsdesu?_r=1&_t=ZS-95ph1EUQSxz",
+        "wa": "https://whatsapp.com/channel/0029Vb7iXojK5cDFTSLfCt1X",
+        "dc": "https://discord.gg/3UQ4KwHd"
+      }
+    },
+    {
+      "nama": "Raffenokio",
+      "foto": "profile/rafe.webp",
+      "spesialis": "Animation, dan modeling",
+      "identitas": "🍅",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "https://youtube.com/@raffenokio9662?si=_Fo33HQDVZlqShYm",
+        "ig": "",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@enomon966?_r=1&_t=ZS-951ktJOkRLY",
+        "wa": "https://whatsapp.com/channel/0029Vb3VAH8CnA7oZXr7gB26",
+        "dc": "https://discord.com/users/1237999241000124416"
+      }
+    },
+    {
+      "nama": "Varelion <kaishiro>",
+      "foto": "profile/varel.webp",
+      "spesialis": "VA, Render, Design Graphics",
+      "identitas": "📈",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "https://youtube.com/@varelion.greyrat",
+        "ig": "https://www.instagram.com/rel.banana",
+        "fb": "",
+        "tk": "",
+        "wa": "https://whatsapp.com/channel/0029VacNvlJG3R3aHkt9m82d",
+        "dc": "https://discord.com/users/varelion.zip"
+      }
+    },
+    {
+      "nama": "Sichi",
+      "foto": "profile/sichi.webp",
+      "spesialis": "Render, Modelling, dan Skin Maker",
+      "identitas": "🍚",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "",
+        "ig": "https://www.instagram.com/sichi0836?igsh=MTlja3JmeWs5MGwwcw==",
+        "fb": "",
+        "tk": "",
+        "wa": "",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "Brentt",
+      "foto": "profile/breent.webp",
+      "spesialis": "Animation, 3D Modeling, Music Producer, Editing, dan render maker",
+      "identitas": "🚀",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "https://youtube.com/@brentnaoki",
+        "ig": "https://www.instagram.com/brentnaoki",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@brentnaoki",
+        "wa": "https://whatsapp.com/channel/0029Vb7SnQLHAdNMcQSzvG0N",
+        "dc": "https://discord.com/users/947990324251328564"
+      }
+    },
+    {
+      "nama": "ASTR-0123",
+      "foto": "profile/ali.webp",
+      "spesialis": "Programmer, Designer Graphics, modeller",
+      "identitas": "📷",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "https://www.youtube.com/@Alisastro123",
+        "ig": "https://www.instagram.com/alisastro123?igsh=MTZoZmR0ZGJkeWM3NA==",
+        "fb": "https://www.facebook.com/profile.php?id=61585596517467&mibextid=ZbWKwL",
+        "tk": "https://tiktok.com/@alisastro123",
+        "wa": "https://whatsapp.com/channel/0029Vb6ytmg8F2pIMwr2ZH1i",
+        "dc": "https://discord.com/users/alisastro123"
+      }
+    },
+    {
+      "nama": "Excha",
+      "foto": "profile/excha.webp",
+      "spesialis": "Animation, Art digital, dubbing, sing, Voice actor, dan panjat pohon ",
+      "identitas": "🍺",
+      "generasi": "Generasi ke-2",
+      "socials": {
+        "yt": "https://www.youtube.com/@Exchaakatsy",
+        "ig": "",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@exchaardefa?_r=1&_t=ZS-95XB9jSJX0y",
+        "wa": "https://whatsapp.com/channel/0029VbBDQXQKAwEsj0FPgE2R",
+        "dc": "https://discord.com/users/947990324251328564"
+      }
+    }
+  ],
+  "gen-3": [
+    {
+      "nama": "NUKE51",
+      "foto": "profile/nuke51.webp",
+      "spesialis": "Animasi dan Rendering",
+      "identitas": "🚦",
+      "generasi": "Generasi ke-3",
+      "socials": {
+        "yt": "https://youtube.com/@nukeganteng",
+        "ig": "https://www.instagram.com/kawista_51",
+        "fb": "https://facebook.com/nuke",
+        "tk": "https://www.tiktok.com/@nukedyz",
+        "wa": "https://wa.me/628895457589",
+        "dc": "https://discordapp.com/users/780727070610554880"
+      }
+    },
+    {
+      "nama": "Zipixe",
+      "foto": "profile/zin.webp",
+      "spesialis": "Rendering, animasi, dan Tidur💤",
+      "identitas": "🪼",
+      "generasi": "Generasi ke-3",
+      "socials": {
+        "yt": "https://youtube.com/@zipixe?si=VrOShMenvHfAYK87",
+        "ig": "https://www.instagram.com/zipixe_?igsh=aWx5MjR2aTV6bGRo",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@zipixe_",
+        "wa": "https://whatsapp.com/channel/0029VbAZF6l8vd1OVho3nX1b",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "Afree",
+      "foto": "profile/afree.webp",
+      "spesialis": "Ceria Kepedean cukurukuk, tampil depan publik, si sepuhh",
+      "identitas": "🍪",
+      "generasi": "Generasi ke-3",
+      "socials": {
+        "yt": "https://youtube.com/@afrimcgames",
+        "ig": "https://www.instagram.com/just.freeday_?igsh=OXZtYnpsM3hyeTh2",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@afrimctiktok_",
+        "wa": "https://whatsapp.com/channel/0029Vb5hEaS90x31HCpXCH0j",
+        "dc": "https://discord.com/users/760376556110610482"
+      }
+    },
+    {
+      "nama": "Carana",
+      "foto": "profile/carana.webp",
+      "spesialis": "Animation",
+      "identitas": "🐦‍🔥",
+      "generasi": "Generasi ke-3",
+      "socials": {
+        "yt": "https://youtube.com/@carana_anim?si=LUCz1huD9gtm5JDc",
+        "ig": "",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@carana_anim?_r=1&_t=ZS-95phisX5huT",
+        "wa": "https://whatsapp.com/channel/0029Vb6cmQOKQuJIFZHe062q",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "Nicko",
+      "foto": "profile/nicko.webp",
+      "spesialis": "Render, Convert, dan modelling",
+      "identitas": "🐋",
+      "generasi": "Generasi ke-3",
+      "socials": {
+        "yt": "https://youtube.com/@nickomc62?si=EuFPS25itx3ARq5S",
+        "ig": "",
+        "fb": "",
+        "tk": "",
+        "wa": "https://wa.me/qr/NIV2DV4O5WI2I1",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "Hikari",
+      "foto": "profile/hikari.webp",
+      "spesialis": "Art, Skin, Render, dan Modelling",
+      "identitas": "🍥",
+      "generasi": "Generasi ke-3",
+      "socials": {
+        "yt": "https://youtube.com/@kaily_rhetbun?si=mlDMjelxUMwPhZ4K",
+        "ig": "",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@rhetbu?_r=1&_t=ZS-95uSxDj4VBR",
+        "wa": "https://wa.me/62856-0473-9311",
+        "dc": "https://discord.com/users/laily_sy"
+      }
+    },
+    {
+      "nama": "Zena",
+      "foto": "profile/zena.webp",
+      "spesialis": "Rendering dan animasi",
+      "identitas": "🌑",
+      "generasi": "Generasi ke-3",
+      "socials": {
+        "yt": "https://youtube.com/@vihori_chin?si=nrebvHHJKxN7WXKh",
+        "ig": "https://www.instagram.com/zena.aja._?igsh=MWp0ZzBqa3RzNHIzdQ==",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@zena_aja1?_r=1&_t=ZS-95UhZ9dzpIt",
+        "wa": "https://whatsapp.com/channel/0029VbCcPHHLCoX5BDcYlo3A",
+        "dc": "https://discord.gg/PUhGCyzy"
+      }
+    },
+    {
+      "nama": "Emcas (MCAZ)",
+      "foto": "profile/azid.webp",
+      "spesialis": "Editor, Animator, dan Modeler",
+      "identitas": "🎬",
+      "generasi": "Generasi ke-3",
+      "socials": {
+        "yt": "https://www.youtube.com/@mcaz_096",
+        "ig": "https://www.instagram.com/mcaz096?igsh=aTNuaDA0Ym1xYmE=",
+        "fb": "",
+        "tk": "https://tiktok.com/@mcaz_096",
+        "wa": "https://whatsapp.com/channel/0029VbAzxOE4tRrnoIzQlw0D",
+        "dc": ""
+      }
+    }
+  ],
+  "orang-random": [
+    {
+      "nama": "RPC.Dina",
+      "foto": "profile/dina.webp",
+      "spesialis": "Rendering",
+      "identitas": "🦖",
+      "generasi": "Penyuka Mie ayam cukurukuk😋",
+      "socials": {
+        "yt": "https://youtube.com/@dina_ganteng?si=7SpHDaCnVBpLRlow",
+        "ig": "https://www.instagram.com/dina_ganteng1?igsh=cW8yYzZnbjZlcm93",
+        "fb": "https://www.facebook.com/share/1BKqhs2ENB/",
+        "tk": "https://tiktok.com/@rpc.dina7",
+        "wa": "https://whatsapp.com/channel/0029VbBP03J4CrfoKdu7CF2k",
+        "dc": "https://discord.gg/pt3zKCDU"
+      }
+    },
+    {
+      "nama": "Bedrocky",
+      "foto": "profile/gara.webp",
+      "spesialis": "Modelling dan Render",
+      "identitas": "🛌",
+      "generasi": "Sisepuhh prismatridi",
+      "socials": {
+        "yt": "https://youtube.com/@garaokii?si=05DL2XlKwbFB32-I",
+        "ig": "https://www.instagram.com/bedrok.oki?igsh=cHR4Mm10a3hzcHkx",
+        "fb": "https://www.facebook.com/share/1Ha48U3ki7/",
+        "tk": "https://www.tiktok.com/@bedrocky.mc?_r=1&_t=ZS-95aYa8qBNv3",
+        "wa": "",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "Lusvia",
+      "foto": "profile/lusvia.webp",
+      "spesialis": "Render, dan Art",
+      "identitas": "🧡",
+      "generasi": "The Princess belongs to the Knight🧡🖤✨",
+      "socials": {
+        "yt": "https://youtube.com/@lusvia_4?si=KDAJFwGzYVTvUb5P",
+        "ig": "https://www.instagram.com/lusvia_4?igsh=cmV0MThrb3RjeWdr",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@lusvia_0g?_r=1&_t=ZS-9617T0lW1gr",
+        "wa": "https://whatsapp.com/channel/0029VbCRwYJ7IUYRGQel8g3T",
+        "dc": "https://discord.com/users/wr1ter_0g"
+      }
+    },
+    {
+      "nama": "Amethio",
+      "foto": "profile/theo.webp",
+      "spesialis": "Render dan Modeling",
+      "identitas": "🫟",
+      "generasi": "Randy's Brother",
+      "socials": {
+        "yt": "https://www.youtube.com/@Amethio009",
+        "ig": "",
+        "fb": "",
+        "tk": "",
+        "wa": "https://whatsapp.com/channel/0029VbCSPxmLSmbZZlLI7s0C",
+        "dc": ""
+      }
+    },
+    {
+      "nama": "Ell",
+      "foto": "profile/zai.webp",
+      "spesialis": "Animasi, Render, Modeling, dan skin maker",
+      "identitas": "🗿",
+      "generasi": "Randy's brother",
+      "socials": {
+        "yt": "https://youtube.com/@lapar-t4i?si=PA8PWYn5R2XNwiJa",
+        "ig": "https://www.instagram.com/el_lapar8?igsh=N2Flc25tdTBwdXFo",
+        "fb": "",
+        "tk": "https://www.tiktok.com/@ell_lanang?_r=1&_d=eb2ld59bdd1ikb&sec_uid=MS4wLjABAAAACtY7R_lysRL75TdlpOJoEJHq9iMxZ7nWW-7Cr1mRZvZxHbMfP3nAlPqVXsotQIAf&share_author_id=7526117966753989650&sharer_language=id&source=h5_t&u_code=el9jlk1839g6ml&timestamp=1777474281&user_id=7526117966753989650&sec_user_id=MS4wLjABAAAACtY7R_lysRL75TdlpOJoEJHq9iMxZ7nWW-7Cr1mRZvZxHbMfP3nAlPqVXsotQIAf&item_author_type=1&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7629605726251632405&share_link_id=7dfb8169-90dc-4bba-ba4c-8827dcf8c6e4&share_app_id=1180&ugbiz_name=ACCOUNT&ug_btm=b8727%2Cb7360&social_share_type=5&enable_checksum=1",
+        "wa": "https://whatsapp.com/channel/0029Vb7APNf5a245CYazTi1q",
+        "dc": ""
+      }
+    }
+  ]
+}

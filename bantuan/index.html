@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afi Studio - Bantuan</title>
+
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="favicon.png">
+
+    <!-- Open Graph -->
+    <link rel="canonical" href="https://afi-studio.vercel.app/bantuan/">
+    <meta name="description" content="Pusat bantuan Afi Studio: temukan jawaban seputar Afi Studio, download model, event render, member, dan lainnya.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/bantuan/">
+    <meta property="og:title" content="Afi Studio - Bantuan">
+    <meta property="og:site_name" content="Afi Studio">
+    <meta property="og:description" content="Pusat bantuan Afi Studio: jawaban seputar Afi Studio, download model, event render, member, dan lainnya.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Bantuan">
+    <meta name="twitter:description" content="Pusat bantuan Afi Studio: jawaban seputar Afi Studio, download model, event render, member, dan lainnya.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+    <link rel="stylesheet" href="/fonts/fonts.css">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'DM Sans', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        :root {
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+        }
+
+        html.dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+        }
+
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        /* Menu pindah halaman */
+        .page-menu { position: relative; }
+        .page-menu-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            min-width: 190px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+        .help-header { text-align: center; padding: 40px 20px 8px; }
+        .help-header p.eyebrow {
+            font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700;
+            letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); opacity: 0.85; margin-bottom: 6px;
+        }
+        .help-header h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+        .help-header p.sub { font-size: 14px; color: var(--text-sub); margin-top: 8px; }
+
+        .faq-list { display: flex; flex-direction: column; gap: 10px; }
+        .faq-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.3s;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: faq-fade-in 0.45s ease forwards;
+        }
+        .faq-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-hover);
+        }
+        @keyframes faq-fade-in {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .faq-item.open { border-color: var(--accent-hover); }
+        .faq-question {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 16px 18px; cursor: pointer; font-weight: 700; font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+        }
+        .faq-question .q-icon { flex-shrink: 0; width: 18px; height: 18px; transition: transform 0.25s; color: var(--accent); }
+        .faq-item.open .faq-question .q-icon { transform: rotate(45deg); }
+        .faq-answer {
+            max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease;
+            font-size: 13px; line-height: 1.7; color: var(--text-sub); padding: 0 18px;
+        }
+        .faq-item.open .faq-answer { max-height: 600px; padding: 0 18px 18px; }
+        .faq-answer a {
+            color: var(--accent-hover);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .faq-answer a:hover { color: var(--accent); }
+
+
+
+        .footer-text {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 40px;
+            padding-bottom: 24px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body class="h-full">
+<div id="app" class="h-full overflow-auto w-full flex flex-col justify-between">
+    <div>
+        <nav class="nav-bar">
+            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="../index.html" class="back-btn">
+                        <i data-lucide="arrow-left" style="width:24px;"></i>
+                    </a>
+                    <div class="cursor-pointer flex items-center gap-1">
+                        <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                        <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">
+                            Afi-Studio
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="page-menu">
+                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+                        </button>
+                        <div id="page-menu-dropdown" class="page-menu-dropdown">
+                            <a href="../index.html" class="page-menu-item">Beranda</a>
+                            <a href="../member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
+                            <a href="../event/index.html" class="page-menu-item">Event Render</a>
+                            <a href="../ranking/index.html" class="page-menu-item">Ranking Render</a>
+                            <a href="../bantuan/index.html" class="page-menu-item active">Bantuan</a>
+                            <a href="../feedback/index.html" class="page-menu-item">Feedback</a>
+                        </div>
+                    </div>
+                    <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-3xl mx-auto px-4 pt-2 pb-10 sm:px-6">
+
+            <div class="help-header">
+                <p class="eyebrow">Pusat Bantuan</p>
+                <h1>Ada yang bisa kami bantu?</h1>
+                <p class="sub">Kumpulan pertanyaan yang paling sering ditanyakan seputar Afi Studio</p>
+            </div>
+
+            <div class="faq-list" id="faq-list"></div>
+
+        </main>
+    </div>
+
+    <footer class="footer-text">
+        <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+    </footer>
+</div>
+
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    (function () {
+        const menuBtn = document.getElementById('page-menu-btn');
+        const menuDropdown = document.getElementById('page-menu-dropdown');
+        menuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            menuDropdown.classList.toggle('open');
+        });
+        document.addEventListener('click', function () {
+            menuDropdown.classList.remove('open');
+        });
+    })();
+
+    const FAQ = [
+        {
+            q: 'Apa itu Afi Studio?',
+            a: 'Web "Afi Studio" adalah web sederhana yang menyajikan aset animasi dari berbagai aplikasi seperti Prisma3D, Mine-Imator, Blender, Cinema4D, dan lain-lain. Selain jadi tempat download aset, Afi Studio juga punya komunitas kreator yang saling berbagi karya lewat <a href="../event/index.html">Event Render</a> dan galeri <a href="../ranking/index.html">Ranking Render</a> setiap bulannya.'
+        },
+        {
+            q: 'Apakah semua model/rig di Afi Studio gratis?',
+            a: 'Ya, semuanya gratis. Seluruh rig, model 3D, map, dan aset lain yang ada di halaman <a href="../Models/index.html">Semua Model</a> bisa diunduh siapa saja tanpa biaya. Kami hanya meminta agar kamu tetap mencantumkan kredit ke pembuat aslinya jika karya tersebut kamu pakai ulang atau bagikan di tempat lain.'
+        },
+        {
+            q: 'Bagaimana cara mendownload model atau rig?',
+            a: 'Dari halaman <a href="../index.html">Beranda</a>, gulir ke bawah lalu tekan tombol "Lihat Model lainnya", atau langsung buka halaman <a href="../Models/index.html">Semua Model</a>. Cari model yang kamu inginkan menggunakan kolom pencarian atau filter kategori, lalu ketuk kartu model tersebut untuk membuka detailnya. Di dalam pop-up detail, tekan tombol "Download Now" untuk mengunduh filenya, atau "Copy Link" kalau kamu hanya ingin menyalin tautannya untuk dibagikan.'
+        },
+        {
+            q: 'Bagaimana cara mengikuti Event Render?',
+            a: 'Buka halaman <a href="../event/index.html">Event Render</a> dari menu tab navigasi. Baca seluruh peraturan dan panduan yang tertera dengan teliti (soal konten yang dilarang, rasio gambar, watermark, dan lainnya), lalu centang kotak "Saya telah membaca dan setuju..." di bagian bawah. Setelah kotak persetujuan dicentang, tombol "Lanjutkan ke Event Render" akan aktif dan mengarahkanmu ke folder pengumpulan karya. Karya yang terpilih nantinya akan ditampilkan di halaman <a href="../ranking/index.html">Ranking Render</a>.'
+        },
+        {
+            q: 'Software apa saja yang boleh dipakai untuk render event?',
+            a: 'Kamu bebas menggunakan software profesional apa saja untuk membuat render, contohnya Prisma3D, Blender, Mine-imator, Cinema4D, Viontri, atau software 3D rendering lain yang kamu kuasai. Tidak ada batasan gaya atau software selama hasil akhirnya adalah karya buatan tanganmu sendiri (bukan hasil AI generator) dan sudah memenuhi standar rasio serta resolusi yang tertulis di halaman <a href="../event/index.html">Event Render</a>.'
+        },
+        {
+            q: 'Apa itu Ranking Render?',
+            a: 'Ranking Render adalah galeri di halaman <a href="../ranking/index.html">Ranking Render</a> yang menampilkan karya-karya terbaik dari para peserta Event Render, mulai dari Juara 1 sampai Top 10. Susunan peringkat ini diperbarui setiap bulan, jadi kamu selalu punya kesempatan baru untuk unjuk karya dan naik ke podium di bulan berikutnya.'
+        },
+        {
+            q: 'Bagaimana cara menjadi Member Afi Studio?',
+            a: 'Kunjungi halaman <a href="../member-Afi-Studio/index.html">Member Afi-Studio</a> untuk melihat daftar member yang sudah tergabung dari berbagai generasi. Pendaftaran member baru (Seleksi Member) dibuka secara berkala lewat tombol yang ada di bagian bawah halaman tersebut, atau lewat menu "Selektif Member" di Pengaturan pada halaman Beranda. Kalau pendaftaran sedang ditutup, akan muncul notifikasi "Segera Hadir" — coba cek lagi beberapa waktu ke depan.'
+        },
+        {
+            q: 'Bagaimana cara mengirim feedback, kritik, atau saran?',
+            a: 'Buka halaman <a href="../feedback/index.html">Kirim Feedback</a>, yang bisa kamu akses lewat menu Pengaturan di Beranda atau tautan "Umpan balik" di footer. Isi nama kamu, tulis pesan/masukanmu di kolom yang tersedia, lampirkan gambar kalau perlu (maksimal 1MB), lalu centang reCAPTCHA dan tekan "Kirim Feedback". Masukanmu akan langsung diterima oleh tim Afi Studio.'
+        },
+        {
+            q: 'Bagaimana cara mengganti tema gelap dan terang?',
+            a: 'Tekan ikon matahari/bulan yang ada di pojok kanan atas pada halaman manapun. Tema akan langsung berubah antara mode terang dan gelap, dan pilihanmu otomatis tersimpan di perangkat sehingga tetap sama saat kamu membuka Afi Studio lagi nanti, tanpa perlu mengatur ulang setiap kali berkunjung.'
+        },
+        {
+            q: 'Bagaimana cara menghubungi tim Afi Studio?',
+            a: 'Kamu bisa menyapa kami lewat <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener">Channel WhatsApp</a> untuk info terbaru setiap hari, lewat Instagram untuk melihat hasil render terbaru, atau lewat YouTube untuk showcase dan tutorial lengkap. Semua tautan tersebut tersedia di bagian "Contact Us" pada <a href="../index.html#contact-us">halaman Beranda</a>.'
+        },
+        {
+            q: 'Bolehkah saya mendaftarkan model buatan saya sendiri ke Afi Studio?',
+            a: 'Boleh, dan kami sangat senang menerima karya dari komunitas. Buka menu Pengaturan di <a href="../index.html">halaman Beranda</a>, lalu tekan tautan "Pendaftaran Models" untuk mengisi formulir pendaftaran. Sertakan file model/rig kamu beserta informasi singkat seperti nama pembuat dan software yang dipakai, agar tim kami bisa memeriksa dan menambahkannya ke halaman <a href="../Models/index.html">Semua Model</a>.'
+        }
+    ];
+
+    const listEl = document.getElementById('faq-list');
+
+    function renderFaq(items) {
+        listEl.innerHTML = items.map((item, i) => `
+            <div class="faq-item" data-index="${i}" style="animation-delay: ${i * 0.06}s;">
+                <div class="faq-question" onclick="toggleFaq(${i})">
+                    <span>${item.q}</span>
+                    <i data-lucide="plus" class="q-icon"></i>
+                </div>
+                <div class="faq-answer">${item.a}</div>
+            </div>
+        `).join('');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function toggleFaq(i) {
+        const el = listEl.querySelector(`.faq-item[data-index="${i}"]`);
+        if (!el) return;
+        el.classList.toggle('open');
+    }
+
+    renderFaq(FAQ);
+</script>
+</body>
+</html>

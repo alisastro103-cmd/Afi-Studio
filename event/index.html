@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <script>
+    (function () {
+      var saved = localStorage.getItem('afi-theme');
+      var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Render - Peraturan &amp; Panduan</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="manifest" href="/manifest.json">
+
+    <link rel="canonical" href="https://afi-studio.vercel.app/event/">
+    <meta name="description" content="Baca peraturan dan panduan lengkap event render Afi Studio sebelum ikut berpartisipasi.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/event/">
+    <meta property="og:title" content="Afi Studio - Event Render">
+    <meta property="og:site_name" content="Afi Studio">
+    <meta property="og:description" content="Ikuti event render Afi Studio — baca peraturan dan panduan lengkap sebelum ikut serta.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Event Render">
+    <meta name="twitter:description" content="Ikuti event render Afi Studio — baca peraturan dan panduan lengkap sebelum ikut serta.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+  <link rel="stylesheet" href="/dist/output.css">
+
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3 { font-family: 'Outfit', sans-serif; font-weight: 600; }
+ 
+    /* Tema disinkronkan dari index.html (folder utama) */
+    :root {
+      --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+      --bg: #D0D7E1;
+      --surface: #E1E7EE;
+      --text: #334155;
+      --text-light: #64748B;
+      --border: #B9C4D3;
+      --disabled: #94A3B8;
+      --grid-line: rgba(100,116,139,0.22);
+    }
+ 
+    .dark {
+      --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+      --surface: #334155; 
+      --text: #CBD5E1;
+      --text-light: #94A3B8;
+      --border: #475569;
+      --disabled: #64748B;
+      --grid-line: rgba(148,163,184,0.16);
+    }
+ 
+    /* Grid Mengikuti Layar Menggunakan background-attachment: fixed */
+    body { 
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 32px 32px;
+      background-attachment: fixed;
+      color: var(--text); 
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; 
+      line-height: 1.4;
+    }
+ 
+    /* FIX 2: Menghapus border-bottom (garis merah) di bawah sub-judul */
+    .header-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 48px 24px 32px;
+      position: relative;
+      text-align: center;
+    }
+ 
+    .header-title {
+      font-size: 56px; 
+      font-weight: 800;
+      margin-bottom: 4px; 
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+ 
+    .header-subtitle {
+      font-size: 16px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+ 
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 32px 24px 24px;
+    }
+ 
+    .rules-section {
+      margin-bottom: 40px;
+    }
+ 
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+ 
+    .rule-item {
+      margin-bottom: 18px;
+    }
+ 
+    .rule-number {
+      display: inline;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-right: 6px;
+    }
+ 
+    .rule-title {
+      display: inline;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 0;
+      color: var(--text);
+    }
+ 
+    .rule-text {
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.5;
+      margin-bottom: 0;
+      display: inline;
+    }
+ 
+    .rule-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+      margin-top: 10px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+ 
+    .agreement-section {
+      background-color: var(--surface);
+      border: 1.5px solid var(--border);
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      border-radius: 4px;
+    }
+ 
+    /* FIX 1: Menghapus highlight bawaan sistem dan menambahkan user-select agar bersih saat ditekan */
+    .agreement-content {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: flex-start;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+ 
+    .checkbox-wrapper { 
+      flex-shrink: 0; 
+      display: flex;
+      align-items: center;
+    }
+ 
+    .custom-checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--text-light);
+      background-color: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+ 
+    .custom-checkbox.checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+ 
+    .custom-checkbox.checked::after {
+      content: '✔';
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .agreement-text {
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+ 
+    .button-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+ 
+    .btn {
+      padding: 14px 40px;
+      border: 2px solid var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      min-width: 280px;
+    }
+ 
+    .btn.disabled {
+      background: var(--disabled);
+      border-color: var(--disabled);
+      color: #888888;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+ 
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+    }
+ 
+    .btn-secondary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+ 
+    .theme-toggle-btn {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      background: color-mix(in srgb, var(--surface) 85%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+    }
+    .theme-toggle-btn .icon-moon { display: none; }
+    html.dark .theme-toggle-btn .icon-sun { display: none; }
+    html.dark .theme-toggle-btn .icon-moon { display: block; }
+
+    /* Menu pindah halaman */
+    .page-menu {
+      position: fixed;
+      top: 14px;
+      right: 60px;
+      z-index: 50;
+    }
+    .page-menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      background: color-mix(in srgb, var(--surface) 85%, transparent);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+    }
+    .page-menu-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      min-width: 190px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-6px) scale(0.98);
+      transform-origin: top right;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+    .page-menu-dropdown.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    .page-menu-item {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+    }
+    .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+    .custom-footer {
+      width: 100%;
+      padding: 0px 16px 40px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .footer-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+      text-align: left;
+    }
+ 
+    @media (max-width: 640px) {
+      .header-title { font-size: 38px; } 
+      .header-section { padding: 32px 16px 24px; }
+      main { padding: 24px 16px 16px; }
+      .rule-text { font-size: 13px; line-height: 1.4; }
+      .footer-container { padding: 0 12px; }
+      .agreement-section { padding: 16px 16px; }
+    }
+  </style>
+  <script src="/icons/lucide-local.js"></script>
+  <script src="/theme-toggle.js" defer></script>
+ </head>
+ <body class="h-full">
+  <div class="page-menu">
+    <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+    </button>
+    <div id="page-menu-dropdown" class="page-menu-dropdown">
+      <a href="../index.html" class="page-menu-item">Beranda</a>
+      <a href="../member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
+      <a href="../event/index.html" class="page-menu-item active">Event Render</a>
+      <a href="../ranking/index.html" class="page-menu-item">Ranking Render</a>
+      <a href="../bantuan/index.html" class="page-menu-item">Bantuan</a>
+      <a href="../feedback/index.html" class="page-menu-item">Feedback</a>
+    </div>
+  </div>
+  <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Ganti tema">
+    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+  </button>
+  <div id="app" class="h-full overflow-auto w-full">
+   <div class="header-section">
+    <h1 class="header-title" id="event-title">Event Render</h1>
+    <p class="header-subtitle" id="event-desc">Peraturan dan Panduan Mengikuti Event</p>
+   </div>
+   <main>
+    <div class="rules-section">
+     <h2 class="section-title">Peraturan Peserta</h2>
+     <div class="rule-item">
+      <span class="rule-number">1.</span><span class="rule-title">Larangan Konten Berbahaya</span> <span class="rule-text">Dalam render dilarang keras memiliki unsur seperti Gore, NSFW (+18), atau LGBT++. Semua konten render yang disubmit harus aman, layak untuk semua usia, dan tidak mengandung elemen yang mengeksploitasi atau merendahkan kelompok tertentu.</span>
+     </div>
+     <div class="rule-item">
+      <span class="rule-number">2.</span><span class="rule-title">Kebebasan Style dan Konsep</span> <span class="rule-text">Bebas menggunakan style atau konsep kreatif yang relevan dan aman. Tidak ada batasan gaya artistik selama konten memenuhi standar keamanan dan kepatuhan terhadap peraturan lainnya. Setiap peserta didorong untuk mengeksplorasi kreativitas mereka.</span>
+     </div>
+     <div class="rule-item">
+      <span class="rule-number">3.</span><span class="rule-title">Software yang Diizinkan</span> <span class="rule-text">Boleh menggunakan software profesional seperti Prisma3D, Blender, Mine-imator, Cinema4D, Viontri, dan software 3D rendering profesional lainnya. Tidak ada batasan pada pilihan software selama hasil akhir merupakan karya render berkualitas tinggi.</span>
+     </div>
+     <div class="rule-item">
+      <span class="rule-number">4.</span><span class="rule-title">Standar Rasio dan Resolusi</span> <span class="rule-text">Render wajib menggunakan rasio aspek 4:3 atau 11:9. Resolusi gambar harus HD atau di atas 2K (minimal 2.000 pixel) untuk menjamin kualitas tampilan yang optimal.</span>
+      <img src="paduan1.webp" alt="Standar rasio dan resolusi" class="rule-image" loading="lazy" onerror="this.style.background='#e5e5e5';">
+     </div>
+     <div class="rule-item">
+      <span class="rule-number">5.</span><span class="rule-title">Watermark, Identitas, dan Larangan Spamming</span> <span class="rule-text">Tambahkan watermark atau nama pencipta di file gambar render (contoh: "Pembuat.png"). Tidak boleh menambahkan render yang sama berulang kali (spam). Tidak boleh menghapus atau mengedit karya orang lain tanpa izin eksplisit. Tidak boleh menggunakan render yang mengandung sindiran, hinaan, atau kritik negatif terhadap pihak manapun.</span>
+      <img src="paduan2.webp" alt="Watermark dan Identitas" class="rule-image" loading="lazy" onerror="this.style.background='#e5e5e5';">
+     </div>
+     <div class="rule-item">
+      <span class="rule-number">6.</span><span class="rule-title">Keaslian Karya dan Larangan AI</span> <span class="rule-text">Tidak boleh menggunakan karya milik orang lain tanpa izin resmi dari pencipta asli. Dilarang keras menggunakan karya hasil buatan AI atau output dari AI image generator. Semua render yang disubmit harus 100% hasil kerja tangan Anda sendiri atau dengan izin eksplisit dari pencipta asli dengan kredit yang jelas.</span>
+     </div>
+    </div>
+    
+    <div class="agreement-section">
+     <div class="agreement-content" onclick="toggleAgreement()">
+      <div class="checkbox-wrapper">
+       <div class="custom-checkbox" id="agreement-checkbox"></div>
+      </div>
+      <p class="agreement-text" id="agree-text">Saya telah membaca dan setuju mematuhi semua peraturan dan panduan yang tercantum di atas</p>
+     </div>
+    </div>
+ 
+    <div class="button-section">
+     <a href="https://drive.google.com/drive/folders/1wZwtLzkCXjhMoWQ_DGO0UuJO-u9zVUAc" target="_blank" rel="noopener noreferrer" class="btn disabled" id="submit-btn" onclick="handleSubmit(event)">Lanjutkan ke Event Render</a>
+     <a href="../index.html" class="btn btn-secondary">Kembali ke halaman</a>
+    </div>
+ 
+   </main>
+
+   <footer class="custom-footer">
+        <div class="footer-container">
+            <p style="font-size:12px; font-weight:700; margin-bottom:6px; color:var(--text); opacity:0.85;">Catatan:</p>
+            <p style="font-size:12px; line-height:1.6; color:var(--text-light); opacity:0.85; margin-bottom:24px;">
+                Pastikan Anda memahami dan dapat mematuhi semua persyaratan sebelum melanjutkan. Eksibisi ini merupakan <strong style="color:var(--text); font-weight:700; opacity:0.95;">wadah hiburan, evaluasi, dan media pembelajaran komunitas</strong> (bukan acara berskala besar). Karya terpilih dipamerkan di website Afi Studio, dan seluruh hasil render serta susunan peringkat juara akan <strong style="color:var(--text); font-weight:700; opacity:0.95;">diperbarui setiap bulan</strong>. Eksibisi ini <strong style="color:var(--text); font-weight:700; opacity:0.95;">tidak menyediakan hadiah atau imbalan materi</strong> dalam bentuk apa pun.
+            </p>
+            <p style="font-size:11px; font-weight:500; text-align:center; color:var(--text-light); opacity:0.85; font-family:'DM Sans',sans-serif;">&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+        </div>
+   </footer>
+  </div>
+
+  <script>
+    (function () {
+      const menuBtn = document.getElementById('page-menu-btn');
+      const menuDropdown = document.getElementById('page-menu-dropdown');
+      menuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        menuDropdown.classList.toggle('open');
+      });
+      document.addEventListener('click', function () {
+        menuDropdown.classList.remove('open');
+      });
+    })();
+
+    let isAgreed = false;
+    function toggleAgreement() {
+      isAgreed = !isAgreed;
+      const checkbox = document.getElementById('agreement-checkbox');
+      const submitBtn = document.getElementById('submit-btn');
+      if (isAgreed) {
+        checkbox.classList.add('checked');
+        submitBtn.classList.remove('disabled');
+      } else {
+        checkbox.classList.remove('checked');
+        submitBtn.classList.add('disabled');
+      }
+    }
+    function handleSubmit(event) { if (!isAgreed) event.preventDefault(); }
+    
+    const defaultConfig = {
+      event_title: 'Event Render',
+      event_description: 'Peraturan dan Panduan Mengikuti Event',
+      agree_text: 'Saya telah membaca dan setuju mematuhi semua peraturan dan panduan yang tercantum di atas'
+    };
+ 
+    function applyConfig(config) {
+      const merged = { ...defaultConfig, ...config };
+      document.getElementById('event-title').textContent = merged.event_title;
+      document.getElementById('event-desc').textContent = merged.event_description;
+      document.getElementById('agree-text').textContent = merged.agree_text;
+    }
+ 
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => applyConfig(config),
+        mapToCapabilities: (config) => ({ recolorables: [], borderables: [], fontEditable: undefined, fontSizeable: undefined }),
+        mapToEditPanelValues: (config) => new Map([
+          ['event_title', config.event_title || defaultConfig.event_title],
+          ['event_description', config.event_description || defaultConfig.event_description],
+          ['agree_text', config.agree_text || defaultConfig.agree_text]
+        ])
+      });
+    }
+  </script>
+ </body>
+</html>
