@@ -176,7 +176,55 @@ Afi-Studio-main/
 
 ---
 
-## 9. Cara Menambah/Update Konten
+## 9. Environment Variables — Penjelasan untuk Pemula
+
+Bagian ini khusus dibuat biar konsep "Environment Variables" gampang dipahami kapan pun dibaca ulang, walau lagi lupa.
+
+### Analoginya
+
+Bayangin Environment Variables itu kayak **loker rahasia** yang cuma ada di gudang Vercel (server) — bukan di HP/browser pengunjung situs.
+
+1. Kamu taruh kunci/secret di loker itu, kasih **label nama** (misal: `KEY_API`)
+2. Di kode, kamu **gak pernah nulis isinya langsung** — cuma nulis "tolong ambilin barang di loker yang labelnya `KEY_API`"
+3. Kode gak perlu tau isi kuncinya, cuma perlu tau **nama labelnya**
+
+### Contoh konkret
+
+**Langkah 1 — Simpan di Vercel** (Settings → Environment Variables):
+```
+Key   : KEY_API
+Value : abc123rahasiabanget
+```
+
+**Langkah 2 — Panggil di kode** (di dalam file folder `api/`, misal `api/feedback.js`):
+```javascript
+const kunci = process.env.KEY_API;
+```
+
+`process.env.KEY_API` itu sama kayak bilang "ambilin barang di loker Vercel yang labelnya KEY_API". Vercel otomatis isiin variable itu dengan value yang sudah disimpan.
+
+### 3 hal yang wajib diingat biar beneran jalan
+
+1. **Nama label harus SAMA PERSIS**, termasuk huruf besar/kecil.
+   - Vercel: `KEY_API` → kode: `process.env.KEY_API` ✅
+   - Vercel: `KEY_API` → kode: `process.env.key_api` ❌ (hasilnya `undefined`, dianggap beda)
+
+2. **Cuma bisa dipanggil di file dalam folder `api/`** (server-side), bukan di file yang dikirim ke browser.
+   - ✅ Boleh: `api/feedback.js`
+   - ❌ Gak akan jalan: `script.js`, `theme-toggle.js`, atau kode di dalam `<script>` pada `index.html` — file-file ini jalan di browser pengunjung, dan `process.env` cuma punya arti di server, bukan di browser
+
+3. **Wajib redeploy setelah nambah/ganti Environment Variable.**
+   Vercel gak otomatis "baca ulang" loker itu real-time ke situs yang lagi live. Setelah nambah/ganti value, harus redeploy dulu — bisa lewat `git push` baru, atau klik "Redeploy" manual di dashboard Vercel (Deployments → titik tiga → Redeploy).
+
+### Ringkasan super singkat
+
+> Simpan di Vercel pakai nama **X** → di kode panggil `process.env.X` (nama harus sama persis) → taruh di file dalam folder `api/` → **redeploy**.
+
+Itu aja, 4 langkah itu berlaku buat semua jenis key/secret baru ke depannya, apapun fiturnya.
+
+---
+
+## 10. Cara Menambah/Update Konten
 
 **Model baru** → tambahkan entri di `Models/models.json`, ikuti format entri yang sudah ada.
 
@@ -188,7 +236,7 @@ Tidak perlu menyentuh file `.js` untuk menambah konten apa pun — semua data di
 
 ---
 
-## 10. Menjalankan Secara Lokal
+## 11. Menjalankan Secara Lokal
 
 Karena website memuat data lewat `fetch()`, harus dibuka lewat local server (bukan dibuka langsung dari file manager), dan `api/feedback.js` butuh Vercel CLI supaya bisa dites.
 
@@ -232,7 +280,7 @@ Buka `http://localhost:8080` — tampilan bisa dilihat, tapi form feedback tidak
 
 ---
 
-## 11. Status Proyek
+## 12. Status Proyek
 
 - [x] Token Telegram, reCAPTCHA secret, dan kredensial Upstash aman di Environment Variable Vercel, tidak ada di kode
 - [x] `api/feedback.js` berfungsi penuh (teks + gambar, rate limiting, verifikasi reCAPTCHA), teruji di production
@@ -245,11 +293,11 @@ Buka `http://localhost:8080` — tampilan bisa dilihat, tapi form feedback tidak
 
 ---
 
-## 12. Kontribusi
+## 13. Kontribusi
 
 Punya model, rig, atau map buatan sendiri yang ingin dibagikan? Atau menemukan bug di website ini? Hubungi tim Afi Studio lewat kanal media sosial di halaman member, atau isi halaman **Feedback** di website.
 
-## 13. Lisensi
+## 14. Lisensi
 
 Hak cipta aset milik masing-masing kreator/converter yang tercantum di setiap item.
 
