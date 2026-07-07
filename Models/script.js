@@ -1,10 +1,18 @@
 const NEWS_TEXTS = [
     "Pamerkan Rendermu di \"Render Event\"",
     "Render Event tidak ada hadiah atau , hanya untuk hiburan",
-    "Gabung digrup WhatsApp!!",
+    "Yahahaha, gak bisa spam pesan😹",
     "Join \"Saluran WhatsApp\" kami!!",
     "Lihat karya-karya di channel WhatsApp dan YouTube kami",
-    "Daftarkan model, rig, dan map kamu disini"
+    "Daftarkan model, rig, dan map kamu disini",
+    "Nambah \"WIP\" or  kerjain sampe kelar?",
+    "Yang YTTA Aja",
+    "Moga aja Prisma3D naik level jadi kayak blender, AMINN",
+    "Mending ikut Event kami aja, buat seru-seruan",
+    "Buat website pake AI gak semudah pasang prompt trus jadi le",
+    "Gabung digrup WhatsApp!!",
+    "Duh Gusti💀",
+    "Menjadi Haters tidak membuatmu keren"
 ];
 
 const bannerData = [
