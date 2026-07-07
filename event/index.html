@@ -11,8 +11,9 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Event Render - Peraturan &amp; Panduan</title>
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="../favicon.png">
   <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="../favicon.png">
 
     <link rel="canonical" href="https://afi-studio.vercel.app/event/">
     <meta name="description" content="Baca peraturan dan panduan lengkap event render Afi Studio sebelum ikut berpartisipasi.">
@@ -254,20 +255,32 @@
       color: #ffffff;
     }
  
-    .theme-toggle-btn {
-      position: fixed;
-      top: 14px;
-      right: 14px;
-      z-index: 50;
+    /* Nav bar (konsisten dengan Models/Bantuan/Feedback/Member) */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .back-btn {
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--text);
-      background: color-mix(in srgb, var(--surface) 85%, transparent);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      width: 36px;
-      height: 36px;
+      padding: 5px;
+      margin-right: 10px;
+    }
+
+    .theme-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      padding: 5px;
+      background: none;
+      border: none;
       cursor: pointer;
     }
     .theme-toggle-btn .icon-moon { display: none; }
@@ -275,22 +288,15 @@
     html.dark .theme-toggle-btn .icon-moon { display: block; }
 
     /* Menu pindah halaman */
-    .page-menu {
-      position: fixed;
-      top: 14px;
-      right: 60px;
-      z-index: 50;
-    }
+    .page-menu { position: relative; }
     .page-menu-btn {
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--text);
-      background: color-mix(in srgb, var(--surface) 85%, transparent);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      width: 36px;
-      height: 36px;
+      padding: 5px;
+      background: none;
+      border: none;
       cursor: pointer;
     }
     .page-menu-dropdown {
@@ -306,6 +312,7 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+      z-index: 50;
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -358,24 +365,43 @@
   <script src="/theme-toggle.js" defer></script>
  </head>
  <body class="h-full">
-  <div class="page-menu">
-    <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
-    </button>
-    <div id="page-menu-dropdown" class="page-menu-dropdown">
-      <a href="../index.html" class="page-menu-item">Beranda</a>
-      <a href="../member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
-      <a href="../event/index.html" class="page-menu-item active">Event Render</a>
-      <a href="../ranking/index.html" class="page-menu-item">Ranking Render</a>
-      <a href="../bantuan/index.html" class="page-menu-item">Bantuan</a>
-      <a href="../feedback/index.html" class="page-menu-item">Feedback</a>
-    </div>
-  </div>
-  <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Ganti tema">
-    <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
-    <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-  </button>
   <div id="app" class="h-full overflow-auto w-full">
+   <nav class="nav-bar">
+    <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+     <div class="flex items-center">
+      <a href="../index.html" class="back-btn">
+       <i data-lucide="arrow-left" style="width:24px;"></i>
+      </a>
+      <div class="cursor-pointer flex items-center gap-1">
+       <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+       <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">
+        Afi-Studio
+       </div>
+      </div>
+     </div>
+
+     <div class="flex items-center gap-2">
+      <div class="page-menu">
+       <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+       </button>
+       <div id="page-menu-dropdown" class="page-menu-dropdown">
+        <a href="../index.html" class="page-menu-item">Beranda</a>
+        <a href="../member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
+        <a href="../event/index.html" class="page-menu-item active">Event Render</a>
+        <a href="../ranking/index.html" class="page-menu-item">Ranking Render</a>
+        <a href="../bantuan/index.html" class="page-menu-item">Bantuan</a>
+        <a href="../feedback/index.html" class="page-menu-item">Feedback</a>
+       </div>
+      </div>
+      <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Ganti tema">
+       <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+       <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+      </button>
+     </div>
+    </div>
+   </nav>
+
    <div class="header-section">
     <h1 class="header-title" id="event-title">Event Render</h1>
     <p class="header-subtitle" id="event-desc">Peraturan dan Panduan Mengikuti Event</p>
@@ -433,6 +459,8 @@
   </div>
 
   <script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
     (function () {
       const menuBtn = document.getElementById('page-menu-btn');
       const menuDropdown = document.getElementById('page-menu-dropdown');
