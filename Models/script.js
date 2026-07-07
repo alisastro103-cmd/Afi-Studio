@@ -18,8 +18,7 @@ const NEWS_TEXTS = [
 const bannerData = [
     { img: "Banner1.webp", url: "#" },
     { img: "Banner2.webp", url: "https://chat.whatsapp.com/LSC5Ij7KzT01VEfPS9Spm2?mode=ems_copy_c" },
-    { img: "Banner3.webp", url: "event/index.html" },
-    { img: "Banner4.webp", url: "https://youtu.be/zdfKQt_enjc?si=MOWKnFsvVmYuDkUS" }
+    { img: "Banner3.webp", url: "event/index.html" }
 ];
 
 // Data model sekarang dimuat dari Models/models.json (lihat loadModels di bawah)
