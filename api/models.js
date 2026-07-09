@@ -1,11 +1,4 @@
 // api/models.js
-// Endpoint CRUD untuk konten Models. Mengganti Models/models.json statis.
-//
-// GET    /api/models          -> ambil semua model (publik, dipakai halaman Models)
-// POST   /api/models          -> tambah model baru (butuh header Authorization admin)
-// PUT    /api/models?id=123   -> update model (butuh header Authorization admin)
-// DELETE /api/models?id=123   -> hapus model (butuh header Authorization admin)
-
 import { getDb } from '../lib/db.js';
 
 function checkAdmin(req) {
@@ -28,11 +21,23 @@ function rowToModel(row) {
 }
 
 export default async function handler(req, res) {
-  const db = getDb();
+  let db;
+  try {
+    db = getDb();
+  } catch (envErr) {
+    console.error('Database init error:', envErr.message);
+    return res.status(500).json({ error: 'Database environment configuration missing' });
+  }
 
   try {
     if (req.method === 'GET') {
-      const result = await db.execute('SELECT * FROM models ORDER BY id DESC');
+      // Menggunakan query string biasa tanpa argumen array kosong jika tidak dibutuhkan
+      const result = await db.execute('SELECT id, name, caption, creator, converter, category, thumb, link FROM models ORDER BY id DESC');
+      
+      if (!result || !result.rows) {
+        return res.status(200).json([]);
+      }
+
       const models = result.rows.map(rowToModel);
       res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
       return res.status(200).json(models);
@@ -51,9 +56,17 @@ export default async function handler(req, res) {
       const result = await db.execute({
         sql: `INSERT INTO models (name, caption, creator, converter, category, thumb, link)
               VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        args: [name, caption || '', creator || '', converter || '', categoryStr, thumb || '', link || ''],
+        args: [
+          String(name), 
+          String(caption || ''), 
+          String(creator || ''), 
+          String(converter || ''), 
+          String(categoryStr), 
+          String(thumb || ''), 
+          String(link || '')
+        ],
       });
-      return res.status(201).json({ id: Number(result.lastInsertRowid) });
+      return res.status(201).json({ id: result.lastInsertRowid ? Number(result.lastInsertRowid) : null });
     }
 
     if (req.method === 'PUT') {
@@ -65,7 +78,16 @@ export default async function handler(req, res) {
       await db.execute({
         sql: `UPDATE models SET name = ?, caption = ?, creator = ?, converter = ?,
               category = ?, thumb = ?, link = ? WHERE id = ?`,
-        args: [name, caption || '', creator || '', converter || '', categoryStr, thumb || '', link || '', id],
+        args: [
+          String(name || ''), 
+          String(caption || ''), 
+          String(creator || ''), 
+          String(converter || ''), 
+          String(categoryStr), 
+          String(thumb || ''), 
+          String(link || ''), 
+          id
+        ],
       });
       return res.status(200).json({ ok: true });
     }
@@ -80,7 +102,7 @@ export default async function handler(req, res) {
     res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
     return res.status(405).json({ error: 'method not allowed' });
   } catch (err) {
-    console.error('api/models error:', err);
-    return res.status(500).json({ error: 'internal_error' });
+    console.error('api/models error:', err.message || err);
+    return res.status(500).json({ error: 'internal_error', details: err.message });
   }
 }
