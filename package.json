@@ -5,6 +5,7 @@
   "dependencies": {
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
+    "@libsql/client": "^0.14.0",
     "formidable": "^3.5.4"
   }
 }
