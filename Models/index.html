@@ -131,6 +131,7 @@
  
         /* Styling untuk Card Model agar konsisten */
         .model-card { 
+            position: relative;
             cursor: pointer; 
             border-radius: 3px; 
             overflow: hidden; 
@@ -141,6 +142,18 @@
         .model-card:hover { 
             transform: translateY(-4px); 
             border-color: var(--accent-hover);
+        }
+        .app-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+            z-index: 2;
         }
         .card-image { aspect-ratio: 16/9; object-fit: cover; width: 100%; }
         .card-content { padding: 12px; }
@@ -231,6 +244,13 @@
                 </div>
      
                 <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar" id="category-filter">
+                    </div>
+     
+                <div class="mt-1 mb-2">
+                    <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">UNTUK APLIKASI</h2>
+                </div>
+
+                <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar" id="app-filter">
                     </div>
      
                 <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" id="content-grid">

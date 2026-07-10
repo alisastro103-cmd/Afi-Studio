@@ -15,20 +15,39 @@ function getIcon(type) {
 }
 
 function renderMembers() {
-    for (let genId in dataMember) {
-        const container = document.getElementById(genId);
-        if (!container) continue;
-        container.innerHTML = "";
-        const countEl = document.getElementById('count-' + genId);
-        if (countEl) countEl.textContent = dataMember[genId].length + ' member';
-        dataMember[genId].forEach((member, index) => {
+    const wrap = document.getElementById('folder-group');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+
+    const keys = Object.keys(dataMember);
+    keys.forEach((genId, i) => {
+        const members = dataMember[genId] || [];
+        const title = members[0] && members[0].generasi ? members[0].generasi : genId;
+        const delay = (i * 0.05).toFixed(2);
+
+        const folder = document.createElement('div');
+        folder.className = 'folder';
+        folder.style.animationDelay = delay + 's';
+        folder.innerHTML = `<span>${title}</span><span class="folder-count">${members.length} member</span>`;
+        wrap.appendChild(folder);
+
+        const container = document.createElement('div');
+        container.id = genId;
+        container.className = 'member-container';
+        members.forEach((member, index) => {
             container.innerHTML += `
                 <div class="id-card" style="animation-delay: ${index * 0.05}s;" onclick="openModal('${genId}', ${index})">
                     <img src="${member.foto}" class="profile-img" loading="lazy" decoding="async">
                     <div class="member-name-box"><span class="member-name">${member.nama}</span></div>
                 </div>`;
         });
-    }
+        wrap.appendChild(container);
+
+        const divider = document.createElement('div');
+        divider.className = 'folder-divider';
+        divider.style.animationDelay = delay + 's';
+        wrap.appendChild(divider);
+    });
 }
 
 function openModal(gen, index) {
@@ -94,10 +113,19 @@ function showChatBubble() {
 // Inisialisasi: ambil data member dari JSON, baru render
 async function loadMembers() {
     try {
-        const res = await fetch('/member-Afi-Studio/member.json');
-        dataMember = await res.json();
+        const res = await fetch('/api/members');
+        const flat = await res.json();
+        // API mengembalikan array flat (tiap item punya gen_id), dikelompokkan
+        // lagi di sini jadi { "gen-1": [...], "gen-2": [...] } supaya cocok
+        // dengan renderMembers() dan struktur id container di HTML yang lama.
+        dataMember = {};
+        for (const m of flat) {
+            const key = m.gen_id || 'lainnya';
+            if (!dataMember[key]) dataMember[key] = [];
+            dataMember[key].push(m);
+        }
     } catch (err) {
-        console.error('Gagal memuat member-Afi-Studio/member.json:', err);
+        console.error('Gagal memuat /api/members:', err);
         dataMember = {};
     }
     renderMembers();

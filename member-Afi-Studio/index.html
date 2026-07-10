@@ -542,35 +542,8 @@
     <div class="app-container">
         <div class="content">
             <img src="title.png" alt="Member Afi-Studio" class="title-img">
-            <div class="folder-group">
-                <div class="folder" style="animation-delay: 0.05s;">
-                    <span>Generasi 1st</span>
-                    <span class="folder-count" id="count-gen-1">0 member</span>
+            <div class="folder-group" id="folder-group">
                 </div>
-                <div id="gen-1" class="member-container"></div>
-                <div class="folder-divider" style="animation-delay: 0.05s;"></div>
- 
-                <div class="folder" style="animation-delay: 0.1s;">
-                    <span>Generasi 2nd</span>
-                    <span class="folder-count" id="count-gen-2">0 member</span>
-                </div>
-                <div id="gen-2" class="member-container"></div>
-                <div class="folder-divider" style="animation-delay: 0.1s;"></div>
- 
-                <div class="folder" style="animation-delay: 0.15s;">
-                    <span>Generasi 3rd</span>
-                    <span class="folder-count" id="count-gen-3">0 member</span>
-                </div>
-                <div id="gen-3" class="member-container"></div>
-                <div class="folder-divider" style="animation-delay: 0.15s;"></div>
- 
-                <div class="folder" style="animation-delay: 0.2s;">
-                    <span>Orang Random</span>
-                    <span class="folder-count" id="count-orang-random">0 member</span>
-                </div>
-                <div id="orang-random" class="member-container"></div>
-                <div class="folder-divider" style="animation-delay: 0.2s;"></div>
-            </div>
         </div>
         <div class="footer">
             <button class="selection-btn" onclick="if(isSeleksiMemberOpen){ window.open('https://forms.gle/JmYJ1S5GFCEscAnU7', '_blank'); } else { var t=document.getElementById('toast-soon'); if(t){t.classList.add('show'); setTimeout(function(){t.classList.remove('show');}, 2000);} }">Seleksi Member</button>

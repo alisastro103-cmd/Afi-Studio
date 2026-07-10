@@ -55,7 +55,7 @@
   }
   .tab-btn.active { background: var(--accent); color: #fff; border-color: transparent; }
   label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: 0.03em; }
-  input, textarea {
+  input, textarea, select {
     width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
     background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
   }
@@ -129,8 +129,20 @@
         <input id="model-creator" placeholder="Nama pembuat asli (boleh kosong)">
         <label>Converter</label>
         <input id="model-converter" placeholder="Nama yang konversi">
-        <label>Kategori (pisahkan koma)</label>
-        <input id="model-category" placeholder="Minecraft, Rig, Mob, Free">
+        <label>Kategori (pisahkan koma — ketik bebas, kategori baru otomatis muncul jadi tab filter, kategori yang sudah tidak dipakai model manapun otomatis hilang)</label>
+        <input id="model-category" placeholder="Minecraft, Rig, Mob, Free" list="category-suggestions">
+        <datalist id="category-suggestions"></datalist>
+        <label>Untuk Aplikasi</label>
+        <select id="model-app-target" onchange="toggleAppOther()">
+          <option value="">— Pilih aplikasi —</option>
+          <option value="Prisma3D">Prisma3D</option>
+          <option value="Blender">Blender</option>
+          <option value="Mine-Imator">Mine-Imator</option>
+          <option value="Viontri">Viontri</option>
+          <option value="C4D">C4D</option>
+          <option value="__other__">Lainnya (isi manual)</option>
+        </select>
+        <input id="model-app-target-other" placeholder="Nama aplikasi lain" style="display:none; margin-top:6px;">
         <label>URL Thumbnail</label>
         <input id="model-thumb" placeholder="https://...">
         <label>URL Download/Link</label>
@@ -154,8 +166,8 @@
       <div class="card">
         <h3 id="member-form-title" style="margin-top:0;">Tambah Member Baru</h3>
         <input type="hidden" id="member-id">
-        <label>Kode Grup (harus sama dengan grup yang sudah ada di halaman, contoh: gen-1, gen-2, gen-3, orang-random)</label>
-        <input id="member-gen-id" placeholder="gen-1">
+        <label>Kode Grup (unik per generasi, contoh: gen-1, gen-2, gen-4, atau nama grup baru bebas — grup baru otomatis muncul di halaman)</label>
+        <input id="member-gen-id" placeholder="gen-4">
         <label>Nama</label>
         <input id="member-nama" placeholder="Nama member">
         <label>Spesialis</label>
@@ -234,13 +246,43 @@ function switchTab(tab) {
   document.getElementById('tab-members').classList.toggle('active', tab === 'members');
 }
 
+function toggleAppOther() {
+  const sel = document.getElementById('model-app-target');
+  const other = document.getElementById('model-app-target-other');
+  other.style.display = sel.value === '__other__' ? 'block' : 'none';
+}
+
 // ---------- MODELS ----------
 let modelsCache = [];
 
 async function loadModels() {
-  const res = await fetch('/api/models');
-  modelsCache = await res.json();
-  renderModelsList();
+  try {
+    const res = await fetch('/api/models');
+    const data = await res.json();
+    if (!res.ok || !Array.isArray(data)) {
+      console.error('api/models error response:', data);
+      document.getElementById('models-list').innerHTML =
+        `<div class="empty" style="color:var(--danger);">Gagal memuat data: ${escapeHtml(JSON.stringify(data))}</div>`;
+      document.getElementById('models-count').textContent = '';
+      modelsCache = [];
+      return;
+    }
+    modelsCache = data;
+    renderModelsList();
+    fillCategorySuggestions();
+  } catch (e) {
+    console.error('loadModels fetch failed:', e);
+    document.getElementById('models-list').innerHTML =
+      `<div class="empty" style="color:var(--danger);">Gagal menghubungi /api/models.</div>`;
+    modelsCache = [];
+  }
+}
+
+function fillCategorySuggestions() {
+  const set = new Set();
+  modelsCache.forEach(m => (m.category || []).forEach(c => c && set.add(c)));
+  const dl = document.getElementById('category-suggestions');
+  if (dl) dl.innerHTML = Array.from(set).sort().map(c => `<option value="${escapeHtml(c)}">`).join('');
 }
 
 function renderModelsList() {
@@ -255,7 +297,7 @@ function renderModelsList() {
       <img src="${m.thumb || ''}" onerror="this.style.visibility='hidden'">
       <div class="meta">
         <div class="name">${escapeHtml(m.name)}</div>
-        <div class="sub">${escapeHtml((m.category || []).join(', '))}</div>
+        <div class="sub">${escapeHtml((m.category || []).join(', '))}${m.app_target ? ' · <b>' + escapeHtml(m.app_target) + '</b>' : ''}</div>
         <div class="row-actions">
           <button class="btn btn-ghost" onclick="editModel(${m.id})">Edit</button>
           <button class="btn btn-danger" onclick="deleteModel(${m.id})">Hapus</button>
@@ -274,6 +316,18 @@ function editModel(id) {
   document.getElementById('model-creator').value = m.creator || '';
   document.getElementById('model-converter').value = m.converter || '';
   document.getElementById('model-category').value = (m.category || []).join(', ');
+  const presetApps = ['Prisma3D', 'Blender', 'Mine-Imator', 'Viontri', 'C4D'];
+  const sel = document.getElementById('model-app-target');
+  const other = document.getElementById('model-app-target-other');
+  if (m.app_target && !presetApps.includes(m.app_target)) {
+    sel.value = '__other__';
+    other.value = m.app_target;
+    other.style.display = 'block';
+  } else {
+    sel.value = m.app_target || '';
+    other.value = '';
+    other.style.display = 'none';
+  }
   document.getElementById('model-thumb').value = m.thumb || '';
   document.getElementById('model-link').value = m.link || '';
   document.getElementById('model-form-title').textContent = 'Edit Model';
@@ -281,8 +335,10 @@ function editModel(id) {
 }
 
 function resetModelForm() {
-  ['model-id','model-name','model-caption','model-creator','model-converter','model-category','model-thumb','model-link']
+  ['model-id','model-name','model-caption','model-creator','model-converter','model-category','model-thumb','model-link','model-app-target-other']
     .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('model-app-target').value = '';
+  document.getElementById('model-app-target-other').style.display = 'none';
   document.getElementById('model-form-title').textContent = 'Tambah Model Baru';
   document.getElementById('model-error').textContent = '';
 }
@@ -293,12 +349,18 @@ async function saveModel() {
   const name = document.getElementById('model-name').value.trim();
   if (!name) { errEl.textContent = 'Nama wajib diisi.'; return; }
 
+  const selVal = document.getElementById('model-app-target').value;
+  const appTarget = selVal === '__other__'
+    ? document.getElementById('model-app-target-other').value.trim()
+    : selVal;
+
   const payload = {
     name,
     caption: document.getElementById('model-caption').value.trim(),
     creator: document.getElementById('model-creator').value.trim(),
     converter: document.getElementById('model-converter').value.trim(),
     category: document.getElementById('model-category').value.split(',').map(s => s.trim()).filter(Boolean),
+    app_target: appTarget,
     thumb: document.getElementById('model-thumb').value.trim(),
     link: document.getElementById('model-link').value.trim(),
   };
@@ -322,9 +384,25 @@ async function deleteModel(id) {
 let membersCache = [];
 
 async function loadMembers() {
-  const res = await fetch('/api/members');
-  membersCache = await res.json();
-  renderMembersList();
+  try {
+    const res = await fetch('/api/members');
+    const data = await res.json();
+    if (!res.ok || !Array.isArray(data)) {
+      console.error('api/members error response:', data);
+      document.getElementById('members-list').innerHTML =
+        `<div class="empty" style="color:var(--danger);">Gagal memuat data: ${escapeHtml(JSON.stringify(data))}</div>`;
+      document.getElementById('members-count').textContent = '';
+      membersCache = [];
+      return;
+    }
+    membersCache = data;
+    renderMembersList();
+  } catch (e) {
+    console.error('loadMembers fetch failed:', e);
+    document.getElementById('members-list').innerHTML =
+      `<div class="empty" style="color:var(--danger);">Gagal menghubungi /api/members.</div>`;
+    membersCache = [];
+  }
 }
 
 function renderMembersList() {

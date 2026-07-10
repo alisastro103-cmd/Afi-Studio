@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS models (
   creator    TEXT,
   converter  TEXT,
   category   TEXT,      -- disimpan sebagai teks dipisah koma, contoh: "Minecraft,Rig,Mob,Free"
+  app_target TEXT,      -- 1 pilihan software tujuan, contoh: "Blender", "Prisma3D", "Mine-Imator", "Viontri", "C4D"
   thumb      TEXT,
   link       TEXT,
   created_at TEXT DEFAULT (datetime('now'))

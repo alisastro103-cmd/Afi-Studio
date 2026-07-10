@@ -10,7 +10,8 @@ const NEWS_TEXTS = [
 const bannerData = [
     { img: "Banner1.webp", url: "#" },
     { img: "Banner2.webp", url: "https://chat.whatsapp.com/LSC5Ij7KzT01VEfPS9Spm2?mode=ems_copy_c" },
-    { img: "Banner3.webp", url: "event/index.html" }
+    { img: "Banner3.webp", url: "event/index.html" },
+    { img: "Banner4.webp", url: "https://youtu.be/zdfKQt_enjc?si=MOWKnFsvVmYuDkUS" }
 ];
 
 // Data model sekarang dimuat dari Models/models.json (lihat loadModels di bawah)
@@ -18,8 +19,25 @@ let MODELS = [];
 
 let currentModel = null;
 
-const CATEGORIES = ["Semua", "Furniture", "Map", "Items", "Rig", "tools", "cosmetic"];
+let CATEGORIES = ["Semua"];
 let activeCategory = "Semua";
+let APP_TARGETS = ["Semua"];
+let activeApp = "Semua";
+
+// Hitung ulang daftar kategori & aplikasi berdasarkan data yang beneran ada di
+// database. Jadi nambah/hapus kategori atau aplikasi baru CUKUP lewat admin
+// panel (isi/kosongin field-nya di 1 model) — tab filter otomatis
+// ikut nambah/ilang, nggak perlu edit kode ini lagi.
+function recomputeFilters() {
+    const catSet = new Set();
+    const appSet = new Set();
+    MODELS.forEach(m => {
+        (m.category || []).forEach(c => c && catSet.add(c));
+        if (m.app_target) appSet.add(m.app_target);
+    });
+    CATEGORIES = ["Semua", ...Array.from(catSet).sort((a, b) => a.localeCompare(b))];
+    APP_TARGETS = ["Semua", ...Array.from(appSet).sort((a, b) => a.localeCompare(b))];
+}
 
 // Merender tombol filter kategori
 function renderCategoryButtons() {
@@ -31,6 +49,27 @@ function renderCategoryButtons() {
             ${cat}
         </button>
     `).join('');
+}
+
+// Merender tombol filter aplikasi (Blender, C4D, dll)
+function renderAppButtons() {
+    const container = document.getElementById('app-filter');
+    if (!container) return;
+    container.innerHTML = APP_TARGETS.map(app => `
+        <button class="filter-btn ${activeApp === app ? 'active' : ''}" 
+                onclick="filterByApp('${app}')">
+            ${app}
+        </button>
+    `).join('');
+}
+
+// Fungsi filter berdasarkan aplikasi
+function filterByApp(app) {
+    activeApp = app;
+    renderAppButtons();
+    const searchInput = document.getElementById('search-input');
+    const searchTerm = searchInput ? searchInput.value : '';
+    renderModels(searchTerm);
 }
 
 // Fungsi filter berdasarkan kategori
@@ -114,12 +153,15 @@ function renderModels(filter = '') {
         const categoryMatch = activeCategory === "Semua" ||
             categoriesArray.some(c => c.toLowerCase() === activeCategory.toLowerCase());
 
+        const appMatch = activeApp === "Semua" ||
+            (m.app_target && m.app_target.toLowerCase() === activeApp.toLowerCase());
+
         const textMatch = m.name.toLowerCase().includes(s) ||
             categoriesArray.join(' ').toLowerCase().includes(s) ||
             (m.converter && m.converter.toLowerCase().includes(s)) ||
             (m.creator && m.creator.toLowerCase().includes(s));
 
-        return categoryMatch && textMatch;
+        return categoryMatch && appMatch && textMatch;
     });
 
     if (filtered.length === 0) {
@@ -132,6 +174,7 @@ function renderModels(filter = '') {
         grid.innerHTML = filtered.map(model => `
             <article class="model-card" onclick="openModal(${MODELS.indexOf(model)})">
                 <img src="${model.thumb}" class="card-image" loading="lazy">
+                ${model.app_target ? `<span class="app-badge">${model.app_target}</span>` : ''}
                 <div class="card-content">
                     <div class="card-title">${model.name}</div>
                     <div class="card-caption">${model.caption}</div>
@@ -155,6 +198,7 @@ function openModal(index) {
     let infoHtml = '';
     if (currentModel.creator) infoHtml += `<div class="flex justify-between"><span>Creator:</span><b>${currentModel.creator}</b></div>`;
     if (currentModel.converter) infoHtml += `<div class="flex justify-between"><span>Converter:</span><b>${currentModel.converter}</b></div>`;
+    if (currentModel.app_target) infoHtml += `<div class="flex justify-between"><span>Untuk Aplikasi:</span><b>${currentModel.app_target}</b></div>`;
     if (currentModel.category) {
         const catText = Array.isArray(currentModel.category) ? currentModel.category.join(', ') : currentModel.category;
         infoHtml += `<div class="flex justify-between"><span>Category:</span><b>${catText}</b></div>`;
@@ -204,13 +248,15 @@ if (settingsBtn) {
 // Inisialisasi: ambil data model dari JSON, baru render
 async function loadModels() {
     try {
-        const res = await fetch('/Models/models.json');
+        const res = await fetch('/api/models');
         MODELS = await res.json();
     } catch (err) {
         console.error('Gagal memuat Models/models.json:', err);
         MODELS = [];
     }
+    recomputeFilters();
     renderCategoryButtons();
+    renderAppButtons();
     renderModels();
     renderMarquee();
     if (typeof lucide !== 'undefined') lucide.createIcons();
