@@ -28,7 +28,7 @@ function renderMembers() {
         const folder = document.createElement('div');
         folder.className = 'folder';
         folder.style.animationDelay = delay + 's';
-        folder.innerHTML = `<span>${title}</span><span class="folder-count">${members.length} member</span>`;
+        folder.innerHTML = `<span>${title}</span>`;
         wrap.appendChild(folder);
 
         const container = document.createElement('div');

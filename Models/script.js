@@ -21,22 +21,16 @@ let currentModel = null;
 
 let CATEGORIES = ["Semua"];
 let activeCategory = "Semua";
-let APP_TARGETS = ["Semua"];
-let activeApp = "Semua";
 
-// Hitung ulang daftar kategori & aplikasi berdasarkan data yang beneran ada di
-// database. Jadi nambah/hapus kategori atau aplikasi baru CUKUP lewat admin
-// panel (isi/kosongin field-nya di 1 model) — tab filter otomatis
-// ikut nambah/ilang, nggak perlu edit kode ini lagi.
+// Hitung ulang daftar kategori berdasarkan data yang beneran ada di
+// models.json. Jadi nambah/hapus kategori baru CUKUP lewat edit JSON —
+// tab filter otomatis ikut nambah/ilang, nggak perlu edit kode ini lagi.
 function recomputeFilters() {
     const catSet = new Set();
-    const appSet = new Set();
     MODELS.forEach(m => {
         (m.category || []).forEach(c => c && catSet.add(c));
-        if (m.app_target) appSet.add(m.app_target);
     });
     CATEGORIES = ["Semua", ...Array.from(catSet).sort((a, b) => a.localeCompare(b))];
-    APP_TARGETS = ["Semua", ...Array.from(appSet).sort((a, b) => a.localeCompare(b))];
 }
 
 // Merender tombol filter kategori
@@ -49,27 +43,6 @@ function renderCategoryButtons() {
             ${cat}
         </button>
     `).join('');
-}
-
-// Merender tombol filter aplikasi (Blender, C4D, dll)
-function renderAppButtons() {
-    const container = document.getElementById('app-filter');
-    if (!container) return;
-    container.innerHTML = APP_TARGETS.map(app => `
-        <button class="filter-btn ${activeApp === app ? 'active' : ''}" 
-                onclick="filterByApp('${app}')">
-            ${app}
-        </button>
-    `).join('');
-}
-
-// Fungsi filter berdasarkan aplikasi
-function filterByApp(app) {
-    activeApp = app;
-    renderAppButtons();
-    const searchInput = document.getElementById('search-input');
-    const searchTerm = searchInput ? searchInput.value : '';
-    renderModels(searchTerm);
 }
 
 // Fungsi filter berdasarkan kategori
@@ -153,15 +126,12 @@ function renderModels(filter = '') {
         const categoryMatch = activeCategory === "Semua" ||
             categoriesArray.some(c => c.toLowerCase() === activeCategory.toLowerCase());
 
-        const appMatch = activeApp === "Semua" ||
-            (m.app_target && m.app_target.toLowerCase() === activeApp.toLowerCase());
-
         const textMatch = m.name.toLowerCase().includes(s) ||
             categoriesArray.join(' ').toLowerCase().includes(s) ||
             (m.converter && m.converter.toLowerCase().includes(s)) ||
             (m.creator && m.creator.toLowerCase().includes(s));
 
-        return categoryMatch && appMatch && textMatch;
+        return categoryMatch && textMatch;
     });
 
     if (filtered.length === 0) {
@@ -256,7 +226,6 @@ async function loadModels() {
     }
     recomputeFilters();
     renderCategoryButtons();
-    renderAppButtons();
     renderModels();
     renderMarquee();
     if (typeof lucide !== 'undefined') lucide.createIcons();
