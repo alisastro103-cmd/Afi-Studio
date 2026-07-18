@@ -113,19 +113,10 @@ function showChatBubble() {
 // Inisialisasi: ambil data member dari JSON, baru render
 async function loadMembers() {
     try {
-        const res = await fetch('/api/members');
-        const flat = await res.json();
-        // API mengembalikan array flat (tiap item punya gen_id), dikelompokkan
-        // lagi di sini jadi { "gen-1": [...], "gen-2": [...] } supaya cocok
-        // dengan renderMembers() dan struktur id container di HTML yang lama.
-        dataMember = {};
-        for (const m of flat) {
-            const key = m.gen_id || 'lainnya';
-            if (!dataMember[key]) dataMember[key] = [];
-            dataMember[key].push(m);
-        }
+        const res = await fetch('/member-Afi-Studio/member.json');
+        dataMember = await res.json();
     } catch (err) {
-        console.error('Gagal memuat /api/members:', err);
+        console.error('Gagal memuat member-Afi-Studio/member.json:', err);
         dataMember = {};
     }
     renderMembers();

@@ -248,7 +248,7 @@ if (settingsBtn) {
 // Inisialisasi: ambil data model dari JSON, baru render
 async function loadModels() {
     try {
-        const res = await fetch('/api/models');
+        const res = await fetch('/Models/models.json');
         MODELS = await res.json();
     } catch (err) {
         console.error('Gagal memuat Models/models.json:', err);
