@@ -2,7 +2,7 @@
 // Fokus: bikin HALAMAN ROOT ("/") tetap bisa dibuka saat offline.
 // Halaman lain (ranking, feedback, member, dll) SENGAJA tidak di-cache.
 
-const CACHE_NAME = 'afi-studio-root-v2';
+const CACHE_NAME = 'afi-studio-root-v3';
 
 // Aset wajib biar root page render sempurna.
 // Lucide & Google Fonts sudah tidak dari CDN luar lagi (lihat fonts/ dan icons/),
@@ -60,6 +60,24 @@ self.addEventListener('fetch', (e) => {
   // Cuma tangani request yang memang kita cache.
   // Request lain (halaman lain, API, dll) dibiarkan lewat jaringan seperti biasa.
   if (isCoreAsset) {
+    const isRootPage = url.pathname === '/' || url.pathname === '/index.html';
+
+    if (isRootPage) {
+      // Network-first: selalu coba versi terbaru dulu, cache cuma buat offline.
+      e.respondWith(
+        fetch(e.request)
+          .then((res) => {
+            if (res && res.status === 200) {
+              const resClone = res.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
+            }
+            return res;
+          })
+          .catch(() => caches.match(e.request))
+      );
+      return;
+    }
+
     e.respondWith(
       caches.match(e.request).then((cached) => {
         // Cache-first, tapi tetap update cache di background kalau online (stale-while-revalidate)
