@@ -3,9 +3,9 @@
     {
       "nama": "IanAfi",
       "foto": "profile/IanAdhi.webp",
-      "spesialis": "Animator, Modeller, Render, dan designer",
       "identitas": "🍁",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Animator, Modeller, Render, dan designer",
       "socials": {
         "yt": "https://youtube.com/@ianafii?si=iQzheWQtm4_hTYWD",
         "ig": "https://www.instagram.com/ianafii_?igsh=Y3kyeXI1MW5mdWZi",
@@ -18,9 +18,9 @@
     {
       "nama": "Yui Aizawa",
       "foto": "profile/yui.webp",
-      "spesialis": "Healer",
       "identitas": "🌸",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Healer",
       "socials": {
         "yt": "https://youtube.com/@yuiaizawaa?si=LC1aBi112kqY_aVn",
         "ig": "",
@@ -33,9 +33,9 @@
     {
       "nama": "LanaMC",
       "foto": "profile/lana.webp",
-      "spesialis": "Designing, Editor, dan Rendering",
       "identitas": "💤",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Designing, Editor, dan Rendering",
       "socials": {
         "yt": "https://www.youtube.com/@Lana%E5%B1%B1%E6%9C%ACMC",
         "ig": "https://www.instagram.com/atlana_yamamoto?igsh=N2s0d3B5NDFtdzhs",
@@ -48,9 +48,9 @@
     {
       "nama": "Akira Xeyni",
       "foto": "profile/yenxi.webp",
-      "spesialis": "Animation dan PVP",
       "identitas": "🍒",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Animation dan PVP",
       "socials": {
         "yt": "https://youtube.com/@akairi_xeinii?si=DkSPztNT2929sgMU",
         "ig": "",
@@ -63,9 +63,9 @@
     {
       "nama": "Alynatha",
       "foto": "profile/alynatha.webp",
-      "spesialis": "Animator, Render, Modeling, dan artist",
       "identitas": "💠",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Animator, Render, Modeling, dan artist",
       "socials": {
         "yt": "https://youtube.com/@linatha.studio?si=JZthfrOpHMRbf3b5",
         "ig": "https://www.instagram.com/linathastudio.presents?igsh=MWhydnVmMGFwMjVtaw==",
@@ -78,9 +78,9 @@
     {
       "nama": "MichiYuzuru",
       "foto": "profile/Michi.webp",
-      "spesialis": "Rendering",
       "identitas": "🍩",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Rendering",
       "socials": {
         "yt": "https://www.youtube.com/@michii_354",
         "ig": "",
@@ -93,9 +93,9 @@
     {
       "nama": "Nezhai",
       "foto": "profile/zhai.webp",
-      "spesialis": "Animator, Artist, dan Render",
       "identitas": "🎐",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Animator, Artist, dan Render",
       "socials": {
         "yt": "https://www.youtube.com/@Its_Nezh",
         "ig": "https://www.instagram.com/zay_pop.es?igsh=bXBoY3F0NmxhZzQ0",
@@ -108,9 +108,9 @@
     {
       "nama": "Rena Astoria",
       "foto": "profile/rena.webp",
-      "spesialis": "Animation dan Render",
       "identitas": "🐉",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Animation dan Render",
       "socials": {
         "yt": "https://www.youtube.com/@RenaSiAstor",
         "ig": "",
@@ -123,9 +123,9 @@
     {
       "nama": "Puspa",
       "foto": "profile/puspa.webp",
-      "spesialis": "Render",
       "identitas": "♠️",
-      "generasi": "Generasi ke-1",
+      "Info-1": "Generasi ke-1",
+      "Info-2": "Render",
       "socials": {
         "yt": "https://www.youtube.com/@Pus79N.X",
         "ig": "",
@@ -140,9 +140,9 @@
     {
       "nama": "kenzuu",
       "foto": "profile/kenzuu.webp",
-      "spesialis": "Artist, Animator, dan Render",
       "identitas": "🦈",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "Artist, Animator, dan Render",
       "socials": {
         "yt": "https://youtube.com/@ikenjuk?si=DqqQaChmE1ZD7iZ5",
         "ig": "",
@@ -155,9 +155,9 @@
     {
       "nama": "Najwa_no.6",
       "foto": "profile/najwa.webp",
-      "spesialis": "animate, convert add-on, render, dan artist",
       "identitas": "🧃",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "animate, convert add-on, render, dan artist",
       "socials": {
         "yt": "https://youtube.com/@nafinar_2917?si=xNW2WFJJFPZrXK6q",
         "ig": "https://www.instagram.com/nafinar_2917?igsh=MTk1MzRpMWd4NTdpcA==",
@@ -170,9 +170,9 @@
     {
       "nama": "YavitsDesu",
       "foto": "profile/yavis.webp",
-      "spesialis": "Animasi dan dubbing",
       "identitas": "🌊",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "Animasi dan dubbing",
       "socials": {
         "yt": "https://youtube.com/@yavitsdesu?si=gx3cz9qstwgJoCLc",
         "ig": "https://www.instagram.com/yavits_plenger?igsh=MWg5M21kbzRlcmc2Ng==",
@@ -185,9 +185,9 @@
     {
       "nama": "Raffenokio",
       "foto": "profile/rafe.webp",
-      "spesialis": "Animation, dan modeling",
       "identitas": "🍅",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "Animation, dan modeling",
       "socials": {
         "yt": "https://youtube.com/@raffenokio9662?si=_Fo33HQDVZlqShYm",
         "ig": "",
@@ -200,9 +200,9 @@
     {
       "nama": "Varelion <kaishiro>",
       "foto": "profile/varel.webp",
-      "spesialis": "VA, Render, Design Graphics",
       "identitas": "📈",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "VA, Render, Design Graphics",
       "socials": {
         "yt": "https://youtube.com/@varelion.greyrat",
         "ig": "https://www.instagram.com/rel.banana",
@@ -215,9 +215,9 @@
     {
       "nama": "Sichi",
       "foto": "profile/sichi.webp",
-      "spesialis": "Render, Modelling, dan Skin Maker",
       "identitas": "🍚",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "Render, Modelling, dan Skin Maker",
       "socials": {
         "yt": "",
         "ig": "https://www.instagram.com/sichi0836?igsh=MTlja3JmeWs5MGwwcw==",
@@ -230,9 +230,9 @@
     {
       "nama": "Brentt",
       "foto": "profile/breent.webp",
-      "spesialis": "Animation, 3D Modeling, Music Producer, Editing, dan render maker",
       "identitas": "🚀",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "Animation, 3D Modeling, Music Producer, Editing, dan render maker",
       "socials": {
         "yt": "https://youtube.com/@brentnaoki",
         "ig": "https://www.instagram.com/brentnaoki",
@@ -245,9 +245,9 @@
     {
       "nama": "ASTR-0123",
       "foto": "profile/ali.webp",
-      "spesialis": "Programmer, Designer Graphics, modeller",
       "identitas": "📷",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "Programmer, Designer Graphics, modeller",
       "socials": {
         "yt": "https://www.youtube.com/@Alisastro123",
         "ig": "https://www.instagram.com/alisastro123?igsh=MTZoZmR0ZGJkeWM3NA==",
@@ -260,9 +260,9 @@
     {
       "nama": "Excha",
       "foto": "profile/excha.webp",
-      "spesialis": "Animation, Art digital, dubbing, sing, Voice actor, dan panjat pohon ",
       "identitas": "🍺",
-      "generasi": "Generasi ke-2",
+      "Info-1": "Generasi ke-2",
+      "Info-2": "Animation, Art digital, dubbing, sing, Voice actor, dan panjat pohon ",
       "socials": {
         "yt": "https://www.youtube.com/@Exchaakatsy",
         "ig": "",
@@ -277,9 +277,9 @@
     {
       "nama": "NUKE51",
       "foto": "profile/nuke51.webp",
-      "spesialis": "Animasi dan Rendering",
       "identitas": "🚦",
-      "generasi": "Generasi ke-3",
+      "Info-1": "Generasi ke-3",
+      "Info-2": "Animasi dan Rendering",
       "socials": {
         "yt": "https://youtube.com/@nukeganteng",
         "ig": "https://www.instagram.com/kawista_51",
@@ -292,9 +292,9 @@
     {
       "nama": "Zipixe",
       "foto": "profile/zin.webp",
-      "spesialis": "Rendering, animasi, dan Tidur💤",
       "identitas": "🪼",
-      "generasi": "Generasi ke-3",
+      "Info-1": "Generasi ke-3",
+      "Info-2": "Rendering, animasi, dan Tidur💤",
       "socials": {
         "yt": "https://youtube.com/@zipixe?si=VrOShMenvHfAYK87",
         "ig": "https://www.instagram.com/zipixe_?igsh=aWx5MjR2aTV6bGRo",
@@ -307,9 +307,9 @@
     {
       "nama": "Afree",
       "foto": "profile/afree.webp",
-      "spesialis": "Ceria Kepedean cukurukuk, tampil depan publik, si sepuhh",
       "identitas": "🍪",
-      "generasi": "Generasi ke-3",
+      "Info-1": "Generasi ke-3",
+      "Info-2": "Ceria Kepedean cukurukuk, tampil depan publik, si sepuhh",
       "socials": {
         "yt": "https://youtube.com/@afrimcgames",
         "ig": "https://www.instagram.com/just.freeday_?igsh=OXZtYnpsM3hyeTh2",
@@ -322,9 +322,9 @@
     {
       "nama": "Carana",
       "foto": "profile/carana.webp",
-      "spesialis": "Animation",
       "identitas": "🐦‍🔥",
-      "generasi": "Generasi ke-3",
+      "Info-1": "Generasi ke-3",
+      "Info-2": "Animation",
       "socials": {
         "yt": "https://youtube.com/@carana_anim?si=LUCz1huD9gtm5JDc",
         "ig": "",
@@ -337,9 +337,9 @@
     {
       "nama": "Nicko",
       "foto": "profile/nicko.webp",
-      "spesialis": "Render, Convert, dan modelling",
       "identitas": "🐋",
-      "generasi": "Generasi ke-3",
+      "Info-1": "Generasi ke-3",
+      "Info-2": "Render, Convert, dan modelling",
       "socials": {
         "yt": "https://youtube.com/@nickomc62?si=EuFPS25itx3ARq5S",
         "ig": "",
@@ -352,9 +352,9 @@
     {
       "nama": "Hikari",
       "foto": "profile/hikari.webp",
-      "spesialis": "Art, Skin, Render, dan Modelling",
       "identitas": "🍥",
-      "generasi": "Generasi ke-3",
+      "Info-1": "Generasi ke-3",
+      "Info-2": "Art, Skin, Render, dan Modelling",
       "socials": {
         "yt": "https://youtube.com/@kaily_rhetbun?si=mlDMjelxUMwPhZ4K",
         "ig": "",
@@ -367,9 +367,9 @@
     {
       "nama": "Zena",
       "foto": "profile/zena.webp",
-      "spesialis": "Rendering dan animasi",
       "identitas": "🌑",
-      "generasi": "Generasi ke-3",
+      "Info-1": "Generasi ke-3",
+      "Info-2": "Rendering dan animasi",
       "socials": {
         "yt": "https://youtube.com/@vihori_chin?si=nrebvHHJKxN7WXKh",
         "ig": "https://www.instagram.com/zena.aja._?igsh=MWp0ZzBqa3RzNHIzdQ==",
@@ -382,9 +382,9 @@
     {
       "nama": "Emcas (MCAZ)",
       "foto": "profile/azid.webp",
-      "spesialis": "Editor, Animator, dan Modeler",
       "identitas": "🎬",
-      "generasi": "Generasi ke-3",
+      "Info-1": "Generasi ke-3",
+      "Info-2": "Editor, Animator, dan Modeler",
       "socials": {
         "yt": "https://www.youtube.com/@mcaz_096",
         "ig": "https://www.instagram.com/mcaz096?igsh=aTNuaDA0Ym1xYmE=",
@@ -399,9 +399,9 @@
     {
       "nama": "RPC.Dina",
       "foto": "profile/dina.webp",
-      "spesialis": "Rendering",
       "identitas": "🦖",
-      "generasi": "Orang Random",
+      "Info-1": "Penyuka Mie Ayam 🤤",
+      "Info-2": "Rendering",
       "socials": {
         "yt": "https://youtube.com/@dina_ganteng?si=7SpHDaCnVBpLRlow",
         "ig": "https://www.instagram.com/dina_ganteng1?igsh=cW8yYzZnbjZlcm93",
@@ -414,9 +414,9 @@
     {
       "nama": "Bedrocky",
       "foto": "profile/gara.webp",
-      "spesialis": "Modelling dan Render",
       "identitas": "🛌",
-      "generasi": "Sisepuhh prismatridi",
+      "Info-1": "Sisepuhh prismatridi",
+      "Info-2": "Modelling dan Render",
       "socials": {
         "yt": "https://youtube.com/@garaokii?si=05DL2XlKwbFB32-I",
         "ig": "https://www.instagram.com/bedrok.oki?igsh=cHR4Mm10a3hzcHkx",
@@ -429,9 +429,9 @@
     {
       "nama": "Lusvia",
       "foto": "profile/lusvia.webp",
-      "spesialis": "Render, dan Art",
       "identitas": "🧡",
-      "generasi": "The Princess belongs to the Knight🧡🖤✨",
+      "Info-1": "The Princess belongs to the Knight🧡🖤✨",
+      "Info-2": "Render, dan Art",
       "socials": {
         "yt": "https://youtube.com/@lusvia_4?si=KDAJFwGzYVTvUb5P",
         "ig": "https://www.instagram.com/lusvia_4?igsh=cmV0MThrb3RjeWdr",
@@ -444,9 +444,9 @@
     {
       "nama": "Amethio",
       "foto": "profile/theo.webp",
-      "spesialis": "Render dan Modeling",
       "identitas": "🫟",
-      "generasi": "Randy's Brother",
+      "Info-1": "Randy's Brother",
+      "Info-2": "Render dan Modeling",
       "socials": {
         "yt": "https://www.youtube.com/@Amethio009",
         "ig": "",
@@ -459,9 +459,9 @@
     {
       "nama": "Ell",
       "foto": "profile/zai.webp",
-      "spesialis": "Animasi, Render, Modeling, dan skin maker",
       "identitas": "🗿",
-      "generasi": "Randy's brother",
+      "Info-1": "Randy's brother",
+      "Info-2": "Animasi, Render, Modeling, dan skin maker",
       "socials": {
         "yt": "https://youtube.com/@lapar-t4i?si=PA8PWYn5R2XNwiJa",
         "ig": "https://www.instagram.com/el_lapar8?igsh=N2Flc25tdTBwdXFo",

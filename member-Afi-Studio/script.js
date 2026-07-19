@@ -14,6 +14,12 @@ function getIcon(type) {
     return icons[type] || null;
 }
 
+function formatGenTitle(genId) {
+    const m = String(genId).match(/^gen-(\d+)$/i);
+    if (m) return `Generasi ke-${m[1]}`;
+    return String(genId).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function renderMembers() {
     const wrap = document.getElementById('folder-group');
     if (!wrap) return;
@@ -22,7 +28,7 @@ function renderMembers() {
     const keys = Object.keys(dataMember);
     keys.forEach((genId, i) => {
         const members = dataMember[genId] || [];
-        const title = members[0] && members[0].generasi ? members[0].generasi : genId;
+        const title = formatGenTitle(genId);
         const delay = (i * 0.05).toFixed(2);
 
         const folder = document.createElement('div');
@@ -63,6 +69,11 @@ function openModal(gen, index) {
         }
     }
 
+    const infoKeys = Object.keys(m)
+        .filter(k => /^info-\d+$/i.test(k))
+        .sort((a, b) => parseInt(a.match(/\d+/)[0], 10) - parseInt(b.match(/\d+/)[0], 10));
+    const infoHtml = infoKeys.map(k => `<li>${m[k]}</li>`).join('');
+
     document.getElementById('modalBody').innerHTML = `
         <div class="modal-banner">
             <img src="${m.foto}" loading="lazy" decoding="async">
@@ -72,8 +83,7 @@ function openModal(gen, index) {
             <h2 class="modal-name">${m.nama}</h2>
             <div class="modal-divider"></div> 
             <ul class="modal-subtext" style="list-style-type: disc; padding-left: 20px;">
-                <li>${m.spesialis}</li>
-                <li>${m.generasi}</li>
+                ${infoHtml}
             </ul>
             <div class="social-container">
                 ${socialHtml}

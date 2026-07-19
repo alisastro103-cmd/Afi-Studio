@@ -114,7 +114,6 @@
             padding: 8px 16px; 
             border-radius: 3px; 
             background: var(--surface); 
-            border: 1px solid var(--border); 
             font-size: 13px; 
             font-weight: 600; 
             white-space: nowrap; 
@@ -167,17 +166,12 @@
         .modal-overlay.active .modal-box { transform: scale(1); }
  
         .category-header {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 12px;
             font-family: 'Outfit', sans-serif;
-        }
-        .category-header::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-            opacity: 0.6;
+            background: var(--surface);
+            padding: 8px 14px;
+            border-radius: 3px;
         }
 
         .footer-text {
