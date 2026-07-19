@@ -162,7 +162,7 @@
         .video-scroll { scroll-snap-type: x proximity; }
         .video-card {
             flex: 0 0 auto;
-            width: 420px;
+            width: 460px;
             cursor: pointer;
             scroll-snap-align: start;
             text-decoration: none;
@@ -510,7 +510,7 @@
                     </div>
                 </div>
  
-                <div class="flex gap-4"> 
+                <div class="flex items-center gap-2"> 
                     <button id="search-toggle-btn" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
                         <i data-lucide="search" style="width: 20px;"></i>
                     </button>
@@ -522,7 +522,7 @@
 
                     <div class="page-menu">
                         <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
-                            <i data-lucide="settings" style="width: 20px;"></i>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
                         </button>
                         <div id="page-menu-dropdown" class="page-menu-dropdown">
                             <a href="/" class="page-menu-item active">Beranda</a>
@@ -572,7 +572,7 @@
  
             <div class="mt-8" id="video-section" style="display:none;">
                 <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Video &amp; Tutorial</h2>
-                <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar video-scroll" id="video-scroll"></div>
+                <div class="flex gap-1 overflow-x-auto pb-2 no-scrollbar video-scroll" id="video-scroll"></div>
             </div>
 
         </main>
