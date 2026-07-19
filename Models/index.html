@@ -2,11 +2,7 @@
 <html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <!-- ==================================================================
-         KONTROL JALUR PENDAFTARAN (Afi Studio)
-         Diatur terpusat di /config.js — edit di SATU file itu aja,
-         otomatis berlaku ke semua halaman.
-    ================================================================== -->
+    <!-- Jalur pendaftaran (buka/tutup tombol form) diatur terpusat di /config.js -->
     <script src="/config.js"></script>
     <script>
         (function () {
@@ -247,11 +243,11 @@
         .page-menu-item.active::before {
             content: "";
             display: inline-block;
-            width: 9px;
-            height: 9px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: currentColor;
-            margin-right: 9px;
+            margin-right: 8px;
             vertical-align: middle;
         }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
