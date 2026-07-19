@@ -386,7 +386,7 @@
             margin: 0 auto;
             padding: 16px 20px 2px;
             display: grid;
-            grid-template-columns: 1.4fr 1fr 1fr 1fr;
+            grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
             gap: 16px;
         }
         @media (max-width: 640px) {
@@ -495,7 +495,34 @@
         }
         .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+        .page-menu-item-cta { color: var(--accent); display: flex; align-items: center; justify-content: space-between; }
+        .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
 
+    </style>
+    <script>
+        // ====================================================
+        // PENGATURAN MANUAL: Buka/Tutup jalur "Daftar Model 3D" & "Daftar Member"
+        // true  = jalur AKTIF (langsung buka Google Form)
+        // false = jalur DITUTUP (muncul notif "Segera Hadir")
+        // ====================================================
+        const isDaftarModelOpen = false;
+        const isDaftarMemberOpen = false;
+        function showDaftarToast() {
+            var t = document.getElementById('toast-daftar');
+            if (t) { t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 2000); }
+        }
+    </script>
+    <style>
+        .toast-daftar {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translate(-50%, 80px);
+            background: var(--accent, #6c5ce7); color: #fff;
+            padding: 12px 24px; border-radius: 999px;
+            font-weight: 700; font-size: 14px;
+            transition: transform 0.3s ease; z-index: 3000;
+        }
+        .toast-daftar.show { transform: translate(-50%, 0); }
     </style>
 </head>
  
@@ -532,6 +559,9 @@
                             <a href="tutorial/index.html" class="page-menu-item">Video &amp; Tutorial</a>
                             <a href="bantuan/index.html" class="page-menu-item">Bantuan</a>
                             <a href="feedback/index.html" class="page-menu-item">Feedback</a>
+                            <div class="page-menu-divider"></div>
+                            <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                            <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
                         </div>
                     </div>
                 </div>
@@ -602,6 +632,12 @@
                     <a href="bantuan/index.html">Bantuan</a>
                     <a href="feedback/index.html">Umpan balik</a>
                     <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener">Dukung kami</a>
+                </div>
+
+                <div class="footer-col">
+                    <div class="footer-col-title">Gabung Kami</div>
+                    <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                    <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
                 </div>
 
                 <div class="footer-col">
@@ -990,5 +1026,6 @@
 
         renderModels();
     </script>
+    <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
 </body>
 </html>
