@@ -1,18 +1,26 @@
 [
     {
+        "id": "tutorial-1",
         "title": "Tutorial 1",
-        "url": "https://youtu.be/h0UMKAFzXAM?si=_NYGWzwrje4Lbd-x"
+        "url": "https://youtu.be/h0UMKAFzXAM?si=_NYGWzwrje4Lbd-x",
+        "added": "2025-11-01"
     },
     {
+        "id": "tutorial-2",
         "title": "Tutorial 2",
-        "url": "https://youtu.be/ApLkt_ykTV8?si=jjtksGyU13jp6R3b"
+        "url": "https://youtu.be/ApLkt_ykTV8?si=jjtksGyU13jp6R3b",
+        "added": "2025-11-15"
     },
     {
+        "id": "tutorial-3",
         "title": "Tutorial 3",
-        "url": "https://youtu.be/1pWd0g7VsfI?si=pDW7Mgp_Fhnwbfed"
+        "url": "https://youtu.be/1pWd0g7VsfI?si=pDW7Mgp_Fhnwbfed",
+        "added": "2025-12-01"
     },
     {
+        "id": "tutorial-4",
         "title": "Tutorial 4",
-        "url": "https://youtu.be/yf4lvgFP4_o?si=iFhyvMYhFlNkmNPr"
+        "url": "https://youtu.be/yf4lvgFP4_o?si=iFhyvMYhFlNkmNPr",
+        "added": "2025-12-10"
     }
 ]

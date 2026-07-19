@@ -204,6 +204,28 @@
         }
         .video-card:hover .video-play-badge { background: rgba(0,0,0,0.3); }
         .video-play-badge svg { width: 80px; height: 80px; color: #fff; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+        .new-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #EF4444;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+            z-index: 2;
+            letter-spacing: 0.02em;
+        }
+        .view-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
         .video-card-title {
             margin-top: 8px;
             font-size: 15px;
@@ -760,6 +782,50 @@
         // --- VIDEO & TUTORIAL (dimuat dari videos.json) ---
         let VIDEOS = [];
 
+        // Sama persis dengan tutorial/script.js — dipertahankan sinkron di 2 tempat
+        // (bukan modul bersama) karena halaman ini masih pakai <script> inline.
+        const NEW_BADGE_DAYS = 14;
+        const VIEW_STORAGE_KEY = 'afi-video-views';
+
+        function isNewVideo(v) {
+            if (!v || !v.added) return false;
+            const added = new Date(`${v.added}T00:00:00`);
+            if (isNaN(added.getTime())) return false;
+            const diffDays = (Date.now() - added.getTime()) / 86400000;
+            return diffDays <= NEW_BADGE_DAYS && diffDays >= -1;
+        }
+
+        function getViewCounts() {
+            try {
+                const raw = localStorage.getItem(VIEW_STORAGE_KEY);
+                const parsed = raw ? JSON.parse(raw) : {};
+                return (parsed && typeof parsed === 'object') ? parsed : {};
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function getViewCount(id) {
+            if (!id) return 0;
+            return getViewCounts()[id] || 0;
+        }
+
+        function incrementView(id) {
+            if (!id) return;
+            try {
+                const counts = getViewCounts();
+                counts[id] = (counts[id] || 0) + 1;
+                localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(counts));
+            } catch (err) {
+                // localStorage penuh/diblokir -> diem aja, fitur opsional
+            }
+        }
+
+        function formatViews(n) {
+            if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}rb`;
+            return `${n}`;
+        }
+
         function extractYouTubeId(url) {
             const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
             return match ? match[1] : null;
@@ -790,6 +856,7 @@
                 const v = VIDEOS[i];
                 const id = extractYouTubeId(v.url);
                 const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
+                const views = getViewCount(v.id);
                 return `
                     <article class="video-card" onclick="openVideoModal(${i})">
                         <div class="video-thumb-wrap">
@@ -797,8 +864,10 @@
                             <div class="video-play-badge">
                                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                             </div>
+                            ${isNewVideo(v) ? `<span class="new-badge">Baru</span>` : ''}
                         </div>
                         <div class="video-card-title">${v.title}</div>
+                        ${views > 0 ? `<div class="view-badge"><i data-lucide="eye" style="width: 12px; height: 12px;"></i>${formatViews(views)}x ditonton</div>` : ''}
                     </article>`;
             }).join('') + `
                 <a href="tutorial/index.html" class="video-card">
@@ -827,6 +896,8 @@
             if (!v) return;
             const id = extractYouTubeId(v.url);
             if (!id) return;
+
+            incrementView(v.id);
 
             document.getElementById('video-modal-title').textContent = v.title;
             document.getElementById('video-youtube-link').href = v.url;
