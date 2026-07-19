@@ -165,7 +165,19 @@
             width: 420px;
             cursor: pointer;
             scroll-snap-align: start;
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
+        .video-viewall-thumb {
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-sub);
+            transition: color 0.2s;
+        }
+        .video-card:hover .video-viewall-thumb { color: var(--accent-hover); }
         .video-thumb-wrap {
             position: relative;
             border-radius: 3px;
@@ -770,9 +782,16 @@
                         </div>
                         <div class="video-card-title">${v.title}</div>
                     </article>`;
-            }).join('');
+            }).join('') + `
+                <a href="tutorial/index.html" class="video-card">
+                    <div class="video-thumb-wrap video-viewall-thumb">
+                        <i data-lucide="chevron-right" style="width: 40px; height: 40px;"></i>
+                    </div>
+                    <div class="video-card-title">Lihat Semua Video</div>
+                </a>`;
 
             section.style.display = '';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         async function loadVideos() {

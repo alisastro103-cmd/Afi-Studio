@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afi Studio - Video & Tutorial</title>
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="../favicon.png">
+
+    <!-- Open Graph -->
+    <link rel="canonical" href="https://afi-studio.vercel.app/tutorial/">
+    <meta name="description" content="Semua video dan tutorial Minecraft 3D dari komunitas Afi Studio, langsung dari YouTube.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/tutorial/">
+    <meta property="og:title" content="Afi Studio - Video & Tutorial">
+    <meta property="og:site_name" content="Afi Studio">
+    <meta property="og:description" content="Semua video dan tutorial Minecraft 3D dari komunitas Afi Studio.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Video & Tutorial">
+    <meta name="twitter:description" content="Semua video dan tutorial Minecraft 3D dari komunitas Afi Studio.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <link rel="stylesheet" href="/fonts/fonts.css">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'DM Sans', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        :root {
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+        }
+
+        html.dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+        }
+
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 24px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-10px);
+        }
+        .search-container.active {
+            max-height: 100px;
+            opacity: 1;
+            transform: translateY(0);
+            margin-top: 20px;
+        }
+
+        .search-input { width: 100%; padding: 14px 18px 14px 48px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text); outline: none; font-size: 14px; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .category-header {
+            display: inline-flex;
+            align-items: center;
+            font-family: 'Outfit', sans-serif;
+            background: var(--surface);
+            padding: 8px 14px;
+            border-radius: 3px;
+        }
+
+        /* --- Feed video ala beranda YouTube: full-bleed di mobile, grid rapi di desktop --- */
+        .tutorial-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+        @media (min-width: 640px) {
+            .tutorial-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        }
+        @media (min-width: 1024px) {
+            .tutorial-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .tutorial-card { cursor: pointer; margin-bottom: 22px; }
+        @media (min-width: 640px) { .tutorial-card { margin-bottom: 0; } }
+
+        .tutorial-thumb-wrap {
+            position: relative;
+            overflow: hidden;
+            background: var(--surface);
+        }
+        @media (min-width: 640px) {
+            .tutorial-thumb-wrap { border-radius: 3px; border: 1px solid var(--border); }
+        }
+        .tutorial-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; transition: transform 0.25s; }
+        .tutorial-card:hover .tutorial-thumb { transform: scale(1.03); }
+
+        .tutorial-play-badge {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.15);
+            transition: background 0.2s;
+        }
+        .tutorial-card:hover .tutorial-play-badge { background: rgba(0,0,0,0.3); }
+        .tutorial-play-badge svg { width: 56px; height: 56px; color: #fff; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+
+        .tutorial-card-title {
+            padding: 10px 16px 0;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.35;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        @media (min-width: 640px) {
+            .tutorial-card-title { padding: 8px 0 0; }
+        }
+
+        /* Modal Styling (player video) */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .video-modal-box { max-width: 760px; width: 94%; border-radius: 3px !important; }
+        .video-frame-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+        .video-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+        .video-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .video-youtube-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .video-youtube-btn:hover { background: var(--accent); color: #fff; }
+        .video-youtube-btn:focus, .video-youtube-btn:focus-visible { outline: none; }
+        .video-youtube-btn { -webkit-tap-highlight-color: transparent; }
+        .video-youtube-btn svg { width: 16px; height: 16px; }
+
+        .footer-text {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 40px;
+            padding-bottom: 24px;
+            font-weight: 500;
+        }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+    </style>
+</head>
+
+<body class="h-full">
+    <div id="app" class="h-full overflow-auto w-full flex flex-col justify-between">
+        <div>
+            <nav class="nav-bar">
+                <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <a href="../index.html" class="back-btn">
+                            <i data-lucide="arrow-left" style="width: 24px;"></i>
+                        </a>
+                        <div class="cursor-pointer flex items-center gap-1">
+                            <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                            <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
+                                Afi-Studio
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button id="search-toggle-btn" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                            <i data-lucide="search" style="width: 20px;"></i>
+                        </button>
+
+                        <a href="../bantuan/index.html" aria-label="Bantuan" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                            <i data-lucide="help-circle" style="width: 20px;"></i>
+                        </a>
+
+                        <a href="../feedback/index.html" aria-label="Feedback" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                            <i data-lucide="message-square" style="width: 20px;"></i>
+                        </a>
+
+                        <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                            <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <main class="max-w-6xl mx-auto px-4 pt-4 pb-6 sm:px-6">
+                <div id="search-wrapper" class="search-container">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="Cari judul video...">
+                </div>
+
+                <div class="mt-2 mb-4">
+                    <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">Semua Video &amp; Tutorial</h2>
+                </div>
+
+                <section class="tutorial-grid -mx-4 sm:mx-0" id="content-grid"></section>
+            </main>
+        </div>
+
+        <footer class="footer-text">
+            <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+        </footer>
+    </div>
+
+    <div id="video-modal-overlay" class="modal-overlay" onclick="closeVideoModal()">
+        <div class="modal-box video-modal-box" onclick="event.stopPropagation()">
+            <div class="video-frame-wrap" id="video-frame-wrap"></div>
+            <div class="p-4">
+                <div class="video-modal-header">
+                    <h2 id="video-modal-title" class="text-base font-bold"></h2>
+                    <a id="video-youtube-link" href="#" target="_blank" rel="noopener" class="video-youtube-btn" aria-label="Buka di YouTube" title="Buka di YouTube">
+                        <i data-lucide="arrow-up-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+
+    <script>
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        const searchToggleBtn = document.getElementById('search-toggle-btn');
+        const searchWrapper = document.getElementById('search-wrapper');
+        const searchInput = document.getElementById('search-input');
+
+        if (searchToggleBtn) {
+            searchToggleBtn.addEventListener('click', () => {
+                searchWrapper.classList.toggle('active');
+                if (searchWrapper.classList.contains('active')) {
+                    setTimeout(() => searchInput.focus(), 300);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
