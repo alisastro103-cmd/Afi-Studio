@@ -148,6 +148,17 @@
             scroll-snap-type: x proximity;
             padding-bottom: 4px;
         }
+        /* "Baru saja dinonton" tampil 1 baris aja, discroll ke samping */
+        .recent-scroll {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x proximity;
+            padding-bottom: 4px;
+        }
+        @media (min-width: 640px) {
+            .recent-scroll { gap: 24px; }
+        }
         .tutorial-card { cursor: pointer; width: 240px; scroll-snap-align: start; }
         @media (min-width: 640px) {
             .tutorial-grid { gap: 24px; }
@@ -285,7 +296,7 @@
             right: 0;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 8px;
             min-width: 190px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             padding: 6px;
@@ -374,9 +385,9 @@
 
                 <div id="popular-section" class="mb-8" style="display: none;">
                     <div class="mt-2 mb-4">
-                        <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">🔥 Video Populer</h2>
+                        <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">Baru saja dinonton</h2>
                     </div>
-                    <section class="tutorial-grid no-scrollbar -mx-4 sm:mx-0" id="popular-grid"></section>
+                    <section class="recent-scroll no-scrollbar -mx-4 sm:mx-0" id="popular-grid"></section>
                 </div>
 
                 <div class="mt-2 mb-4">
