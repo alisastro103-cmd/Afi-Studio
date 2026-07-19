@@ -197,19 +197,28 @@
         .video-modal-box { max-width: 760px; width: 94%; border-radius: 3px !important; }
         .video-frame-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
         .video-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-        .video-youtube-btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            padding: 12px;
-            border-radius: 3px;
-            font-weight: 700;
-            font-size: 13px;
-            background: #FF0000;
-            color: #fff;
-            text-decoration: none;
-            margin-top: 12px;
+        .video-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
+        .video-youtube-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .video-youtube-btn:hover { background: var(--accent); color: #fff; }
+        .video-youtube-btn svg { width: 16px; height: 16px; }
 
         .contact-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         .contact-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); text-decoration: none; transition: background 0.2s; }
@@ -323,26 +332,72 @@
             border-radius: 3px;
         }
  
-        .footer-text {
+        .site-footer {
+            margin-top: 10px;
+            margin-left: calc(50% - 50vw);
+            width: 100vw;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+        }
+        .site-footer-inner {
+            max-width: 1152px;
+            margin: 0 auto;
+            padding: 16px 20px 10px;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 640px) {
+            .site-footer-inner { grid-template-columns: 1fr 1fr; }
+        }
+        .footer-brand { grid-column: span 1; }
+        @media (max-width: 640px) { .footer-brand { grid-column: 1 / -1; } }
+        .footer-brand-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-brand-icon { width: 40px; height: 40px; object-fit: contain; }
+        .footer-brand-name {
+            font-family: 'Dancing Script', cursive;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .footer-brand-tagline {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        .footer-col-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-sub);
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+        .footer-col a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text);
+            text-decoration: none;
+            margin-bottom: 10px;
+            transition: color 0.2s;
+        }
+        .footer-col a:hover { color: var(--accent-hover); }
+        .footer-col a svg { width: 24px; height: 24px; flex-shrink: 0; }
+        .site-footer-bottom {
+            border-top: 1px solid var(--border);
+            padding: 8px 20px;
             text-align: center;
             font-size: 11px;
             color: var(--text-sub);
-            margin-top: 40px;
-            font-weight: 500;
         }
-
-        .footer-links {
-            margin-bottom: 10px;
-            font-size: 12px;
-        }
-        .footer-links a {
-            color: var(--text-sub);
-            text-decoration: none;
-            font-weight: 700;
-            transition: color 0.2s;
-        }
-        .footer-links a:hover { color: var(--accent-hover); }
-        .footer-links .footer-sep { margin: 0 8px; opacity: 0.5; }
 
         #theme-toggle-btn .icon-moon { display: none; }
         html.dark #theme-toggle-btn .icon-sun { display: none; }
@@ -416,62 +471,54 @@
                 <div class="flex gap-4 overflow-x-auto pb-2 no-scrollbar video-scroll" id="video-scroll"></div>
             </div>
 
-            <div class="mt-8 mb-10" id="contact-us">
-                <h2 class="font-bold text-xs tracking-widest uppercase mb-4 opacity-60 text-center">Contact Us</h2>
-                <div class="contact-box max-w-2xl mx-auto">
-                    <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" class="contact-item">
-                        <div class="contact-info">
-                            <div class="icon-circle" style="background: #25D366;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 736 736"><path fill="#fff" d="M364 107.9a259 259 0 0 1 88.5 14c19 6.2 38 14.9 54.5 26.1l3.2 2.1a372 372 0 0 1 20.1 14.8q2.8 2.2 5.7 4.1v2l1.8.8q3.3 1.8 5.8 4.4l2.1 2 2.1 2 2 1.9a173 173 0 0 1 15.9 17q22.6 26.4 37.3 57.9l1 2a252 252 0 0 1 23 127l-.2 2.6a253 253 0 0 1-68.2 154.6q-2.8 3-5.3 6.2L551 552h-2v2c-1.6 1.7-1.6 1.7-3.8 3.6l-2.2 1.8c-2 1.6-2 1.6-5 2.6v2a97 97 0 0 1-7.3 5.8l-9.2 6.9a242 242 0 0 1-103 45.3 242 242 0 0 1-109.5-1.9 223 223 0 0 1-63.2-24c-6.6-2.6-15.1.9-21.8 2.6l-3.2.8-37.5 9.5q-17.9 4.5-35.6 9.3l-3 .7-18.4 5-2.2.5q-7.5 2-15.1 2.5a170 170 0 0 1 7-28.5l1-3.3 4.6-15.5.8-2.7q2.7-9 5-17.9 4.6-17.3 9.6-34.5l2.4-8.2.7-2.5 3.7-14c.4-3.5-1.3-5.6-3.2-8.5l-2.3-3.6-1.2-1.9c-3-5-5-10.5-7.3-16l-2.4-5.5A252 252 0 0 1 109 359.6c.7-35.8 9-71.5 25-103.6l1-2.2a291 291 0 0 1 35-53.8l1.3-1.7q4.1-4.9 8.7-9.3l2.6-2.6q7.8-8.2 16.4-15.4l2.8-2.4A261 261 0 0 1 363.9 108M306 161l-2.8.9A199 199 0 0 0 224 208l-2.4 2c-40.7 35.5-64 88.3-68.4 141.6-2.8 43.2 6 89.7 30 126.5l1.6 2.4 3 4.3c2 3 3.3 5 3 8.6q-2 10.1-5 20l-.9 3.2-10.8 37.4-.9 3-.8 2.6c-.4 2.5-.2 4 .6 6.4q17.3-4 34.3-8.4l3.4-1 23.6-6.1 3-.8c7.1-1.9 12.3-2.2 19 1.5l4.5 2.9c37 22.1 81.6 32 124.5 28l3-.2a211 211 0 0 0 125-55.4c3.5-3.4 3.5-3.4 5.7-4.5v-2l3-1c1.5-1.5 1.5-1.5 3-3.3l2-2.2 2-2.5 2.3-2.7a219 219 0 0 0 52.1-159.9A218 218 0 0 0 565 279l-1-2.1a205 205 0 0 0-35.8-53.6l-6.3-7A50 50 0 0 0 506 203v-2c-1.4-1.4-1.4-1.4-3.4-2.7l-2.2-1.6-2.4-1.7-2.5-1.8C441 154.7 370.5 140.4 306 161"/><path fill="#fff" d="M283.6 245.6h3c5.5 0 9.8.2 14.4 3.4 3.4 3.7 5 8.4 7 13l1.2 2.8 11.8 27.7 6.1 14.3c1 3.8.8 6.4-.1 10.2-1.3 2.3-1.3 2.3-3 4.3l-1.9 2.3-9 10C307 340 307 340 304 348a92 92 0 0 0 16 26l1.3 1.6c9.1 12.2 9.1 12.2 20.7 21.4v2l1.6.7q3.8 2 7.2 4.9a187 187 0 0 0 38.4 22.6l2.8 1.2 2.5 1c1.1.6 1.1.6 2.3 1 2.7.7 4.5.4 7.2-.4 5.5-4.8 9.7-11.2 14-17.1 9.1-12.6 9.1-12.6 14-15.9a32 32 0 0 1 15.7 4l4 2 2.1 1 9 4.2 21.2 10 2.1 1c12.4 5.8 12.4 5.8 13.9 8.8 1.8 14.3-4.7 29.4-12.4 41.1A64 64 0 0 1 449 491c-34.7 3-67.8-11.4-97-29l-2-1.1a208 208 0 0 1-32.1-23.4Q310 431.3 303 424l-7.8-7.7q-9.9-9.5-18.2-20.3l-1.5-1.9c-21.6-27.2-42.1-60.8-38-97A74 74 0 0 1 262 252h2v-2a32 32 0 0 1 19.6-4.4"/></svg>
-                            </div>
-                            <div>
-                                <div class="contact-label">Ikuti Saluran WhatsApp</div>
-                                <div class="contact-sub">Dapatkan info terupdate setiap hari</div>
-                            </div>
-                        </div>
-                        <i data-lucide="chevron-right" style="width: 18px; opacity: 0.3;"></i>
+        </main>
+
+        <footer class="site-footer">
+            <div class="site-footer-inner">
+                <div class="footer-brand">
+                    <div class="footer-brand-header">
+                        <img src="icon.png" alt="Afi Studio" class="footer-brand-icon">
+                        <div class="footer-brand-name">Afi-Studio</div>
+                    </div>
+                    <p class="footer-brand-tagline">Platform berbagi aset Minecraft gratis — rig, model 3D, map, texture, dan furniture buatan komunitas. Jelajahi ratusan aset siap pakai, ikuti event render bulanan, dan gabung bareng kreator Minecraft Indonesia lainnya.</p>
+                </div>
+
+                <div class="footer-col">
+                    <div class="footer-col-title">Navigasi</div>
+                    <a href="/">Beranda</a>
+                    <a href="Models/index.html">Model</a>
+                    <a href="member-Afi-Studio/index.html">Member</a>
+                    <a href="ranking/index.html">Ranking</a>
+                    <a href="event/index.html">Event</a>
+                </div>
+
+                <div class="footer-col">
+                    <div class="footer-col-title">Bantuan</div>
+                    <a href="bantuan/index.html">Bantuan</a>
+                    <a href="feedback/index.html">Umpan balik</a>
+                    <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener">Dukung kami</a>
+                </div>
+
+                <div class="footer-col">
+                    <div class="footer-col-title">Sosial</div>
+                    <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"><path fill="currentColor" d="M364 107.9a259 259 0 0 1 88.5 14c19 6.2 38 14.9 54.5 26.1l3.2 2.1a372 372 0 0 1 20.1 14.8q2.8 2.2 5.7 4.1v2l1.8.8q3.3 1.8 5.8 4.4l2.1 2 2.1 2 2 1.9a173 173 0 0 1 15.9 17q22.6 26.4 37.3 57.9l1 2a252 252 0 0 1 23 127l-.2 2.6a253 253 0 0 1-68.2 154.6q-2.8 3-5.3 6.2L551 552h-2v2c-1.6 1.7-1.6 1.7-3.8 3.6l-2.2 1.8c-2 1.6-2 1.6-5 2.6v2a97 97 0 0 1-7.3 5.8l-9.2 6.9a242 242 0 0 1-103 45.3 242 242 0 0 1-109.5-1.9 223 223 0 0 1-63.2-24c-6.6-2.6-15.1.9-21.8 2.6l-3.2.8-37.5 9.5q-17.9 4.5-35.6 9.3l-3 .7-18.4 5-2.2.5q-7.5 2-15.1 2.5a170 170 0 0 1 7-28.5l1-3.3 4.6-15.5.8-2.7q2.7-9 5-17.9 4.6-17.3 9.6-34.5l2.4-8.2.7-2.5 3.7-14c.4-3.5-1.3-5.6-3.2-8.5l-2.3-3.6-1.2-1.9c-3-5-5-10.5-7.3-16l-2.4-5.5A252 252 0 0 1 109 359.6c.7-35.8 9-71.5 25-103.6l1-2.2a291 291 0 0 1 35-53.8l1.3-1.7q4.1-4.9 8.7-9.3l2.6-2.6q7.8-8.2 16.4-15.4l2.8-2.4A261 261 0 0 1 363.9 108M306 161l-2.8.9A199 199 0 0 0 224 208l-2.4 2c-40.7 35.5-64 88.3-68.4 141.6-2.8 43.2 6 89.7 30 126.5l1.6 2.4 3 4.3c2 3 3.3 5 3 8.6q-2 10.1-5 20l-.9 3.2-10.8 37.4-.9 3-.8 2.6c-.4 2.5-.2 4 .6 6.4q17.3-4 34.3-8.4l3.4-1 23.6-6.1 3-.8c7.1-1.9 12.3-2.2 19 1.5l4.5 2.9c37 22.1 81.6 32 124.5 28l3-.2a211 211 0 0 0 125-55.4c3.5-3.4 3.5-3.4 5.7-4.5v-2l3-1c1.5-1.5 1.5-1.5 3-3.3l2-2.2 2-2.5 2.3-2.7a219 219 0 0 0 52.1-159.9A218 218 0 0 0 565 279l-1-2.1a205 205 0 0 0-35.8-53.6l-6.3-7A50 50 0 0 0 506 203v-2c-1.4-1.4-1.4-1.4-3.4-2.7l-2.2-1.6-2.4-1.7-2.5-1.8C441 154.7 370.5 140.4 306 161"/><path fill="currentColor" d="M283.6 245.6h3c5.5 0 9.8.2 14.4 3.4 3.4 3.7 5 8.4 7 13l1.2 2.8 11.8 27.7 6.1 14.3c1 3.8.8 6.4-.1 10.2-1.3 2.3-1.3 2.3-3 4.3l-1.9 2.3-9 10C307 340 307 340 304 348a92 92 0 0 0 16 26l1.3 1.6c9.1 12.2 9.1 12.2 20.7 21.4v2l1.6.7q3.8 2 7.2 4.9a187 187 0 0 0 38.4 22.6l2.8 1.2 2.5 1c1.1.6 1.1.6 2.3 1 2.7.7 4.5.4 7.2-.4 5.5-4.8 9.7-11.2 14-17.1 9.1-12.6 9.1-12.6 14-15.9a32 32 0 0 1 15.7 4l4 2 2.1 1 9 4.2 21.2 10 2.1 1c12.4 5.8 12.4 5.8 13.9 8.8 1.8 14.3-4.7 29.4-12.4 41.1A64 64 0 0 1 449 491c-34.7 3-67.8-11.4-97-29l-2-1.1a208 208 0 0 1-32.1-23.4Q310 431.3 303 424l-7.8-7.7q-9.9-9.5-18.2-20.3l-1.5-1.9c-21.6-27.2-42.1-60.8-38-97A74 74 0 0 1 262 252h2v-2a32 32 0 0 1 19.6-4.4"/></svg>
+                        WhatsApp
                     </a>
-                    <a href="https://www.instagram.com/aficreatorid?igsh=b3IyeGFhZDRqcXQ2" target="_blank" class="contact-item">
-                        <div class="contact-info">
-                            <div class="icon-circle" style="background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);">
-                                <?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 736 736"><path fill="#fff" d="M317.6 98.7H422q28.5-.2 56.9 1.2l2.4.2a221 221 0 0 1 37 4.4c27.6 6.1 55 18.8 74.7 39.5v2h2c29.8 31.4 39 72.2 41 114.2l.2 2.6q1.3 28.8 1 57.6v102.4q.4 27.4-1.1 54.9l-.1 2.2c-2.3 39.8-12.5 76-38.2 107l-1.5 1.8C595 590 595 590 593 590l-.8 1.8c-2.2 4-5.7 6.4-9.2 9.2l-2.6 2.1c-30.1 23.5-66.6 31.1-104 33l-2.4.1q-27.4 1.3-54.8 1h-59.5c-165.1.3-165.1.3-215.2-43.6-1.5-1.6-1.5-1.6-1.5-3.6h-2c-15.7-14.4-26-36-32-56l-.7-2.3A231 231 0 0 1 100 479l-.1-2.2c-1-18.5-1-37-1-55.5V315.4q-.3-28.5 1.1-56.8l.2-2.3c2.1-38.6 11.3-73.9 35.9-104.3l2-2.5q6-6.8 13-12.5l1.5-1.2c30.5-25.4 67.2-33.7 106.1-35.9h2.4c18.9-1.1 37.8-1.2 56.6-1.2M292 147.5h-3c-42.3.9-82.3 2.7-114 33.6-21.8 23.3-25.7 55.6-27 86.1l-.1 3c-1.3 30.7-1 61.5-1 92.3v52c-2.3 77.5-2.3 77.5 31.4 144.3 25.1 24 58.1 28 91.4 29.3l3.2.1c29.3 1.2 58.6 1.1 87.9 1h15.9a2251 2251 0 0 0 91.4-1.1q15.2-.5 30.2-2.5l2.6-.4a100 100 0 0 0 65.2-36.2c15.6-22 20.6-47.8 21.5-74.3l.2-3.3a1827 1827 0 0 0 1-47.9 3758 3758 0 0 0-.1-111.4c1.3-73.6 1.3-73.6-32.6-136.1-42.3-40.1-117.9-29.2-171-29.1h-18.8q-37.2-.2-74.3.6"/><path fill="#fff" d="m454.7 260 2.3 2 2.5 2.1A138 138 0 0 1 505 347l.6 3a139 139 0 0 1-24.8 99l-6.8 8-2.2 2.6A136 136 0 0 1 382 506c-40 1.6-77-8-107.2-35.4A141 141 0 0 1 252 444l-1.5-2.3A143 143 0 0 1 234 404l-.6-2a135 135 0 0 1 .6-70l.6-2.3q10.3-35 36.4-60.7l2.6-2.6c48.4-46.1 129.6-49.5 181-6.4m-151.3 45a90 90 0 0 0-25.6 61.6 94 94 0 0 0 28.9 67.6 93 93 0 0 0 61.3 24.2 99 99 0 0 0 42-10.8c7.1-3.6 13-8.3 19-13.6l2.4-2a88 88 0 0 0 19.5-29l.8-1.9c4.4-10.3 5.9-21 5.8-32.2v-3.6a91 91 0 0 0-27-62.1 91.7 91.7 0 0 0-127 1.8m225.9-108.1A36 36 0 0 1 544 219c1 9-.5 17-5.8 24.6a38 38 0 0 1-26.6 13.8A38 38 0 0 1 485 244c-4.8-6.9-7-15.7-6-24a37 37 0 0 1 14-22.7 34 34 0 0 1 36.3-.4"/></svg>
-                            </div>
-                            <div>
-                                <div class="contact-label">Ikuti Kami di Instagram</div>
-                                <div class="contact-sub">Lihat hasil karya render terbaru kami</div>
-                            </div>
-                        </div>
-                        <i data-lucide="chevron-right" style="width: 18px; opacity: 0.3;"></i>
+                    <a href="https://www.instagram.com/aficreatorid?igsh=b3IyeGFhZDRqcXQ2" target="_blank" rel="noopener">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"><path fill="currentColor" d="M317.6 98.7H422q28.5-.2 56.9 1.2l2.4.2a221 221 0 0 1 37 4.4c27.6 6.1 55 18.8 74.7 39.5v2h2c29.8 31.4 39 72.2 41 114.2l.2 2.6q1.3 28.8 1 57.6v102.4q.4 27.4-1.1 54.9l-.1 2.2c-2.3 39.8-12.5 76-38.2 107l-1.5 1.8C595 590 595 590 593 590l-.8 1.8c-2.2 4-5.7 6.4-9.2 9.2l-2.6 2.1c-30.1 23.5-66.6 31.1-104 33l-2.4.1q-27.4 1.3-54.8 1h-59.5c-165.1.3-165.1.3-215.2-43.6-1.5-1.6-1.5-1.6-1.5-3.6h-2c-15.7-14.4-26-36-32-56l-.7-2.3A231 231 0 0 1 100 479l-.1-2.2c-1-18.5-1-37-1-55.5V315.4q-.3-28.5 1.1-56.8l.2-2.3c2.1-38.6 11.3-73.9 35.9-104.3l2-2.5q6-6.8 13-12.5l1.5-1.2c30.5-25.4 67.2-33.7 106.1-35.9h2.4c18.9-1.1 37.8-1.2 56.6-1.2M292 147.5h-3c-42.3.9-82.3 2.7-114 33.6-21.8 23.3-25.7 55.6-27 86.1l-.1 3c-1.3 30.7-1 61.5-1 92.3v52c-2.3 77.5-2.3 77.5 31.4 144.3 25.1 24 58.1 28 91.4 29.3l3.2.1c29.3 1.2 58.6 1.1 87.9 1h15.9a2251 2251 0 0 0 91.4-1.1q15.2-.5 30.2-2.5l2.6-.4a100 100 0 0 0 65.2-36.2c15.6-22 20.6-47.8 21.5-74.3l.2-3.3a1827 1827 0 0 0 1-47.9 3758 3758 0 0 0-.1-111.4c1.3-73.6 1.3-73.6-32.6-136.1-42.3-40.1-117.9-29.2-171-29.1h-18.8q-37.2-.2-74.3.6"/><path fill="currentColor" d="m454.7 260 2.3 2 2.5 2.1A138 138 0 0 1 505 347l.6 3a139 139 0 0 1-24.8 99l-6.8 8-2.2 2.6A136 136 0 0 1 382 506c-40 1.6-77-8-107.2-35.4A141 141 0 0 1 252 444l-1.5-2.3A143 143 0 0 1 234 404l-.6-2a135 135 0 0 1 .6-70l.6-2.3q10.3-35 36.4-60.7l2.6-2.6c48.4-46.1 129.6-49.5 181-6.4m-151.3 45a90 90 0 0 0-25.6 61.6 94 94 0 0 0 28.9 67.6 93 93 0 0 0 61.3 24.2 99 99 0 0 0 42-10.8c7.1-3.6 13-8.3 19-13.6l2.4-2a88 88 0 0 0 19.5-29l.8-1.9c4.4-10.3 5.9-21 5.8-32.2v-3.6a91 91 0 0 0-27-62.1 91.7 91.7 0 0 0-127 1.8m225.9-108.1A36 36 0 0 1 544 219c1 9-.5 17-5.8 24.6a38 38 0 0 1-26.6 13.8A38 38 0 0 1 485 244c-4.8-6.9-7-15.7-6-24a37 37 0 0 1 14-22.7 34 34 0 0 1 36.3-.4"/></svg>
+                        Instagram
                     </a>
-                    <a href="https://youtube.com/@afiteamid?si=CPud6_oONElBomI7" target="_blank" class="contact-item">
-                        <div class="contact-info">
-                            <div class="icon-circle" style="background: #FF0000;">
-                                <?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 736 736"><path fill="#fff" d="m489.1 186.5 4 .1q7.5.2 15 .9a267 267 0 0 0 17.7 1l10.5.5c25.2 1 48.1 5 66.5 23.8 14.1 17.4 18.8 41.5 20.8 63.1L625 292l.3 3a803 803 0 0 1 2 78c.6 123.2.6 123.2-27.6 152.4a71 71 0 0 1-43 19.2l-3.3.4a459 459 0 0 1-37.4 2l-16.6.6q-8.4.2-16.9 1-6 .5-12 .6h-2.9l-9.4.3h-3.5q-84.5 1.4-169 0l-3.7-.1-10.2-.2H269a257 257 0 0 1-17-1q-7.9-.6-15.7-.8l-29.4-.9h-3.3q-11.4-.6-22.6-2.6l-2.9-.4a71 71 0 0 1-47-25c-14.3-21.2-17-47-19.1-71.6l-.3-3.2c-2-23.2-2-46.3-2-69.6V361c-.5-122.3-.5-122.3 27-151 18-17.9 42-20.3 66-21.2l10.2-.5h2.4q6.6-.3 13-1 9.8-.7 19.7-.9h2.2q119.4-3.3 239 0M314 294q-1.3 11.6-1.1 23.4v44.5l-.1 63.7v10.1c0 2.5 0 2.5 2.2 4.3 16.3-8.4 16.3-8.4 32.3-17.4q4.5-2.5 9-4.7 9.4-4.7 18.4-10a741 741 0 0 1 29.6-15.9q10.8-5.5 21.3-11.4 12.6-7 25.4-13.6c-.5-3-.5-3-2.5-5.2l-1.9-1-2.2-1-2.4-1.2-2.4-1.3-20.8-10.4q-12.4-6.2-24.7-12.8l-15.6-8.1a3181 3181 0 0 1-53.8-28.2l-3-1.6a30 30 0 0 0-7.7-2.2"/></svg>
-                            </div>
-                            <div>
-                                <div class="contact-label">Channel YouTube Kami</div>
-                                <div class="contact-sub">Showcase model dan tutorial lengkap</div>
-                            </div>
-                        </div>
-                        <i data-lucide="chevron-right" style="width: 18px; opacity: 0.3;"></i>
+                    <a href="https://youtube.com/@afiteamid?si=CPud6_oONElBomI7" target="_blank" rel="noopener">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 736"><path fill="currentColor" d="m489.1 186.5 4 .1q7.5.2 15 .9a267 267 0 0 0 17.7 1l10.5.5c25.2 1 48.1 5 66.5 23.8 14.1 17.4 18.8 41.5 20.8 63.1L625 292l.3 3a803 803 0 0 1 2 78c.6 123.2.6 123.2-27.6 152.4a71 71 0 0 1-43 19.2l-3.3.4a459 459 0 0 1-37.4 2l-16.6.6q-8.4.2-16.9 1-6 .5-12 .6h-2.9l-9.4.3h-3.5q-84.5 1.4-169 0l-3.7-.1-10.2-.2H269a257 257 0 0 1-17-1q-7.9-.6-15.7-.8l-29.4-.9h-3.3q-11.4-.6-22.6-2.6l-2.9-.4a71 71 0 0 1-47-25c-14.3-21.2-17-47-19.1-71.6l-.3-3.2c-2-23.2-2-46.3-2-69.6V361c-.5-122.3-.5-122.3 27-151 18-17.9 42-20.3 66-21.2l10.2-.5h2.4q6.6-.3 13-1 9.8-.7 19.7-.9h2.2q119.4-3.3 239 0M314 294q-1.3 11.6-1.1 23.4v44.5l-.1 63.7v10.1c0 2.5 0 2.5 2.2 4.3 16.3-8.4 16.3-8.4 32.3-17.4q4.5-2.5 9-4.7 9.4-4.7 18.4-10a741 741 0 0 1 29.6-15.9q10.8-5.5 21.3-11.4 12.6-7 25.4-13.6c-.5-3-.5-3-2.5-5.2l-1.9-1-2.2-1-2.4-1.2-2.4-1.3-20.8-10.4q-12.4-6.2-24.7-12.8l-15.6-8.1a3181 3181 0 0 1-53.8-28.2l-3-1.6a30 30 0 0 0-7.7-2.2"/></svg>
+                        YouTube
                     </a>
                 </div>
             </div>
- 
-            <footer class="footer-text">
-                <p class="footer-links">
-                    <a href="bantuan/index.html">Bantuan</a>
-                    <span class="footer-sep">•</span>
-                    <a href="#contact-us">Dukung kami</a>
-                    <span class="footer-sep">•</span>
-                    <a href="feedback/index.html">Umpan balik</a>
-                    <span class="footer-sep">•</span>
-                    <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener">Channel WhatsApp</a>
-                </p>
-                <p>© 2026 Afi-Studio™ — All rights reserved.</p>
-
-            </footer>
-        </main>
+            <div class="site-footer-bottom">
+                © 2026 Afi-Studio™ — All rights reserved.
+            </div>
+        </footer>
     </div>
  
     <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
@@ -493,8 +540,12 @@
         <div class="modal-box video-modal-box" onclick="event.stopPropagation()">
             <div class="video-frame-wrap" id="video-frame-wrap"></div>
             <div class="p-4">
-                <h2 id="video-modal-title" class="text-base font-bold"></h2>
-                <a id="video-youtube-link" href="#" target="_blank" rel="noopener" class="video-youtube-btn">Masuk ke YouTube</a>
+                <div class="video-modal-header">
+                    <h2 id="video-modal-title" class="text-base font-bold"></h2>
+                    <a id="video-youtube-link" href="#" target="_blank" rel="noopener" class="video-youtube-btn" aria-label="Buka di YouTube" title="Buka di YouTube">
+                        <i data-lucide="arrow-up-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
