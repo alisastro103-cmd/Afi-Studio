@@ -172,12 +172,18 @@
         .video-viewall-thumb {
             aspect-ratio: 16/9;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: var(--text-sub);
-            transition: color 0.2s;
+            gap: 14px;
+            padding: 18px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            transition: filter 0.2s;
         }
-        .video-card:hover .video-viewall-thumb { color: var(--accent-hover); }
+        .video-card:hover .video-viewall-thumb { filter: brightness(1.08); }
+        .video-viewall-icon { color: #fff; }
+        .video-viewall-text { font-size: 14px; font-weight: 700; line-height: 1.4; color: #fff; }
         .video-thumb-wrap {
             position: relative;
             border-radius: 3px;
@@ -759,6 +765,15 @@
             return match ? match[1] : null;
         }
 
+        function shuffledIndices(n) {
+            const arr = Array.from({ length: n }, (_, i) => i);
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
         function renderVideos() {
             const section = document.getElementById('video-section');
             const wrap = document.getElementById('video-scroll');
@@ -769,7 +784,10 @@
                 return;
             }
 
-            wrap.innerHTML = VIDEOS.map((v, i) => {
+            const order = shuffledIndices(VIDEOS.length);
+
+            wrap.innerHTML = order.map((i) => {
+                const v = VIDEOS[i];
                 const id = extractYouTubeId(v.url);
                 const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
                 return `
@@ -785,9 +803,9 @@
             }).join('') + `
                 <a href="tutorial/index.html" class="video-card">
                     <div class="video-thumb-wrap video-viewall-thumb">
-                        <i data-lucide="chevron-right" style="width: 40px; height: 40px;"></i>
+                        <i data-lucide="arrow-right-circle" class="video-viewall-icon" style="width: 56px; height: 56px; stroke-width: 1;"></i>
+                        <div class="video-viewall-text" style="margin-top: 6px;">Lihat video lainnya untuk menonton tutorial dan rig terbaru saat ini</div>
                     </div>
-                    <div class="video-card-title">Lihat Semua Video</div>
                 </a>`;
 
             section.style.display = '';

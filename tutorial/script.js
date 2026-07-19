@@ -38,6 +38,11 @@ function renderVideos(filter = '') {
         }).join('');
     }
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    const cards = grid.querySelectorAll('.tutorial-card');
+    cards.forEach((card, i) => {
+        card.style.animationDelay = `${Math.min(i * 40, 400)}ms`;
+    });
 }
 
 function openVideoModal(index) {

@@ -118,21 +118,43 @@
             border-radius: 3px;
         }
 
-        /* --- Feed video ala beranda YouTube: full-bleed di mobile, grid rapi di desktop --- */
-        .tutorial-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0;
+        /* Transisi masuk konten halaman, senada dengan halaman lain (member-Afi-Studio, Models) */
+        main {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: section-fade-in 0.5s ease forwards;
         }
-        @media (min-width: 640px) {
-            .tutorial-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
-        }
-        @media (min-width: 1024px) {
-            .tutorial-grid { grid-template-columns: repeat(3, 1fr); }
+        @keyframes section-fade-in {
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .tutorial-card { cursor: pointer; margin-bottom: 22px; }
-        @media (min-width: 640px) { .tutorial-card { margin-bottom: 0; } }
+        /* Kartu video muncul dengan efek slide-up + fade-in secara bertahap (staggered) */
+        @keyframes cardRevealUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #content-grid .tutorial-card {
+            animation: cardRevealUp 0.45s ease-out both;
+        }
+
+        /* Feed video diatur jadi 2 baris tetap, discroll ke samping kalau video-nya banyak */
+        .tutorial-grid {
+            display: grid;
+            grid-auto-flow: column;
+            grid-template-rows: repeat(2, auto);
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x proximity;
+            padding-bottom: 4px;
+        }
+        .tutorial-card { cursor: pointer; width: 240px; scroll-snap-align: start; }
+        @media (min-width: 640px) {
+            .tutorial-grid { gap: 24px; }
+            .tutorial-card { width: 300px; }
+        }
+        @media (min-width: 1024px) {
+            .tutorial-card { width: 340px; }
+        }
 
         .tutorial-thumb-wrap {
             position: relative;
@@ -265,7 +287,7 @@
                     <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">Semua Video &amp; Tutorial</h2>
                 </div>
 
-                <section class="tutorial-grid -mx-4 sm:mx-0" id="content-grid"></section>
+                <section class="tutorial-grid no-scrollbar -mx-4 sm:mx-0" id="content-grid"></section>
             </main>
         </div>
 

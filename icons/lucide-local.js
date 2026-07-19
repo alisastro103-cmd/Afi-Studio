@@ -2,7 +2,7 @@
  * lucide-local.js — pengganti lokal untuk CDN Lucide
  * (sebelumnya: https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js)
  *
- * Cuma berisi 9 ikon yang benar-benar dipakai di situs ini (dicek lewat
+ * Cuma berisi 10 ikon yang benar-benar dipakai di situs ini (dicek lewat
  * grep data-lucide= di semua file HTML/JS), bukan seluruh library Lucide
  * (yang isinya ratusan ikon) — jadi jauh lebih ringan.
  *
@@ -22,7 +22,8 @@
     'frown': '<circle cx="12" cy="12" r="10"></circle><path d="M16 16s-1.5-2-4-2-4 2-4 2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line>',
     'help-circle': '<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 1 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>',
     'message-square': '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>',
-    'arrow-up-right': '<line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline>'
+    'arrow-up-right': '<line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline>',
+    'arrow-right-circle': '<circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line><polyline points="12 8 16 12 12 16"></polyline>'
   };
 
   function buildSvg(name, sourceEl) {
