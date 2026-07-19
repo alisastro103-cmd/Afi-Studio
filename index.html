@@ -57,15 +57,6 @@
     <script src="/icons/lucide-local.js"></script>
     <link rel="stylesheet" href="/fonts/fonts.css">
  
-    <script>
-        // ====================================================
-        // PENGATURAN MANUAL: Buka/Tutup link "Selektif Member"
-        // true  = link AKTIF (boleh dibuka ke Google Form)
-        // false = link DIBLOKIR (muncul notif "Segera Hadir")
-        // ====================================================
-        const isSelektifMemberOpen = false;
-    </script>
- 
     <style>
         /* --- RESET & ROOT --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -281,27 +272,6 @@
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; }
         .modal-overlay.active .modal-box { transform: scale(1); }
-        
-        .settings-panel { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background: var(--surface); border-left: 1px solid var(--border); z-index: 60; transition: right 0.3s; padding: 24px; }
-        .settings-panel.open { right: 0; }
-        .accent-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.15s; }
-        .accent-dot.active { border-color: var(--text); transform: scale(1.1); }
- 
-        .settings-link-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            text-decoration: none;
-            color: var(--text);
-            font-size: 14px;
-            font-weight: 600;
-            transition: opacity 0.2s;
-        }
-        .settings-link-item:last-child { border-bottom: none; }
-        .settings-link-item:hover { opacity: 0.7; }
- 
         /* --- PERBAIKAN BANNER --- */
         .banner-container { 
             width: 100%; 
@@ -396,7 +366,8 @@
             gap: 16px;
         }
         @media (max-width: 640px) {
-            .site-footer-inner { grid-template-columns: 1fr 1fr; }
+            .site-footer-inner { grid-template-columns: 1fr; gap: 28px; }
+            .footer-col { grid-column: 1 / -1; }
         }
         .footer-brand { grid-column: span 1; }
         @media (max-width: 640px) { .footer-brand { grid-column: 1 / -1; } }
@@ -443,7 +414,9 @@
         .footer-social-row a { display: flex; align-items: center; justify-content: center; margin-bottom: 0; }
         .footer-social-row a svg { width: 30px; height: 30px; }
         .site-footer-bottom {
-            padding: 0px 20px 8px;
+            padding: 16px 20px 8px;
+            margin-top: 8px;
+            border-top: 1px solid var(--border);
             text-align: center;
             font-size: 11px;
             color: var(--text-sub);
@@ -503,7 +476,9 @@
             font-family: 'Outfit', sans-serif;
         }
         .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
-        .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        .page-menu-item:active { opacity: 0.6; }
+        .page-menu-item.active { color: #fff; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        .page-menu-item.active::before { content: "\2022  "; }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
         .page-menu-item-cta { color: #fff; display: flex; align-items: center; justify-content: space-between; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
@@ -688,44 +663,7 @@
         </div>
     </div>
  
-    <aside id="settings-panel" class="settings-panel">
-        <div class="flex items-center justify-between mb-8"><h2 class="font-bold">Pengaturan</h2><button onclick="toggleSettings()"><i data-lucide="x" style="width: 20px;"></i></button></div>
-        <div class="pt-6 border-t border-[var(--border)]">
-            <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Informasi & Bantuan</label>
-            <a href="bantuan/index.html" class="settings-link-item">
-                <span>Bantuan</span>
-                <i data-lucide="chevron-right" style="width: 16px;"></i>
-            </a>
-            <a href="member-Afi-Studio/index.html" class="settings-link-item">
-                <span>Member Afi-Studio</span>
-                <i data-lucide="chevron-right" style="width: 16px;"></i>
-            </a>
-            <a href="event/index.html" class="settings-link-item">
-                <span>Event Render</span>
-                <i data-lucide="chevron-right" style="width: 16px;"></i>
-            </a>
-            <a href="ranking/index.html" class="settings-link-item">
-                <span>Ranking Render</span>
-                <i data-lucide="chevron-right" style="width: 16px;"></i>
-            </a>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSd4dQHO-m7wecvdt3Zcey3SXkOGuuPdWVR2vgC1atpscSbbYA/viewform?usp=send_form" target="_blank" class="settings-link-item" onclick="if(!isSelektifMemberOpen){ event.preventDefault(); var t=document.getElementById('toast-soon'); if(t){t.classList.remove('translate-y-20'); setTimeout(function(){t.classList.add('translate-y-20');}, 2000);} }">
-                <span>Selektif Member</span>
-                <i data-lucide="chevron-right" style="width: 16px;"></i>
-            </a>
-            <a href="feedback/index.html" class="settings-link-item">
-                <span>feedback</span>
-                <i data-lucide="chevron-right" style="width: 16px;"></i>
-            </a>
-            <a href="https://forms.gle/o77JEqJ5jAfFJBKG9" target="_blank" class="settings-link-item">
-                <span>Pendaftaran Models</span>
-                <i data-lucide="chevron-right" style="width: 16px;"></i>
-            </a>
-        </div>
-    </aside>
- 
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--accent)] text-white px-6 py-3 rounded-full font-bold text-sm translate-y-20 transition-transform shadow-lg" style="z-index: 200;">Link Disalin!</div>
- 
-    <div id="toast-soon" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--accent)] text-white px-6 py-3 rounded-full font-bold text-sm translate-y-20 transition-transform shadow-lg" style="z-index: 200;">Segera Hadir</div>
  
     <script src="Models/script.js"></script>
     <script src="/theme-toggle.js" defer></script>

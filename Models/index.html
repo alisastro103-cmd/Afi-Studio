@@ -243,7 +243,9 @@
             font-family: 'Outfit', sans-serif;
         }
         .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
-        .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        .page-menu-item:active { opacity: 0.6; }
+        .page-menu-item.active { color: #fff; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        .page-menu-item.active::before { content: "\2022  "; }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
         .page-menu-item-cta { color: #fff; display: flex; align-items: center; justify-content: space-between; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }

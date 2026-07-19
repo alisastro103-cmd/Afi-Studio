@@ -182,12 +182,6 @@ function closeModal() {
     if (modal) modal.classList.remove('active');
 }
 
-// Pengaturan
-function toggleSettings() {
-    const panel = document.getElementById('settings-panel');
-    if (panel) panel.classList.toggle('open');
-}
-
 // Fungsi Download & Copy Link
 function handleDownload() {
     if (currentModel) window.open(currentModel.link, '_blank');
@@ -208,11 +202,6 @@ function handleCopyLink() {
 const searchInputEl = document.getElementById('search-input');
 if (searchInputEl) {
     searchInputEl.addEventListener('input', (e) => renderModels(e.target.value));
-}
-
-const settingsBtn = document.getElementById('settings-btn');
-if (settingsBtn) {
-    settingsBtn.addEventListener('click', toggleSettings);
 }
 
 // Inisialisasi: ambil data model dari JSON, baru render
