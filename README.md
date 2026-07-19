@@ -35,7 +35,7 @@ Biar gak bingung pas baca dokumen ini atau ngobrol soal proyek:
 | `/Models/` | Katalog semua model — bisa difilter per kategori, bisa dicari |
 | `/tutorial/` | Semua video & tutorial YouTube — bisa dicari judulnya, ada badge "Baru" & penanda video populer |
 | `/member-Afi-Studio/` | Daftar member komunitas, dikelompokkan per generasi |
-| `/ranking/` | Papan peringkat karya render — UI & animasinya sudah jadi, tapi isi gambarnya **masih placeholder** (belum ada karya beneran) |
+| `/ranking/` | Papan peringkat karya render — **masih placeholder**, belum ada isinya beneran |
 | `/event/` | Aturan & panduan ikut event render (bukan galeri foto) |
 | `/bantuan/` | FAQ — pertanyaan umum soal cara pakai website |
 | `/feedback/` | Form kritik & saran, terkirim ke Telegram tim |
@@ -81,14 +81,13 @@ Script ini otomatis ngecek `videos.json` dan `Models/models.json` — kasih tau 
 
 **Umum**
 - Tema gelap/terang (ngikutin HP otomatis, bisa di-toggle manual)
-- Animasi transisi masuk yang senada di semua halaman konten (Models, Member Afi-Studio, Ranking Render) — kartu/gambar muncul dari bawah ke atas sambil fade-in, bertahap satu-satu (staggered)
 - PWA — bisa di-install ke homescreen, halaman utama tetap bisa dibuka semi-offline
 - SEO dasar (biar gampang ketemu di Google)
 
 ### Ide pengembangan selanjutnya (belum dikerjakan)
 - [ ] Search/filter di halaman Member
 - [ ] Sorting (model terbaru/terlama, member alfabet)
-- [ ] Isi konten asli galeri `/ranking/` (ganti `coming_soon.webp` dengan karya beneran tiap bulan) — UI & animasinya sudah siap dipakai
+- [ ] Isi konten asli galeri `/ranking/`, ganti placeholder
 - [ ] Counter download / like dari pengunjung — ini butuh database beneran kalau mau diterapkan, karena situs ini sengaja tanpa database
 
 ---

@@ -2,7 +2,11 @@
 <html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <!-- Jalur pendaftaran (buka/tutup tombol form) diatur terpusat di /config.js -->
+    <!-- ==================================================================
+         KONTROL JALUR PENDAFTARAN (Afi Studio)
+         Diatur terpusat di /config.js — edit di SATU file itu aja,
+         otomatis berlaku ke semua halaman.
+    ================================================================== -->
     <script src="/config.js"></script>
     <script>
         (function () {
@@ -165,7 +169,7 @@
         .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item:active { opacity: 0.6; }
         .page-menu-item.active { color: #fff; background: color-mix(in srgb, var(--accent) 10%, transparent); }
-        .page-menu-item.active::before { content: "\2022  "; font-size: 9px; vertical-align: 1px; }
+        .page-menu-item.active::before { content: "\2022  "; }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
         .page-menu-item-cta { color: #fff; display: flex; align-items: center; justify-content: space-between; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
@@ -358,13 +362,14 @@
             width: 100%;
         }
  
-        /* Ikon status (emoji) di pojok kanan atas kartu profil member */
-        .status-icon {
-            position: absolute;
-            right: 20px;
-            top: 15px;
-            font-size: 32px;
+        /* --- BAGIAN YANG DIPERBAIKI --- */
+        .status-icon { 
+            position: absolute; 
+            right: 20px; 
+            top: 15px; 
+            font-size: 32px; 
         }
+        /* ---------------------------- */
  
         .modal-subtext { font-family: var(--font-secondary); font-size: 14px; color: var(--text-sub); margin-top: 5px; line-height: 1.3; }
  
@@ -385,8 +390,11 @@
             cursor: pointer; 
         }
  
-        /* Responsive: desktop & tablet. Cuma media query tambahan
-           untuk layout, tidak ada fungsi/struktur HTML yang diubah. */
+        /* =============================================
+           RESPONSIVE — Desktop & Tablet
+           Tidak ada fungsi / struktur HTML yang diubah.
+           Hanya penambahan media query untuk layout.
+        ============================================= */
  
         /* Tablet: 501px – 900px */
         @media (min-width: 501px) {
@@ -506,8 +514,11 @@
         }
     </style>
     <script>
-        // Saklar manual link "Seleksi Member":
-        // true = link aktif (boleh dibuka ke Google Form), false = tampil notif "Segera Hadir"
+        // ====================================================
+        // PENGATURAN MANUAL: Buka/Tutup link "Seleksi Member"
+        // true  = link AKTIF (boleh dibuka ke Google Form)
+        // false = link DIBLOKIR (muncul notif "Segera Hadir")
+        // ====================================================
         const isSeleksiMemberOpen = false;
     </script>
 
