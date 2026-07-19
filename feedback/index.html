@@ -2,11 +2,7 @@
 <html lang="id" class="h-full">
  <head>
   <meta charset="UTF-8">
-    <!-- ==================================================================
-         KONTROL JALUR PENDAFTARAN (Afi Studio)
-         Diatur terpusat di /config.js — edit di SATU file itu aja,
-         otomatis berlaku ke semua halaman.
-    ================================================================== -->
+    <!-- Jalur pendaftaran (buka/tutup tombol form) diatur terpusat di /config.js -->
     <script src="/config.js"></script>
   <script>
     (function () {
@@ -281,16 +277,7 @@
     .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
     .page-menu-item:active { opacity: 0.6; }
     .page-menu-item.active { color: #fff; background: color-mix(in srgb, var(--accent) 10%, transparent); }
-    .page-menu-item.active::before {
-            content: "";
-            display: inline-block;
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: currentColor;
-            margin-right: 9px;
-            vertical-align: middle;
-        }
+    .page-menu-item.active::before { content: "\2022  "; font-size: 9px; vertical-align: 1px; }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
         .page-menu-item-cta { color: #fff; display: flex; align-items: center; justify-content: space-between; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }

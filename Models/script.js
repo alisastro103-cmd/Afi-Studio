@@ -223,7 +223,7 @@ async function loadModels() {
 }
 loadModels();
 
-// === Animasi transisi halus untuk board konten (#content-grid) ===
+// Animasi transisi halus untuk board konten (#content-grid).
 // Kartu muncul dengan efek slide-up + fade-in secara bertahap (staggered)
 // setiap kali grid diisi ulang. Dipasang via MutationObserver supaya
 // otomatis berlaku untuk index.html (root) maupun Models/index.html,
