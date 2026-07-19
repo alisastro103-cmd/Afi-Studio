@@ -2,6 +2,12 @@
 <html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
+    <!-- ==================================================================
+         KONTROL JALUR PENDAFTARAN (Afi Studio)
+         Diatur terpusat di /config.js — edit di SATU file itu aja,
+         otomatis berlaku ke semua halaman.
+    ================================================================== -->
+    <script src="/config.js"></script>
     <script>
         (function () {
             var saved = localStorage.getItem('afi-theme');
@@ -138,8 +144,9 @@
         .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
-        .page-menu-item-cta { color: var(--accent); display: flex; align-items: center; justify-content: space-between; }
+        .page-menu-item-cta { color: #fff; display: flex; align-items: center; justify-content: space-between; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item-cta:active { opacity: 0.6; }
 
         #theme-toggle-btn .icon-moon { display: none; }
         html.dark #theme-toggle-btn .icon-sun { display: none; }
@@ -203,19 +210,7 @@
             font-weight: 500;
         }
     </style>
-    <script>
-        // ====================================================
-        // PENGATURAN MANUAL: Buka/Tutup jalur "Daftar Model 3D" & "Daftar Member"
-        // true  = jalur AKTIF (langsung buka Google Form)
-        // false = jalur DITUTUP (muncul notif "Segera Hadir")
-        // ====================================================
-        const isDaftarModelOpen = false;
-        const isDaftarMemberOpen = false;
-        function showDaftarToast() {
-            var t = document.getElementById('toast-daftar');
-            if (t) { t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 2000); }
-        }
-    </script>
+
     <style>
         .toast-daftar {
             position: fixed; bottom: 24px; left: 50%;
