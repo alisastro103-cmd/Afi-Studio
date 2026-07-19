@@ -444,6 +444,58 @@
         html.dark #theme-toggle-btn .icon-sun { display: none; }
         html.dark #theme-toggle-btn .icon-moon { display: block; }
 
+        /* Menu pindah halaman */
+        .page-menu { position: relative; }
+        .page-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            min-width: 190px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+        }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
     </style>
 </head>
  
@@ -462,6 +514,21 @@
                     <button id="search-toggle-btn" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
                         <i data-lucide="search" style="width: 20px;"></i>
                     </button>
+
+                    <div class="page-menu">
+                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+                        </button>
+                        <div id="page-menu-dropdown" class="page-menu-dropdown">
+                            <a href="/" class="page-menu-item active">Beranda</a>
+                            <a href="member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
+                            <a href="event/index.html" class="page-menu-item">Event Render</a>
+                            <a href="ranking/index.html" class="page-menu-item">Ranking Render</a>
+                            <a href="tutorial/index.html" class="page-menu-item">Video &amp; Tutorial</a>
+                            <a href="bantuan/index.html" class="page-menu-item">Bantuan</a>
+                            <a href="feedback/index.html" class="page-menu-item">Feedback</a>
+                        </div>
+                    </div>
                     
                     <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
                         <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
@@ -764,6 +831,18 @@
  
         resetTimer();
  
+        (function () {
+            const menuBtn = document.getElementById('page-menu-btn');
+            const menuDropdown = document.getElementById('page-menu-dropdown');
+            menuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                menuDropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', function () {
+                menuDropdown.classList.remove('open');
+            });
+        })();
+
         const searchToggleBtn = document.getElementById('search-toggle-btn');
         const searchWrapper = document.getElementById('search-wrapper');
         const searchInput = document.getElementById('search-input');
