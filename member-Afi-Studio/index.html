@@ -106,7 +106,7 @@
             z-index: 1000;
             border-bottom: 1px solid var(--border);
         }
-        .nav-left { display: flex; align-items: center; gap: 4px; }
+        .nav-left { display: flex; align-items: center; }
         .nav-right { 
             display: flex; 
             align-items: center; 
@@ -169,7 +169,16 @@
         .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item:active { opacity: 0.6; }
         .page-menu-item.active { color: #fff; background: color-mix(in srgb, var(--accent) 10%, transparent); }
-        .page-menu-item.active::before { content: "\2022  "; }
+        .page-menu-item.active::before {
+            content: "";
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: currentColor;
+            margin-right: 9px;
+            vertical-align: middle;
+        }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
         .page-menu-item-cta { color: #fff; display: flex; align-items: center; justify-content: space-between; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
@@ -537,10 +546,10 @@
 <body>
     <nav class="navbar">
         <div class="nav-left">
-            <a href="../index.html" style="display:flex; align-items:center; color: var(--text); padding: 5px;">
+            <a href="../index.html" style="display:flex; align-items:center; color: var(--text); padding: 5px; margin-right:10px;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </a>
-            <img src="../icon.png" alt="Logo" style="width:40px; height:40px; object-fit:contain;">
+            <img src="../icon.png" alt="Logo" style="width:40px; height:40px; object-fit:contain; margin-right:4px;">
             <span class="nav-logo-text">Afi-Studio</span>
         </div>
         <div class="nav-right">

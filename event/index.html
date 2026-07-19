@@ -345,7 +345,16 @@
     .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
     .page-menu-item:active { opacity: 0.6; }
     .page-menu-item.active { color: #fff; background: color-mix(in srgb, var(--accent) 10%, transparent); }
-    .page-menu-item.active::before { content: "\2022  "; }
+    .page-menu-item.active::before {
+            content: "";
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: currentColor;
+            margin-right: 9px;
+            vertical-align: middle;
+        }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
         .page-menu-item-cta { color: #fff; display: flex; align-items: center; justify-content: space-between; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
@@ -481,7 +490,7 @@
             <p style="font-size:12px; line-height:1.6; color:var(--text-light); opacity:0.85; margin-bottom:24px;">
                 Pastikan Anda memahami dan dapat mematuhi semua persyaratan sebelum melanjutkan. Eksibisi ini merupakan <strong style="color:var(--text); font-weight:700; opacity:0.95;">wadah hiburan, evaluasi, dan media pembelajaran komunitas</strong> (bukan acara berskala besar). Karya terpilih dipamerkan di website Afi Studio, dan seluruh hasil render serta susunan peringkat juara akan <strong style="color:var(--text); font-weight:700; opacity:0.95;">diperbarui setiap bulan</strong>. Eksibisi ini <strong style="color:var(--text); font-weight:700; opacity:0.95;">tidak menyediakan hadiah atau imbalan materi</strong> dalam bentuk apa pun.
             </p>
-            <p style="font-size:11px; font-weight:500; text-align:center; color:var(--text-light); opacity:0.85; font-family:'DM Sans',sans-serif;">&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+            <p style="font-size:11px; font-weight:500; text-align:center; color:var(--text-light); opacity:0.85; font-family:'DM Sans',sans-serif; padding:16px 0 28px;">&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
         </div>
    </footer>
   </div>
