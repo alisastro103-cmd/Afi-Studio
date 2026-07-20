@@ -140,44 +140,46 @@
             animation: cardRevealUp 0.45s ease-out both;
         }
 
-        /* Feed video diatur jadi 2 baris tetap, discroll ke samping kalau video-nya banyak */
+        /* Feed "Semua Video & Tutorial" dibuat grid 2-4 kolom yang wrap ke bawah
+           (bukan scroll ke samping) -- discroll ke bawah kalau videonya banyak */
         .tutorial-grid {
             display: grid;
-            grid-auto-flow: column;
-            grid-template-rows: repeat(2, auto);
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 10px;
+        }
+        @media (min-width: 640px) {
+            .tutorial-grid { grid-template-columns: repeat(3, 1fr); gap: 20px 14px; }
+        }
+        @media (min-width: 1024px) {
+            .tutorial-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* "Baru saja dinonton" (riwayat nonton) tampil 1 baris, discroll ke samping,
+           ukuran kartu tetap sama kayak video lain (nggak mengecil) */
+        .recent-scroll {
+            display: flex;
             gap: 10px;
             overflow-x: auto;
             scroll-snap-type: x proximity;
-            padding-bottom: 4px;
+            padding: 2px 2px 6px;
         }
-        /* "Baru saja dinonton" tampil 1 baris aja, discroll ke samping, kartu berdempetan tapi ukurannya tetap sama kayak video lain (nggak mengecil) */
-        .recent-scroll {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            scroll-snap-type: x proximity;
-            padding-bottom: 4px;
-        }
-        .recent-scroll .tutorial-card { flex-shrink: 0; }
+        .recent-scroll .tutorial-card { flex-shrink: 0; width: 264px; scroll-snap-align: start; }
         @media (min-width: 640px) {
-            .recent-scroll { gap: 8px; }
-        }
-        .tutorial-card { cursor: pointer; width: 264px; scroll-snap-align: start; }
-        @media (min-width: 640px) {
-            .tutorial-grid { gap: 14px; }
-            .tutorial-card { width: 324px; }
+            .recent-scroll { gap: 14px; }
+            .recent-scroll .tutorial-card { width: 324px; }
         }
         @media (min-width: 1024px) {
-            .tutorial-card { width: 364px; }
+            .recent-scroll .tutorial-card { width: 364px; }
         }
+
+        .tutorial-card { cursor: pointer; width: 100%; }
 
         .tutorial-thumb-wrap {
             position: relative;
             overflow: hidden;
             background: var(--surface);
-        }
-        @media (min-width: 640px) {
-            .tutorial-thumb-wrap { border-radius: 3px; border: 1px solid var(--border); }
+            border-radius: 6px;
+            border: 1px solid var(--border);
         }
         .tutorial-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; transition: transform 0.25s; }
         .tutorial-card:hover .tutorial-thumb { transform: scale(1.03); }
@@ -240,8 +242,31 @@
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; }
         .modal-overlay.active .modal-box { transform: scale(1); }
-        .video-modal-box { max-width: 760px; width: 94%; border-radius: 3px !important; }
+        .video-modal-box { max-width: 760px; width: 94%; border-radius: 3px !important; position: relative; }
         .video-frame-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+
+        /* Tombol bintang favorit - nempel di ujung board popup video */
+        .modal-fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.45);
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            transition: background 0.2s, color 0.2s, transform 0.15s;
+        }
+        .modal-fav-btn:hover { background: rgba(0,0,0,0.65); }
+        .modal-fav-btn:active { transform: scale(0.9); }
+        .modal-fav-btn svg { width: 17px; height: 17px; }
+        .modal-fav-btn.is-favorited { color: #FBBF24; }
         .video-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
         .video-modal-header {
             display: flex;
@@ -400,6 +425,7 @@
                                 <a href="../tutorial/index.html" class="page-menu-item active">Video &amp; Tutorial</a>
                                 <a href="../bantuan/index.html" class="page-menu-item">Bantuan</a>
                                 <a href="../feedback/index.html" class="page-menu-item">Feedback</a>
+                                <a href="../favorit/index.html" class="page-menu-item">Favorit</a>
                                 <div class="page-menu-divider"></div>
                                 <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
                                 <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
@@ -419,14 +445,14 @@
                     <div class="mt-2 mb-4">
                         <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">Baru saja dinonton</h2>
                     </div>
-                    <section class="recent-scroll no-scrollbar -mx-4 sm:mx-0" id="popular-grid"></section>
+                    <section class="recent-scroll no-scrollbar" id="popular-grid"></section>
                 </div>
 
                 <div class="mt-2 mb-4">
                     <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">Semua Video &amp; Tutorial</h2>
                 </div>
 
-                <section class="tutorial-grid no-scrollbar -mx-4 sm:mx-0" id="content-grid"></section>
+                <section class="tutorial-grid" id="content-grid"></section>
             </main>
         </div>
 
@@ -437,6 +463,7 @@
 
     <div id="video-modal-overlay" class="modal-overlay" onclick="closeVideoModal()">
         <div class="modal-box video-modal-box" onclick="event.stopPropagation()">
+            <button id="video-fav-btn" class="modal-fav-btn" onclick="toggleCurrentVideoFavorite()" aria-label="Tandai favorit"></button>
             <div class="video-frame-wrap" id="video-frame-wrap"></div>
             <div class="p-4">
                 <div class="video-modal-header">
@@ -449,6 +476,7 @@
         </div>
     </div>
 
+    <script src="/favorites.js"></script>
     <script src="script.js"></script>
     <script src="/theme-toggle.js" defer></script>
 

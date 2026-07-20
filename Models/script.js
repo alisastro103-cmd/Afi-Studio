@@ -175,11 +175,29 @@ function openModal(index) {
     }
     if (infoBox) infoBox.innerHTML = infoHtml;
     document.getElementById('modal-overlay').classList.add('active');
+    updateModelFavButton();
 }
 
 function closeModal() {
     const modal = document.getElementById('modal-overlay');
     if (modal) modal.classList.remove('active');
+}
+
+// Update tampilan tombol bintang favorit sesuai status model yang lagi dibuka
+function updateModelFavButton() {
+    const btn = document.getElementById('model-fav-btn');
+    if (!btn || !currentModel || typeof isModelFavorited !== 'function') return;
+    const id = modelFavId(currentModel);
+    const fav = isModelFavorited(id);
+    btn.innerHTML = favStarIconSvg(fav);
+    btn.classList.toggle('is-favorited', fav);
+    btn.setAttribute('aria-label', fav ? 'Hapus dari favorit' : 'Tandai favorit');
+}
+
+function toggleCurrentModelFavorite() {
+    if (!currentModel || typeof toggleModelFavorite !== 'function') return;
+    toggleModelFavorite(modelFavId(currentModel));
+    updateModelFavButton();
 }
 
 // Fungsi Download & Copy Link

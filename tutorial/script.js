@@ -54,6 +54,55 @@ function formatViews(n) {
     return `${n}`;
 }
 
+// --- Riwayat nonton ("Baru saja dinonton") ---
+// Disimpan sebagai daftar { id, ts } di localStorage, urut dari yang terbaru.
+// Maksimal HISTORY_MAX video, dan otomatis terhapus kalau sudah lewat
+// HISTORY_EXPIRE_DAYS hari -- KECUALI video itu sudah ditandai favorit.
+const HISTORY_KEY = 'afi-watch-history';
+const HISTORY_MAX = 9;
+const HISTORY_EXPIRE_DAYS = 7;
+const HISTORY_EXPIRE_MS = HISTORY_EXPIRE_DAYS * 24 * 60 * 60 * 1000;
+
+function getHistoryList() {
+    try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+        return [];
+    }
+}
+
+function saveHistoryList(list) {
+    try {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+    } catch (err) {
+        // localStorage penuh/diblokir -> diem aja, fitur ini opsional
+    }
+}
+
+// Buang entri riwayat yang sudah lewat 1 minggu, kecuali videonya sudah difavoritkan
+function cleanupHistory() {
+    const list = getHistoryList();
+    const now = Date.now();
+    const kept = list.filter(entry => {
+        const fav = typeof isVideoFavorited === 'function' && isVideoFavorited(entry.id);
+        if (fav) return true;
+        return (now - entry.ts) <= HISTORY_EXPIRE_MS;
+    });
+    if (kept.length !== list.length) saveHistoryList(kept);
+    return kept;
+}
+
+// Catat video yang baru saja ditonton ke riwayat (dibatasi HISTORY_MAX video)
+function addToHistory(id) {
+    if (!id) return;
+    let list = cleanupHistory().filter(entry => entry.id !== id);
+    list.unshift({ id, ts: Date.now() });
+    if (list.length > HISTORY_MAX) list = list.slice(0, HISTORY_MAX);
+    saveHistoryList(list);
+}
+
 function extractYouTubeId(url) {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
     return match ? match[1] : null;
@@ -102,32 +151,52 @@ function renderVideos(filter = '') {
     });
 }
 
-// Merender section "Video Populer" (diurutkan dari jumlah view terbanyak,
-// disimpan di localStorage). Section otomatis disembunyikan kalau belum
-// ada satupun video yang punya view (misal: pengunjung baru pertama kali).
+// Merender section "Baru saja dinonton" (riwayat nonton beneran, urut dari
+// yang paling baru ditonton, maksimal HISTORY_MAX video). Entri yang sudah
+// lewat 1 minggu otomatis dibuang duluan lewat cleanupHistory(), kecuali
+// videonya sudah ditandai favorit. Section disembunyikan kalau riwayat kosong.
 function renderPopular() {
     const section = document.getElementById('popular-section');
     const grid = document.getElementById('popular-grid');
     if (!section || !grid) return;
 
-    const withViews = VIDEOS
-        .map((v, i) => ({ v, i, views: getViewCount(v.id) }))
-        .filter(entry => entry.views > 0)
-        .sort((a, b) => b.views - a.views)
-        .slice(0, 5);
+    const history = cleanupHistory();
+    const entries = history
+        .map(entry => ({ v: VIDEOS.find(v => v.id === entry.id), i: -1 }))
+        .filter(entry => !!entry.v)
+        .map(entry => ({ v: entry.v, i: VIDEOS.indexOf(entry.v) }));
 
-    if (withViews.length === 0) {
+    if (entries.length === 0) {
         section.style.display = 'none';
         return;
     }
 
     section.style.display = '';
-    grid.innerHTML = withViews.map(entry => videoCardHtml(entry.v, entry.i)).join('');
+    grid.innerHTML = entries.map(entry => videoCardHtml(entry.v, entry.i)).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
     grid.querySelectorAll('.tutorial-card').forEach((card, i) => {
         card.style.animationDelay = `${Math.min(i * 40, 400)}ms`;
     });
+}
+
+let currentVideo = null;
+
+// Update tampilan tombol bintang favorit sesuai status video yang lagi dibuka
+function updateVideoFavButton() {
+    const btn = document.getElementById('video-fav-btn');
+    if (!btn || !currentVideo || typeof isVideoFavorited !== 'function') return;
+    const fav = isVideoFavorited(currentVideo.id);
+    btn.innerHTML = favStarIconSvg(fav);
+    btn.classList.toggle('is-favorited', fav);
+    btn.setAttribute('aria-label', fav ? 'Hapus dari favorit' : 'Tandai favorit');
+}
+
+function toggleCurrentVideoFavorite() {
+    if (!currentVideo || typeof toggleVideoFavorite !== 'function') return;
+    toggleVideoFavorite(currentVideo.id);
+    updateVideoFavButton();
+    renderPopular(); // riwayat ikut nyesuaiin (video favorit nggak ikut expired 1 minggu)
 }
 
 function openVideoModal(index) {
@@ -136,15 +205,18 @@ function openVideoModal(index) {
     const id = extractYouTubeId(v.url);
     if (!id) return;
 
+    currentVideo = v;
     incrementView(v.id);
+    addToHistory(v.id);
 
     document.getElementById('video-modal-title').textContent = v.title;
     document.getElementById('video-youtube-link').href = v.url;
     document.getElementById('video-frame-wrap').innerHTML =
         `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
     document.getElementById('video-modal-overlay').classList.add('active');
+    updateVideoFavButton();
 
-    // Refresh tampilan biar view count & urutan "Populer" ikut update
+    // Refresh tampilan biar view count & riwayat "Baru saja dinonton" ikut update
     const searchInputEl = document.getElementById('search-input');
     renderVideos(searchInputEl ? searchInputEl.value : '');
     renderPopular();
