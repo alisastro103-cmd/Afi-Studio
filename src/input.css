@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* UI dikecilkan biar terlihat seperti browser di-zoom 75%, padahal zoom browser tetap default 100% */
+html {
+    zoom: 0.75;
+}
+

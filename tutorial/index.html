@@ -145,7 +145,7 @@
             display: grid;
             grid-auto-flow: column;
             grid-template-rows: repeat(2, auto);
-            gap: 16px;
+            gap: 10px;
             overflow-x: auto;
             scroll-snap-type: x proximity;
             padding-bottom: 4px;
@@ -153,22 +153,22 @@
         /* "Baru saja dinonton" tampil 1 baris aja, discroll ke samping, kartu berdempetan tapi ukurannya tetap sama kayak video lain (nggak mengecil) */
         .recent-scroll {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             overflow-x: auto;
             scroll-snap-type: x proximity;
             padding-bottom: 4px;
         }
         .recent-scroll .tutorial-card { flex-shrink: 0; }
         @media (min-width: 640px) {
-            .recent-scroll { gap: 10px; }
+            .recent-scroll { gap: 8px; }
         }
-        .tutorial-card { cursor: pointer; width: 240px; scroll-snap-align: start; }
+        .tutorial-card { cursor: pointer; width: 270px; scroll-snap-align: start; }
         @media (min-width: 640px) {
-            .tutorial-grid { gap: 24px; }
-            .tutorial-card { width: 300px; }
+            .tutorial-grid { gap: 14px; }
+            .tutorial-card { width: 330px; }
         }
         @media (min-width: 1024px) {
-            .tutorial-card { width: 340px; }
+            .tutorial-card { width: 370px; }
         }
 
         .tutorial-thumb-wrap {
@@ -214,13 +214,13 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 6px 16px 0;
+            padding: 2px 16px 0;
             font-size: 11px;
             font-weight: 600;
             color: var(--text-sub);
         }
         @media (min-width: 640px) {
-            .view-badge { padding: 4px 0 0; }
+            .view-badge { padding: 1px 0 0; }
         }
 
         .tutorial-card-title {
