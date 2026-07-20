@@ -2,7 +2,7 @@
 // Fokus: bikin HALAMAN ROOT ("/") tetap bisa dibuka saat offline.
 // Halaman lain (ranking, feedback, member, dll) SENGAJA tidak di-cache.
 
-const CACHE_NAME = 'afi-studio-root-v3';
+const CACHE_NAME = 'afi-studio-root-v4';
 
 // Aset wajib biar root page render sempurna.
 // Lucide & Google Fonts sudah tidak dari CDN luar lagi (lihat fonts/ dan icons/),
@@ -22,7 +22,8 @@ const CORE_ASSETS = [
   '/fonts/fonts.css',
   '/fonts/Outfit-400.woff2',
   '/fonts/Outfit-700.woff2',
-  '/icons/lucide-local.js'
+  '/icons/lucide-local.js',
+  '/icons/social-icons.svg'
 ];
 
 self.addEventListener('install', (e) => {

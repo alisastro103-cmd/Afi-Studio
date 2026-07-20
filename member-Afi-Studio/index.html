@@ -181,41 +181,6 @@
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item-cta:active { opacity: 0.6; }
  
-        .chat-bubble {
-            position: absolute;
-            top: 50px;
-            right: 0;
-            background-color: var(--surface);
-            color: var(--text);
-            padding: 10px 15px;
-            border-radius: 15px 5px 15px 15px;
-            font-size: 13px;
-            font-weight: bold;
-            width: max-content;
-            max-width: 200px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border: 1px solid var(--border);
-            z-index: 1001;
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: opacity 0.3s, transform 0.3s;
-            pointer-events: none;
-            font-family: var(--font-secondary);
-        }
-        .chat-bubble.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .chat-bubble::after {
-            content: '';
-            position: absolute;
-            top: -8px;
-            right: 15px;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 8px solid var(--border);
-        }
- 
         .app-container {
             width: 100%;
             max-width: 640px;
@@ -561,7 +526,6 @@
                 <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
                 <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
             </div>
-            <div id="chatBubble" class="chat-bubble"></div>
         </div>
     </nav>
  
