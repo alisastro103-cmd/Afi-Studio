@@ -1,178 +1,112 @@
 # Panduan Lengkap Afi Studio
 
-> Dokumen ini dibuat khusus buat kamu baca ulang kalau lupa sistemnya gimana, atau kalau ada orang baru yang bantu kelola proyek ini dan perlu ngerti dari nol. Ditulis sesantai mungkin, nggak asumsi kamu masih inget istilah teknis.
+> Dokumen ini buat gambaran besar: proyek ini apa, kepingan-kepingannya apa aja, dan gimana semuanya saling nyambung. Kalau butuh detail teknis per file (buat ubah kode), baca `README.md`. Kalau butuh detail format data JSON, baca `data.schema.md`.
 
 🔗 **Live site:** [afi-studio.vercel.app](https://afi-studio.vercel.app)
-🔗 **Admin panel:** [afi-studio.vercel.app/admin](https://afi-studio.vercel.app/admin)
 
 ---
 
-## 1. Ini Proyek Apa, Sih?
+## 1. Ini Proyek Apa?
 
-Afi Studio itu website buat komunitas kamu berbagi aset Minecraft — model 3D, rig karakter, map, furniture — biar orang lain bisa download dan pakai. Ada juga halaman buat kenalin member-member yang tergabung di komunitas.
+Afi Studio adalah website komunitas untuk berbagi aset Minecraft — model 3D, rig karakter, map, furniture — biar orang lain bisa lihat dan download. Ada juga halaman buat kenalan sama member komunitas, video tutorial, papan ranking event render, dan form feedback.
 
-Dulu (sebelum Juli 2026) semua datanya (daftar model, daftar member) disimpen manual di file teks (`.json`), jadi tiap mau nambah 1 item, kamu harus buka file itu dan edit teksnya sendiri — capek dan gampang salah ketik. **Sekarang udah nggak gitu lagi** — ada database beneran di cloud, dan ada halaman admin buat isi datanya tinggal isi form, klik simpan.
+Situs ini **sengaja dibuat tanpa database dan tanpa panel admin**. Semua konten (daftar model, daftar member, daftar video) disimpan sebagai file teks terstruktur (`.json`) langsung di dalam kode situs. Nambah/ubah konten = edit file itu, lalu `git push` — Vercel otomatis update situsnya dalam hitungan detik.
 
----
+> Catatan sejarah: sempat ada percobaan migrasi ke database (Turso) lengkap dengan panel admin `/admin`. Itu **sudah dilepas sepenuhnya** — proyek ini balik lagi ke pendekatan file JSON manual, karena lebih sederhana untuk skala komunitas ini dan tidak butuh biaya/maintenance server tambahan.
 
-## 2. Istilah-Istilah yang Perlu Kamu Tau
-
-Nggak perlu ngerti detail teknisnya, cukup tau ini "kotak apa":
+## 2. Istilah-Istilah Penting
 
 | Istilah | Penjelasan gampangnya |
 |---|---|
-| **Vercel** | Tempat website kamu "tinggal" di internet. Setiap kamu `git push`, Vercel otomatis update website-nya. |
-| **GitHub** | Tempat nyimpen kode/source code proyek kamu, semacam Google Drive tapi khusus kode. |
-| **Turso** | Database-nya — tempat semua data model & member disimpen sekarang (bukan di file JSON lagi). |
-| **Database** | Gudang data yang terorganisir rapi, bisa ditambah/ubah/hapus tanpa harus edit file kode. |
-| **API** / **Endpoint** | "Pintu" yang dipakai website buat ambil data dari database. Contoh: `/api/models` itu pintu buat ambil daftar model. |
-| **Serverless Function** | Kode kecil yang jalan di server Vercel tiap kali ada yang minta data (misal tiap orang buka halaman Models). |
-| **Admin Panel** | Halaman `/admin` — tempat kamu tambah/edit/hapus data tanpa nyentuh kode sama sekali. |
-| **Environment Variable** | "Kunci rahasia" (password, token) yang disimpen aman di Vercel, bukan ditulis langsung di kode. |
-| **Termux** | Aplikasi terminal di HP Android kamu, dipakai buat jalanin perintah kayak `git push`, `npm install`, dll. |
+| **Repo / Repository** | "Folder proyek" ini, disimpan di GitHub biar ada riwayat perubahannya |
+| **GitHub** | Tempat nyimpen kode proyek, semacam Google Drive tapi khusus kode & ada riwayat versi |
+| **Vercel** | Tempat website ini "tinggal" di internet. Tiap `git push`, Vercel otomatis update situsnya |
+| **JSON** | Format file teks buat nyimpen data terstruktur (mirip tabel), gampang dibaca manusia & komputer. Semua data model/member/video disimpan begini |
+| **Static site** | Website yang isinya "sudah jadi" (HTML/CSS/JS biasa), tidak butuh server aplikasi nyala terus. Situs ini ringan & cepat karena begini |
+| **Serverless Function** | Kode kecil yang jalan otomatis di server Vercel cuma pas dibutuhkan — di proyek ini cuma dipakai untuk form Feedback |
+| **PWA (Progressive Web App)** | Website yang bisa di-"install" ke HP kayak aplikasi, tetap bisa dibuka (halaman utama) meski koneksi jelek |
+| **Termux** | Aplikasi terminal Android, dipakai buat jalanin `git push` dari HP tanpa laptop |
+| **Validasi** | Proses ngecek format JSON sebelum dipakai/di-push, biar situs tidak error |
 
----
-
-## 3. Peta Halaman Website
+## 3. Peta Halaman
 
 | Alamat | Isinya |
 |---|---|
-| `/` | Halaman depan — pengantar, ada beberapa model random, navigasi ke halaman lain |
-| `/Models/` | Katalog semua model — bisa difilter per kategori (Furniture, Map, Rig, dll) dan per aplikasi (Blender, C4D, dll), bisa dicari |
-| `/member-Afi-Studio/` | Daftar semua member, dikelompokkan per generasi (1st, 2nd, 3rd, dan grup "orang-random") |
-| `/ranking/` | Papan peringkat karya render — **masih placeholder**, belum ada isinya beneran |
-| `/event/` | Aturan & panduan ikut event render (bukan galeri) |
-| `/bantuan/` | FAQ — pertanyaan umum soal cara pakai website |
-| `/feedback/` | Form kritik & saran, masuk ke Telegram kamu |
-| `/admin/` | **Panel kelola data** — login pakai password, tambah/edit/hapus Model & Member |
+| `/` | Beranda — pengantar, sample model & video acak, navigasi ke semua halaman |
+| `/Models/` | Katalog semua model — filter kategori & aplikasi tujuan, pencarian |
+| `/tutorial/` | Semua video & tutorial YouTube — pencarian, badge "Baru", penanda populer |
+| `/member-Afi-Studio/` | Daftar member, dikelompokkan per generasi |
+| `/ranking/` | Papan Top 3 + Top 10 karya render — tampilan sudah jadi, datanya masih placeholder |
+| `/event/` | Aturan & panduan ikut event render |
+| `/bantuan/` | FAQ — pertanyaan umum cara pakai situs |
+| `/feedback/` | Form kritik & saran, terkirim ke Telegram tim |
 
----
+## 4. Dari Mana Datanya?
 
-## 4. Database (Turso) — Isinya Apa Aja
+Tiga file JSON adalah "database" situs ini:
 
-Databasenya punya 2 "tabel" (bayangin kayak 2 spreadsheet Excel terpisah):
-
-### Tabel `models`
-Isinya daftar semua aset yang bisa didownload. Tiap baris = 1 model, kolomnya:
-
-| Kolom | Isinya |
+| File | Isinya |
 |---|---|
-| `name` | Nama model (misal "Rig Mob Minecraft") |
-| `caption` | Deskripsi singkat |
-| `creator` | Nama pembuat asli (boleh kosong) |
-| `converter` | Nama yang convert ke Minecraft |
-| `category` | Kategori, bisa lebih dari satu (dipisah koma), misal "Rig,Mob,Free" |
-| `app_target` | Untuk aplikasi apa — **cuma 1 pilihan**: Prisma3D/Blender/Mine-Imator/Viontri/C4D/Lainnya |
-| `thumb` | Link gambar thumbnail (di-hosting di ibb.co, bukan disimpen di website) |
-| `link` | Link download modelnya |
+| `Models/models.json` | Semua model/aset yang bisa didownload |
+| `member-Afi-Studio/member.json` | Semua member komunitas |
+| `videos.json` | Semua video & tutorial YouTube |
 
-### Tabel `members`
-Isinya daftar semua member komunitas. Tiap baris = 1 member, kolomnya:
+Nambah konten = buka file itu, tambah 1 entri baru dengan format yang sama, lalu push. Tidak ada "form isi data" terpisah — cara editnya sama seperti edit teks biasa (nano/vim di Termux, atau editor apapun).
 
-| Kolom | Isinya |
-|---|---|
-| `nama` | Nama member |
-| `spesialis` | Keahlian (misal "Animator, Modeller") |
-| `identitas` | 1 emoji penanda member itu |
-| `generasi` | Teks yang ditampilin (misal "Generasi ke-1") |
-| `gen_id` | **Kode teknis** penentu masuk kotak mana di halaman (`gen-1`, `gen-2`, `gen-3`, `orang-random`) — ini yang paling gampang salah kalau isi manual, harus persis sama |
-| `foto` | Link/path foto profil |
-| `socials` | Link-link sosial media (YouTube, IG, FB, TikTok, WA, Discord) |
-
-> ⚠️ **Yang paling penting diinget:** `generasi` itu cuma teks buat ditampilin, sedangkan `gen_id` itu yang beneran nentuin member itu nongol di kotak generasi mana. Dua-duanya HARUS diisi kalau nambah member baru lewat admin panel.
-
-**Batas gratis Turso:** 5GB storage (data kamu sekarang jauh di bawah itu, isinya cuma teks pendek-pendek, gambar semua di-hosting di luar).
-
----
-
-## 5. Cara Kerja Sistemnya (Simpel)
-
-```
-Kamu buka /Models/  →  website minta data ke /api/models
-                     →  /api/models nanya ke database Turso
-                     →  Turso kasih balik data
-                     →  ditampilin di layar kamu
+Sebelum push, selalu jalankan validator dulu:
+```bash
+python3 validate_data.py
 ```
 
+Detail lengkap tiap field wajib ada di `data.schema.md`.
+
+## 5. Bagaimana Semuanya Saling Nyambung (Alur Kerja)
+
 ```
-Kamu buka /admin, isi form, klik Simpan
-                     →  dikirim ke /api/models (atau /api/members)
-                     →  disimpen ke database Turso
-                     →  langsung nongol di halaman /Models/ (atau /member-Afi-Studio/)
+Kamu edit Models/models.json (tambah 1 model baru)
+    → git push
+    → Vercel deploy ulang otomatis (~1 menit)
+    → Pengunjung buka /Models/ → browser fetch models.json → model baru langsung muncul
 ```
 
-Nggak ada langkah "commit-push-deploy" buat nambah konten sehari-hari — itu cuma perlu kalau kamu ubah **kode/tampilan**, bukan buat nambah data model/member.
+Tidak ada langkah "restart server" atau "migrasi database" — karena memang tidak ada server aplikasi atau database yang perlu dijaga. Satu-satunya pengecualian: form Feedback, yang manggil satu serverless function kecil (`api/feedback.js`) untuk meneruskan pesan ke Telegram tim.
+
+## 6. Fitur yang Sudah Ada
+
+- Katalog model dengan filter kategori (otomatis mengikuti isi JSON) + filter aplikasi tujuan + pencarian
+- Video & tutorial dengan badge "Baru" otomatis dan penanda video populer (dihitung per-device lewat `localStorage`, bukan gabungan semua pengunjung — karena situs ini tanpa database)
+- Halaman member per generasi, grup baru otomatis muncul kalau ada `gen_id` baru di data
+- Tema gelap/terang (ngikutin HP otomatis, bisa toggle manual)
+- PWA — bisa di-install ke homescreen, halaman utama tetap terbuka semi-offline
+- SEO dasar (sitemap, robots.txt)
+- Cache browser diatur lewat `vercel.json` — font/ikon/banner disimpan lama di browser, data JSON tetap cepat update
+
+### Belum Dikerjakan (Ide ke Depan)
+- Search/filter di halaman Member
+- Sorting (model terbaru/terlama, member alfabet)
+- Isi galeri `/ranking/` dengan foto render juara asli, pindahkan datanya ke JSON terpisah
+- Counter download / like dari pengunjung — ini baru butuh database beneran kalau mau diterapkan
+- **Fitur Favorit** (lagi dipertimbangkan) — nandain model/video favorit tanpa login, tersimpan lokal di browser pengunjung (`localStorage`), ditandai dengan ikon bendera/bintang. Lihat catatan di bagian 8.
+
+## 7. Kalau Ada yang Error
+
+- **Situs nampilin data kosong:** buka langsung file JSON-nya di browser (misal `afi-studio.vercel.app/Models/models.json`), pastikan formatnya masih valid. Jalankan `python3 validate_data.py`
+- **Video/model baru tidak muncul:** cek field wajib di `data.schema.md`, pastikan tidak ada yang kosong/typo
+- **Member baru tidak muncul di kotak generasinya:** cek field `gen_id`, harus persis salah satu dari `gen-1`/`gen-2`/`gen-3`/`orang-random`
+- **Form feedback tidak jalan:** cek Environment Variable di Vercel (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `RECAPTCHA_SECRET_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) sudah ke-set
+- **Tampilan halaman berantakan / style hilang setelah nambah class Tailwind baru:** pastikan file halaman itu ada di daftar `content` pada `tailwind.config.js`, lalu jalankan ulang `npx tailwindcss -i ./src/input.css -o ./dist/output.css --minify`
+
+## 8. Rencana Fitur "Favorit" (Diskusi)
+
+Ide dari Randy: tombol tandai favorit di kartu Model & Video, tanpa login, cuma tersimpan di browser pengunjung masing-masing (bukan gabungan semua orang — konsisten dengan pendekatan "tanpa database" situs ini), ditandai ikon bendera.
+
+Kalau mau dilanjutkan, ini yang perlu diputuskan sebelum implementasi:
+- **Penyimpanan:** `localStorage`, key berisi array id model/video yang ditandai (mirip pola view-counter video yang sudah ada di `tutorial/script.js`)
+- **Tampilan:** ikon bendera di pojok kartu (toggle on/off), plus mungkin halaman/tab "Favorit Saya" yang menyaring dari data yang sama
+- **Cakupan:** Model saja, Video saja, atau dua-duanya?
+- **Reset:** favorit hilang kalau cache browser dibersihkan — perlu disebutkan ke pengunjung atau tidak?
+
+Detail teknis file mana yang perlu disentuh (kemungkinan besar `Models/script.js`, `tutorial/script.js`, dan CSS terkait) bisa dibahas lebih lanjut begitu arah fiturnya disetujui.
 
 ---
-
-## 6. Cara Pakai Admin Panel
-
-1. Buka `https://afi-studio.vercel.app/admin`
-2. Masukin password (yang kamu bikin sendiri, disimpen di Vercel sebagai `ADMIN_PASSWORD`)
-3. Pilih tab **Models** atau **Members** di atas
-4. **Nambah data baru** → isi semua kolom form → klik **Simpan**
-5. **Edit data** → klik **Edit** di item yang mau diubah → form otomatis keisi → ubah → **Simpan**
-6. **Hapus data** → klik **Hapus** → ada konfirmasi dulu
-7. Selesai kerja → klik **Keluar** (apalagi kalau HP dipakai orang lain, biar nggak ada yang bisa masuk pakai sesi login kamu)
-
-**Khusus nambah Member baru**, kolom "Kode Grup" harus diisi salah satu dari: `gen-1`, `gen-2`, `gen-3`, atau `orang-random` — persis, jangan ada typo, kalau nggak member-nya nggak bakal muncul di halaman.
-
----
-
-## 7. Fitur yang Sudah Ada
-
-- ✅ Katalog model dengan filter kategori + filter aplikasi (Blender/C4D/dll) + pencarian
-- ✅ Badge "untuk aplikasi apa" di tiap kartu model
-- ✅ Halaman member per generasi
-- ✅ Admin panel full CRUD (Create/Read/Update/Delete) buat Model & Member
-- ✅ Form feedback ke Telegram (dilindungi anti-spam & reCAPTCHA)
-- ✅ Tema gelap/terang (ngikutin setting HP otomatis, bisa di-toggle manual)
-- ✅ PWA — bisa di-"install" ke homescreen HP kayak aplikasi asli
-- ✅ SEO dasar (biar gampang ketemu di Google)
-
-## 8. Fitur yang Belum Ada (Ide ke Depan)
-
-- ⬜ Search/filter di halaman Member (sekarang cuma bisa lihat per-generasi)
-- ⬜ Sorting (model terbaru, member alfabet, dll)
-- ⬜ Hitung jumlah download tiap model
-- ⬜ Like/rating dari pengunjung
-- ⬜ Isi beneran halaman `/ranking/` (masih placeholder)
-- ⬜ Admin lebih dari 1 password/akun
-- ⬜ Batas jumlah request ke `/api/models` & `/api/members` (sekarang belum dibatasi, bisa aja disalahgunakan orang iseng)
-
----
-
-## 9. Kalau Ada yang Error, Cek Ini Dulu
-
-**Website nampilin data kosong / error 500:**
-1. Buka `/api/models` atau `/api/members` langsung di browser, lihat pesannya
-2. Kalau ada tulisan error, biasanya artinya `TURSO_DATABASE_URL`/`TURSO_AUTH_TOKEN` di Environment Variable Vercel belum ke-set atau belum di-redeploy
-3. Cek Vercel → Settings → Environment Variables, pastiin 3 ini ada: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `ADMIN_PASSWORD`
-
-**Admin panel nggak bisa login:**
-- Password yang dipakai harus sama persis dengan `ADMIN_PASSWORD` di Vercel, ini bukan password dari Turso/GitHub
-
-**Turso CLI crash di Termux (`SIGSYS: bad system call`):**
-- Ini masalah kompatibilitas Android lama, bukan bug proyek. Solusinya: pakai **Turso Web Dashboard** (turso.tech, login GitHub/Google) buat urusan database, jangan pakai CLI
-
-**Member baru nggak muncul di halaman:**
-- Cek lagi kolom "Kode Grup" pas nambah — harus persis `gen-1`/`gen-2`/`gen-3`/`orang-random`
-
----
-
-## 10. File-File Penting (Kalau Perlu Ubah Kode)
-
-| File | Ngapain |
-|---|---|
-| `admin/index.html` | Tampilan & logic halaman admin |
-| `api/models.js`, `api/members.js` | "Pintu" yang menghubungkan website ke database |
-| `lib/db.js` | Cara koneksi ke database Turso |
-| `db/schema.sql` | Struktur tabel database (referensi, bukan buat dijalanin ulang) |
-| `Models/script.js`, `member-Afi-Studio/script.js` | Logic tampilan halaman Models & Member |
-| `.env.example` | Contoh nama-nama Environment Variable yang dibutuhkan |
-
-Detail lebih teknis (struktur folder lengkap, keamanan, cara jalanin di lokal) ada di `README.md`.
-
----
-
-© 2026 Afi Studio — dokumen panduan ini dibuat biar kamu nggak perlu mikir ulang dari nol tiap kali balik ke proyek ini.
+© 2026 Afi Studio — dokumen ini dibuat biar tidak perlu mikir ulang dari nol tiap kali balik ke proyek ini.

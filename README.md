@@ -1,202 +1,138 @@
 # Afi Studio
 
-Website berbagi aset Minecraft (model, rig, map, dan furniture) buatan komunitas Afi Studio. Pengunjung bisa menjelajah, mencari, dan mengunduh aset siap pakai, nonton video tutorial, dan kenalan sama member-member yang tergabung di komunitas.
+Website komunitas berbagi aset Minecraft (model 3D, rig, map, furniture) buatan komunitas Afi Studio. Static site, tanpa backend/database — semua konten dibaca langsung dari file JSON di repo ini.
 
-🔗 **Live site:** [afi-studio.vercel.app](https://afi-studio.vercel.app)
-
-> 📘 Dokumen ini dibuat buat siapapun — termasuk yang gak ngerti coding sama sekali — biar bisa ngerti proyek ini secara garis besar. Kalau kamu mau tau detail teknis lebih dalam (struktur data, cara validasi, dll), cek `data.schema.md`.
-
----
-
-## 1. Istilah-Istilah Penting
-
-Biar gak bingung pas baca dokumen ini atau ngobrol soal proyek:
-
-| Istilah | Penjelasan gampangnya |
-|---|---|
-| **Repo / Repository** | "Folder proyek" ini, tapi disimpen di GitHub biar ada riwayat perubahannya |
-| **Vercel** | Tempat website ini "tinggal" di internet. Tiap kamu `git push`, Vercel otomatis update situsnya, gak perlu upload manual |
-| **GitHub** | Tempat nyimpen kode proyek, semacam Google Drive tapi khusus buat kode & ada riwayat versi |
-| **JSON** | Format file teks buat nyimpen data terstruktur (mirip daftar/tabel), gampang dibaca manusia maupun komputer. Semua data model, member, dan video di situs ini disimpen dalam bentuk ini |
-| **Static site** | Website yang isinya "sudah jadi" (HTML/CSS/JS biasa), bukan yang butuh server nyala terus buat ngolah data. Makanya situs ini ringan & cepat |
-| **Termux** | Aplikasi terminal di HP Android, dipakai buat jalanin perintah kayak `git push` dari HP tanpa laptop |
-| **Serverless Function** | Kode kecil yang jalan otomatis di server Vercel cuma pas dibutuhkan (di proyek ini cuma dipakai buat form Feedback) |
-| **Environment Variable** | "Kunci rahasia" (password, token) yang disimpen aman di pengaturan Vercel, bukan ditulis langsung di kode |
-| **PWA (Progressive Web App)** | Website yang bisa di-"install" ke HP kayak aplikasi biasa, dan tetap bisa dibuka meski koneksi lagi jelek |
-| **Validasi** | Proses ngecek data (JSON) itu formatnya benar sebelum dipakai/di-push, biar gak bikin situs error |
+🔗 **Live:** [afi-studio.vercel.app](https://afi-studio.vercel.app)
+📘 Penjelasan versi santai/non-teknis (istilah, alur kerja, troubleshooting) ada di **`PANDUAN-PROYEK.md`**. Dokumen ini fokus ke sisi teknis untuk siapapun yang mau ubah kode.
 
 ---
 
-## 2. Peta Halaman
+## 1. Cara Kerja (Mekanisme)
 
-| Alamat | Isinya |
-|---|---|
-| `/` | Halaman depan — pengantar, beberapa model & video acak, navigasi ke semua halaman lain |
-| `/Models/` | Katalog semua model — bisa difilter per kategori, bisa dicari |
-| `/tutorial/` | Semua video & tutorial YouTube — bisa dicari judulnya, ada badge "Baru" & penanda video populer |
-| `/member-Afi-Studio/` | Daftar member komunitas, dikelompokkan per generasi |
-| `/ranking/` | Papan peringkat karya render (Top 3 + Top 10) lengkap dengan lightbox — tampilannya sudah jadi, tinggal isi foto render juara asli setiap bulan (sekarang masih pakai gambar placeholder) |
-| `/event/` | Aturan & panduan ikut event render (bukan galeri foto) |
-| `/bantuan/` | FAQ — pertanyaan umum soal cara pakai website |
-| `/feedback/` | Form kritik & saran, terkirim ke Telegram tim |
+Situs ini **static** — tidak ada server aplikasi, tidak ada database. Tiap halaman adalah file HTML mandiri yang saat dibuka browser, langsung `fetch()` file `.json` di sebelahnya, lalu render kartu/list-nya lewat JavaScript vanilla (tanpa framework, tanpa build step untuk JS).
 
----
-
-## 3. Dari Mana Datanya?
-
-Website ini **sengaja tidak pakai database**. Semua konten disimpen di 3 file JSON, dibaca langsung oleh browser pengunjung:
-
-| File | Isinya |
-|---|---|
-| `Models/models.json` | Semua model/aset yang bisa didownload |
-| `member-Afi-Studio/member.json` | Semua member komunitas |
-| `videos.json` | Semua video & tutorial YouTube |
-
-**Artinya:** nambah/edit konten = edit file JSON itu langsung, lalu `git push`. Gak ada "panel admin" terpisah — cara editnya sama kayak edit teks biasa lewat editor (nano/vim di Termux, atau VS Code kalau di laptop).
-
-📖 **Struktur lengkap tiap field** (field apa aja yang wajib diisi, formatnya gimana) ada di **`data.schema.md`** — baca ini dulu sebelum nambah entri baru biar gak salah format.
-
-✅ **Sebelum push**, selalu jalankan dulu:
-```bash
-python3 validate_data.py
 ```
-Script ini otomatis ngecek `videos.json` dan `Models/models.json` — kasih tau persis kalau ada field yang kurang, format tanggal salah, kategori kosong, dll — sebelum sempat bikin situs live error.
+Browser buka /Models/  →  Models/script.js fetch("./models.json")
+                       →  data di-render jadi kartu HTML di client
+                       →  filter kategori & pencarian juga jalan di client (tidak ada request ke server)
+```
 
----
+Satu-satunya bagian yang **bukan** murni statis adalah form Feedback, yang manggil satu serverless function (`api/feedback.js`) buat kirim pesan ke Telegram.
 
-## 4. Fitur yang Sudah Ada
+Konsekuensinya:
+- Nambah/ubah konten = edit file `.json` langsung di repo, lalu `git push` → Vercel auto-redeploy.
+- Tidak ada panel admin, tidak ada login, tidak ada kredensial database untuk dikelola.
 
-**Model (`/Models/`)**
-- Filter kategori otomatis (tab filter mengikuti isi `models.json`, gak perlu edit kode buat nambah kategori baru)
-- Badge aplikasi tujuan (Blender/C4D/dll) di tiap kartu
-- Pencarian (nama, kategori, creator, converter)
+## 2. Peta Halaman & Peran File-nya
 
-**Video & Tutorial (`/tutorial/` + beranda)**
-- Pencarian judul video
-- Badge **"Baru"** otomatis untuk video yang baru ditambahkan (14 hari terakhir), hilang sendiri setelah itu
-- Penanda **"🔥 Video Populer"** — dihitung dari video yang paling sering dibuka di device pengunjung (disimpan di `localStorage` browser, bukan hitungan gabungan semua pengunjung karena situs ini tanpa database)
+| Halaman | File utama | Sumber data | Catatan |
+|---|---|---|---|
+| `/` (Beranda) | `index.html` (HTML+CSS+JS inline dalam satu file) | `videos.json`, `Models/models.json` (sample acak) | Nav, banner slider, marquee, carousel video, footer — semua logic ada langsung di `<script>` dalam file ini |
+| `/Models/` | `Models/index.html` + `Models/script.js` | `Models/models.json` | Filter kategori otomatis mengikuti isi JSON, filter aplikasi (Blender/C4D/dll), pencarian, modal detail |
+| `/tutorial/` | `tutorial/index.html` + `tutorial/script.js` | `videos.json` | Pencarian judul, badge "Baru" (14 hari), penanda video populer (hitungan `localStorage`, per-device) |
+| `/member-Afi-Studio/` | `member-Afi-Studio/index.html` + `script.js` | `member-Afi-Studio/member.json` | Grup generasi (`gen-1`/`gen-2`/`gen-3`/`orang-random`) otomatis dibuat dari `gen_id` yang ada di JSON |
+| `/ranking/` | `ranking/index.html` | data ditulis manual **di dalam file ini** (belum pakai JSON terpisah) | Top 3 + Top 10, lightbox. Gambar masih placeholder `coming_soon.webp` |
+| `/event/` | `event/index.html` | — | Halaman statis, aturan event render |
+| `/bantuan/` | `bantuan/index.html` | — | FAQ statis |
+| `/feedback/` | `feedback/index.html` + `api/feedback.js` | — | Satu-satunya halaman yang manggil serverless function |
 
-**Member (`/member-Afi-Studio/`)**
-- Grup generasi otomatis — nambah key baru di `member.json` langsung bikin kotak grup baru muncul, tanpa edit HTML
+## 3. File/Source Penting
 
-**Ranking Render (`/ranking/`)**
-- Papan Top 3 + Top 10, lightbox buat lihat gambar & pesan tiap juara — datanya masih ditulis manual di script halaman itu sendiri (belum baca dari file JSON kayak Model/Member/Video)
-- Gambarnya sekarang masih placeholder (`coming_soon.webp`), tinggal diganti foto render asli tiap ada juara baru
+| File | Peran |
+|---|---|
+| `Models/models.json`, `member-Afi-Studio/member.json`, `videos.json` | **Sumber data utama** situs. Edit ini = edit konten situs |
+| `data.schema.md` | Dokumentasi lengkap tiap field wajib di `videos.json` & `models.json` — **baca dulu sebelum nambah entri** |
+| `validate_data.py` | Cek format `videos.json`/`models.json` sebelum push (`python3 validate_data.py`) |
+| `config.js` | Toggle buka/tutup jalur pendaftaran Model 3D & Member (dipakai semua halaman lewat tag `<script>`) |
+| `theme-toggle.js` | Logic tema gelap/terang + persist pilihan user |
+| `sw.js` + `manifest.json` | Service worker & config PWA — hanya halaman root (`/`) yang di-cache untuk mode offline, halaman lain sengaja tidak |
+| `src/input.css` → `dist/output.css` | Source Tailwind → hasil compile. Jalankan `npx tailwindcss -i ./src/input.css -o ./dist/output.css --minify` tiap habis nambah class Tailwind baru |
+| `tailwind.config.js` | Daftar file yang di-scan Tailwind untuk tahu class mana yang harus disertakan di `output.css`. **Pastikan semua halaman yang memakai `dist/output.css` masuk daftar `content`**, kalau tidak, class yang cuma dipakai di halaman itu akan hilang (ke-purge) |
+| `api/feedback.js` | Serverless function pengirim form feedback ke Telegram (pakai rate-limit Upstash + reCAPTCHA) |
+| `fonts/fonts.css` | Font self-hosted (Outfit, DM Sans, Dancing Script) — tidak ada request ke Google Fonts CDN |
+| `vercel.json` | Aturan `Cache-Control` per jenis file (font/ikon di-cache lama, JSON data di-cache pendek biar update konten cepat kelihatan) |
 
-**Umum**
-- Tema gelap/terang (ngikutin HP otomatis, bisa di-toggle manual)
-- PWA — bisa di-install ke homescreen, halaman utama tetap bisa dibuka semi-offline
-- SEO dasar (biar gampang ketemu di Google)
-- Kartu/gambar muncul dengan animasi fade + slide-up bertahap tiap halaman dibuka (Models, Member, Ranking)
-
-### Ide pengembangan selanjutnya (belum dikerjakan)
-- [ ] Search/filter di halaman Member
-- [ ] Sorting (model terbaru/terlama, member alfabet)
-- [ ] Isi galeri `/ranking/` dengan foto render juara asli, ganti placeholder `coming_soon.webp`
-- [ ] Counter download / like dari pengunjung — ini butuh database beneran kalau mau diterapkan, karena situs ini sengaja tanpa database
-
----
-
-## 5. Struktur Folder (Ringkas)
+## 4. Struktur Direktori
 
 ```
 Afi-Studio-main/
-├── index.html                  ← Halaman depan
-├── videos.json                 ← Data video/tutorial
-├── data.schema.md              ← Dokumentasi format data JSON
-├── validate_data.py            ← Cek data sebelum push
+├── index.html                     ← Beranda (HTML+CSS+JS dalam satu file)
+├── config.js                      ← Toggle jalur pendaftaran
+├── theme-toggle.js                ← Toggle tema gelap/terang
+├── videos.json                    ← Data video/tutorial
+├── data.schema.md                 ← Dokumentasi format data JSON
+├── validate_data.py                ← Validator videos.json & models.json
+├── vercel.json                    ← Aturan cache header
+├── tailwind.config.js             ← Konfigurasi scan class Tailwind
+├── src/input.css                  ← Source Tailwind
+├── dist/output.css                ← Hasil compile Tailwind (jangan edit manual)
+├── manifest.json, sw.js           ← Konfigurasi PWA & offline cache
+├── robots.txt, sitemap.xml        ← SEO dasar
 ├── Models/
-│   ├── index.html
-│   ├── script.js
-│   └── models.json              ← Data model
+│   ├── index.html, script.js
+│   └── models.json                ← Data model/aset
 ├── tutorial/
-│   ├── index.html
-│   └── script.js
+│   ├── index.html, script.js
 ├── member-Afi-Studio/
-│   ├── index.html
-│   ├── script.js
-│   ├── member.json               ← Data member
-│   └── profile/                  ← Foto profil member
+│   ├── index.html, script.js
+│   ├── member.json                ← Data member
+│   └── profile/                   ← Foto profil (WebP)
 ├── ranking/
-│   ├── index.html               ← Papan Top 3 + Top 10, data juara ditulis manual di dalam file ini
-│   └── coming_soon.webp         ← Gambar placeholder, tinggal ganti pas ada foto juara asli
-├── event/      (aturan event)
-├── bantuan/    (FAQ)
-├── feedback/   (form feedback)
+│   ├── index.html                 ← Data juara ditulis manual di file ini
+│   └── coming_soon.webp           ← Placeholder gambar juara
+├── event/       (aturan event, statis)
+├── bantuan/     (FAQ, statis)
+├── feedback/
+│   └── index.html
 ├── api/
-│   └── feedback.js             ← Backend form feedback → Telegram
-├── fonts/, icons/               ← Font & ikon self-hosted
-├── src/input.css, dist/output.css  ← Sumber & hasil compile Tailwind
-├── manifest.json, sw.js         ← Pengaturan PWA & offline
-└── theme-toggle.js              ← Toggle tema gelap/terang
+│   └── feedback.js                ← Serverless function → Telegram
+├── fonts/                         ← Font self-hosted (.woff2)
+└── icons/                         ← Ikon self-hosted (Lucide lokal)
 ```
 
----
+## 5. Kondisi Source Saat Ini
+
+- **Tanpa database.** Migrasi ke Turso (libSQL) yang pernah dikerjakan sudah **di-revert sepenuhnya** — tidak ada lagi folder `admin/`, `api/models.js`, `api/members.js`, atau `lib/db.js` di repo ini. Semua kembali ke workflow JSON manual.
+- **`/ranking/`** masih placeholder — struktur tampilan sudah jadi, tapi data juara & foto (`coming_soon.webp`) belum diganti data asli, dan belum dipindah ke file JSON terpisah seperti Model/Member/Video.
+- **Footer di `index.html`** sempat lebar tidak penuh karena breakout trick (`width: 100vw` + `margin-left: calc(50% - 50vw)`) bentrok dengan parent `#app` yang `overflow-auto` — sudah diperbaiki, footer sekarang `width: 100%` biasa (otomatis penuh karena footer sudah jadi sibling langsung `<main>` di dalam `#app`).
+- **`tailwind.config.js`** sebelumnya tidak menyertakan `tutorial/index.html`, `bantuan/index.html`, dan file `member-Afi-Studio/*` di daftar `content`, padahal halaman itu memakai `dist/output.css` — berisiko class Tailwind yang cuma dipakai di halaman itu ter-purge dan hilang. Sudah ditambahkan ke `content`, dan `dist/output.css` sudah di-rebuild.
+- **Cache header** (`vercel.json`) baru ditambahkan — font/ikon/banner di-cache lama (jarang berubah), file JSON data di-cache pendek (60 detik) supaya update konten tetap cepat terlihat pengunjung.
 
 ## 6. Cara Nambah/Update Konten
 
-1. Buka repo (di Termux atau laptop), edit file JSON yang relevan
-2. **Cek dulu formatnya** dengan `python3 validate_data.py` (untuk `videos.json`/`models.json`) atau `python3 -m json.tool member-Afi-Studio/member.json` (untuk member)
-3. `git add -A && git commit -m "pesan commit" && git push`
-4. Tunggu Vercel selesai deploy (biasanya < 1 menit), cek langsung di situs live
+1. Edit file JSON yang relevan (`Models/models.json`, `member-Afi-Studio/member.json`, atau `videos.json`).
+2. Validasi dulu: `python3 validate_data.py` (untuk models/videos) atau `python3 -m json.tool member-Afi-Studio/member.json` (untuk member).
+3. `git add -A && git commit -m "pesan"` lalu `git push`.
+4. Tunggu Vercel redeploy (biasanya < 1 menit).
 
-**Detail field wajib per jenis data** (model, video, member) ada di `data.schema.md` — baca dulu biar gak ada field yang kelewat.
+Detail wajib per field ada di `data.schema.md`.
 
-**Foto profil member baru** → taruh di `member-Afi-Studio/profile/`, format **WebP**, isi path/URL-nya di field `foto`.
-
-**Thumbnail model baru** → upload dulu ke hosting gambar eksternal (ibb.co atau sejenisnya), isi URL-nya di field `thumb` — bukan file lokal di repo.
-
----
-
-## 7. Keamanan — Ringkasan Cepat
-
-- **Jangan pernah** tulis token/password langsung di file kode. Semua kredensial (Telegram Bot Token, reCAPTCHA secret, dll) disimpen sebagai Environment Variable di **Vercel → Settings → Environment Variables**
-- `.gitignore` mencegah `node_modules/`, `.env`, dan `.vercel` ikut ter-commit ke GitHub — jangan dihapus
-- `validate_data.py` boleh ditaruh di manapun di root proyek, **kecuali di dalam folder `api/`** — Vercel otomatis mencoba menjalankan apapun di `api/` sebagai serverless function, dan file Python di situ bisa bikin deploy gagal
-
----
-
-## 8. Menjalankan Secara Lokal
-
-Karena `feedback/` manggil `api/feedback.js`, kalau mau tes fitur itu butuh Vercel CLI. Untuk sekadar lihat tampilan/konten (Models, Member, Tutorial), cukup local static server biasa.
-
-**Prasyarat:** [Node.js](https://nodejs.org/) (LTS).
+## 7. Menjalankan Secara Lokal
 
 ```bash
 git clone https://github.com/username/Afi-Studio-main.git
 cd Afi-Studio-main
 npm install
 npx tailwindcss -i ./src/input.css -o ./dist/output.css --minify
-npm install -g vercel
-vercel login
-vercel link
-vercel env pull .env.local
-vercel dev
-```
-Buka `http://localhost:3000`.
-
-**Alternatif ringan** (tanpa test form feedback):
-```bash
 python3 -m http.server 8080
 ```
 Buka `http://localhost:8080`.
 
+Untuk tes form feedback (butuh `api/feedback.js` jalan), pakai Vercel CLI:
+```bash
+npm install -g vercel
+vercel dev
+```
+
+## 8. Keamanan
+
+- Kredensial (`TELEGRAM_BOT_TOKEN`, `RECAPTCHA_SECRET_KEY`, Upstash Redis, dll) disimpan sebagai Environment Variable di Vercel — **jangan pernah** ditulis langsung di kode.
+- `.gitignore` mencegah `node_modules/`, `.env`, `.vercel` ter-commit — jangan dihapus.
+- `validate_data.py` boleh ada di mana saja di root, **kecuali di dalam `api/`** — Vercel otomatis menjalankan apapun di `api/` sebagai serverless function, file Python di situ bisa bikin deploy gagal.
+
+## 9. Kontribusi & Lisensi
+
+Ada model/rig/map buatan sendiri untuk dibagikan, atau nemu bug? Hubungi tim lewat halaman **Feedback** di situs, atau media sosial di halaman Member. Hak cipta tiap aset ada di masing-masing kreator/converter yang tercantum di setiap item.
+
 ---
-
-## 9. Kalau Ada yang Error
-
-- **Situs nampilin data kosong:** buka langsung file JSON-nya di browser (misal `afi-studio.vercel.app/Models/models.json`), pastikan formatnya masih valid. Jalankan `python3 validate_data.py` buat cek otomatis
-- **Video/model baru gak muncul:** cek lagi field wajib di `data.schema.md`, pastikan gak ada yang kosong/typo
-- **Form feedback gak jalan:** cek Environment Variable di Vercel (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `RECAPTCHA_SECRET_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) sudah ke-set semua
-
----
-
-## 10. Kontribusi & Lisensi
-
-Punya model, rig, atau map buatan sendiri yang ingin dibagikan? Atau nemu bug di website ini? Hubungi tim Afi Studio lewat media sosial di halaman Member, atau isi halaman **Feedback** di website.
-
-Hak cipta tiap aset milik masing-masing kreator/converter yang tercantum di setiap item.
-
----
-
-© 2026 Afi Studio — dibuat dengan ❤️ oleh komunitas Afi Studio
+© 2026 Afi Studio
