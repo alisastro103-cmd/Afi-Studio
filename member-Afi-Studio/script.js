@@ -3,9 +3,17 @@
 let dataMember = {};
 
 function getIcon(type) {
-    const validTypes = ['yt', 'ig', 'fb', 'tk', 'wa', 'dc'];
-    if (!validTypes.includes(type)) return null;
+    const colors = {
+        yt: "#FF0000",
+        ig: "#E1306C",
+        fb: "#1877F2",
+        tk: "#000000",
+        wa: "#25D366",
+        dc: "#5865F2"
+    };
+    if (!colors[type]) return null;
     return {
+        color: colors[type],
         svg: `<svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-${type}"></use></svg>`
     };
 }
@@ -61,7 +69,7 @@ function openModal(gen, index) {
         const link = m.socials[key];
         if (link && link.trim() !== "") {
             const iconData = getIcon(key);
-            socialHtml += `<a href="${link}" target="_blank" class="social-btn">${iconData.svg}</a>`;
+            socialHtml += `<a href="${link}" target="_blank" class="social-btn" style="background-color: ${iconData.color}">${iconData.svg}</a>`;
         }
     }
 
