@@ -3,17 +3,9 @@
 let dataMember = {};
 
 function getIcon(type) {
-    const colors = {
-        yt: "#FF0000",
-        ig: "#E1306C",
-        fb: "#1877F2",
-        tk: "#000000",
-        wa: "#25D366",
-        dc: "#5865F2"
-    };
-    if (!colors[type]) return null;
+    const validTypes = ['yt', 'ig', 'fb', 'tk', 'wa', 'dc'];
+    if (!validTypes.includes(type)) return null;
     return {
-        color: colors[type],
         svg: `<svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-${type}"></use></svg>`
     };
 }
@@ -69,7 +61,7 @@ function openModal(gen, index) {
         const link = m.socials[key];
         if (link && link.trim() !== "") {
             const iconData = getIcon(key);
-            socialHtml += `<a href="${link}" target="_blank" class="social-btn" style="background-color: ${iconData.color}">${iconData.svg}</a>`;
+            socialHtml += `<a href="${link}" target="_blank" class="social-btn">${iconData.svg}</a>`;
         }
     }
 
@@ -102,26 +94,6 @@ function closeModal() {
     const modal = document.getElementById('memberModal');
     modal.classList.remove('active');
     setTimeout(() => modal.style.display = "none", 400);
-}
-
-let chatTimeout;
-function showChatBubble() {
-    const bubble = document.getElementById('chatBubble');
-    const messages = [
-        "Haloo bangg👋🏻", 
-        "join sini bareng member Afi", 
-        "makasih ya udah kunjung website kami", 
-        "daftar untuk bergabung dengan member Afi lainnya"
-    ];
-    
-    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-    bubble.innerText = randomMsg;
-    bubble.classList.add('show');
-    
-    clearTimeout(chatTimeout);
-    chatTimeout = setTimeout(() => {
-        bubble.classList.remove('show');
-    }, 3000);
 }
 
 // Inisialisasi: ambil data member dari JSON, baru render
