@@ -2,7 +2,7 @@
 <html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <!-- Jalur pendaftaran (buka/tutup tombol form) diatur terpusat di /config.js -->
+    <!-- Kontrol jalur pendaftaran: diatur terpusat di /config.js, cukup ubah satu file itu agar berlaku di semua halaman -->
     <script src="/config.js"></script>
     <script>
         (function () {
@@ -367,14 +367,14 @@
             width: 100%;
         }
  
-        /* Ikon status (emoji) di pojok kanan atas kartu profil member */
-        .status-icon {
-            position: absolute;
-            right: 20px;
-            top: 15px;
-            font-size: 32px;
+        /* --- BAGIAN YANG DIPERBAIKI --- */
+        .status-icon { 
+            position: absolute; 
+            right: 20px; 
+            top: 15px; 
+            font-size: 32px; 
         }
- 
+
         .modal-subtext { font-family: var(--font-secondary); font-size: 14px; color: var(--text-sub); margin-top: 5px; line-height: 1.3; }
  
         .social-container { display: flex; flex-direction: row; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
@@ -394,8 +394,7 @@
             cursor: pointer; 
         }
  
-        /* Responsive: desktop & tablet. Cuma media query tambahan
-           untuk layout, tidak ada fungsi/struktur HTML yang diubah. */
+        /* Layout responsif untuk tablet & desktop — tidak mengubah struktur HTML, cuma menambah media query */
  
         /* Tablet: 501px – 900px */
         @media (min-width: 501px) {
@@ -515,8 +514,7 @@
         }
     </style>
     <script>
-        // Saklar manual link "Seleksi Member":
-        // true = link aktif (boleh dibuka ke Google Form), false = tampil notif "Segera Hadir"
+        // Saklar manual link "Seleksi Member": true = aktif (buka Google Form), false = ditutup (muncul notif "Segera Hadir")
         const isSeleksiMemberOpen = false;
     </script>
 

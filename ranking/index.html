@@ -2,7 +2,7 @@
 <html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <!-- Jalur pendaftaran (buka/tutup tombol form) diatur terpusat di /config.js -->
+    <!-- Kontrol jalur pendaftaran: diatur terpusat di /config.js, cukup ubah satu file itu agar berlaku di semua halaman -->
     <script src="/config.js"></script>
     <script>
         (function () {
@@ -207,19 +207,6 @@
         }
         .frame-wrap:hover img { transform: scale(1.04); }
 
-        /* Transisi masuk saat halaman dibuka: setiap kartu render
-           muncul dari bawah ke atas sambil fade-in, senada dengan
-           halaman Member Afi-Studio dan Models. Delay per kartu diatur
-           lewat inline style di HTML/JS supaya efeknya berurutan (staggered). */
-        .rank-item {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: rank-item-reveal 0.5s ease-out forwards;
-        }
-        @keyframes rank-item-reveal {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         /* Badge rank di atas gambar */
         .frame-badge {
             position: absolute;
@@ -234,6 +221,15 @@
             font-size: 11px;
             letter-spacing: 0.06em;
             pointer-events: none;
+        }
+
+        /* Kartu render muncul dengan efek slide-up + fade-in saat halaman dibuka, sama seperti di Models dan Member Afi-Studio */
+        @keyframes renderCardRevealUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .render-card {
+            animation: renderCardRevealUp 0.45s ease-out both;
         }
 
         /* ── Popup / Lightbox ── */
@@ -397,7 +393,7 @@
             <div class="section-divider">Top 3</div>
             <div class="grid grid-cols-3 gap-4 sm:gap-6 mb-10">
 
-                <div class="rank-item flex flex-col items-center gap-2" style="animation-delay:0ms;" onclick="openLightbox(1)">
+                <div class="flex flex-col items-center gap-2 render-card" style="animation-delay: 0ms;" onclick="openLightbox(1)">
                     <div class="frame-wrap w-full" style="border-color:rgba(255,215,0,0.45);">
                         <img src="coming_soon.webp" alt="Juara 1" loading="lazy">
                         <div class="frame-badge rank-1">1st</div>
@@ -405,7 +401,7 @@
                     <span class="rank-label rank-1">1st Place</span>
                 </div>
 
-                <div class="rank-item flex flex-col items-center gap-2" style="animation-delay:80ms;" onclick="openLightbox(2)">
+                <div class="flex flex-col items-center gap-2 render-card" style="animation-delay: 40ms;" onclick="openLightbox(2)">
                     <div class="frame-wrap w-full">
                         <img src="coming_soon.webp" alt="Juara 2" loading="lazy">
                         <div class="frame-badge rank-2">2nd</div>
@@ -413,7 +409,7 @@
                     <span class="rank-label rank-2">2nd Place</span>
                 </div>
 
-                <div class="rank-item flex flex-col items-center gap-2" style="animation-delay:160ms;" onclick="openLightbox(3)">
+                <div class="flex flex-col items-center gap-2 render-card" style="animation-delay: 80ms;" onclick="openLightbox(3)">
                     <div class="frame-wrap w-full">
                         <img src="coming_soon.webp" alt="Juara 3" loading="lazy">
                         <div class="frame-badge rank-3">3rd</div>
@@ -497,14 +493,12 @@
     ];
 
     /* ── Render runner-up grid (4–10) ── */
-    // Delay animasi disambung dari kartu Top 3 (0ms, 80ms, 160ms) supaya
-    // urutan muncul dari bawah ke atas terasa satu alur, bukan dua tahap terpisah.
     const grid = document.getElementById('runner-up-grid');
     juara.slice(3).forEach((j, i) => {
         const col = document.createElement('div');
-        col.className = 'rank-item flex flex-col items-center gap-2';
+        col.className = 'flex flex-col items-center gap-2 render-card';
         col.style.cursor = 'pointer';
-        col.style.animationDelay = `${240 + i * 80}ms`;
+        col.style.animationDelay = `${Math.min((i + 3) * 40, 400)}ms`;
         col.innerHTML = `
             <div class="frame-wrap w-full">
                 <img src="coming_soon.webp" alt="Juara ${j.rank}" loading="lazy">

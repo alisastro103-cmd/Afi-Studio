@@ -1,7 +1,7 @@
 // Kontrol jalur pendaftaran Afi Studio.
-// File ini dipakai semua halaman, jadi cukup ubah nilainya di sini saja.
+// File ini dipakai di semua halaman — ubah di sini, otomatis berlaku ke semua halaman yang memanggilnya.
 // true  = jalur aktif (tombol langsung buka Google Form)
-// false = jalur ditutup (tombol menampilkan notif "Segera Hadir")
+// false = jalur ditutup (tombol memunculkan notifikasi "Segera Hadir")
 const isDaftarModelOpen = true;   // Pendaftaran Model 3D
 const isDaftarMemberOpen = false; // Pendaftaran Member
 
