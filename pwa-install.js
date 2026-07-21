@@ -161,14 +161,14 @@
     dismiss();
   });
 
-  // Fallback: kalau beforeinstallprompt tidak fire dalam 2.5 detik
-  // (misal iOS Safari, atau browser yang tidak support event ini
-  // tapi bukan berarti PWA tidak bisa di-install), tetap tampilkan
-  // tombol dengan instruksi manual.
-  setTimeout(function () {
-    if (!btn && !isStandalone()) {
-      injectStyles();
-      createButton();
-    }
-  }, 2500);
+  // Khusus iOS Safari: beforeinstallprompt memang tidak pernah fire
+  // (bukan bug, iOS sengaja tidak menyediakannya), jadi tombol tetap
+  // ditampilkan dengan instruksi manual "Add to Home Screen".
+  // Di Android/Chrome/Desktop, tombol HANYA muncul kalau
+  // beforeinstallprompt benar-benar sudah siap — sama seperti Wolio Word,
+  // supaya begitu tombol muncul, 1 klik langsung ke dialog install native.
+  if (isIOS()) {
+    injectStyles();
+    createButton();
+  }
 })();
