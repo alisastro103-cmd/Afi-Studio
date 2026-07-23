@@ -276,10 +276,20 @@
         }
         .lightbox-overlay.zoomed .lightbox-img-wrap,
         .lightbox-overlay.zoomed .lightbox-img-wrap img {
-            max-height: 96vh;
-            max-width: 96vw;
+            max-height: 100vh;
+            max-width: 100vw;
         }
-        .lightbox-overlay.zoomed .lightbox-caption { opacity: 0; pointer-events: none; }
+        .lightbox-overlay.zoomed .lightbox-img-wrap img {
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        .lightbox-overlay.zoomed .lightbox-caption,
+        .lightbox-overlay.zoomed .lightbox-close,
+        .lightbox-overlay.zoomed .lightbox-nav {
+            opacity: 0;
+            pointer-events: none;
+        }
         .lightbox-zoom-btn {
             position: absolute;
             top: 16px;
@@ -312,7 +322,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, opacity 0.25s ease;
             z-index: 10;
         }
         .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
@@ -326,6 +336,7 @@
             margin-top: 16px;
             text-align: center;
             max-width: 480px;
+            transition: opacity 0.25s ease;
         }
         .lightbox-caption .lb-rank {
             font-family: 'Outfit', sans-serif;
@@ -353,7 +364,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, opacity 0.25s ease;
         }
         .lightbox-close:hover { background: rgba(255,255,255,0.2); }
 
@@ -556,7 +567,7 @@
         document.getElementById('lb-img').alt  = j.nama;
         document.getElementById('lb-rank').textContent = `${j.juara} Place`;
         document.getElementById('lb-rank').style.color = color;
-        document.getElementById('lb-msg').textContent  = `${j.juara} : ${j.caption}`;
+        document.getElementById('lb-msg').textContent  = j.caption;
     }
 
     function openLightbox(index) {
@@ -570,6 +581,7 @@
     function closeLightbox() {
         document.getElementById('lightbox').classList.remove('active', 'zoomed');
         document.body.style.overflow = '';
+        resetZoomTransform();
     }
 
     function navLightbox(dir) {
@@ -585,11 +597,99 @@
 
     function toggleZoom() {
         document.getElementById('lightbox').classList.toggle('zoomed');
+        resetZoomTransform();
     }
+
+    /* ── Pinch-zoom, pan gambar (saat zoom), dan swipe kiri-kanan (saat tidak zoom) ── */
+    const lbImg = document.getElementById('lb-img');
+    const lbImgWrap = document.querySelector('.lightbox-img-wrap');
+    const activePointers = new Map();
+    let pinchStartDist = 0, pinchStartScale = 1;
+    let zoomScale = 1, zoomTx = 0, zoomTy = 0;
+    let panStart = { x: 0, y: 0 }, panOrigin = { x: 0, y: 0 };
+    let swipeStartX = 0, swipeStartY = 0, isSwiping = false;
+    let wheelResetTimer = null;
+
+    function isZoomed() {
+        return document.getElementById('lightbox').classList.contains('zoomed');
+    }
+
+    function applyZoomTransform() {
+        lbImg.style.transform = `translate(${zoomTx}px, ${zoomTy}px) scale(${zoomScale})`;
+    }
+
+    function resetZoomTransform() {
+        zoomScale = 1; zoomTx = 0; zoomTy = 0;
+        lbImg.style.transition = '';
+        lbImg.style.transform = '';
+    }
+
+    lbImgWrap.addEventListener('pointerdown', e => {
+        lbImgWrap.setPointerCapture(e.pointerId);
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activePointers.size === 2 && isZoomed()) {
+            lbImg.style.transition = 'none';
+            const pts = [...activePointers.values()];
+            pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            pinchStartScale = zoomScale;
+        } else if (activePointers.size === 1) {
+            if (isZoomed() && zoomScale > 1) {
+                lbImg.style.transition = 'none';
+                panStart = { x: e.clientX, y: e.clientY };
+                panOrigin = { x: zoomTx, y: zoomTy };
+            } else if (!isZoomed()) {
+                swipeStartX = e.clientX;
+                swipeStartY = e.clientY;
+                isSwiping = true;
+            }
+        }
+    });
+
+    lbImgWrap.addEventListener('pointermove', e => {
+        if (!activePointers.has(e.pointerId)) return;
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activePointers.size === 2 && isZoomed()) {
+            const pts = [...activePointers.values()];
+            const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            zoomScale = Math.min(4, Math.max(1, pinchStartScale * (dist / pinchStartDist)));
+            applyZoomTransform();
+        } else if (activePointers.size === 1 && isZoomed() && zoomScale > 1) {
+            zoomTx = panOrigin.x + (e.clientX - panStart.x);
+            zoomTy = panOrigin.y + (e.clientY - panStart.y);
+            applyZoomTransform();
+        }
+    });
+
+    function onPointerEnd(e) {
+        if (isSwiping && !isZoomed()) {
+            const dx = e.clientX - swipeStartX;
+            const dy = e.clientY - swipeStartY;
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+                navLightbox(dx < 0 ? 1 : -1);
+            }
+        }
+        isSwiping = false;
+        activePointers.delete(e.pointerId);
+        if (activePointers.size === 0) lbImg.style.transition = '';
+    }
+    lbImgWrap.addEventListener('pointerup', onPointerEnd);
+    lbImgWrap.addEventListener('pointercancel', onPointerEnd);
+
+    lbImgWrap.addEventListener('wheel', e => {
+        if (!isZoomed()) return;
+        e.preventDefault();
+        lbImg.style.transition = 'none';
+        zoomScale = Math.min(4, Math.max(1, zoomScale - e.deltaY * 0.0015));
+        if (zoomScale === 1) { zoomTx = 0; zoomTy = 0; }
+        applyZoomTransform();
+        clearTimeout(wheelResetTimer);
+        wheelResetTimer = setTimeout(() => { lbImg.style.transition = ''; }, 150);
+    }, { passive: false });
 
     document.addEventListener('keydown', e => {
         if (!document.getElementById('lightbox').classList.contains('active')) return;
         if (e.key === 'Escape') closeLightbox();
+        if (isZoomed()) return;
         if (e.key === 'ArrowLeft') navLightbox(-1);
         if (e.key === 'ArrowRight') navLightbox(1);
     });
