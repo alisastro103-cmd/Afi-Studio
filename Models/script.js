@@ -1,18 +1,8 @@
-const NEWS_TEXTS = [
-    "Pamerkan Rendermu di \"Render Event\"",
-    "Render Event tidak ada hadiah atau , hanya untuk hiburan",
-    "Gabung digrup WhatsApp!!",
-    "Join \"Saluran WhatsApp\" kami!!",
-    "Lihat karya-karya di channel WhatsApp dan YouTube kami",
-    "Daftarkan model, rig, dan map kamu disini"
-];
+// Teks marquee/text-scroll sekarang dimuat dari marquee.json (lihat loadMarquee di bawah)
+let NEWS_TEXTS = [];
 
-const bannerData = [
-    { img: "Banner1.webp", url: "#" },
-    { img: "Banner2.webp", url: "https://chat.whatsapp.com/LSC5Ij7KzT01VEfPS9Spm2?mode=ems_copy_c" },
-    { img: "Banner3.webp", url: "event/index.html" },
-    { img: "Banner4.webp", url: "https://youtu.be/zdfKQt_enjc?si=MOWKnFsvVmYuDkUS" }
-];
+// Data banner slider root sekarang dimuat dari banner.json (lihat loadBanner di bawah)
+let bannerData = [];
 
 // Data model sekarang dimuat dari Models/models.json (lihat loadModels di bawah)
 let MODELS = [];
@@ -56,6 +46,32 @@ function filterByCategory(cat) {
     const searchInput = document.getElementById('search-input');
     const searchTerm = searchInput ? searchInput.value : '';
     renderModels(searchTerm);
+}
+
+// Ambil data teks marquee dari marquee.json, baru render begitu siap
+async function loadMarquee() {
+    try {
+        const res = await fetch('/marquee.json');
+        NEWS_TEXTS = await res.json();
+    } catch (err) {
+        console.error('Gagal memuat marquee.json:', err);
+        NEWS_TEXTS = [];
+    }
+    renderMarquee();
+}
+
+// Ambil data banner slider dari banner.json, lalu beri tahu index.html
+// lewat event 'bannerLoaded' supaya slider bisa dibangun begitu data siap
+// (index.html yang bertanggung jawab membangun DOM slider-nya sendiri).
+async function loadBanner() {
+    try {
+        const res = await fetch('/banner.json');
+        bannerData = await res.json();
+    } catch (err) {
+        console.error('Gagal memuat banner.json:', err);
+        bannerData = [];
+    }
+    document.dispatchEvent(new CustomEvent('bannerLoaded'));
 }
 
 // Merender teks berjalan (marquee)
@@ -234,12 +250,13 @@ async function loadModels() {
     recomputeFilters();
     renderCategoryButtons();
     renderModels();
-    renderMarquee();
     if (typeof lucide !== 'undefined') lucide.createIcons();
     // Beri tahu script lain (misal index.html) bahwa MODELS sudah siap
     document.dispatchEvent(new CustomEvent('modelsLoaded'));
 }
 loadModels();
+loadMarquee();
+loadBanner();
 
 // === Animasi transisi halus untuk board konten (#content-grid) ===
 // Kartu muncul dengan efek slide-up + fade-in secara bertahap (staggered)

@@ -751,25 +751,31 @@
         let startX, isDragging = false, currentTranslate = 0, prevTranslate = 0;
         let slideTimer;
  
-        bannerData.forEach((item, index) => {
-            const linkTag = document.createElement('a');
-            linkTag.href = item.url;
-            linkTag.target = "_blank";
-            linkTag.className = 'banner-link';
-            const imgTag = document.createElement('img');
-            imgTag.src = item.img;
-            imgTag.className = 'banner-slide';
-            imgTag.alt = 'Banner Ads';
-            imgTag.loading = 'lazy';
-            imgTag.decoding = 'async';
-            linkTag.appendChild(imgTag);
-            slider.appendChild(linkTag);
+        // Dibungkus jadi fungsi (bukan langsung jalan) karena bannerData sekarang
+        // dimuat async dari banner.json — baru dipanggil setelah event 'bannerLoaded'.
+        function renderBannerSlides() {
+            slider.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            bannerData.forEach((item, index) => {
+                const linkTag = document.createElement('a');
+                linkTag.href = item.url;
+                linkTag.target = "_blank";
+                linkTag.className = 'banner-link';
+                const imgTag = document.createElement('img');
+                imgTag.src = item.img;
+                imgTag.className = 'banner-slide';
+                imgTag.alt = 'Banner Ads';
+                imgTag.loading = 'lazy';
+                imgTag.decoding = 'async';
+                linkTag.appendChild(imgTag);
+                slider.appendChild(linkTag);
  
-            const dot = document.createElement('div');
-            dot.className = `dot ${index === 0 ? 'active' : ''}`;
-            dot.onclick = () => goToSlide(index);
-            dotsContainer.appendChild(dot);
-        });
+                const dot = document.createElement('div');
+                dot.className = `dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+        }
  
         function updateSlider() {
             slider.style.transform = `translateX(-${currentIndex * 100}%)`;
@@ -833,7 +839,14 @@
             resetTimer();
         }
  
-        resetTimer();
+        // Baru bangun slide + mulai auto-slide setelah banner.json selesai dimuat
+        // (dipicu dari Models/script.js lewat event 'bannerLoaded').
+        function initBanner() {
+            if (!bannerData.length) return;
+            renderBannerSlides();
+            resetTimer();
+        }
+        document.addEventListener('bannerLoaded', initBanner);
  
         (function () {
             const menuBtn = document.getElementById('page-menu-btn');
