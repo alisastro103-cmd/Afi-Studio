@@ -176,8 +176,10 @@
             transition: filter 0.2s;
         }
         .video-card:hover .video-viewall-thumb { filter: brightness(1.08); }
-        .video-viewall-icon { color: #fff; }
-        .video-viewall-text { font-size: 14px; font-weight: 700; line-height: 1.4; color: #fff; }
+        .video-viewall-icon { color: var(--text); }
+        html.dark .video-viewall-icon { color: #fff; }
+        .video-viewall-text { font-size: 14px; font-weight: 700; line-height: 1.4; color: var(--text); }
+        html.dark .video-viewall-text { color: #fff; }
         .video-thumb-wrap {
             position: relative;
             border-radius: 3px;

@@ -44,6 +44,16 @@ function renderMembers() {
         const container = document.createElement('div');
         container.id = genId;
         container.className = 'member-container';
+        container.tabIndex = 0;
+        container.addEventListener('keydown', e => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            const card = container.querySelector('.id-card');
+            if (!card) return;
+            const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+            const step = card.getBoundingClientRect().width + gap;
+            container.scrollBy({ left: e.key === 'ArrowRight' ? step : -step, behavior: 'smooth' });
+        });
         members.forEach((member, index) => {
             container.innerHTML += `
                 <div class="id-card" style="animation-delay: ${index * 0.05}s;" onclick="openModal('${genId}', ${index})">
