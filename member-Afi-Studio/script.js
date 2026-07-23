@@ -2,14 +2,6 @@
 // Data member sekarang dimuat dari member-Afi-Studio/member.json (lihat loadMembers di bawah)
 let dataMember = {};
 
-/* ── Scroll samping via tombol panah kiri/kanan (desktop), mengikuti strip yang sedang di-hover ── */
-let hoveredScrollContainer = null;
-document.addEventListener('keydown', e => {
-    if (!hoveredScrollContainer) return;
-    if (e.key === 'ArrowLeft') hoveredScrollContainer.scrollBy({ left: -hoveredScrollContainer.clientWidth * 0.8, behavior: 'smooth' });
-    if (e.key === 'ArrowRight') hoveredScrollContainer.scrollBy({ left: hoveredScrollContainer.clientWidth * 0.8, behavior: 'smooth' });
-});
-
 function getIcon(type) {
     const colors = {
         yt: "#FF0000",
@@ -52,8 +44,6 @@ function renderMembers() {
         const container = document.createElement('div');
         container.id = genId;
         container.className = 'member-container';
-        container.addEventListener('mouseenter', () => { hoveredScrollContainer = container; });
-        container.addEventListener('mouseleave', () => { if (hoveredScrollContainer === container) hoveredScrollContainer = null; });
         members.forEach((member, index) => {
             container.innerHTML += `
                 <div class="id-card" style="animation-delay: ${index * 0.05}s;" onclick="openModal('${genId}', ${index})">

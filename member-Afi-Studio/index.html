@@ -227,18 +227,12 @@
         .folder-divider { height: 1px; background-color: transparent; width: 100%; }
  
         .member-container {
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            scroll-snap-type: x proximity;
-            -webkit-overflow-scrolling: touch;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 8px;
             width: 100%;
             padding: 15px 0;
-            --card-gap: 8px;
         }
-        .member-container::-webkit-scrollbar { display: none; }
-        .member-container { -ms-overflow-style: none; scrollbar-width: none; }
  
         .id-card {
             background-color: var(--surface);
@@ -253,8 +247,6 @@
             opacity: 0;
             transform: translateY(12px);
             animation: card-fade-in 0.45s ease forwards;
-            flex: 0 0 calc((100% - 3 * var(--card-gap)) / 4);
-            scroll-snap-align: start;
         }
         .id-card:active { transform: scale(0.95); }
         @keyframes card-fade-in {
@@ -380,8 +372,8 @@
             }
  
             .member-container {
+                grid-template-columns: repeat(4, 1fr);
                 gap: 12px;
-                --card-gap: 12px;
             }
  
             .member-name {
@@ -429,8 +421,8 @@
             }
  
             .member-container {
+                grid-template-columns: repeat(4, 1fr);
                 gap: 14px;
-                --card-gap: 14px;
             }
  
             .member-name {
@@ -484,8 +476,8 @@
             }
  
             .member-container {
+                grid-template-columns: repeat(4, 1fr);
                 gap: 16px;
-                --card-gap: 16px;
             }
         }
     </style>
