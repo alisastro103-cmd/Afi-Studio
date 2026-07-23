@@ -268,6 +268,59 @@
             object-fit: contain;
             display: block;
             box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+            transition: opacity 0.25s ease, transform 0.25s ease, max-width 0.3s ease, max-height 0.3s ease;
+        }
+        .lightbox-img-wrap img.lb-img-swap {
+            opacity: 0;
+            transform: scale(0.97);
+        }
+        .lightbox-overlay.zoomed .lightbox-img-wrap,
+        .lightbox-overlay.zoomed .lightbox-img-wrap img {
+            max-height: 96vh;
+            max-width: 96vw;
+        }
+        .lightbox-overlay.zoomed .lightbox-caption { opacity: 0; pointer-events: none; }
+        .lightbox-zoom-btn {
+            position: absolute;
+            top: 16px;
+            right: 62px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .lightbox-zoom-btn:hover { background: rgba(255,255,255,0.2); }
+        .lightbox-overlay.zoomed .lightbox-zoom-btn { color: var(--accent-hover, #7DD3FC); }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            z-index: 10;
+        }
+        .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+        .lightbox-nav-prev { left: 12px; }
+        .lightbox-nav-next { right: 12px; }
+        @media (min-width: 640px) {
+            .lightbox-nav-prev { left: 24px; }
+            .lightbox-nav-next { right: 24px; }
         }
         .lightbox-caption {
             margin-top: 16px;
@@ -392,32 +445,7 @@
             </div>
 
             <div class="section-divider">Top 3</div>
-            <div class="grid grid-cols-3 gap-4 sm:gap-6 mb-10">
-
-                <div class="flex flex-col items-center gap-2 render-card" style="animation-delay: 0ms;" onclick="openLightbox(1)">
-                    <div class="frame-wrap w-full" style="border-color:rgba(255,215,0,0.45);">
-                        <img src="coming_soon.webp" alt="Juara 1" loading="lazy">
-                        <div class="frame-badge rank-1">1st</div>
-                    </div>
-                    <span class="rank-label rank-1">1st Place</span>
-                </div>
-
-                <div class="flex flex-col items-center gap-2 render-card" style="animation-delay: 40ms;" onclick="openLightbox(2)">
-                    <div class="frame-wrap w-full">
-                        <img src="coming_soon.webp" alt="Juara 2" loading="lazy">
-                        <div class="frame-badge rank-2">2nd</div>
-                    </div>
-                    <span class="rank-label rank-2">2nd Place</span>
-                </div>
-
-                <div class="flex flex-col items-center gap-2 render-card" style="animation-delay: 80ms;" onclick="openLightbox(3)">
-                    <div class="frame-wrap w-full">
-                        <img src="coming_soon.webp" alt="Juara 3" loading="lazy">
-                        <div class="frame-badge rank-3">3rd</div>
-                    </div>
-                    <span class="rank-label rank-3">3rd Place</span>
-                </div>
-
+            <div class="grid grid-cols-3 gap-4 sm:gap-6 mb-10" id="top3-grid">
             </div>
 
             <div class="section-divider">Runner Up</div>
@@ -445,6 +473,15 @@
     <button class="lightbox-close" onclick="closeLightbox()">
         <i data-lucide="x" style="width:18px;height:18px;"></i>
     </button>
+    <button class="lightbox-zoom-btn" onclick="event.stopPropagation(); toggleZoom()">
+        <i data-lucide="eye" style="width:18px;height:18px;"></i>
+    </button>
+    <button class="lightbox-nav lightbox-nav-prev" onclick="event.stopPropagation(); navLightbox(-1)">
+        <i data-lucide="chevron-right" style="width:22px;height:22px;transform:rotate(180deg);"></i>
+    </button>
+    <button class="lightbox-nav lightbox-nav-next" onclick="event.stopPropagation(); navLightbox(1)">
+        <i data-lucide="chevron-right" style="width:22px;height:22px;"></i>
+    </button>
     <div class="lightbox-img-wrap" onclick="event.stopPropagation()">
         <img id="lb-img" src="" alt="" loading="lazy" decoding="async">
     </div>
@@ -469,68 +506,92 @@
         });
     })();
 
-    /* ── Data setiap juara ── */
-    const juara = [
-        { rank: 1,  label: '1st Place', color: '#FFD700',
-          msg: 'Keren banget karya kamu! Detailnya luar biasa dan atmosfernya dapet banget. Pertahankan yaa' },
-        { rank: 2,  label: '2nd Place', color: '#C0C0C0',
-          msg: 'Rendermu memukau! Komposisi dan pencahayaannya keren abis. Terus berkarya!' },
-        { rank: 3,  label: '3rd Place', color: '#CD7F32',
-          msg: 'Top banget! Texturing dan angle kamu mantap. Semangat terus dan tingkatkan lagi!' },
-        { rank: 4,  label: '4th Place', color: '#9ca3af',
-          msg: 'Hampir podium! Karyamu keren dan potensialnya besar. Terus latihan yaa!' },
-        { rank: 5,  label: '5th Place', color: '#9ca3af',
-          msg: 'Render yang solid! Kamu punya skill yang bagus, keep it up!' },
-        { rank: 6,  label: '6th Place', color: '#9ca3af',
-          msg: 'Karyamu mengesankan! Jangan berhenti bereksperimen dan berkreasi yaa.' },
-        { rank: 7,  label: '7th Place', color: '#9ca3af',
-          msg: 'Bagus banget! Dengan semangat ini, podium menunggumu di event selanjutnya!' },
-        { rank: 8,  label: '8th Place', color: '#9ca3af',
-          msg: 'Rendermu eye-catching! Gaya kamu unik, kembangkan terus ya!' },
-        { rank: 9,  label: '9th Place', color: '#9ca3af',
-          msg: 'Keren! Terus eksplorasi teknik baru dan jangan lupa nikmati prosesnya!' },
-        { rank: 10, label: '10th Place', color: '#9ca3af',
-          msg: 'Masuk top 10 itu udah keren banget! Semangat terus dan buktiin di next event!' },
-    ];
+    /* ── Data juara: Top 3 & Runner Up dari satu JSON, bisa ditambah/dikurangi bebas ── */
+    let juara = [];
+    let currentIndex = 0;
 
-    /* ── Render runner-up grid (4–10) ── */
-    const grid = document.getElementById('runner-up-grid');
-    juara.slice(3).forEach((j, i) => {
-        const col = document.createElement('div');
-        col.className = 'flex flex-col items-center gap-2 render-card';
-        col.style.cursor = 'pointer';
-        col.style.animationDelay = `${Math.min((i + 3) * 40, 400)}ms`;
-        col.innerHTML = `
-            <div class="frame-wrap w-full">
-                <img src="coming_soon.webp" alt="Juara ${j.rank}" loading="lazy">
-                <div class="frame-badge" style="color:${j.color};">${j.rank}th</div>
-            </div>
-            <span class="rank-label" style="color:${j.color};">${j.label}</span>
-        `;
-        col.addEventListener('click', () => openLightbox(j.rank));
-        grid.appendChild(col);
-    });
+    function rankColor(i) {
+        return i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : '#9ca3af';
+    }
+
+    fetch('ranking.json')
+        .then(res => res.json())
+        .then(data => {
+            juara = data;
+            renderRanking();
+        })
+        .catch(() => {});
+
+    function renderRanking() {
+        const top3Grid = document.getElementById('top3-grid');
+        const runnerGrid = document.getElementById('runner-up-grid');
+        top3Grid.innerHTML = '';
+        runnerGrid.innerHTML = '';
+
+        juara.forEach((j, i) => {
+            const color = rankColor(i);
+            const col = document.createElement('div');
+            col.className = 'flex flex-col items-center gap-2 render-card';
+            col.style.cursor = 'pointer';
+            col.style.animationDelay = `${Math.min(i * 40, 400)}ms`;
+            col.innerHTML = `
+                <div class="frame-wrap w-full"${i === 0 ? ' style="border-color:rgba(255,215,0,0.45);"' : ''}>
+                    <img src="${j.gambar}" alt="${j.nama}" loading="lazy">
+                    <div class="frame-badge" style="color:${color};">${j.juara}</div>
+                </div>
+                <span class="rank-label" style="color:${color};">${j.juara} Place</span>
+            `;
+            col.addEventListener('click', () => openLightbox(i));
+            (i < 3 ? top3Grid : runnerGrid).appendChild(col);
+        });
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 
     /* ── Lightbox logic ── */
-    function openLightbox(rank) {
-        const j = juara[rank - 1];
-        document.getElementById('lb-img').src  = `coming_soon.webp`;
-        document.getElementById('lb-img').alt  = `Juara ${rank}`;
-        document.getElementById('lb-rank').textContent = j.label;
-        document.getElementById('lb-rank').style.color = j.color;
-        document.getElementById('lb-msg').textContent  = `${rank === 1 ? '1st' : rank === 2 ? '2nd' : rank === 3 ? '3rd' : rank + 'th'} : ${j.msg}`;
+    function fillLightbox(index) {
+        const j = juara[index];
+        const color = rankColor(index);
+        document.getElementById('lb-img').src  = j.gambar;
+        document.getElementById('lb-img').alt  = j.nama;
+        document.getElementById('lb-rank').textContent = `${j.juara} Place`;
+        document.getElementById('lb-rank').style.color = color;
+        document.getElementById('lb-msg').textContent  = `${j.juara} : ${j.caption}`;
+    }
+
+    function openLightbox(index) {
+        currentIndex = index;
+        fillLightbox(index);
         document.getElementById('lightbox').classList.add('active');
         document.body.style.overflow = 'hidden';
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function closeLightbox() {
-        document.getElementById('lightbox').classList.remove('active');
+        document.getElementById('lightbox').classList.remove('active', 'zoomed');
         document.body.style.overflow = '';
     }
 
+    function navLightbox(dir) {
+        if (!juara.length) return;
+        currentIndex = (currentIndex + dir + juara.length) % juara.length;
+        const img = document.getElementById('lb-img');
+        img.classList.add('lb-img-swap');
+        setTimeout(() => {
+            fillLightbox(currentIndex);
+            img.classList.remove('lb-img-swap');
+        }, 200);
+    }
+
+    function toggleZoom() {
+        document.getElementById('lightbox').classList.toggle('zoomed');
+    }
+
     document.addEventListener('keydown', e => {
+        if (!document.getElementById('lightbox').classList.contains('active')) return;
         if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') navLightbox(-1);
+        if (e.key === 'ArrowRight') navLightbox(1);
     });
 </script>
     <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
