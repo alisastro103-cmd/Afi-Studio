@@ -165,7 +165,8 @@
         }
         .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item:active { opacity: 0.6; }
-        .page-menu-item.active { color: #fff; background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        html.dark .page-menu-item.active { color: #fff; }
         .page-menu-item.active::before {
             content: "";
             display: inline-block;
@@ -177,7 +178,8 @@
             vertical-align: middle;
         }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
-        .page-menu-item-cta { color: #fff; display: flex; align-items: center; justify-content: space-between; }
+        .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: space-between; }
+        html.dark .page-menu-item-cta { color: #fff; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item-cta:active { opacity: 0.6; }
  
@@ -225,12 +227,18 @@
         .folder-divider { height: 1px; background-color: transparent; width: 100%; }
  
         .member-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scroll-snap-type: x proximity;
+            -webkit-overflow-scrolling: touch;
             gap: 8px;
             width: 100%;
             padding: 15px 0;
+            --card-gap: 8px;
         }
+        .member-container::-webkit-scrollbar { display: none; }
+        .member-container { -ms-overflow-style: none; scrollbar-width: none; }
  
         .id-card {
             background-color: var(--surface);
@@ -245,6 +253,8 @@
             opacity: 0;
             transform: translateY(12px);
             animation: card-fade-in 0.45s ease forwards;
+            flex: 0 0 calc((100% - 3 * var(--card-gap)) / 4);
+            scroll-snap-align: start;
         }
         .id-card:active { transform: scale(0.95); }
         @keyframes card-fade-in {
@@ -370,8 +380,8 @@
             }
  
             .member-container {
-                grid-template-columns: repeat(4, 1fr);
                 gap: 12px;
+                --card-gap: 12px;
             }
  
             .member-name {
@@ -419,8 +429,8 @@
             }
  
             .member-container {
-                grid-template-columns: repeat(4, 1fr);
                 gap: 14px;
+                --card-gap: 14px;
             }
  
             .member-name {
@@ -474,8 +484,8 @@
             }
  
             .member-container {
-                grid-template-columns: repeat(4, 1fr);
                 gap: 16px;
+                --card-gap: 16px;
             }
         }
     </style>
