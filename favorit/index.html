@@ -135,7 +135,7 @@
 
         /* Kartu video (dipakai ulang dari halaman Video & Tutorial) */
         .tutorial-card { cursor: pointer; width: 100%; }
-        .tutorial-thumb-wrap { position: relative; overflow: hidden; background: var(--surface); border-radius: 6px; border: 1px solid var(--border); }
+        .tutorial-thumb-wrap { position: relative; overflow: hidden; background: var(--surface); border-radius: 10px; }
         .tutorial-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; transition: transform 0.25s; }
         .tutorial-card:hover .tutorial-thumb { transform: scale(1.03); }
         .tutorial-play-badge { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.15); transition: background 0.2s; }
@@ -144,7 +144,7 @@
         .tutorial-card-title { padding: 10px 4px 0; font-size: 15px; font-weight: 700; line-height: 1.35; word-wrap: break-word; overflow-wrap: break-word; }
 
         /* Kartu model (dipakai ulang dari halaman Model) */
-        .model-card { position: relative; cursor: pointer; border-radius: 6px; overflow: hidden; transition: transform 0.2s, border-color 0.3s; background: var(--surface); border: 1px solid var(--border); }
+        .model-card { position: relative; cursor: pointer; border-radius: 10px; overflow: hidden; transition: transform 0.2s, border-color 0.3s; background: var(--surface); }
         .model-card:hover { transform: translateY(-4px); border-color: var(--accent-hover); }
         .app-badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; z-index: 2; }
         .card-image { aspect-ratio: 16/9; object-fit: cover; width: 100%; }
@@ -260,7 +260,7 @@
 
                         <div class="page-menu">
                             <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
                             </button>
                             <div id="page-menu-dropdown" class="page-menu-dropdown">
                                 <a href="../index.html" class="page-menu-item">Beranda</a>
