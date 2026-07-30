@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <!-- Kontrol jalur pendaftaran: diatur terpusat di /config.js, cukup ubah satu file itu agar berlaku di semua halaman -->
+    <script src="/config.js"></script>
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afi Studio - Album Juara Render</title>
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="../favicon.png">
+
+    <!-- Open Graph -->
+    <link rel="canonical" href="https://afi-studio.vercel.app/ranking/">
+    <meta name="description" content="Lihat album juara render terbaik dari event kompetisi Afi Studio, hasil karya terbaik komunitas.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/ranking/">
+    <meta property="og:title" content="Afi Studio - Album Juara Render">
+    <meta property="og:description" content="Lihat koleksi render terbaik pemenang event kompetisi Afi Studio.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Album Juara Render">
+    <meta name="twitter:description" content="Lihat koleksi render terbaik pemenang event kompetisi Afi Studio.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+    <link rel="stylesheet" href="/fonts/fonts.css">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'DM Sans', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        :root {
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+        }
+
+        html.dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+        }
+
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; zoom: 0.75; }
+
+        .footer-text {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            padding: 16px 0 28px;
+            font-weight: 500;
+        }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        /* Menu pindah halaman */
+        .page-menu { position: relative; }
+        .page-menu-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 190px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item:active { opacity: 0.6; }
+        .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        html.dark .page-menu-item.active { color: #fff; }
+        .page-menu-item.active::before {
+            content: "";
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+        .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: space-between; }
+        html.dark .page-menu-item-cta { color: #fff; }
+        .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item-cta:active { opacity: 0.6; }
+
+        /* ── Rank label warna ── */
+        .rank-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .rank-1  { color: #FFD700; }
+        .rank-2  { color: #C0C0C0; }
+        .rank-3  { color: #CD7F32; }
+        .rank-4 , .rank-5 , .rank-6 ,
+        .rank-7 , .rank-8 , .rank-9 , .rank-10 { color: var(--text-sub); }
+
+        /* ── Frame gambar 1:1 ── */
+        .frame-wrap {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.25s, transform 0.2s;
+            background: var(--surface);
+        }
+        .frame-wrap:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+        .frame-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s;
+        }
+        .frame-wrap:hover img { transform: scale(1.04); }
+
+        /* Badge rank di atas gambar */
+        .frame-badge {
+            position: absolute;
+            top: 7px;
+            left: 7px;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(6px);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            pointer-events: none;
+        }
+
+        /* Kartu render muncul dengan efek slide-up + fade-in saat halaman dibuka, sama seperti di Models dan Member Afi-Studio */
+        @keyframes renderCardRevealUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .render-card {
+            animation: renderCardRevealUp 0.45s ease-out both;
+        }
+
+        /* ── Popup / Lightbox ── */
+        .lightbox-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0,0,0,0.90);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+            padding: 16px;
+        }
+        .lightbox-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .lightbox-img-wrap {
+            position: relative;
+            max-width: 100%;
+            max-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+        .lightbox-img-wrap img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.12);
+            object-fit: contain;
+            display: block;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+            transition: opacity 0.25s ease, transform 0.25s ease, max-width 0.3s ease, max-height 0.3s ease;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+        .lightbox-img-wrap img.lb-img-swap {
+            opacity: 0;
+            transform: scale(0.97);
+        }
+        .lightbox-overlay.zoomed .lightbox-img-wrap,
+        .lightbox-overlay.zoomed .lightbox-img-wrap img {
+            max-height: 100vh;
+            max-width: 100vw;
+        }
+        .lightbox-overlay.zoomed .lightbox-img-wrap img {
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        .lightbox-overlay.zoomed .lightbox-caption,
+        .lightbox-overlay.zoomed .lightbox-close,
+        .lightbox-overlay.zoomed .lightbox-nav {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .lightbox-zoom-btn {
+            position: absolute;
+            top: 16px;
+            right: 62px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .lightbox-zoom-btn:hover { background: rgba(255,255,255,0.2); }
+        .lightbox-overlay.zoomed .lightbox-zoom-btn { color: var(--accent-hover, #7DD3FC); }
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.25s ease;
+            z-index: 10;
+        }
+        .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+        .lightbox-nav-prev { left: 12px; }
+        .lightbox-nav-next { right: 12px; }
+        @media (min-width: 640px) {
+            .lightbox-nav-prev { left: 24px; }
+            .lightbox-nav-next { right: 24px; }
+        }
+        .lightbox-caption {
+            margin-top: 16px;
+            text-align: center;
+            max-width: 480px;
+            transition: opacity 0.25s ease;
+        }
+        .lightbox-caption .lb-rank {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: 0.05em;
+        }
+        .lightbox-caption .lb-msg {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-top: 5px;
+            line-height: 1.55;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, opacity 0.25s ease;
+        }
+        .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+
+        /* Section divider */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.55;
+            margin-bottom: 16px;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+    </style>
+
+    <style>
+        .toast-daftar {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translate(-50%, 80px);
+            background: var(--accent, #6c5ce7); color: #fff;
+            padding: 12px 24px; border-radius: 999px;
+            font-weight: 700; font-size: 14px;
+            transition: transform 0.3s ease; z-index: 3000;
+        }
+        .toast-daftar.show { transform: translate(-50%, 0); }
+    </style>
+</head>
+
+<body class="h-full">
+<div id="app" class="h-full overflow-auto w-full flex flex-col justify-between">
+    <div>
+        <nav class="nav-bar">
+            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="../index.html" class="back-btn">
+                        <i data-lucide="arrow-left" style="width:24px;"></i>
+                    </a>
+                    <div class="cursor-pointer flex items-center gap-1">
+                        <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                        <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">
+                            Afi-Studio
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </button>
+                    <div class="page-menu">
+                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+                        </button>
+                        <div id="page-menu-dropdown" class="page-menu-dropdown">
+                            <a href="../index.html" class="page-menu-item">Beranda</a>
+                            <a href="../member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
+                            <a href="../event/index.html" class="page-menu-item">Event Render</a>
+                            <a href="../ranking/index.html" class="page-menu-item active">Ranking Render</a>
+                            <a href="../tutorial/index.html" class="page-menu-item">Video &amp; Tutorial</a>
+                            <a href="../bantuan/index.html" class="page-menu-item">Bantuan</a>
+                            <a href="../feedback/" class="page-menu-item">Feedback</a>
+                            <a href="../favorit/index.html" class="page-menu-item">Favorit</a>
+                            <div class="page-menu-divider"></div>
+                            <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                            <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-5xl mx-auto px-4 pt-8 pb-10 sm:px-6">
+
+            <div class="text-center mb-4">
+                <p style="font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);opacity:0.8;margin-bottom:6px;">Galeri Render</p>
+                <h1 style="font-family:'Outfit',sans-serif;font-size:48px;font-weight:800;line-height:1.15;letter-spacing:-0.02em;">Render Terbaik di Bulan Ini</h1>
+                <p style="font-size:15px;color:var(--text-sub);margin-top:10px;">Ketuk gambar untuk melihat detail penuh</p>
+            </div>
+
+            <div class="section-divider">Top 3</div>
+            <div class="grid grid-cols-3 gap-4 sm:gap-6 mb-10" id="top3-grid">
+            </div>
+
+            <div class="section-divider">Runner Up</div>
+            <div class="grid grid-cols-2 gap-3 sm:gap-4" id="runner-up-grid">
+            </div>
+
+            <div class="text-center mt-6 px-4" style="color:var(--text-sub);font-family:'DM Sans',sans-serif;">
+                <p class="text-xs font-semibold mb-1 opacity-80">Catatan:</p>
+                <p class="text-xs leading-relaxed opacity-70">
+                    Eksibisi ini merupakan <strong>wadah hiburan, evaluasi, dan media pembelajaran komunitas</strong> (bukan acara berskala besar).
+                    Karya terpilih dipamerkan di website Afi Studio, dan seluruh hasil render serta susunan peringkat juara akan <strong>diperbarui setiap bulan</strong>.
+                    Eksibisi ini <strong>tidak menyediakan hadiah atau imbalan materi</strong> dalam bentuk apa pun.
+                </p>
+            </div>
+
+        </main>
+    </div>
+
+    <footer class="footer-text">
+        <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+    </footer>
+</div>
+
+<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+    </button>
+    <button class="lightbox-zoom-btn" onclick="event.stopPropagation(); toggleZoom()">
+        <i data-lucide="eye" style="width:18px;height:18px;"></i>
+    </button>
+    <button class="lightbox-nav lightbox-nav-prev" onclick="event.stopPropagation(); navLightbox(-1)">
+        <i data-lucide="chevron-right" style="width:22px;height:22px;transform:rotate(180deg);"></i>
+    </button>
+    <button class="lightbox-nav lightbox-nav-next" onclick="event.stopPropagation(); navLightbox(1)">
+        <i data-lucide="chevron-right" style="width:22px;height:22px;"></i>
+    </button>
+    <div class="lightbox-img-wrap" onclick="event.stopPropagation()">
+        <img id="lb-img" src="" alt="" loading="lazy" decoding="async" draggable="false">
+    </div>
+    <div class="lightbox-caption" onclick="event.stopPropagation()">
+        <div id="lb-rank" class="lb-rank"></div>
+        <div id="lb-msg"  class="lb-msg"></div>
+    </div>
+</div>
+
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    (function () {
+        const menuBtn = document.getElementById('page-menu-btn');
+        const menuDropdown = document.getElementById('page-menu-dropdown');
+        menuBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            menuDropdown.classList.toggle('open');
+        });
+        document.addEventListener('click', function () {
+            menuDropdown.classList.remove('open');
+        });
+    })();
+
+    /* ── Data juara: Top 3 & Runner Up dari satu JSON, bisa ditambah/dikurangi bebas ── */
+    let juara = [];
+    let currentIndex = 0;
+
+    function rankColor(i) {
+        return i === 0 ? '#FFD700' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : '#9ca3af';
+    }
+
+    fetch('/api/data/ranking')
+        .then(res => res.json())
+        .then(data => {
+            juara = data;
+            renderRanking();
+        })
+        .catch(() => {});
+
+    function renderRanking() {
+        const top3Grid = document.getElementById('top3-grid');
+        const runnerGrid = document.getElementById('runner-up-grid');
+        top3Grid.innerHTML = '';
+        runnerGrid.innerHTML = '';
+
+        juara.forEach((j, i) => {
+            const color = rankColor(i);
+            const col = document.createElement('div');
+            col.className = 'flex flex-col items-center gap-2 render-card';
+            col.style.cursor = 'pointer';
+            col.style.animationDelay = `${Math.min(i * 40, 400)}ms`;
+            col.innerHTML = `
+                <div class="frame-wrap w-full"${i === 0 ? ' style="border-color:rgba(255,215,0,0.45);"' : ''}>
+                    <img src="${j.gambar}" alt="${j.nama}" loading="lazy">
+                    <div class="frame-badge" style="color:${color};">${j.juara}</div>
+                </div>
+                <span class="rank-label" style="color:${color};">${j.juara} Place</span>
+            `;
+            col.addEventListener('click', () => openLightbox(i));
+            (i < 3 ? top3Grid : runnerGrid).appendChild(col);
+        });
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    /* ── Lightbox logic ── */
+    function fillLightbox(index) {
+        const j = juara[index];
+        const color = rankColor(index);
+        document.getElementById('lb-img').src  = j.gambar;
+        document.getElementById('lb-img').alt  = j.nama;
+        document.getElementById('lb-rank').textContent = `${j.juara} Place`;
+        document.getElementById('lb-rank').style.color = color;
+        document.getElementById('lb-msg').textContent  = j.caption;
+    }
+
+    function openLightbox(index) {
+        currentIndex = index;
+        fillLightbox(index);
+        document.getElementById('lightbox').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active', 'zoomed');
+        document.body.style.overflow = '';
+        resetZoomTransform();
+    }
+
+    function navLightbox(dir) {
+        if (!juara.length) return;
+        currentIndex = (currentIndex + dir + juara.length) % juara.length;
+        const img = document.getElementById('lb-img');
+        img.classList.add('lb-img-swap');
+        setTimeout(() => {
+            fillLightbox(currentIndex);
+            img.classList.remove('lb-img-swap');
+        }, 200);
+    }
+
+    function toggleZoom() {
+        const lb = document.getElementById('lightbox');
+        const entering = !lb.classList.contains('zoomed');
+        lb.classList.toggle('zoomed');
+        if (entering) {
+            zoomScale = 1.6; zoomTx = 0; zoomTy = 0;
+            lbImg.style.transition = '';
+            applyZoomTransform();
+        } else {
+            resetZoomTransform();
+        }
+    }
+
+    /* ── Pinch-zoom, pan gambar (saat zoom), dan swipe kiri-kanan (saat tidak zoom) ── */
+    const lbImg = document.getElementById('lb-img');
+    const lbImgWrap = document.querySelector('.lightbox-img-wrap');
+    const activePointers = new Map();
+    let pinchStartDist = 0, pinchStartScale = 1;
+    let zoomScale = 1, zoomTx = 0, zoomTy = 0;
+    let panStart = { x: 0, y: 0 }, panOrigin = { x: 0, y: 0 };
+    let swipeStartX = 0, swipeStartY = 0, isSwiping = false;
+    let wheelResetTimer = null;
+
+    function isZoomed() {
+        return document.getElementById('lightbox').classList.contains('zoomed');
+    }
+
+    function applyZoomTransform() {
+        lbImg.style.transform = `translate(${zoomTx}px, ${zoomTy}px) scale(${zoomScale})`;
+    }
+
+    function resetZoomTransform() {
+        zoomScale = 1; zoomTx = 0; zoomTy = 0;
+        lbImg.style.transition = '';
+        lbImg.style.transform = '';
+    }
+
+    lbImgWrap.addEventListener('pointerdown', e => {
+        lbImgWrap.setPointerCapture(e.pointerId);
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activePointers.size === 2 && isZoomed()) {
+            lbImg.style.transition = 'none';
+            const pts = [...activePointers.values()];
+            pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            pinchStartScale = zoomScale;
+        } else if (activePointers.size === 1) {
+            if (isZoomed() && zoomScale > 1) {
+                lbImg.style.transition = 'none';
+                panStart = { x: e.clientX, y: e.clientY };
+                panOrigin = { x: zoomTx, y: zoomTy };
+            } else if (!isZoomed()) {
+                swipeStartX = e.clientX;
+                swipeStartY = e.clientY;
+                isSwiping = true;
+            }
+        }
+    });
+
+    lbImgWrap.addEventListener('pointermove', e => {
+        if (!activePointers.has(e.pointerId)) return;
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (activePointers.size === 2 && isZoomed()) {
+            const pts = [...activePointers.values()];
+            const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+            zoomScale = Math.min(4, Math.max(1, pinchStartScale * (dist / pinchStartDist)));
+            applyZoomTransform();
+        } else if (activePointers.size === 1 && isZoomed() && zoomScale > 1) {
+            zoomTx = panOrigin.x + (e.clientX - panStart.x);
+            zoomTy = panOrigin.y + (e.clientY - panStart.y);
+            applyZoomTransform();
+        }
+    });
+
+    function onPointerEnd(e) {
+        if (isSwiping && !isZoomed()) {
+            const dx = e.clientX - swipeStartX;
+            const dy = e.clientY - swipeStartY;
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+                navLightbox(dx < 0 ? 1 : -1);
+            }
+        }
+        isSwiping = false;
+        activePointers.delete(e.pointerId);
+        if (activePointers.size === 0) lbImg.style.transition = '';
+    }
+    lbImgWrap.addEventListener('pointerup', onPointerEnd);
+    lbImgWrap.addEventListener('pointercancel', onPointerEnd);
+
+    lbImgWrap.addEventListener('wheel', e => {
+        if (!isZoomed()) return;
+        e.preventDefault();
+        lbImg.style.transition = 'none';
+        zoomScale = Math.min(4, Math.max(1, zoomScale - e.deltaY * 0.0015));
+        if (zoomScale === 1) { zoomTx = 0; zoomTy = 0; }
+        applyZoomTransform();
+        clearTimeout(wheelResetTimer);
+        wheelResetTimer = setTimeout(() => { lbImg.style.transition = ''; }, 150);
+    }, { passive: false });
+
+    document.addEventListener('keydown', e => {
+        if (!document.getElementById('lightbox').classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (isZoomed()) return;
+        if (e.key === 'ArrowLeft') navLightbox(-1);
+        if (e.key === 'ArrowRight') navLightbox(1);
+    });
+</script>
+    <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
+    <script src="/pwa-install.js" defer></script>
+</body>
+</html>

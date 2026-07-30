@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <!-- Kontrol jalur pendaftaran: diatur terpusat di /config.js, cukup ubah satu file itu agar berlaku di semua halaman -->
+    <script src="/config.js"></script>
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afi Studio - Download Rig & 3D Models</title>
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Afi Studio">
+
+    <!-- Open Graph -->
+    <link rel="canonical" href="https://afi-studio.vercel.app/">
+    <meta name="description" content="Platform berbagi aset Minecraft gratis: rig, model 3D, map, dan furniture dari komunitas Afi Studio. Jelajahi, cari, dan unduh aset siap pakai.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/">
+    <meta property="og:title" content="Afi Studio - Download Rig & 3D Models Minecraft">
+    <meta property="og:description" content="Platform berbagi aset Minecraft gratis — rig, 3D model, dan lebih banyak lagi dari komunitas Afi Studio.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+    <meta property="og:site_name" content="Afi Studio">
+
+    <!-- Structured data: helps Google show "Afi Studio" as the site name -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Afi Studio",
+      "url": "https://afi-studio.vercel.app/"
+    }
+    </script>
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Download Rig & 3D Models Minecraft">
+    <meta name="twitter:description" content="Platform berbagi aset Minecraft gratis — rig, 3D model, dan lebih banyak lagi dari komunitas Afi Studio.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+ 
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <link rel="stylesheet" href="/fonts/fonts.css">
+ 
+    <style>
+        /* --- RESET & ROOT --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'DM Sans', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+ 
+        :root {
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+        }
+ 
+        .dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+        }
+ 
+        body { 
+            background-color: var(--bg); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            color: var(--text); 
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; 
+            zoom: 0.75;
+        }
+ 
+        .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+        
+        .search-container { 
+            position: relative; 
+            margin-bottom: 24px; 
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-10px);
+        }
+        .search-container.active {
+            max-height: 100px;
+            opacity: 1;
+            transform: translateY(0);
+            margin-top: 20px;
+        }
+ 
+        .search-input { width: 100%; padding: 14px 18px 14px 48px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text); outline: none; transition: border-color 0.2s; font-size: 14px; }
+        .search-input:focus { border-color: var(--accent); }
+ 
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .filter-btn { 
+            padding: 8px 16px; 
+            border-radius: 3px; 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            font-size: 13px; 
+            font-weight: 600; 
+            white-space: nowrap; 
+            transition: all 0.3s ease; 
+            color: var(--text);
+            opacity: 0.6; 
+        }
+        .filter-btn.active { 
+            background: var(--accent); 
+            color: #fff; 
+            border-color: var(--accent); 
+            opacity: 1; 
+        }
+ 
+        .model-card { 
+            cursor: pointer; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            transition: transform 0.2s, border-color 0.3s; 
+            background: var(--surface); 
+        }
+        .model-card:hover { 
+            transform: translateY(-4px); 
+            border-color: var(--accent-hover);
+        }
+        .card-image { aspect-ratio: 16/9; object-fit: cover; width: 100%; }
+        .card-content { padding: 12px; }
+        .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+        .card-caption { font-size: 12px; color: var(--text-sub); line-height: 1.4; }
+ 
+        /* --- VIDEO & TUTORIAL --- */
+        .video-scroll { scroll-snap-type: x proximity; }
+        .video-card {
+            flex: 0 0 auto;
+            width: 460px;
+            cursor: pointer;
+            scroll-snap-align: start;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .video-viewall-thumb {
+            aspect-ratio: 16/9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 18px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            transition: filter 0.2s;
+        }
+        .video-card:hover .video-viewall-thumb { filter: brightness(1.08); }
+        .video-viewall-icon { color: var(--text); }
+        html.dark .video-viewall-icon { color: #fff; }
+        .video-viewall-text { font-size: 14px; font-weight: 700; line-height: 1.4; color: var(--text); }
+        html.dark .video-viewall-text { color: #fff; }
+        .video-thumb-wrap {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--surface);
+        }
+        .video-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; transition: transform 0.25s; }
+        .video-card:hover .video-thumb { transform: scale(1.05); }
+        .video-play-badge {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.15);
+            transition: background 0.2s;
+        }
+        .video-card:hover .video-play-badge { background: rgba(0,0,0,0.3); }
+        .video-play-badge svg { width: 80px; height: 80px; color: #fff; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+        .new-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #EF4444;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+            z-index: 2;
+            letter-spacing: 0.02em;
+        }
+        .view-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+        .video-card-title {
+            margin-top: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.35;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .video-modal-box { max-width: 760px; width: 94%; border-radius: 3px !important; position: relative; }
+        .modal-fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.45);
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            transition: background 0.2s, color 0.2s, transform 0.15s;
+        }
+        .modal-fav-btn:hover { background: rgba(0,0,0,0.65); }
+        .modal-fav-btn:active { transform: scale(0.9); }
+        .modal-fav-btn svg { width: 17px; height: 17px; }
+        .modal-fav-btn.is-favorited { color: #FBBF24; }
+        .video-frame-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+        .video-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+        .video-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .video-youtube-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .video-youtube-btn:hover { background: var(--accent); color: #fff; }
+        .video-youtube-btn:focus, .video-youtube-btn:focus-visible { outline: none; }
+        .video-youtube-btn { -webkit-tap-highlight-color: transparent; }
+        .video-youtube-btn svg { width: 16px; height: 16px; }
+
+        .contact-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+        .contact-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); text-decoration: none; transition: background 0.2s; }
+        .contact-item:last-child { border-bottom: none; }
+        .contact-item:hover { background: color-mix(in srgb, var(--text) 5%, transparent); }
+        .contact-info { display: flex; align-items: center; gap: 14px; }
+        .icon-circle { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .contact-label { font-weight: 700; font-size: 14px; color: var(--text); }
+        .contact-sub { font-size: 11px; color: var(--text-sub); }
+ 
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; position: relative; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        /* --- PERBAIKAN BANNER --- */
+        .banner-container { 
+            width: 100%; 
+            position: relative; 
+            overflow: hidden;
+            border-bottom: 1px solid var(--border); 
+            touch-action: pan-y; 
+            cursor: grab; 
+            background: var(--surface);
+        }
+        /* Padding-top trick: rasio banner 1200x600 = 2:1, jadi 600/1200 * 100 = 50% */
+        .banner-container::before {
+            content: '';
+            display: block;
+            padding-top: 50%;
+        }
+        .banner-container:active { cursor: grabbing; }
+        
+        @media (min-width: 640px) { 
+            .banner-container { 
+                max-width: 1280px; 
+                margin: 0 auto; 
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            } 
+        }
+ 
+        .banner-wrapper { display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
+        .banner-link { min-width: 100%; height: 100%; display: block; flex-shrink: 0; pointer-events: auto; }
+        .banner-slide { width: 100%; height: 100%; object-fit: cover; object-position: center; -webkit-user-drag: none; }
+ 
+        .dots-container { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
+        .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); border: 0.5px solid rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
+        .dot.active { background: #fff; width: 14px; border-radius: 3px; }
+ 
+        .marquee-bar { 
+            background: var(--surface); 
+            border-bottom: 1px solid var(--border); 
+            padding: 4px 0; 
+            font-size: 12px; 
+            color: var(--text); 
+            overflow: hidden; 
+            line-height: 1.1; 
+            font-weight: 500;
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            white-space: nowrap;
+            will-change: transform;
+            animation: marquee-scroll linear infinite;
+        }
+        .marquee-track.marquee-paused {
+            animation-play-state: paused;
+        }
+        .marquee-content {
+            display: inline-flex;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        @keyframes marquee-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+ 
+        .category-header {
+            display: inline-flex;
+            align-items: center;
+            font-family: 'Outfit', sans-serif;
+            background: var(--surface);
+            padding: 8px 14px;
+            border-radius: 3px;
+        }
+ 
+        .site-footer {
+            margin-top: 10px;
+            width: 100%;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+        }
+        .site-footer-inner {
+            max-width: 1152px;
+            margin: 0 auto;
+            padding: 16px 20px 2px;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 640px) {
+            .site-footer-inner { grid-template-columns: 1fr; gap: 20px; }
+            .footer-col { grid-column: 1 / -1; }
+        }
+        .footer-brand { grid-column: span 1; }
+        @media (max-width: 640px) { .footer-brand { grid-column: 1 / -1; } }
+        .footer-brand-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-brand-icon { width: 40px; height: 40px; object-fit: contain; }
+        .footer-brand-name {
+            font-family: 'Dancing Script', cursive;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .footer-brand-tagline {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        .footer-col-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-sub);
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+        .footer-col a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text);
+            text-decoration: none;
+            margin-bottom: 10px;
+            width: fit-content;
+            max-width: 100%;
+            transition: color 0.2s;
+        }
+        .footer-col a:hover { color: var(--accent-hover); }
+        .footer-col a svg { width: 24px; height: 24px; flex-shrink: 0; }
+        .footer-social-row { display: flex; align-items: center; gap: 18px; }
+        .footer-social-row a { display: flex; align-items: center; justify-content: center; margin-bottom: 0; padding: 4px; }
+        .footer-social-row a svg { width: 30px; height: 30px; fill: currentColor; }
+        .site-footer-bottom {
+            padding: 16px 0 28px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+        /* Menu pindah halaman */
+        .page-menu { position: relative; }
+        .page-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 190px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item {
+            display: block;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+        }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item:active { opacity: 0.6; }
+        .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        html.dark .page-menu-item.active { color: #fff; }
+        .page-menu-item.active::before {
+            content: "";
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+        .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: space-between; }
+        html.dark .page-menu-item-cta { color: #fff; }
+        .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item-cta:active { opacity: 0.6; }
+
+    </style>
+
+    <style>
+        .toast-daftar {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translate(-50%, 80px);
+            background: var(--accent, #6c5ce7); color: #fff;
+            padding: 12px 24px; border-radius: 999px;
+            font-weight: 700; font-size: 14px;
+            transition: transform 0.3s ease; z-index: 3000;
+        }
+        .toast-daftar.show { transform: translate(-50%, 0); }
+    </style>
+</head>
+ 
+<body class="h-full">
+    <div id="app" class="h-full overflow-auto w-full">
+        <nav class="nav-bar">
+            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                <div class="cursor-pointer flex items-center gap-1" onclick="window.location.reload()">
+                    <img src="icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                    <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
+                        Afi-Studio
+                    </div>
+                </div>
+ 
+                <div class="flex items-center gap-4"> 
+                    <button id="search-toggle-btn" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                        <i data-lucide="search" style="width: 20px;"></i>
+                    </button>
+
+                    <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </button>
+
+                    <div class="page-menu">
+                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+                        </button>
+                        <div id="page-menu-dropdown" class="page-menu-dropdown">
+                            <a href="/" class="page-menu-item active">Beranda</a>
+                            <a href="member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
+                            <a href="event/index.html" class="page-menu-item">Event Render</a>
+                            <a href="ranking/index.html" class="page-menu-item">Ranking Render</a>
+                            <a href="tutorial/index.html" class="page-menu-item">Video &amp; Tutorial</a>
+                            <a href="bantuan/index.html" class="page-menu-item">Bantuan</a>
+                            <a href="feedback/" class="page-menu-item">Feedback</a>
+                            <a href="favorit/index.html" class="page-menu-item">Favorit</a>
+                            <div class="page-menu-divider"></div>
+                            <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                            <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+ 
+        <div class="banner-container" id="banner-container">
+            <div id="banner-slider" class="banner-wrapper"></div>
+            <div class="dots-container" id="dots-container"></div>
+        </div>
+ 
+        <div class="marquee-bar" id="marquee-bar">
+            <div class="marquee-track" id="news-marquee">
+                <span class="marquee-content" id="marquee-content-a"></span>
+                <span class="marquee-content" id="marquee-content-b" aria-hidden="true"></span>
+            </div>
+        </div>
+ 
+        <main class="max-w-6xl mx-auto px-4 pt-0 pb-6 sm:px-6">
+            <div id="search-wrapper" class="search-container">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="Cari Model, Kategori, Creator, atau Converter...">
+            </div>
+ 
+            <div class="mt-5 mb-2">
+                <h2 id="category-title" class="category-header text-xs font-bold uppercase tracking-widest opacity-60">SEMUA ITEM</h2>
+            </div>
+ 
+            <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar" id="category-filter"></div>
+ 
+            <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" id="content-grid"></section>
+ 
+            <div class="mt-8 flex justify-center">
+                <a href="Models/index.html" class="px-8 py-3 rounded-xl font-bold bg-[var(--accent)] text-white text-sm transition-transform hover:scale-105 active:scale-95 shadow-lg">
+                    Lihat Model lainnya
+                </a>
+            </div>
+ 
+            <div class="mt-8" id="video-section" style="display:none;">
+                <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Video &amp; Tutorial</h2>
+                <div class="flex gap-1 overflow-x-auto pb-2 no-scrollbar video-scroll" id="video-scroll"></div>
+            </div>
+
+        </main>
+
+        <footer class="site-footer">
+            <div class="site-footer-inner">
+                <div class="footer-brand">
+                    <div class="footer-brand-header">
+                        <img src="icon.png" alt="Afi Studio" class="footer-brand-icon">
+                        <div class="footer-brand-name">Afi-Studio</div>
+                    </div>
+                    <p class="footer-brand-tagline">Platform berbagi aset Minecraft gratis — rig, model 3D, map, texture, dan furniture buatan komunitas. Jelajahi ratusan aset siap pakai, ikuti event render bulanan, dan gabung bareng kreator Minecraft Indonesia lainnya.</p>
+                </div>
+
+                <div class="footer-col">
+                    <div class="footer-col-title">Navigasi</div>
+                    <a href="/">Beranda</a>
+                    <a href="Models/index.html">Model</a>
+                    <a href="member-Afi-Studio/index.html">Member</a>
+                    <a href="ranking/index.html">Ranking</a>
+                    <a href="event/index.html">Event</a>
+                    <a href="tutorial/index.html">Video &amp; Tutorial</a>
+                    <a href="favorit/index.html">Favorit</a>
+                </div>
+
+                <div class="footer-col">
+                    <div class="footer-col-title">Bantuan</div>
+                    <a href="bantuan/index.html">Bantuan</a>
+                    <a href="feedback/">Umpan balik</a>
+                    <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener">Dukung kami</a>
+                </div>
+
+                <div class="footer-col">
+                    <div class="footer-col-title">Gabung Kami</div>
+                    <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                    <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
+                </div>
+
+                <div class="footer-col">
+                    <div class="footer-col-title">Sosial</div>
+                    <div class="footer-social-row">
+                        <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener" aria-label="WhatsApp">
+                            <svg viewBox="0 0 512 512"><use href="icons/social-icons.svg#icon-wa"></use></svg>
+                        </a>
+                        <a href="https://www.instagram.com/aficreatorid?igsh=b3IyeGFhZDRqcXQ2" target="_blank" rel="noopener" aria-label="Instagram">
+                            <svg viewBox="0 0 512 512"><use href="icons/social-icons.svg#icon-ig"></use></svg>
+                        </a>
+                        <a href="https://youtube.com/@afiteamid?si=CPud6_oONElBomI7" target="_blank" rel="noopener" aria-label="YouTube">
+                            <svg viewBox="0 0 512 512"><use href="icons/social-icons.svg#icon-yt"></use></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="site-footer-bottom">
+                © 2026 Afi-Studio™ — All rights reserved.
+            </div>
+        </footer>
+    </div>
+ 
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <button id="model-fav-btn" class="modal-fav-btn" onclick="toggleCurrentModelFavorite()" aria-label="Tandai favorit"></button>
+            <img id="modal-thumb" src="" class="w-full aspect-video object-cover" loading="lazy" decoding="async">
+            <div class="p-5">
+                <h2 id="modal-title" class="text-xl font-bold mb-2"></h2>
+                <p id="modal-caption" class="text-xs mb-4 opacity-70"></p>
+                <div id="info-container" class="rounded-xl p-4 mb-5 text-xs space-y-2" style="background: color-mix(in srgb, var(--accent) 10%, var(--surface));"></div>
+                <div class="flex flex-col gap-2">
+                    <button class="w-full py-3.5 rounded-xl font-bold bg-[var(--accent)] text-white" onclick="handleDownload()">Download Now</button>
+                    <button class="w-full py-3.5 rounded-xl font-bold border border-[var(--border)]" onclick="handleCopyLink()">Copy Link</button>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+    <div id="video-modal-overlay" class="modal-overlay" onclick="closeVideoModal()">
+        <div class="modal-box video-modal-box" onclick="event.stopPropagation()">
+            <button id="video-fav-btn" class="modal-fav-btn" onclick="toggleCurrentVideoFavorite()" aria-label="Tandai favorit"></button>
+            <div class="video-frame-wrap" id="video-frame-wrap"></div>
+            <div class="p-4">
+                <div class="video-modal-header">
+                    <h2 id="video-modal-title" class="text-base font-bold"></h2>
+                    <a id="video-youtube-link" href="#" target="_blank" rel="noopener" class="video-youtube-btn" aria-label="Buka di YouTube" title="Buka di YouTube">
+                        <i data-lucide="arrow-up-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--accent)] text-white px-6 py-3 rounded-full font-bold text-sm translate-y-20 transition-transform shadow-lg" style="z-index: 200;">Link Disalin!</div>
+ 
+    <script src="/favorites.js"></script>
+    <script src="Models/script.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+
+    <script>
+        // Daftarkan service worker biar halaman root bisa dibuka offline
+        // dan syarat "installable PWA" terpenuhi dengan lebih konsisten.
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js').catch(function () {
+                    // diem aja kalau gagal daftar, halaman tetap jalan normal tanpa offline mode
+                });
+            });
+        }
+    </script>
+ 
+    <script>
+        // --- LOGIKA ACAK 6 MODEL & PENCARIAN ---
+        const originalRenderModels = renderModels;
+        
+        renderModels = function(filter = '') {
+            const grid = document.getElementById('content-grid');
+            if (!grid) return;
+ 
+            if (filter === '' && activeCategory === "Semua") {
+                const shuffled = [...MODELS].sort(() => 0.5 - Math.random());
+                const selected = shuffled.slice(0, 6);
+                
+                grid.innerHTML = selected.map(model => `
+                    <article class="model-card" onclick="openModal(${MODELS.indexOf(model)})">
+                        <img src="${model.thumb}" class="card-image" loading="lazy">
+                        <div class="card-content">
+                            <div class="card-title">${model.name}</div>
+                            <div class="card-caption">${model.caption}</div>
+                        </div>
+                    </article>
+                `).join('');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } else {
+                originalRenderModels(filter);
+            }
+        };
+ 
+        // --- BANNER & UI LOGIC ---
+        const container = document.getElementById('banner-container');
+        const slider = document.getElementById('banner-slider');
+        const dotsContainer = document.getElementById('dots-container');
+        let currentIndex = 0;
+        let startX, isDragging = false, currentTranslate = 0, prevTranslate = 0;
+        let slideTimer;
+ 
+        // Dibungkus jadi fungsi (bukan langsung jalan) karena bannerData sekarang
+        // dimuat async dari banner.json — baru dipanggil setelah event 'bannerLoaded'.
+        function renderBannerSlides() {
+            slider.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            bannerData.forEach((item, index) => {
+                const linkTag = document.createElement('a');
+                linkTag.href = item.url;
+                linkTag.target = "_blank";
+                linkTag.className = 'banner-link';
+                const imgTag = document.createElement('img');
+                imgTag.src = item.img;
+                imgTag.className = 'banner-slide';
+                imgTag.alt = 'Banner Ads';
+                imgTag.loading = 'lazy';
+                imgTag.decoding = 'async';
+                linkTag.appendChild(imgTag);
+                slider.appendChild(linkTag);
+ 
+                const dot = document.createElement('div');
+                dot.className = `dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+        }
+ 
+        function updateSlider() {
+            slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+            document.querySelectorAll('.dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentIndex);
+            });
+            prevTranslate = -currentIndex * container.offsetWidth;
+        }
+ 
+        function goToSlide(index) {
+            currentIndex = index;
+            updateSlider();
+            resetTimer();
+        }
+ 
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % bannerData.length;
+            updateSlider();
+        }
+ 
+        function resetTimer() {
+            clearInterval(slideTimer);
+            slideTimer = setInterval(nextSlide, 5000);
+        }
+ 
+        container.addEventListener('mousedown', dragStart);
+        container.addEventListener('touchstart', dragStart);
+        container.addEventListener('mouseup', dragEnd);
+        container.addEventListener('mouseleave', dragEnd);
+        container.addEventListener('touchend', dragEnd);
+        container.addEventListener('mousemove', dragAction);
+        container.addEventListener('touchmove', dragAction);
+ 
+        function dragStart(e) {
+            isDragging = true;
+            startX = (e.type.includes('mouse')) ? e.pageX : e.touches[0].clientX;
+            clearInterval(slideTimer);
+            slider.style.transition = 'none';
+        }
+ 
+        function dragAction(e) {
+            if (!isDragging) return;
+            const currentX = (e.type.includes('mouse')) ? e.pageX : e.touches[0].clientX;
+            const diff = currentX - startX;
+            const translate = prevTranslate + diff;
+            slider.style.transform = `translateX(${translate}px)`;
+        }
+ 
+        function dragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            const endX = (e.type.includes('mouse')) ? e.pageX : (e.changedTouches ? e.changedTouches[0].clientX : startX);
+            const movedBy = endX - startX;
+ 
+            slider.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+ 
+            if (movedBy < -100 && currentIndex < bannerData.length - 1) currentIndex++;
+            else if (movedBy > 100 && currentIndex > 0) currentIndex--;
+ 
+            updateSlider();
+            resetTimer();
+        }
+ 
+        // Baru bangun slide + mulai auto-slide setelah banner.json selesai dimuat
+        // (dipicu dari Models/script.js lewat event 'bannerLoaded').
+        function initBanner() {
+            if (!bannerData.length) return;
+            renderBannerSlides();
+            resetTimer();
+        }
+        document.addEventListener('bannerLoaded', initBanner);
+ 
+        (function () {
+            const menuBtn = document.getElementById('page-menu-btn');
+            const menuDropdown = document.getElementById('page-menu-dropdown');
+            menuBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                menuDropdown.classList.toggle('open');
+            });
+            document.addEventListener('click', function () {
+                menuDropdown.classList.remove('open');
+            });
+        })();
+
+        const searchToggleBtn = document.getElementById('search-toggle-btn');
+        const searchWrapper = document.getElementById('search-wrapper');
+        const searchInput = document.getElementById('search-input');
+ 
+        searchToggleBtn.addEventListener('click', () => {
+            searchWrapper.classList.toggle('active');
+            if (searchWrapper.classList.contains('active')) {
+                setTimeout(() => searchInput.focus(), 300);
+            } else {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        });
+ 
+        // --- VIDEO & TUTORIAL (dimuat dari videos.json) ---
+        let VIDEOS = [];
+
+        // Sama persis dengan tutorial/script.js — dipertahankan sinkron di 2 tempat
+        // (bukan modul bersama) karena halaman ini masih pakai <script> inline.
+        const NEW_BADGE_DAYS = 14;
+        const VIEW_STORAGE_KEY = 'afi-video-views';
+
+        function isNewVideo(v) {
+            if (!v || !v.added) return false;
+            const added = new Date(`${v.added}T00:00:00`);
+            if (isNaN(added.getTime())) return false;
+            const diffDays = (Date.now() - added.getTime()) / 86400000;
+            return diffDays <= NEW_BADGE_DAYS && diffDays >= -1;
+        }
+
+        function getViewCounts() {
+            try {
+                const raw = localStorage.getItem(VIEW_STORAGE_KEY);
+                const parsed = raw ? JSON.parse(raw) : {};
+                return (parsed && typeof parsed === 'object') ? parsed : {};
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function getViewCount(id) {
+            if (!id) return 0;
+            return getViewCounts()[id] || 0;
+        }
+
+        function incrementView(id) {
+            if (!id) return;
+            try {
+                const counts = getViewCounts();
+                counts[id] = (counts[id] || 0) + 1;
+                localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify(counts));
+            } catch (err) {
+                // localStorage penuh/diblokir -> diem aja, fitur opsional
+            }
+        }
+
+        function formatViews(n) {
+            if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}rb`;
+            return `${n}`;
+        }
+
+        function extractYouTubeId(url) {
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+            return match ? match[1] : null;
+        }
+
+        function shuffledIndices(n) {
+            const arr = Array.from({ length: n }, (_, i) => i);
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function renderVideos() {
+            const section = document.getElementById('video-section');
+            const wrap = document.getElementById('video-scroll');
+            if (!wrap || !section) return;
+
+            if (!VIDEOS.length) {
+                section.style.display = 'none';
+                return;
+            }
+
+            const order = shuffledIndices(VIDEOS.length);
+
+            wrap.innerHTML = order.map((i) => {
+                const v = VIDEOS[i];
+                const id = extractYouTubeId(v.url);
+                const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
+                const views = getViewCount(v.id);
+                return `
+                    <article class="video-card" onclick="openVideoModal(${i})">
+                        <div class="video-thumb-wrap">
+                            <img src="${thumb}" class="video-thumb" loading="lazy" alt="${v.title}">
+                            <div class="video-play-badge">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                            ${isNewVideo(v) ? `<span class="new-badge">Baru</span>` : ''}
+                        </div>
+                        <div class="video-card-title">${v.title}</div>
+                        ${views > 0 ? `<div class="view-badge"><i data-lucide="eye" style="width: 12px; height: 12px;"></i>${formatViews(views)}x ditonton</div>` : ''}
+                    </article>`;
+            }).join('') + `
+                <a href="tutorial/index.html" class="video-card">
+                    <div class="video-thumb-wrap video-viewall-thumb">
+                        <i data-lucide="arrow-right-circle" class="video-viewall-icon" style="width: 56px; height: 56px; stroke-width: 1;"></i>
+                        <div class="video-viewall-text" style="margin-top: 6px;">Lihat video lainnya untuk menonton tutorial dan rig terbaru saat ini</div>
+                    </div>
+                </a>`;
+
+            section.style.display = '';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        async function loadVideos() {
+            try {
+                const res = await fetch('/api/data/videos');
+                VIDEOS = await res.json();
+            } catch (e) {
+                VIDEOS = [];
+            }
+            renderVideos();
+        }
+
+        let currentVideo = null;
+
+        // Update tampilan tombol bintang favorit sesuai status video yang lagi dibuka
+        function updateVideoFavButton() {
+            const btn = document.getElementById('video-fav-btn');
+            if (!btn || !currentVideo || typeof isVideoFavorited !== 'function') return;
+            const fav = isVideoFavorited(currentVideo.id);
+            btn.innerHTML = favStarIconSvg(fav);
+            btn.classList.toggle('is-favorited', fav);
+            btn.setAttribute('aria-label', fav ? 'Hapus dari favorit' : 'Tandai favorit');
+        }
+
+        function toggleCurrentVideoFavorite() {
+            if (!currentVideo || typeof toggleVideoFavorite !== 'function') return;
+            toggleVideoFavorite(currentVideo.id);
+            updateVideoFavButton();
+        }
+
+        function openVideoModal(index) {
+            const v = VIDEOS[index];
+            if (!v) return;
+            const id = extractYouTubeId(v.url);
+            if (!id) return;
+
+            currentVideo = v;
+            incrementView(v.id);
+
+            document.getElementById('video-modal-title').textContent = v.title;
+            document.getElementById('video-youtube-link').href = v.url;
+            document.getElementById('video-frame-wrap').innerHTML =
+                `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            document.getElementById('video-modal-overlay').classList.add('active');
+            updateVideoFavButton();
+        }
+
+        function closeVideoModal() {
+            document.getElementById('video-modal-overlay').classList.remove('active');
+            document.getElementById('video-frame-wrap').innerHTML = '';
+        }
+
+        loadVideos();
+
+        renderModels();
+    </script>
+    <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
+    <script src="/pwa-install.js" defer></script>
+</body>
+</html>
