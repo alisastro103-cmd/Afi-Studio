@@ -168,22 +168,32 @@
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item-cta:active { opacity: 0.6; }
 
-        /* ── Rank label warna ── */
-        .rank-label {
+        /* ── Baris info di bawah gambar: nama artist (kiri) & juara (kanan) ── */
+        .rank-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            padding: 0 2px;
+        }
+        .rank-artist {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .rank-juara {
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
-            font-size: 11px;
-            letter-spacing: 0.08em;
+            font-size: 15px;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
-            padding: 2px 8px;
-            border-radius: 4px;
             white-space: nowrap;
+            flex-shrink: 0;
         }
-        .rank-1  { color: #FFD700; }
-        .rank-2  { color: #C0C0C0; }
-        .rank-3  { color: #CD7F32; }
-        .rank-4 , .rank-5 , .rank-6 ,
-        .rank-7 , .rank-8 , .rank-9 , .rank-10 { color: var(--text-sub); }
 
         /* ── Frame gambar 1:1 ── */
         .frame-wrap {
@@ -238,7 +248,7 @@
             position: fixed;
             inset: 0;
             z-index: 200;
-            background: rgba(0,0,0,0.90);
+            background: rgba(0,0,0,0.55);
             backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
@@ -554,7 +564,10 @@
                     <img src="${j.gambar}" alt="${j.nama}" loading="lazy">
                     <div class="frame-badge" style="color:${color};">${j.juara}</div>
                 </div>
-                <span class="rank-label" style="color:${color};">${j.juara} Place</span>
+                <div class="rank-row">
+                    <span class="rank-artist">${j.nama}</span>
+                    <span class="rank-juara" style="color:${color};">${j.juara}</span>
+                </div>
             `;
             col.addEventListener('click', () => openLightbox(i));
             (i < 3 ? top3Grid : runnerGrid).appendChild(col);
@@ -569,7 +582,7 @@
         const color = rankColor(index);
         document.getElementById('lb-img').src  = j.gambar;
         document.getElementById('lb-img').alt  = j.nama;
-        document.getElementById('lb-rank').textContent = `${j.juara} Place`;
+        document.getElementById('lb-rank').textContent = j.juara;
         document.getElementById('lb-rank').style.color = color;
         document.getElementById('lb-msg').textContent  = j.caption;
     }
