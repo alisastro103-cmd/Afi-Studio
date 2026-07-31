@@ -563,8 +563,8 @@
                             <a href="feedback/" class="page-menu-item">Feedback</a>
                             <a href="favorit/index.html" class="page-menu-item">Favorit</a>
                             <div class="page-menu-divider"></div>
-                            <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
-                            <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
+                            <a href="https://forms.gle/KvbgZP3CrziGGZBU8" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                            <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
                         </div>
                     </div>
                 </div>
@@ -635,25 +635,25 @@
                     <div class="footer-col-title">Bantuan</div>
                     <a href="bantuan/index.html">Bantuan</a>
                     <a href="feedback/">Umpan balik</a>
-                    <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener">Dukung kami</a>
+                    <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" rel="noopener">Dukung kami</a>
                 </div>
 
                 <div class="footer-col">
                     <div class="footer-col-title">Gabung Kami</div>
-                    <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
-                    <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
+                    <a href="https://forms.gle/KvbgZP3CrziGGZBU8" rel="noopener" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                    <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
                 </div>
 
                 <div class="footer-col">
                     <div class="footer-col-title">Sosial</div>
                     <div class="footer-social-row">
-                        <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" target="_blank" rel="noopener" aria-label="WhatsApp">
+                        <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" rel="noopener" aria-label="WhatsApp">
                             <svg viewBox="0 0 512 512"><use href="icons/social-icons.svg#icon-wa"></use></svg>
                         </a>
-                        <a href="https://www.instagram.com/aficreatorid?igsh=b3IyeGFhZDRqcXQ2" target="_blank" rel="noopener" aria-label="Instagram">
+                        <a href="https://www.instagram.com/aficreatorid?igsh=b3IyeGFhZDRqcXQ2" rel="noopener" aria-label="Instagram">
                             <svg viewBox="0 0 512 512"><use href="icons/social-icons.svg#icon-ig"></use></svg>
                         </a>
-                        <a href="https://youtube.com/@afiteamid?si=CPud6_oONElBomI7" target="_blank" rel="noopener" aria-label="YouTube">
+                        <a href="https://youtube.com/@afiteamid?si=CPud6_oONElBomI7" rel="noopener" aria-label="YouTube">
                             <svg viewBox="0 0 512 512"><use href="icons/social-icons.svg#icon-yt"></use></svg>
                         </a>
                     </div>
@@ -688,7 +688,7 @@
             <div class="p-4">
                 <div class="video-modal-header">
                     <h2 id="video-modal-title" class="text-base font-bold"></h2>
-                    <a id="video-youtube-link" href="#" target="_blank" rel="noopener" class="video-youtube-btn" aria-label="Buka di YouTube" title="Buka di YouTube">
+                    <a id="video-youtube-link" href="#" rel="noopener" class="video-youtube-btn" aria-label="Buka di YouTube" title="Buka di YouTube">
                         <i data-lucide="arrow-up-right"></i>
                     </a>
                 </div>
@@ -1014,7 +1014,7 @@
             document.getElementById('video-modal-title').textContent = v.title;
             document.getElementById('video-youtube-link').href = v.url;
             document.getElementById('video-frame-wrap').innerHTML =
-                `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playsinline=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
             document.getElementById('video-modal-overlay').classList.add('active');
             updateVideoFavButton();
         }

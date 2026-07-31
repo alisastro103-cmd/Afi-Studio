@@ -257,8 +257,8 @@
             position: relative;
             width: auto;
             height: auto;
-            max-width: min(90vw, 640px);
-            max-height: 76vh;
+            max-width: min(96vw, 820px);
+            max-height: 84vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -268,7 +268,7 @@
             width: auto;
             height: auto;
             max-width: 100%;
-            max-height: 76vh;
+            max-height: 84vh;
             border-radius: 6px;
             border: 1px solid rgba(255,255,255,0.12);
             object-fit: contain;
@@ -454,8 +454,8 @@
                             <a href="../feedback/" class="page-menu-item">Feedback</a>
                             <a href="../favorit/index.html" class="page-menu-item">Favorit</a>
                             <div class="page-menu-divider"></div>
-                            <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
-                            <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
+                            <a href="https://forms.gle/KvbgZP3CrziGGZBU8" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                            <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
                         </div>
                     </div>
                 </div>
@@ -656,6 +656,8 @@
         return document.getElementById('lightbox').classList.contains('zoomed');
     }
 
+    const ZOOM_MIN = 1, ZOOM_MAX = 2.2;
+
     function applyZoomTransform() {
         lbImg.style.transform = `translate(${zoomTx}px, ${zoomTy}px) scale(${zoomScale})`;
     }
@@ -664,6 +666,36 @@
         zoomScale = 1; zoomTx = 0; zoomTy = 0;
         lbImg.style.transition = '';
         lbImg.style.transform = '';
+    }
+
+    // Batas geser (pan) berdasarkan skala zoom saat ini, biar gambar gak keluar terlalu jauh dari tengah
+    function getPanBounds() {
+        const rect = lbImgWrap.getBoundingClientRect();
+        return {
+            maxX: Math.max(0, (rect.width * (zoomScale - 1)) / 2),
+            maxY: Math.max(0, (rect.height * (zoomScale - 1)) / 2)
+        };
+    }
+
+    // elastic = true: masih boleh sedikit "molor" kayak karet saat lagi diseret
+    function clampPan(elastic) {
+        const { maxX, maxY } = getPanBounds();
+        const stretch = elastic ? 0.45 : 0;
+        const limX = maxX + maxX * stretch;
+        const limY = maxY + maxY * stretch;
+        zoomTx = Math.max(-limX, Math.min(limX, zoomTx));
+        zoomTy = Math.max(-limY, Math.min(limY, zoomTy));
+    }
+
+    // Balikin ke posisi & batas yang valid dengan animasi cepat kayak karet ditarik lalu dilepas
+    function snapBackElastic() {
+        const { maxX, maxY } = getPanBounds();
+        zoomTx = Math.max(-maxX, Math.min(maxX, zoomTx));
+        zoomTy = Math.max(-maxY, Math.min(maxY, zoomTy));
+        lbImg.style.transition = 'transform 0.32s cubic-bezier(.34,1.56,.64,1)';
+        applyZoomTransform();
+        clearTimeout(wheelResetTimer);
+        wheelResetTimer = setTimeout(() => { lbImg.style.transition = ''; }, 340);
     }
 
     lbImgWrap.addEventListener('pointerdown', e => {
@@ -693,11 +725,13 @@
         if (activePointers.size === 2 && isZoomed()) {
             const pts = [...activePointers.values()];
             const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-            zoomScale = Math.min(4, Math.max(1, pinchStartScale * (dist / pinchStartDist)));
+            zoomScale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, pinchStartScale * (dist / pinchStartDist)));
+            clampPan(false);
             applyZoomTransform();
         } else if (activePointers.size === 1 && isZoomed() && zoomScale > 1) {
             zoomTx = panOrigin.x + (e.clientX - panStart.x);
             zoomTy = panOrigin.y + (e.clientY - panStart.y);
+            clampPan(true);
             applyZoomTransform();
         }
     });
@@ -712,7 +746,10 @@
         }
         isSwiping = false;
         activePointers.delete(e.pointerId);
-        if (activePointers.size === 0) lbImg.style.transition = '';
+        if (activePointers.size === 0) {
+            if (isZoomed()) snapBackElastic();
+            else lbImg.style.transition = '';
+        }
     }
     lbImgWrap.addEventListener('pointerup', onPointerEnd);
     lbImgWrap.addEventListener('pointercancel', onPointerEnd);
@@ -721,8 +758,8 @@
         if (!isZoomed()) return;
         e.preventDefault();
         lbImg.style.transition = 'none';
-        zoomScale = Math.min(4, Math.max(1, zoomScale - e.deltaY * 0.0015));
-        if (zoomScale === 1) { zoomTx = 0; zoomTy = 0; }
+        zoomScale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoomScale - e.deltaY * 0.0015));
+        if (zoomScale === 1) { zoomTx = 0; zoomTy = 0; } else { clampPan(false); }
         applyZoomTransform();
         clearTimeout(wheelResetTimer);
         wheelResetTimer = setTimeout(() => { lbImg.style.transition = ''; }, 150);

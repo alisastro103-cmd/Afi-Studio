@@ -75,7 +75,7 @@ function openVideoModal(index) {
     document.getElementById('video-modal-title').textContent = v.title;
     document.getElementById('video-youtube-link').href = v.url;
     document.getElementById('video-frame-wrap').innerHTML =
-        `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playsinline=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
     document.getElementById('video-modal-overlay').classList.add('active');
     updateVideoFavButton();
 }
@@ -157,7 +157,7 @@ function closeModal() {
 }
 
 function handleDownload() {
-    if (currentModel) window.open(currentModel.link, '_blank');
+    if (currentModel) window.location.href = currentModel.link;
 }
 
 function handleCopyLink() {

@@ -233,7 +233,7 @@ function toggleCurrentModelFavorite() {
 
 // Fungsi Download & Copy Link
 function handleDownload() {
-    if (currentModel) window.open(currentModel.link, '_blank');
+    if (currentModel) window.location.href = currentModel.link;
 }
 
 function handleCopyLink() {

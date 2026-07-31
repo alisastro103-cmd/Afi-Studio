@@ -530,8 +530,8 @@
                 <a href="../feedback/" class="page-menu-item">Feedback</a>
                 <a href="../favorit/index.html" class="page-menu-item">Favorit</a>
                 <div class="page-menu-divider"></div>
-                <a href="https://forms.gle/KvbgZP3CrziGGZBU8" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
-                <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" target="_blank" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
+                <a href="https://forms.gle/KvbgZP3CrziGGZBU8" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+                <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
             </div>
         </div>
     </nav>
@@ -543,7 +543,7 @@
                 </div>
         </div>
         <div class="footer">
-            <button class="selection-btn" onclick="if(isSeleksiMemberOpen){ window.open('https://forms.gle/JmYJ1S5GFCEscAnU7', '_blank'); } else { var t=document.getElementById('toast-soon'); if(t){t.classList.add('show'); setTimeout(function(){t.classList.remove('show');}, 2000);} }">Seleksi Member</button>
+            <button class="selection-btn" onclick="if(isSeleksiMemberOpen){ window.location.href='https://forms.gle/JmYJ1S5GFCEscAnU7'; } else { var t=document.getElementById('toast-soon'); if(t){t.classList.add('show'); setTimeout(function(){t.classList.remove('show');}, 2000);} }">Seleksi Member</button>
         </div>
         <p style="text-align: center; font-size: 11px; color: var(--text-sub); padding: 16px 0 28px; font-weight: 500; font-family: var(--font-secondary);">© 2026 Afi-Studio™ — All rights reserved.</p>
     </div>
