@@ -305,14 +305,15 @@
         }
         .lightbox-zoom-btn {
             position: absolute;
-            top: 16px;
-            right: 62px;
+            top: 14px;
+            right: 74px;
+            z-index: 20;
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.15);
             color: #fff;
             border-radius: 50%;
-            width: 36px;
-            height: 36px;
+            width: 46px;
+            height: 46px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -365,14 +366,15 @@
         }
         .lightbox-close {
             position: absolute;
-            top: 16px;
+            top: 14px;
             right: 16px;
+            z-index: 20;
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.15);
             color: #fff;
             border-radius: 50%;
-            width: 36px;
-            height: 36px;
+            width: 46px;
+            height: 46px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -495,10 +497,10 @@
 
 <div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
     <button class="lightbox-close" onclick="closeLightbox()">
-        <i data-lucide="x" style="width:18px;height:18px;"></i>
+        <i data-lucide="x" style="width:22px;height:22px;"></i>
     </button>
     <button class="lightbox-zoom-btn" onclick="event.stopPropagation(); toggleZoom()">
-        <i data-lucide="eye" style="width:18px;height:18px;"></i>
+        <i data-lucide="eye" style="width:22px;height:22px;"></i>
     </button>
     <button class="lightbox-nav lightbox-nav-prev" onclick="event.stopPropagation(); navLightbox(-1)">
         <i data-lucide="chevron-right" style="width:22px;height:22px;transform:rotate(180deg);"></i>

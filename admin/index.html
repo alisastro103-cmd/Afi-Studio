@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Afi Studio — Admin Panel</title>
-<link rel="icon" type="image/png" href="favicon.png">
-<link rel="stylesheet" href="dist/output.css">
-<link rel="stylesheet" href="fonts/fonts.css">
-<script src="icons/lucide-local.js"></script>
+<link rel="icon" type="image/png" href="/admin/favicon.png">
+<link rel="stylesheet" href="/admin/dist/output.css">
+<link rel="stylesheet" href="/admin/fonts/fonts.css">
+<script src="/admin/icons/lucide-local.js"></script>
 <script>
   var saved = localStorage.getItem('afi-theme');
   var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -215,8 +215,8 @@
      token valid, jadi walau URL panel.html diketik langsung tetap balik ke sini. -->
 <div id="login-screen" style="position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; background:var(--bg); padding:20px;">
   <div style="width:100%; max-width:340px;">
-    <div class="flex items-center gap-2 mb-4">
-      <img src="icon.png" class="w-8 h-8 object-contain" alt="">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+      <div style="width:34px; height:34px; flex-shrink:0; border-radius:9px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-weight:800; font-size:16px;">A</div>
       <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:15px;">Afi Studio Admin</div>
     </div>
     <label style="font-size:12px; font-weight:700; color:var(--text-sub);">Token Admin</label>
@@ -242,7 +242,7 @@ async function doLogin(){
     const data = await res.json();
     if(res.ok && data.ok){
       setToken(token);
-      window.location.href = 'panel.html';
+      window.location.href = '/admin/panel.html';
     } else {
       errEl.textContent = data.error || 'Token salah.';
       errEl.style.display = 'block';
@@ -261,7 +261,7 @@ async function doLogin(){
   try{
     const res = await fetch('/api/admin/verify', { method:'POST', headers:{ 'x-admin-token': t } });
     const data = await res.json();
-    if(res.ok && data.ok){ window.location.href = 'panel.html'; } else { clearToken(); }
+    if(res.ok && data.ok){ window.location.href = '/admin/panel.html'; } else { clearToken(); }
   }catch(e){ /* biarin di layar login kalau offline */ }
 })();
 </script>
