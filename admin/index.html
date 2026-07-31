@@ -128,6 +128,11 @@
   .modal-bg.closing { animation: modalBgOut .16s ease forwards; }
   .modal-box { background: var(--surface); border-radius:12px; max-width:520px; width:100%; max-height:90vh; overflow-y:auto; padding:20px; animation: modalBoxIn .22s cubic-bezier(.16,1,.3,1); }
   .modal-bg.closing .modal-box { animation: modalBoxOut .16s ease forwards; }
+  .juara-pill-group { display:flex; flex-wrap:wrap; gap:6px; }
+  .juara-pill { position:relative; cursor:pointer; }
+  .juara-pill input[type="radio"] { position:absolute; inset:0; opacity:0; margin:0; cursor:pointer; }
+  .juara-pill span { display:inline-block; padding:6px 12px; border:1px solid var(--border); border-radius:8px; font-size:12px; font-weight:700; color:var(--text-sub); background:var(--bg); transition: background .12s ease, color .12s ease, border-color .12s ease; }
+  .juara-pill:has(input:checked) span { background:var(--accent); color:#fff; border-color:var(--accent); }
 
   /* --- RESPONSIVE SIDEBAR (mobile drawer, supaya tidak bertabrakan dengan konten) --- */
   .menu-toggle { display:none; width:42px; height:42px; align-items:center; justify-content:center; background:transparent; color:var(--text); cursor:pointer; flex-shrink:0; border:none; }
@@ -1202,13 +1207,23 @@ function renderRanking(){
 function openRankingForm(idx){
   const isEdit = idx !== undefined;
   const r = isEdit ? DB.ranking[idx] : { nama:'', juara:'', caption:'', gambar:'' };
+  const JUARA_OPTIONS = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
   openModal(`
     <h3 class="text-sm font-bold mb-4">${isEdit?'Edit':'Tambah'} Slot Ranking</h3>
     <div class="flex flex-col gap-3">
-      <div><label>Label Juara (mis: 1st)</label><input id="f-juara" value="${esc(r.juara)}"></div>
-      <div><label>Nama Pemenang</label><input id="f-rnama" value="${esc(r.nama)}"></div>
-      <div><label>Caption</label><input id="f-rcaption" value="${esc(r.caption)}"></div>
-      <div><label>URL Gambar</label><input id="f-rgambar" value="${esc(r.gambar)}"></div>
+      <div>
+        <label>Juara</label>
+        <div class="juara-pill-group">
+          ${JUARA_OPTIONS.map(j=>`
+            <label class="juara-pill">
+              <input type="radio" name="f-juara-radio" value="${j}" ${r.juara===j?'checked':''}>
+              <span>${j}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+      <div><label>Nama Pemenang</label><textarea id="f-rnama" rows="1">${esc(r.nama)}</textarea></div>
+      <div><label>Caption</label><textarea id="f-rcaption" rows="2">${esc(r.caption)}</textarea></div>
+      <div><label>URL Gambar</label><textarea id="f-rgambar" rows="1">${esc(r.gambar)}</textarea></div>
     </div>
     <div class="flex justify-end gap-2 mt-5">
       <button class="btn btn-outline" onclick="closeModal()">Batal</button>
@@ -1216,7 +1231,9 @@ function openRankingForm(idx){
     </div>`);
 }
 async function saveRanking(idx){
-  const data = { juara: document.getElementById('f-juara').value.trim(), nama: document.getElementById('f-rnama').value.trim(), caption: document.getElementById('f-rcaption').value.trim(), gambar: document.getElementById('f-rgambar').value.trim() };
+  const juaraEl = document.querySelector('input[name="f-juara-radio"]:checked');
+  const data = { juara: juaraEl ? juaraEl.value : '', nama: document.getElementById('f-rnama').value.trim(), caption: document.getElementById('f-rcaption').value.trim(), gambar: document.getElementById('f-rgambar').value.trim() };
+  if(!data.juara){ toast('Pilih juara (1st - 10th)'); return; }
   if(!data.nama){ toast('Nama wajib diisi'); return; }
   const prev = DB.ranking.slice();
   if(idx!==undefined) DB.ranking[idx]=data; else DB.ranking.push(data);

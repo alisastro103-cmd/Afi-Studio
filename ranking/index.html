@@ -346,10 +346,10 @@
             .lightbox-nav-next { right: 24px; }
         }
         .lightbox-caption {
-            margin-top: 16px;
+            margin: 16px auto 0;
             text-align: center;
-            max-width: 480px;
-            transition: opacity 0.25s ease;
+            max-width: 100%;
+            transition: opacity 0.25s ease, width 0.2s ease;
         }
         .lightbox-caption .lb-rank {
             font-family: 'Outfit', sans-serif;
@@ -575,6 +575,20 @@
     }
 
     /* ── Lightbox logic ── */
+    function updateCaptionWidth() {
+        const wrap = document.querySelector('.lightbox-img-wrap');
+        const caption = document.querySelector('.lightbox-caption');
+        const img = document.getElementById('lb-img');
+        if (!wrap || !caption || !img || !img.naturalWidth) return;
+        const wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
+        if (!wrapW || !wrapH) return;
+        const imgRatio = img.naturalWidth / img.naturalHeight;
+        const wrapRatio = wrapW / wrapH;
+        // Lebar gambar yang benar-benar tampil di dalam kotak (object-fit: contain)
+        const renderedW = imgRatio > wrapRatio ? wrapW : wrapH * imgRatio;
+        caption.style.width = Math.max(Math.round(renderedW), 180) + 'px';
+    }
+
     function fillLightbox(index) {
         const j = juara[index];
         const color = rankColor(index);
@@ -627,6 +641,8 @@
     /* ── Pinch-zoom, pan gambar (saat zoom), dan swipe kiri-kanan (saat tidak zoom) ── */
     const lbImg = document.getElementById('lb-img');
     const lbImgWrap = document.querySelector('.lightbox-img-wrap');
+    lbImg.addEventListener('load', updateCaptionWidth);
+    window.addEventListener('resize', updateCaptionWidth);
     const activePointers = new Map();
     let pinchStartDist = 0, pinchStartScale = 1;
     let zoomScale = 1, zoomTx = 0, zoomTy = 0;
