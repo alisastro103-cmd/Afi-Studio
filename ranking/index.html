@@ -255,8 +255,8 @@
         }
         .lightbox-img-wrap {
             position: relative;
-            width: auto;
-            height: auto;
+            width: min(96vw, 820px);
+            height: 84vh;
             max-width: min(96vw, 820px);
             max-height: 84vh;
             display: flex;
@@ -265,10 +265,8 @@
             touch-action: none;
         }
         .lightbox-img-wrap img {
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: 84vh;
+            width: 100%;
+            height: 100%;
             border-radius: 6px;
             border: 1px solid rgba(255,255,255,0.12);
             object-fit: contain;
@@ -577,6 +575,21 @@
     }
 
     /* ── Lightbox logic ── */
+    function fitLightboxFrame() {
+        const img = document.getElementById('lb-img');
+        const wrap = document.querySelector('.lightbox-img-wrap');
+        if (!wrap || !img || !img.naturalWidth || isZoomed()) return;
+        const maxW = Math.min(window.innerWidth * 0.96, 820);
+        const maxH = window.innerHeight * 0.84;
+        const imgRatio = img.naturalWidth / img.naturalHeight;
+        const maxRatio = maxW / maxH;
+        let renderedW, renderedH;
+        if (imgRatio > maxRatio) { renderedW = maxW; renderedH = maxW / imgRatio; }
+        else { renderedH = maxH; renderedW = maxH * imgRatio; }
+        wrap.style.width = Math.round(renderedW) + 'px';
+        wrap.style.height = Math.round(renderedH) + 'px';
+    }
+
     function updateCaptionWidth() {
         const wrap = document.querySelector('.lightbox-img-wrap');
         const caption = document.querySelector('.lightbox-caption');
@@ -614,6 +627,7 @@
         document.getElementById('lightbox').classList.remove('active', 'zoomed');
         document.body.style.overflow = '';
         resetZoomTransform();
+        fitLightboxFrame();
     }
 
     function navLightbox(dir) {
@@ -632,19 +646,21 @@
         const entering = !lb.classList.contains('zoomed');
         lb.classList.toggle('zoomed');
         if (entering) {
+            lbImgWrap.style.width = ''; lbImgWrap.style.height = '';
             zoomScale = 1.6; zoomTx = 0; zoomTy = 0;
             lbImg.style.transition = '';
             applyZoomTransform();
         } else {
             resetZoomTransform();
+            fitLightboxFrame();
         }
     }
 
     /* ── Pinch-zoom, pan gambar (saat zoom), dan swipe kiri-kanan (saat tidak zoom) ── */
     const lbImg = document.getElementById('lb-img');
     const lbImgWrap = document.querySelector('.lightbox-img-wrap');
-    lbImg.addEventListener('load', updateCaptionWidth);
-    window.addEventListener('resize', updateCaptionWidth);
+    lbImg.addEventListener('load', () => { fitLightboxFrame(); updateCaptionWidth(); });
+    window.addEventListener('resize', () => { fitLightboxFrame(); updateCaptionWidth(); });
     const activePointers = new Map();
     let pinchStartDist = 0, pinchStartScale = 1;
     let zoomScale = 1, zoomTx = 0, zoomTy = 0;
@@ -687,11 +703,10 @@
         zoomTy = Math.max(-limY, Math.min(limY, zoomTy));
     }
 
-    // Balikin ke posisi & batas yang valid dengan animasi cepat kayak karet ditarik lalu dilepas
+    // Balikin ke tengah-tengah dengan animasi cepat kayak karet ditarik lalu dilepas —
+    // sejauh apapun geser sebelumnya, posisinya selalu balik ke tengah pas dilepas.
     function snapBackElastic() {
-        const { maxX, maxY } = getPanBounds();
-        zoomTx = Math.max(-maxX, Math.min(maxX, zoomTx));
-        zoomTy = Math.max(-maxY, Math.min(maxY, zoomTy));
+        zoomTx = 0; zoomTy = 0;
         lbImg.style.transition = 'transform 0.32s cubic-bezier(.34,1.56,.64,1)';
         applyZoomTransform();
         clearTimeout(wheelResetTimer);
