@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Afi Studio — Admin Panel</title>
-<link rel="icon" type="image/png" href="/admin/favicon.png">
+<link rel="icon" type="image/png" href="/favicon.png">
 <link rel="stylesheet" href="/admin/dist/output.css">
 <link rel="stylesheet" href="/admin/fonts/fonts.css">
 <script src="/admin/icons/lucide-local.js"></script>
@@ -115,6 +115,19 @@
   .row-num { white-space:nowrap; text-align:center; color:var(--text-sub); font-weight:700; font-size:11px; }
   .chip { display:inline-block; font-size:10.5px; font-weight:700; background:var(--bg); padding:2px 8px; border-radius:999px; margin:1px 2px; }
 
+  /* --- Pengaturan: baris saklar buka/tutup jalur pendaftaran --- */
+  .setting-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 4px; border-bottom:1px solid color-mix(in srgb, var(--text-sub) 14%, transparent); }
+  .setting-row:last-child { border-bottom:none; }
+  .setting-row-title { font-size:13.5px; font-weight:700; color:var(--text); }
+  .setting-row-desc { font-size:11.5px; color:var(--text-sub); margin-top:2px; text-transform:none; letter-spacing:normal; }
+  .switch { position:relative; display:inline-block; width:42px; height:24px; flex-shrink:0; cursor:pointer; }
+  .switch input { opacity:0; width:0; height:0; }
+  .switch-track { position:absolute; inset:0; background:var(--border); border-radius:999px; transition:background .2s; }
+  .switch-track::before { content:""; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; box-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .switch input:checked + .switch-track { background:var(--success); }
+  .switch input:checked + .switch-track::before { transform:translateX(18px); }
+  .switch input:focus-visible + .switch-track { outline:2px solid var(--accent); outline-offset:2px; }
+
   /* --- AKSI: dropdown untuk tombol tambah mengambang & popup tahan/klik-kanan --- */
   .action-menu { position:relative; display:inline-block; }
   .action-dropdown { display:none; position:absolute; right:0; top:calc(100% + 4px); background:var(--surface); border-radius:8px; min-width:132px; box-shadow:0 8px 24px rgba(0,0,0,.18); z-index:50; overflow:hidden; transform-origin: top right; }
@@ -213,7 +226,7 @@
 
   <aside class="sidebar p-3 flex flex-col gap-1 overflow-y-auto">
     <div class="flex items-center gap-2 px-2 py-3 mb-2">
-      <img src="icon.png" class="w-8 h-8 object-contain" alt="">
+      <img src="/icon.png" class="w-8 h-8 object-contain" alt="">
       <div>
         <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:14px;">Afi Studio</div>
         <div style="font-size:10px; color:var(--text-sub); font-weight:600;">Admin Panel</div>
@@ -358,9 +371,29 @@
 
       <!-- PENGATURAN -->
       <section class="section-view" id="view-pengaturan">
-        <div class="panel p-4">
-          <h3 class="text-sm font-bold mb-2">Pengaturan</h3>
-          <p style="font-size:13px; color:var(--text-sub); line-height:1.6;">Pengaturan situs (jalur pendaftaran dll.) masih diatur lewat <code>config.js</code>. Formulir pengaturan di panel ini menyusul.</p>
+        <div class="panel p-4 mb-3">
+          <h3 class="text-sm font-bold mb-1">Jalur Pendaftaran</h3>
+          <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6; margin-bottom:14px;">Buka/tutup tombol pendaftaran yang tampil di website utama. Kalau ditutup, tombolnya tetap kelihatan tapi menampilkan notifikasi &ldquo;Segera Hadir&rdquo; saat ditekan, bukan langsung ke Google Form.</p>
+          <div class="setting-row">
+            <div>
+              <div class="setting-row-title">Daftar Model 3D</div>
+              <div class="setting-row-desc">Tombol &ldquo;Daftar Model 3D&rdquo; di semua halaman.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-model-toggle" onchange="updateSetting('isDaftarModelOpen', this.checked)">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-row-title">Daftar Member</div>
+              <div class="setting-row-desc">Tombol &ldquo;Daftar Member&rdquo; di semua halaman.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-member-toggle" onchange="updateSetting('isDaftarMemberOpen', this.checked)">
+              <span class="switch-track"></span>
+            </label>
+          </div>
         </div>
       </section>
 
@@ -391,9 +424,9 @@
 <script>
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
-let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [] };
+let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false } };
 const APP_TARGETS = ["Prisma3D","Blender","Mine-Imator","Viontri","C4D","Lainnya"];
-const DATA_TYPES = ['models','videos','banner','marquee','member','ranking'];
+const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','settings'];
 
 /* ================= LOGIN & TOKEN ================= */
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
@@ -455,7 +488,7 @@ async function bootAdminApp(){
   toast('Memuat data...');
   await loadAllData();
   renderDashboard(); renderModels(); renderVideos(); renderBanner();
-  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking();
+  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderPengaturan();
   lucide.createIcons();
 }
 
@@ -1239,6 +1272,23 @@ function renderDashboard(){
       <div style="font-size:22px; font-weight:800;">${c.val}</div>
     </div>`).join('');
   lucide.createIcons();
+}
+
+/* ================= PENGATURAN ================= */
+function renderPengaturan(){
+  document.getElementById('setting-model-toggle').checked = !!DB.settings.isDaftarModelOpen;
+  document.getElementById('setting-member-toggle').checked = !!DB.settings.isDaftarMemberOpen;
+}
+
+// Dipanggil saat saklar di halaman Pengaturan digeser. Update state di memory
+// dulu (biar switch langsung kerasa responsif), baru disimpan ke database;
+// kalau gagal simpan, switch dikembalikan ke posisi semula + toast error.
+async function updateSetting(key, value){
+  const prev = DB.settings[key];
+  DB.settings = { ...DB.settings, [key]: value };
+  const ok = await persist('settings');
+  if(ok){ toast('Pengaturan disimpan'); }
+  else { DB.settings = { ...DB.settings, [key]: prev }; renderPengaturan(); }
 }
 
 /* ================= INIT ================= */

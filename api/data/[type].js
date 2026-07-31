@@ -22,6 +22,7 @@ const TYPES = {
   member:     { redisKey: 'afi-studio:data:member',     file: 'member-Afi-Studio/member.json' },
   ranking:    { redisKey: 'afi-studio:data:ranking',    file: 'ranking/ranking.json' },
   categories: { redisKey: 'afi-studio:data:categories', file: 'categories.json' },
+  settings:   { redisKey: 'afi-studio:data:settings',   file: 'settings.json' },
 };
 
 const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
