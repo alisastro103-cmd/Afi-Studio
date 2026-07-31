@@ -168,31 +168,21 @@
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item-cta:active { opacity: 0.6; }
 
-        /* ── Baris info di bawah gambar: nama artist (kiri) & juara (kanan) ── */
-        .rank-row {
+        /* ── Baris info di lightbox: nama artist (kiri) & juara (kanan, lebih besar/tebal) ── */
+        .lb-rank-row {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            gap: 8px;
-            width: 100%;
-            padding: 0 2px;
+            gap: 10px;
+            text-align: left;
         }
-        .rank-artist {
-            font-size: 12px;
+        .lightbox-caption .lb-artist {
+            font-size: 13px;
             font-weight: 600;
-            color: var(--text);
+            color: #e2e8f0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-        .rank-juara {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 15px;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            white-space: nowrap;
-            flex-shrink: 0;
         }
 
         /* ── Frame gambar 1:1 ── */
@@ -265,6 +255,8 @@
         }
         .lightbox-img-wrap {
             position: relative;
+            width: min(86vw, 560px);
+            height: min(70vh, 560px);
             max-width: 100%;
             max-height: 80vh;
             display: flex;
@@ -273,14 +265,14 @@
             touch-action: none;
         }
         .lightbox-img-wrap img {
-            max-width: 100%;
-            max-height: 80vh;
+            width: 100%;
+            height: 100%;
             border-radius: 6px;
             border: 1px solid rgba(255,255,255,0.12);
             object-fit: contain;
             display: block;
             box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-            transition: opacity 0.25s ease, transform 0.25s ease, max-width 0.3s ease, max-height 0.3s ease;
+            transition: opacity 0.25s ease, transform 0.25s ease, width 0.3s ease, height 0.3s ease;
             -webkit-user-drag: none;
             user-select: none;
         }
@@ -288,8 +280,15 @@
             opacity: 0;
             transform: scale(0.97);
         }
-        .lightbox-overlay.zoomed .lightbox-img-wrap,
+        .lightbox-overlay.zoomed .lightbox-img-wrap {
+            width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            max-width: 100vw;
+        }
         .lightbox-overlay.zoomed .lightbox-img-wrap img {
+            width: 100%;
+            height: 100%;
             max-height: 100vh;
             max-width: 100vw;
         }
@@ -511,7 +510,10 @@
         <img id="lb-img" src="" alt="" loading="lazy" decoding="async" draggable="false">
     </div>
     <div class="lightbox-caption" onclick="event.stopPropagation()">
-        <div id="lb-rank" class="lb-rank"></div>
+        <div class="lb-rank-row">
+            <span id="lb-artist" class="lb-artist"></span>
+            <span id="lb-rank" class="lb-rank"></span>
+        </div>
         <div id="lb-msg"  class="lb-msg"></div>
     </div>
 </div>
@@ -564,10 +566,6 @@
                     <img src="${j.gambar}" alt="${j.nama}" loading="lazy">
                     <div class="frame-badge" style="color:${color};">${j.juara}</div>
                 </div>
-                <div class="rank-row">
-                    <span class="rank-artist">${j.nama}</span>
-                    <span class="rank-juara" style="color:${color};">${j.juara}</span>
-                </div>
             `;
             col.addEventListener('click', () => openLightbox(i));
             (i < 3 ? top3Grid : runnerGrid).appendChild(col);
@@ -582,6 +580,7 @@
         const color = rankColor(index);
         document.getElementById('lb-img').src  = j.gambar;
         document.getElementById('lb-img').alt  = j.nama;
+        document.getElementById('lb-artist').textContent = j.nama;
         document.getElementById('lb-rank').textContent = j.juara;
         document.getElementById('lb-rank').style.color = color;
         document.getElementById('lb-msg').textContent  = j.caption;
