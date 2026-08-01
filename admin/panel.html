@@ -969,31 +969,44 @@ function bindCardHold(containerId){
   el.querySelectorAll('[data-hold-edit]').forEach(card=>{
     if(card.dataset.holdBound) return;
     card.dataset.holdBound = '1';
-    const DRAG_THRESHOLD = 6;
+    // Tekan sejenak lalu lepas (sebelum HOLD_MS) -> muncul board Edit/Hapus/Naik/Turun.
+    // Tahan sampai lewat HOLD_MS (gak usah gerak dulu) -> otomatis "keangkat" di tempat, tinggal ikutin jari/kursor mau digeser ke mana.
+    const HOLD_MS = 420;
+    let lastEvt = null, dragFired = false;
+    const trackMove = (e)=>{ lastEvt = e; };
     const start = (e)=>{
-      if(e.pointerType === 'mouse' && e.button !== 0) return; // cuma klik kiri yang mulai tahan/seret
+      if(e.pointerType === 'mouse' && e.button !== 0) return; // cuma klik kiri
+      lastEvt = e;
+      dragFired = false;
       card.classList.add('card-pressed');
-      card._holdTimer = setTimeout(()=>{ card._holdTimer=null; openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete')); }, 480);
-      const sx = e.clientX, sy = e.clientY;
-      const watchMove = (e2)=>{
-        if(Math.hypot(e2.clientX-sx, e2.clientY-sy) < DRAG_THRESHOLD) return;
-        card.removeEventListener('pointermove', watchMove);
-        card._cancelWatch = null;
-        if(card._holdTimer){ clearTimeout(card._holdTimer); card._holdTimer=null; }
+      card.addEventListener('pointermove', trackMove);
+      card._holdTimer = setTimeout(()=>{
+        card._holdTimer = null;
         card.classList.remove('card-pressed');
-        if(card.dataset.reorderScope !== undefined) beginCustomDrag(card, e2);
-      };
-      card.addEventListener('pointermove', watchMove);
-      card._cancelWatch = ()=>{ card.removeEventListener('pointermove', watchMove); card._cancelWatch=null; };
+        card.removeEventListener('pointermove', trackMove);
+        if(card.dataset.reorderScope !== undefined){
+          dragFired = true;
+          beginCustomDrag(card, lastEvt);
+        }
+      }, HOLD_MS);
     };
-    const cancel = ()=>{ if(card._holdTimer){ clearTimeout(card._holdTimer); card._holdTimer=null; } card.classList.remove('card-pressed'); if(card._cancelWatch) card._cancelWatch(); };
+    const stop = (e)=>{
+      if(card._holdTimer){ clearTimeout(card._holdTimer); card._holdTimer=null; }
+      card.classList.remove('card-pressed');
+      card.removeEventListener('pointermove', trackMove);
+      if(!dragFired && e && e.type === 'pointerup'){
+        openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete'));
+      }
+      dragFired = false;
+    };
     card.addEventListener('pointerdown', start);
-    card.addEventListener('pointerup', cancel);
-    card.addEventListener('pointerleave', cancel);
-    card.addEventListener('pointercancel', cancel);
+    card.addEventListener('pointerup', stop);
+    card.addEventListener('pointerleave', ()=>stop());
+    card.addEventListener('pointercancel', ()=>stop());
     card.addEventListener('contextmenu', e=>{
       e.preventDefault();
-      cancel();
+      dragFired = true; // biar pointerup abis ini gak buka board dobel
+      stop();
       openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete'));
     });
   });
