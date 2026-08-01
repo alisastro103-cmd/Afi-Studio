@@ -22,7 +22,7 @@
   :root {
     --accent: #93C5FD; --accent-hover: #7DD3FC; --bg: #D0D7E1; --surface: #E1E7EE;
     --text: #334155; --text-sub: #64748B; --border: #B9C4D3; --grid-line: rgba(100,116,139,0.22);
-    --danger: #EF4444; --success: #22C55E;
+    --success: #22C55E;
   }
   .dark { --accent: #3B5578; --accent-hover: #4A6690; --bg: #1E293B; --surface: #334155; --text: #CBD5E1; --text-sub: #94A3B8; --border: #475569; --grid-line: rgba(148,163,184,0.16); }
   body { background-color: var(--bg); background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; color: var(--text); transition: background-color .3s, color .3s; }
@@ -64,11 +64,6 @@
   .btn-accent:hover { background: var(--accent-hover); }
   .btn-outline { background: var(--bg); color: var(--text); }
   .btn-outline:hover { background: var(--border); }
-  .btn-danger { background: var(--danger); color:#fff; }
-  .btn-danger:hover { filter: brightness(1.1); }
-  .btn-icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:8px; border:none; background:transparent; color:var(--text-sub); cursor:pointer; }
-  .btn-icon:hover { color: var(--accent); }
-  .btn-icon svg { width:17px; height:17px; }
   .icon-btn-plain { display:flex; align-items:center; justify-content:center; width:38px; height:38px; background:none; border:none; color:var(--text-sub); cursor:pointer; padding:0; flex-shrink:0; }
   .icon-btn-plain:hover { color:var(--accent); }
   .icon-btn-plain svg { width:21px; height:21px; }
@@ -219,14 +214,7 @@
   [data-hold-edit].card-pressed { opacity: 0.7; }
   tr[data-hold-edit].card-pressed { opacity:1; background: color-mix(in srgb, var(--accent) 22%, transparent); }
 
-  /* --- Seret buat ubah urutan: klik kiri mouse tahan lalu geser (tanpa nunggu, langsung seret) ---
-     Item asli disembunyikan di tempat (visibility:hidden, tetap makan ruang) sambil dipindah-pindah di
-     DOM ngikutin posisi kursor, jadi kartu/baris lain otomatis "geser" ngisi/kasih ruang secara natural.
-     Yang keliatan ngambang ngikutin kursor itu "ghost" (salinan tampilan), biar berasa "diangkat". */
-  [data-reorder-idx] { cursor: grab; }
-  .reorder-ghost { position:fixed; z-index:300; pointer-events:none; border-radius:10px; overflow:hidden; background:var(--surface); box-shadow:0 18px 34px rgba(0,0,0,.38), 0 4px 10px rgba(0,0,0,.22); transform:scale(1); transition:transform .15s cubic-bezier(.2,.8,.2,1); }
-  .reorder-ghost.active { transform:scale(1.035); }
-  .reorder-ghost table { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; margin:0; background:var(--surface); }
+  /* --- Ubah urutan: lewat tombol Naik/Turun di board opsi (tahan kartu/baris buat munculin board-nya) --- */
   .action-dropdown button.reorder-btn i { color: var(--text-sub); }
 </style>
 </head>
@@ -442,7 +430,6 @@ const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','set
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
 // "logout" begitu tab/browser ditutup, bukan tersimpan permanen di HP.
 function getToken(){ return sessionStorage.getItem('afi-admin-token') || ''; }
-function setToken(t){ sessionStorage.setItem('afi-admin-token', t); }
 function clearToken(){ sessionStorage.removeItem('afi-admin-token'); }
 
 function logout(){
@@ -770,7 +757,7 @@ function toggleActionMenu(btn){
 document.addEventListener('click', e=>{ if(!e.target.closest('.action-menu')) closeActionMenus(); });
 document.querySelector('main').addEventListener('scroll', closeActionMenus);
 
-/* ================= URUTAN: seret (mouse tahan+geser) ATAU tombol Naik/Turun di board Edit/Hapus ================= */
+/* ================= URUTAN: tombol Naik/Turun di board opsi (tahan kartu/baris buat munculin board-nya) ================= */
 // "scope" nunjukin array asalnya: 'models','videos','banner','marquee','ranking', atau 'member:<gen>' khusus member
 // (member dipisah per generasi karena datanya memang disimpan per folder generasi, bukan satu array besar).
 const REORDER_RENDERERS = { models:()=>renderModels(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember() };
@@ -784,38 +771,6 @@ function reorderRender(scope){
   (REORDER_RENDERERS[key] || function(){})();
   renderDashboard();
 }
-// Cari elemen tetangga (baris tabel ATAU kartu grid) yang paling dekat sama posisi kursor,
-// sekalian nentuin taruh SEBELUM atau SESUDAH elemen itu. Dipakai buat mode tabel (1 kolom)
-// maupun mode kotak/grid (banyak kolom per baris).
-function nearestReorderSibling(container, x, y, dragItem, scope){
-  const siblings = Array.from(container.querySelectorAll(`[data-reorder-scope="${scope}"]`)).filter(el=>el!==dragItem);
-  let closest = null, closestDist = Infinity, before = true;
-  siblings.forEach(sib=>{
-    const r = sib.getBoundingClientRect();
-    const cx = r.left + r.width/2, cy = r.top + r.height/2;
-    const dist = Math.hypot(x-cx, y-cy);
-    if(dist < closestDist){
-      closestDist = dist;
-      closest = sib;
-      const sameRow = y >= r.top && y <= r.bottom;
-      before = sameRow ? (x < cx) : (y < cy);
-    }
-  });
-  return { closest, before };
-}
-async function commitReorder(container, scope){
-  const arr = reorderArrayRef(scope);
-  if(!arr) return;
-  const items = Array.from(container.querySelectorAll(`[data-reorder-scope="${scope}"]`));
-  const newOrder = items.map(el=> arr[parseInt(el.dataset.reorderIdx,10)]);
-  if(newOrder.length !== arr.length){ toast('Kosongkan pencarian dulu buat ubah urutan'); reorderRender(scope); return; } // lagi difilter pencarian, batalkan biar data gak hilang
-  const prev = arr.slice();
-  arr.splice(0, arr.length, ...newOrder);
-  reorderRender(scope);
-  const ok = await persist(reorderPersistKey(scope));
-  if(ok) toast('Urutan disimpan');
-  else { arr.splice(0, arr.length, ...prev); reorderRender(scope); toast('Gagal menyimpan urutan'); }
-}
 async function moveReorderItem(scope, idx, dir){
   const arr = reorderArrayRef(scope);
   if(!arr) return;
@@ -827,149 +782,33 @@ async function moveReorderItem(scope, idx, dir){
   const ok = await persist(reorderPersistKey(scope));
   if(!ok){ arr.splice(0, arr.length, ...prev); reorderRender(scope); toast('Gagal menyimpan urutan'); }
 }
-// Simpen posisi (getBoundingClientRect) semua item satu scope, dipakai buat animasi FLIP
-// (First-Last-Invert-Play) pas item lain harus geser ngasih ruang.
-function captureReorderRects(container, scope){
-  const map = new Map();
-  container.querySelectorAll(`[data-reorder-scope="${scope}"]`).forEach(el=> map.set(el, el.getBoundingClientRect()));
-  return map;
-}
-function flipReorderSiblings(container, scope, prevRects){
-  container.querySelectorAll(`[data-reorder-scope="${scope}"]`).forEach(el=>{
-    const prev = prevRects.get(el);
-    if(!prev) return;
-    const next = el.getBoundingClientRect();
-    const dx = prev.left - next.left, dy = prev.top - next.top;
-    if(!dx && !dy) return;
-    el.style.transition = 'none';
-    el.style.transform = `translate(${dx}px, ${dy}px)`;
-    requestAnimationFrame(()=>{
-      el.style.transition = 'transform .18s cubic-bezier(.2,.8,.2,1)';
-      el.style.transform = '';
-    });
-    el.addEventListener('transitionend', function te(){ el.style.transition=''; el.removeEventListener('transitionend', te); }, { once:true });
-  });
-}
-// Bikin "ghost": salinan tampilan item yang ngambang ngikutin kursor (posisi aslinya cuma
-// disembunyikan di tempat, bukan dipindah, biar tabel/kolomnya gak berantakan).
-function buildReorderGhost(item, rect){
-  const outer = document.createElement('div');
-  outer.className = 'reorder-ghost';
-  outer.style.left = rect.left+'px';
-  outer.style.top = rect.top+'px';
-  outer.style.width = rect.width+'px';
-  outer.style.height = rect.height+'px';
-  if(item.tagName === 'TR'){
-    const table = document.createElement('table');
-    const tbody = document.createElement('tbody');
-    const trClone = item.cloneNode(true);
-    trClone.classList.remove('card-pressed');
-    Array.from(item.children).forEach((td,i)=>{ const w = td.getBoundingClientRect().width; if(trClone.children[i]) trClone.children[i].style.width = w+'px'; });
-    tbody.appendChild(trClone);
-    table.appendChild(tbody);
-    outer.appendChild(table);
-  } else {
-    const clone = item.cloneNode(true);
-    clone.classList.remove('card-pressed');
-    clone.style.width = '100%';
-    clone.style.height = '100%';
-    outer.appendChild(clone);
-  }
-  document.body.appendChild(outer);
-  requestAnimationFrame(()=> outer.classList.add('active'));
-  return outer;
-}
-let flying = null; // { item, ghost, container, scope, offsetX, offsetY, w, h, pointerId, settled }
-function beginCustomDrag(item, e){
-  const scope = item.dataset.reorderScope;
-  if(scope === undefined) return;
-  const container = item.parentElement;
-  closeHoldPopup(); closeActionMenus();
-  const rect = item.getBoundingClientRect();
-  const ghost = buildReorderGhost(item, rect);
-  item.style.visibility = 'hidden'; // tetap makan ruang di tempatnya (jadi "lubang" buat digeser-geser)
-  document.body.style.cursor = 'grabbing';
-  flying = { item, ghost, container, scope, offsetX: e.clientX-rect.left, offsetY: e.clientY-rect.top, w: rect.width, h: rect.height, pointerId: e.pointerId, settled: false };
-  document.addEventListener('pointermove', onFlyMove);
-  document.addEventListener('pointerup', endCustomDrag);
-  document.addEventListener('pointercancel', endCustomDrag);
-}
-function onFlyMove(e){
-  if(!flying) return;
-  const { item, ghost, container, scope, offsetX, offsetY, w, h } = flying;
-  const x = e.clientX - offsetX, y = e.clientY - offsetY;
-  ghost.style.left = x+'px';
-  ghost.style.top = y+'px';
-  const cx = x + w/2, cy = y + h/2;
-  const { closest, before } = nearestReorderSibling(container, cx, cy, item, scope);
-  if(!closest) return;
-  const target = before ? closest : closest.nextSibling;
-  if(item.nextSibling === target || item === target) return; // posisinya udah pas, gak usah geser ulang
-  const prevRects = captureReorderRects(container, scope);
-  closest.parentNode.insertBefore(item, target);
-  flipReorderSiblings(container, scope, prevRects);
-}
-function endCustomDrag(){
-  if(!flying || flying.settled) return;
-  flying.settled = true;
-  const { item, ghost, container, scope, pointerId } = flying;
-  document.removeEventListener('pointermove', onFlyMove);
-  document.removeEventListener('pointerup', endCustomDrag);
-  document.removeEventListener('pointercancel', endCustomDrag);
-  document.body.style.cursor = '';
-  if(!item.isConnected){ // jaga-jaga: kalau item ilang dari DOM di tengah drag, jangan sampai "lompat" ke posisi ngaco
-    ghost.remove();
-    flying = null;
-    return;
-  }
-  // "mendarat": ghost meluncur pelan ke slot terakhir item (posisi aslinya, yang masih hidden), baru abis itu ditampakin lagi
-  const naturalRect = item.getBoundingClientRect();
-  ghost.classList.remove('active');
-  ghost.style.transition = 'left .18s cubic-bezier(.2,.8,.2,1), top .18s cubic-bezier(.2,.8,.2,1), width .18s, height .18s';
-  ghost.style.left = naturalRect.left+'px';
-  ghost.style.top = naturalRect.top+'px';
-  ghost.style.width = naturalRect.width+'px';
-  ghost.style.height = naturalRect.height+'px';
-  let done = false;
-  const finish = ()=>{
-    if(done) return; done = true;
-    ghost.remove();
-    item.style.visibility = '';
-    flying = null;
-    commitReorder(container, scope);
-  };
-  ghost.addEventListener('transitionend', finish, { once:true });
-  setTimeout(finish, 260); // jaga-jaga kalau transitionend gak nembak (misalnya gak ada perpindahan sama sekali)
-}
-
-/* ================= KARTU & BARIS TABEL: tahan lama (mobile) atau klik kanan (desktop) buat munculin opsi Edit/Hapus ================= */
+/* ================= KARTU & BARIS TABEL: tekan sejenak (tap) -> langsung Edit.
+   Tahan lama (mobile) atau klik kanan (desktop) -> muncul board Naik/Turun/Edit/Hapus. ================= */
 function bindCardHold(containerId){
   const el = document.getElementById(containerId);
   if(!el) return;
   el.querySelectorAll('[data-hold-edit]').forEach(card=>{
     if(card.dataset.holdBound) return;
     card.dataset.holdBound = '1';
-    // Tekan sejenak lalu lepas (sebelum HOLD_MS) -> muncul board Edit/Hapus/Naik/Turun.
-    // Tahan sampai lewat HOLD_MS (gak usah gerak dulu) -> otomatis "keangkat" di tempat, tinggal ikutin jari/kursor mau digeser ke mana.
-    const HOLD_MS = 420;
-    let lastEvt = null, dragFired = false;
-    const trackMove = (e)=>{ lastEvt = e; };
+    const HOLD_MS = 420; // lama tahan sebelum board opsi muncul
+    const MOVE_TOLERANCE = 10; // px; kalau geser jari/kursor lebih dari ini, dianggap scroll, batalkan
+    let startX = 0, startY = 0, moved = false, opened = false;
+    const trackMove = (e)=>{
+      if(Math.hypot(e.clientX-startX, e.clientY-startY) > MOVE_TOLERANCE) moved = true;
+    };
     const start = (e)=>{
       if(e.pointerType === 'mouse' && e.button !== 0) return; // cuma klik kiri
-      lastEvt = e;
-      dragFired = false;
+      startX = e.clientX; startY = e.clientY;
+      moved = false; opened = false;
       card.classList.add('card-pressed');
       try{ card.setPointerCapture(e.pointerId); }catch(err){}
       card.addEventListener('pointermove', trackMove);
       card._holdTimer = setTimeout(()=>{
         card._holdTimer = null;
+        if(moved) return;
+        opened = true;
         card.classList.remove('card-pressed');
-        card.removeEventListener('pointermove', trackMove);
-        if(card.dataset.reorderScope !== undefined){
-          dragFired = true;
-          try{ card.releasePointerCapture(lastEvt.pointerId); }catch(err){}
-          beginCustomDrag(card, lastEvt);
-        }
+        openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete'));
       }, HOLD_MS);
     };
     const stop = (e)=>{
@@ -977,10 +816,12 @@ function bindCardHold(containerId){
       card.classList.remove('card-pressed');
       card.removeEventListener('pointermove', trackMove);
       if(e){ try{ card.releasePointerCapture(e.pointerId); }catch(err){} }
-      if(!dragFired && e && e.type === 'pointerup'){
-        openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete'));
+      // Lepas cepat (belum sempat jadi "tahan") dan gak digeser -> anggap tap -> langsung buka form Edit.
+      if(!opened && !moved && e && e.type === 'pointerup'){
+        const editCall = card.getAttribute('data-hold-edit');
+        if(editCall){ try{ (0, eval)(editCall); }catch(err){} }
       }
-      dragFired = false;
+      opened = false; moved = false;
     };
     card.addEventListener('pointerdown', start);
     card.addEventListener('pointerup', stop);
@@ -988,7 +829,7 @@ function bindCardHold(containerId){
     card.addEventListener('pointercancel', ()=>stop());
     card.addEventListener('contextmenu', e=>{
       e.preventDefault();
-      dragFired = true; // biar pointerup abis ini gak buka board dobel
+      opened = true;
       stop();
       openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete'));
     });
