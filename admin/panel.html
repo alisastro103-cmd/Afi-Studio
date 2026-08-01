@@ -245,8 +245,7 @@
     </div>
     <div class="side-item active" data-view="dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</div>
     <div class="side-item" data-view="models"><i data-lucide="box"></i>Models</div>
-    <div class="side-item" data-view="kategori"><i data-lucide="tag"></i>Kategori Model</div>
-    <div class="side-item" data-view="kategori-app"><i data-lucide="layers"></i>Kategori Aplikasi</div>
+    <div class="side-item" data-view="kategori"><i data-lucide="tag"></i>Kategori</div>
     <div class="side-item" data-view="videos"><i data-lucide="clapperboard"></i>Video &amp; Tutorial</div>
     <div class="side-item" data-view="banner"><i data-lucide="image"></i>Banner</div>
     <div class="side-item" data-view="marquee"><i data-lucide="megaphone"></i>Marquee / Info</div>
@@ -310,8 +309,9 @@
         <div class="data-grid" id="models-grid"></div>
       </section>
 
-      <!-- KATEGORI MODEL -->
+      <!-- KATEGORI (Kategori Model + Kategori Aplikasi digabung, tetap terpisah datanya) -->
       <section class="section-view" id="view-kategori">
+        <h3 class="text-sm font-bold mb-2">Kategori Model</h3>
         <div class="panel overflow-x-auto data-table-wrap">
           <table>
             <thead><tr><th>No</th><th>Nama Kategori</th></tr></thead>
@@ -319,10 +319,8 @@
           </table>
         </div>
         <div class="data-grid" id="kategori-grid"></div>
-      </section>
 
-      <!-- KATEGORI APLIKASI (Target App) -->
-      <section class="section-view" id="view-kategori-app">
+        <h3 class="text-sm font-bold mb-2 mt-5">Kategori Aplikasi</h3>
         <div class="panel overflow-x-auto data-table-wrap">
           <table>
             <thead><tr><th>No</th><th>Nama Kategori Aplikasi</th></tr></thead>
@@ -448,10 +446,7 @@
   </div>
   <div class="action-menu">
     <button class="btn-add-circle" id="global-fab-btn" aria-label="Tambah"><i data-lucide="plus"></i></button>
-    <div class="action-dropdown" id="global-fab-dropdown">
-      <button onclick="closeActionMenus(); openMemberForm()"><i data-lucide="users"></i>Tambah Member</button>
-      <button onclick="closeActionMenus(); addNewGenFolder()"><i data-lucide="folder-plus"></i>Gen Baru</button>
-    </div>
+    <div class="action-dropdown" id="global-fab-dropdown"></div>
   </div>
 </div><!-- /#app-root -->
 
@@ -570,18 +565,33 @@ document.querySelectorAll('.side-item[data-view]').forEach(el=>{
   });
 });
 /* --- Tombol tambah (+) mengambang, mengikuti halaman yang sedang aktif --- */
-const FAB_ACTIONS = { models: openModelForm, kategori: openKategoriForm, 'kategori-app': openKategoriAppForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm };
+const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm };
 const globalFab = document.getElementById('global-fab');
 const globalFabBtn = document.getElementById('global-fab-btn');
+const globalFabDropdown = document.getElementById('global-fab-dropdown');
 const genFabWrap = document.getElementById('gen-fab-wrap');
 const genFabBtn = document.getElementById('gen-fab-btn');
+const MEMBER_FAB_DROPDOWN_HTML = `
+      <button onclick="closeActionMenus(); openMemberForm()"><i data-lucide="users"></i>Tambah Member</button>
+      <button onclick="closeActionMenus(); addNewGenFolder()"><i data-lucide="folder-plus"></i>Gen Baru</button>`;
+const KATEGORI_FAB_DROPDOWN_HTML = `
+      <button onclick="closeActionMenus(); openKategoriForm()"><i data-lucide="tag"></i>Kategori Model</button>
+      <button onclick="closeActionMenus(); openKategoriAppForm()"><i data-lucide="layers"></i>Kategori Aplikasi</button>`;
 function updateFab(view){
   closeActionMenus();
   if(view === 'member'){
+    globalFabDropdown.innerHTML = MEMBER_FAB_DROPDOWN_HTML;
     globalFab.classList.add('show');
     genFabWrap.style.display = 'inline-block';
     globalFabBtn.onclick = ()=> toggleActionMenu(globalFabBtn);
     genFabBtn.onclick = ()=> toggleActionMenu(genFabBtn);
+    if(typeof lucide !== 'undefined') lucide.createIcons();
+  } else if(view === 'kategori'){
+    globalFabDropdown.innerHTML = KATEGORI_FAB_DROPDOWN_HTML;
+    globalFab.classList.add('show');
+    genFabWrap.style.display = 'none';
+    globalFabBtn.onclick = ()=> toggleActionMenu(globalFabBtn);
+    if(typeof lucide !== 'undefined') lucide.createIcons();
   } else if(FAB_ACTIONS[view]){
     globalFab.classList.add('show');
     genFabWrap.style.display = 'none';
@@ -591,7 +601,7 @@ function updateFab(view){
   }
 }
 /* --- TOGGLE TAMPILAN: Tabel <-> Kotak (kartu database), tidak berlaku di Dashboard --- */
-const VIEWS_WITH_TABLE = ['models','kategori','kategori-app','videos','banner','marquee','member','ranking','event'];
+const VIEWS_WITH_TABLE = ['models','kategori','videos','banner','marquee','member','ranking','event'];
 const VIEWS_WITH_SEARCH = ['models','videos','member'];
 const viewToggleBtn = document.getElementById('view-toggle-btn');
 const searchToggleBtn = document.getElementById('search-toggle-btn');
