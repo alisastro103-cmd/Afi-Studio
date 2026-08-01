@@ -792,12 +792,13 @@ function bindCardHold(containerId){
     card.dataset.holdBound = '1';
     const HOLD_MS = 420; // lama tahan sebelum board opsi muncul
     const MOVE_TOLERANCE = 10; // px; kalau geser jari/kursor lebih dari ini, dianggap scroll, batalkan
-    let startX = 0, startY = 0, moved = false, opened = false;
+    let startX = 0, startY = 0, moved = false, opened = false, lastPointerType = 'mouse';
     const trackMove = (e)=>{
       if(Math.hypot(e.clientX-startX, e.clientY-startY) > MOVE_TOLERANCE) moved = true;
     };
     const start = (e)=>{
       if(e.pointerType === 'mouse' && e.button !== 0) return; // cuma klik kiri
+      lastPointerType = e.pointerType;
       startX = e.clientX; startY = e.clientY;
       moved = false; opened = false;
       card.classList.add('card-pressed');
@@ -829,6 +830,12 @@ function bindCardHold(containerId){
     card.addEventListener('pointercancel', ()=>stop());
     card.addEventListener('contextmenu', e=>{
       e.preventDefault();
+      // Di HP, "contextmenu" bisa nyala sendiri dari gesture tahan bawaan browser/OS,
+      // yang timernya beda-beda tiap device dan bisa nyala sebelum HOLD_MS kita.
+      // Itu bikin tap sebentar keanggep "tahan". Makanya jalur ini cuma dipakai
+      // buat klik-kanan mouse asli di desktop; sentuhan tetap ditentukan oleh
+      // timer HOLD_MS kita sendiri di atas, biar konsisten.
+      if(lastPointerType !== 'mouse') return;
       opened = true;
       stop();
       openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete'));
