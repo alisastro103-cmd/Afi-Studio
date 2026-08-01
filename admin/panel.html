@@ -218,6 +218,12 @@
   [data-hold-edit] { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; cursor:pointer; transition: transform .15s, opacity .15s, background-color .15s; }
   [data-hold-edit].card-pressed { transform: scale(0.96); opacity: 0.7; }
   tr[data-hold-edit].card-pressed { transform:none; opacity:1; background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+  /* --- Seret buat ubah urutan: klik kiri mouse tahan lalu geser (tanpa nunggu, langsung seret) --- */
+  [data-reorder-idx] { cursor: grab; }
+  [data-reorder-idx].dragging { opacity: .35; cursor: grabbing; }
+  [data-reorder-idx] img { -webkit-user-drag: none; }
+  .action-dropdown button.reorder-btn i { color: var(--text-sub); }
 </style>
 </head>
 <body class="h-full">
@@ -785,16 +791,108 @@ function toggleActionMenu(btn){
 document.addEventListener('click', e=>{ if(!e.target.closest('.action-menu')) closeActionMenus(); });
 document.querySelector('main').addEventListener('scroll', closeActionMenus);
 
+/* ================= URUTAN: seret (mouse tahan+geser) ATAU tombol Naik/Turun di board Edit/Hapus ================= */
+// "scope" nunjukin array asalnya: 'models','videos','banner','marquee','ranking', atau 'member:<gen>' khusus member
+// (member dipisah per generasi karena datanya memang disimpan per folder generasi, bukan satu array besar).
+const REORDER_RENDERERS = { models:()=>renderModels(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember() };
+function reorderArrayRef(scope){
+  if(scope && scope.startsWith('member:')) return DB.member[scope.slice(7)];
+  return DB[scope];
+}
+function reorderPersistKey(scope){ return scope && scope.startsWith('member:') ? 'member' : scope; }
+function reorderRender(scope){
+  const key = reorderPersistKey(scope);
+  (REORDER_RENDERERS[key] || function(){})();
+  renderDashboard();
+}
+// Cari elemen tetangga (baris tabel ATAU kartu grid) yang paling dekat sama posisi kursor,
+// sekalian nentuin taruh SEBELUM atau SESUDAH elemen itu. Dipakai buat mode tabel (1 kolom)
+// maupun mode kotak/grid (banyak kolom per baris).
+function nearestReorderSibling(container, x, y, dragItem, scope){
+  const siblings = Array.from(container.querySelectorAll(`[data-reorder-scope="${scope}"]`)).filter(el=>el!==dragItem);
+  let closest = null, closestDist = Infinity, before = true;
+  siblings.forEach(sib=>{
+    const r = sib.getBoundingClientRect();
+    const cx = r.left + r.width/2, cy = r.top + r.height/2;
+    const dist = Math.hypot(x-cx, y-cy);
+    if(dist < closestDist){
+      closestDist = dist;
+      closest = sib;
+      const sameRow = y >= r.top && y <= r.bottom;
+      before = sameRow ? (x < cx) : (y < cy);
+    }
+  });
+  return { closest, before };
+}
+let reorderDragEl = null, reorderDragScope = null;
+async function commitReorder(container, scope){
+  const arr = reorderArrayRef(scope);
+  if(!arr) return;
+  const items = Array.from(container.querySelectorAll(`[data-reorder-scope="${scope}"]`));
+  const newOrder = items.map(el=> arr[parseInt(el.dataset.reorderIdx,10)]);
+  if(newOrder.length !== arr.length){ toast('Kosongkan pencarian dulu buat ubah urutan'); reorderRender(scope); return; } // lagi difilter pencarian, batalkan biar data gak hilang
+  const prev = arr.slice();
+  arr.splice(0, arr.length, ...newOrder);
+  reorderRender(scope);
+  const ok = await persist(reorderPersistKey(scope));
+  if(ok) toast('Urutan disimpan');
+  else { arr.splice(0, arr.length, ...prev); reorderRender(scope); toast('Gagal menyimpan urutan'); }
+}
+async function moveReorderItem(scope, idx, dir){
+  const arr = reorderArrayRef(scope);
+  if(!arr) return;
+  const j = idx + dir;
+  if(j < 0 || j >= arr.length) return;
+  const prev = arr.slice();
+  const tmp = arr[idx]; arr[idx] = arr[j]; arr[j] = tmp;
+  reorderRender(scope);
+  const ok = await persist(reorderPersistKey(scope));
+  if(!ok){ arr.splice(0, arr.length, ...prev); reorderRender(scope); toast('Gagal menyimpan urutan'); }
+}
+// Delegasi event di level kontainer (sekali pasang aja, tahan biarpun isinya di-render ulang berkali-kali).
+function bindReorderContainer(containerId){
+  const container = document.getElementById(containerId);
+  if(!container || container.dataset.reorderBound) return;
+  container.dataset.reorderBound = '1';
+  container.addEventListener('dragstart', e=>{
+    const item = e.target.closest('[data-reorder-idx]');
+    if(!item || !container.contains(item)){ e.preventDefault(); return; }
+    reorderDragEl = item;
+    reorderDragScope = item.dataset.reorderScope;
+    item.classList.add('dragging');
+    if(item._holdTimer){ clearTimeout(item._holdTimer); item._holdTimer = null; }
+    item.classList.remove('card-pressed');
+    closeHoldPopup(); closeActionMenus();
+    e.dataTransfer.effectAllowed = 'move';
+    try{ e.dataTransfer.setData('text/plain', ''); }catch(err){}
+  });
+  container.addEventListener('dragover', e=>{
+    if(!reorderDragEl) return;
+    e.preventDefault();
+    const { closest, before } = nearestReorderSibling(container, e.clientX, e.clientY, reorderDragEl, reorderDragScope);
+    if(!closest) return;
+    if(before) closest.parentNode.insertBefore(reorderDragEl, closest);
+    else closest.parentNode.insertBefore(reorderDragEl, closest.nextSibling);
+  });
+  container.addEventListener('dragend', e=>{
+    const item = e.target.closest('[data-reorder-idx]') || reorderDragEl;
+    if(item) item.classList.remove('dragging');
+    const scope = reorderDragScope;
+    reorderDragEl = null; reorderDragScope = null;
+    if(scope) commitReorder(container, scope);
+  });
+}
+
 /* ================= KARTU & BARIS TABEL: tahan lama (mobile) atau klik kanan (desktop) buat munculin opsi Edit/Hapus ================= */
 function bindCardHold(containerId){
   const el = document.getElementById(containerId);
   if(!el) return;
+  bindReorderContainer(containerId);
   el.querySelectorAll('[data-hold-edit]').forEach(card=>{
     if(card.dataset.holdBound) return;
     card.dataset.holdBound = '1';
-    let timer=null;
-    const start = ()=>{ card.classList.add('card-pressed'); timer=setTimeout(()=>{ timer=null; openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete')); }, 480); };
-    const cancel = ()=>{ if(timer){ clearTimeout(timer); timer=null; } card.classList.remove('card-pressed'); };
+    const start = ()=>{ card.classList.add('card-pressed'); card._holdTimer=setTimeout(()=>{ card._holdTimer=null; openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete')); }, 480); };
+    const cancel = ()=>{ if(card._holdTimer){ clearTimeout(card._holdTimer); card._holdTimer=null; } card.classList.remove('card-pressed'); };
     card.addEventListener('pointerdown', start);
     card.addEventListener('pointerup', cancel);
     card.addEventListener('pointerleave', cancel);
@@ -811,9 +909,20 @@ function openCardActions(card, editCall, deleteCall){
   document.querySelectorAll('.hold-popup').forEach(p=>p.remove());
   document.querySelectorAll('.card-pressed').forEach(c=>{ if(c!==card) c.classList.remove('card-pressed'); });
   document.removeEventListener('click', outsideCloseHoldPopup, true);
+  // Tombol Naik/Turun: cuma muncul kalau ada tetangga ke arah itu (baris paling atas gak ada "Naik", paling bawah gak ada "Turun").
+  const scope = card.dataset.reorderScope;
+  const idx = card.dataset.reorderIdx !== undefined ? parseInt(card.dataset.reorderIdx,10) : NaN;
+  let moveBtns = '';
+  if(scope !== undefined && !isNaN(idx)){
+    const arr = reorderArrayRef(scope);
+    const len = arr ? arr.length : 0;
+    if(idx > 0) moveBtns += `<button class="reorder-btn" onclick="closeHoldPopup(); moveReorderItem('${scope}', ${idx}, -1)"><i data-lucide="arrow-up"></i>Naik</button>`;
+    if(idx < len - 1) moveBtns += `<button class="reorder-btn" onclick="closeHoldPopup(); moveReorderItem('${scope}', ${idx}, 1)"><i data-lucide="arrow-down"></i>Turun</button>`;
+  }
   const pop = document.createElement('div');
   pop.className = 'action-dropdown hold-popup open';
   pop.innerHTML = `
+    ${moveBtns}
     <button onclick="closeHoldPopup(); ${editCall}"><i data-lucide="pencil"></i>Edit</button>
     <button class="danger" onclick="closeHoldPopup(); ${deleteCall}"><i data-lucide="trash-2"></i>Hapus</button>`;
   document.body.appendChild(pop);
@@ -845,7 +954,7 @@ function renderModels(){
   const q = (document.getElementById('models-search').value||'').toLowerCase();
   const rows = DB.models.map((m,i)=>({m,i})).filter(({m})=> !q || m.name.toLowerCase().includes(q));
   document.getElementById('models-tbody').innerHTML = rows.map(({m,i},n)=>`
-    <tr data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
+    <tr draggable="true" data-reorder-scope="models" data-reorder-idx="${i}" data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
       <td class="row-num">${n+1}</td>
       <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(m.thumb))}</td>
       <td class="judul-col" style="font-weight:700;">${esc(m.name)}</td>
@@ -854,7 +963,7 @@ function renderModels(){
       <td class="chip-col">${m.app_target ? `<span class="chip">${esc(m.app_target)}</span>` : '-'}</td>
     </tr>`).join('') || `<tr><td colspan="6" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('models-grid', rows, ({m,i})=>`
-    <div class="mimic-model-card" data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
+    <div class="mimic-model-card" draggable="true" data-reorder-scope="models" data-reorder-idx="${i}" data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
       <img class="thumb" src="${esc(m.thumb)}" onerror="this.style.opacity=0.3">
       ${m.app_target ? `<span class="badge">${esc(m.app_target)}</span>` : ''}
       <div class="body">
@@ -919,7 +1028,7 @@ function renderVideos(){
   const q = (document.getElementById('videos-search').value||'').toLowerCase();
   const rows = DB.videos.map((v,i)=>({v,i})).filter(({v})=> !q || v.title.toLowerCase().includes(q));
   document.getElementById('videos-tbody').innerHTML = rows.map(({v,i},n)=>`
-    <tr data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
+    <tr draggable="true" data-reorder-scope="videos" data-reorder-idx="${i}" data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
       <td class="row-num">${n+1}</td>
       <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">Thumbnail YouTube</td>
       <td class="cell-ellipsis" style="font-weight:700;">${esc(v.title)}</td>
@@ -927,7 +1036,7 @@ function renderVideos(){
       <td>${esc(v.added)}</td>
     </tr>`).join('') || `<tr><td colspan="5" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('videos-grid', rows, ({v,i})=>`
-    <div class="video-card" data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
+    <div class="video-card" draggable="true" data-reorder-scope="videos" data-reorder-idx="${i}" data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
       <img class="thumb" src="${esc(ytThumb(v.url))}" onerror="this.style.opacity=0.3">
       <div class="body">
         <div class="title">${esc(v.title)}</div>
@@ -976,13 +1085,13 @@ async function saveVideo(idx){
 /* ================= RENDER: BANNER ================= */
 function renderBanner(){
   document.getElementById('banner-tbody').innerHTML = DB.banner.map((b,i)=>`
-    <tr data-hold-edit="openBannerForm(${i})" data-hold-delete="removeItem('banner',${i})">
+    <tr draggable="true" data-reorder-scope="banner" data-reorder-idx="${i}" data-hold-edit="openBannerForm(${i})" data-hold-delete="removeItem('banner',${i})">
       <td class="row-num">${i+1}</td>
       <td class="cell-ellipsis" style="font-size:12px;">${esc(fileName(b.img))}</td>
       <td class="cell-ellipsis">${esc(b.url)}</td>
     </tr>`).join('') || `<tr><td colspan="3" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('banner-grid', DB.banner.map((b,i)=>({b,i})), ({b,i})=>`
-    <div class="video-card" data-hold-edit="openBannerForm(${i})" data-hold-delete="removeItem('banner',${i})">
+    <div class="video-card" draggable="true" data-reorder-scope="banner" data-reorder-idx="${i}" data-hold-edit="openBannerForm(${i})" data-hold-delete="removeItem('banner',${i})">
       <img class="thumb" src="${esc(b.img)}" onerror="this.style.opacity=0.3">
       <div class="body">
         <div style="font-size:11px; color:var(--text-sub); word-break:break-all;">${esc(b.url)}</div>
@@ -1019,12 +1128,12 @@ async function saveBanner(idx){
 /* ================= RENDER: MARQUEE ================= */
 function renderMarquee(){
   document.getElementById('marquee-tbody').innerHTML = DB.marquee.map((t,i)=>`
-    <tr data-hold-edit="openMarqueeForm(${i})" data-hold-delete="removeItem('marquee',${i})">
+    <tr draggable="true" data-reorder-scope="marquee" data-reorder-idx="${i}" data-hold-edit="openMarqueeForm(${i})" data-hold-delete="removeItem('marquee',${i})">
       <td class="row-num">${i+1}</td>
       <td class="cell-ellipsis">${esc(t)}</td>
     </tr>`).join('') || `<tr><td colspan="2" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('marquee-grid', DB.marquee.map((t,i)=>({t,i})), ({t,i})=>`
-    <div class="panel p-3 data-card" data-hold-edit="openMarqueeForm(${i})" data-hold-delete="removeItem('marquee',${i})">
+    <div class="panel p-3 data-card" draggable="true" data-reorder-scope="marquee" data-reorder-idx="${i}" data-hold-edit="openMarqueeForm(${i})" data-hold-delete="removeItem('marquee',${i})">
       <div class="marquee-card-text">${esc(t)}</div>
     </div>`);
   lucide.createIcons();
@@ -1088,7 +1197,7 @@ function renderMember(){
     DB.member[gen].forEach((m,i)=> rows.push({gen, m, i}));
   });
   document.getElementById('member-tbody').innerHTML = rows.map(({gen,m,i},n)=>`
-    <tr data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
+    <tr draggable="true" data-reorder-scope="member:${gen}" data-reorder-idx="${i}" data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
       <td class="row-num">${n+1}</td>
       <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(m.foto))}</td>
       <td class="cell-ellipsis" style="font-weight:700;">${esc(m.identitas||'')} ${esc(m.nama)}</td>
@@ -1096,7 +1205,7 @@ function renderMember(){
       <td style="font-size:12px; color:var(--text-sub);">${memberInfoValues(m).map(esc).join('<br>')}</td>
     </tr>`).join('') || `<tr><td colspan="5" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('member-grid', rows, ({gen,m,i})=>`
-    <div class="mimic-id-card" data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
+    <div class="mimic-id-card" draggable="true" data-reorder-scope="member:${gen}" data-reorder-idx="${i}" data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
       <img class="photo" src="${esc(m.foto)}" onerror="this.style.opacity=0.3">
       <div class="namebar"><span>${esc(m.identitas||'')} ${esc(m.nama)}</span></div>
       <div class="meta">
@@ -1186,7 +1295,7 @@ async function removeMember(gen, idx){
 /* ================= RENDER: RANKING ================= */
 function renderRanking(){
   document.getElementById('ranking-tbody').innerHTML = DB.ranking.map((r,i)=>`
-    <tr data-hold-edit="openRankingForm(${i})" data-hold-delete="removeItem('ranking',${i})">
+    <tr draggable="true" data-reorder-scope="ranking" data-reorder-idx="${i}" data-hold-edit="openRankingForm(${i})" data-hold-delete="removeItem('ranking',${i})">
       <td class="row-num">${i+1}</td>
       <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(r.gambar))}</td>
       <td class="chip-col"><span class="chip">${esc(r.juara)}</span></td>
@@ -1194,7 +1303,7 @@ function renderRanking(){
       <td class="cell-ellipsis">${esc(r.caption)}</td>
     </tr>`).join('') || `<tr><td colspan="5" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('ranking-grid', DB.ranking.map((r,i)=>({r,i})), ({r,i})=>`
-    <div class="ranking-card" data-hold-edit="openRankingForm(${i})" data-hold-delete="removeItem('ranking',${i})">
+    <div class="ranking-card" draggable="true" data-reorder-scope="ranking" data-reorder-idx="${i}" data-hold-edit="openRankingForm(${i})" data-hold-delete="removeItem('ranking',${i})">
       <img class="photo" src="${esc(r.gambar)}" onerror="this.style.opacity=0.3">
       ${r.juara ? `<span class="badge">${esc(r.juara)}</span>` : ''}
       <div class="body">
