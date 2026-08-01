@@ -17,16 +17,37 @@ let activeCategory = "Semua";
 // "ada duluan" walau belum dipasang ke model manapun.
 let CATEGORY_MASTER = [];
 
+// Daftar kategori khusus untuk "Target Aplikasi" (Viontri, Prisma3D, Blender,
+// Mine-Imator, C4D, Lainnya). Daftar ini SELALU muncul sebagai tab filter di
+// halaman Models, walau belum ada satupun model yang pakai kategori tsb —
+// disamakan dengan pilihan Target App di Panel Admin biar konsisten.
+const APP_TARGET_CATEGORIES = ["Viontri", "Prisma3D", "Blender", "Mine-Imator", "C4D", "Lainnya"];
+
+// Ambil daftar kategori master (custom) dari categories.json lewat API,
+// supaya kategori yang diatur admin lewat Panel Admin ikut tampil di sini
+// walau belum dipasang ke model manapun.
+async function loadCategories() {
+    try {
+        const res = await fetch('/api/data/categories');
+        const data = await res.json();
+        CATEGORY_MASTER = Array.isArray(data) ? data : [];
+    } catch (err) {
+        console.error('Gagal memuat categories.json:', err);
+        CATEGORY_MASTER = [];
+    }
+}
+
 // Hitung ulang daftar kategori dari: (1) kategori master custom dari admin,
 // (2) kategori yang beneran dipakai di data models.json, digabung & diurutkan,
-// lalu (3) nilai "Target App" tiap model ditaruh sebagai tab tambahan DI BAWAH
-// kategori di atas (supaya Target App ikut bisa dicari/difilter di Models).
+// lalu (3) daftar kategori khusus Target Aplikasi (selalu tampil semua) plus
+// nilai "Target App" lain yang mungkin dipakai model tapi belum ada di daftar
+// tsb, ditaruh sebagai tab tambahan DI BAWAH kategori di atas.
 function recomputeFilters() {
     const catSet = new Set(CATEGORY_MASTER);
     MODELS.forEach(m => {
         (m.category || []).forEach(c => c && catSet.add(c));
     });
-    const appTargetSet = new Set();
+    const appTargetSet = new Set(APP_TARGET_CATEGORIES.filter(t => !catSet.has(t)));
     MODELS.forEach(m => {
         if (m.app_target && !catSet.has(m.app_target)) appTargetSet.add(m.app_target);
     });
@@ -269,7 +290,13 @@ async function loadModels() {
     // Beri tahu script lain (misal index.html) bahwa MODELS sudah siap
     document.dispatchEvent(new CustomEvent('modelsLoaded'));
 }
-loadModels();
+// Kategori master (categories.json) perlu selesai dimuat dulu sebelum
+// loadModels() menghitung daftar filter, supaya kategori custom dari admin
+// ikut muncul sejak render pertama (bukan menunggu render kedua).
+(async function initModelsAndCategories() {
+    await loadCategories();
+    await loadModels();
+})();
 loadMarquee();
 loadBanner();
 
