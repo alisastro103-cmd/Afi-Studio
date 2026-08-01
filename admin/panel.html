@@ -693,7 +693,10 @@ function toast(msg){
 function openModal(html){
   const wrap = document.createElement('div'); wrap.className='modal-bg'; wrap.id='active-modal';
   wrap.innerHTML = `<div class="modal-box">${html}</div>`;
-  wrap.addEventListener('click', e=>{ if(e.target===wrap) closeModal(); });
+  // Dipasang di tick berikutnya (bukan langsung saat modal dibuka), supaya event "click" susulan
+  // dari gestur yang sama yang membuka modal ini (tap/klik pada kartu) tidak ikut mendarat di sini
+  // dan langsung menutup modal yang baru saja terbuka.
+  setTimeout(()=>{ wrap.addEventListener('click', e=>{ if(e.target===wrap) closeModal(); }); }, 0);
   document.getElementById('modal-root').appendChild(wrap);
   lucide.createIcons();
   requestAnimationFrame(()=>{
