@@ -219,10 +219,14 @@
   [data-hold-edit].card-pressed { transform: scale(0.96); opacity: 0.7; }
   tr[data-hold-edit].card-pressed { transform:none; opacity:1; background: color-mix(in srgb, var(--accent) 22%, transparent); }
 
-  /* --- Seret buat ubah urutan: klik kiri mouse tahan lalu geser (tanpa nunggu, langsung seret) --- */
+  /* --- Seret buat ubah urutan: klik kiri mouse tahan lalu geser (tanpa nunggu, langsung seret) ---
+     Item asli disembunyikan di tempat (visibility:hidden, tetap makan ruang) sambil dipindah-pindah di
+     DOM ngikutin posisi kursor, jadi kartu/baris lain otomatis "geser" ngisi/kasih ruang secara natural.
+     Yang keliatan ngambang ngikutin kursor itu "ghost" (salinan tampilan), biar berasa "diangkat". */
   [data-reorder-idx] { cursor: grab; }
-  [data-reorder-idx].dragging { opacity: .35; cursor: grabbing; }
-  [data-reorder-idx] img { -webkit-user-drag: none; }
+  .reorder-ghost { position:fixed; z-index:300; pointer-events:none; border-radius:10px; overflow:hidden; background:var(--surface); box-shadow:0 18px 34px rgba(0,0,0,.38), 0 4px 10px rgba(0,0,0,.22); transform:scale(1); transition:transform .15s cubic-bezier(.2,.8,.2,1); }
+  .reorder-ghost.active { transform:scale(1.035); }
+  .reorder-ghost table { width:100%; height:100%; border-collapse:collapse; table-layout:fixed; margin:0; background:var(--surface); }
   .action-dropdown button.reorder-btn i { color: var(--text-sub); }
 </style>
 </head>
@@ -824,7 +828,6 @@ function nearestReorderSibling(container, x, y, dragItem, scope){
   });
   return { closest, before };
 }
-let reorderDragEl = null, reorderDragScope = null;
 async function commitReorder(container, scope){
   const arr = reorderArrayRef(scope);
   if(!arr) return;
@@ -849,50 +852,141 @@ async function moveReorderItem(scope, idx, dir){
   const ok = await persist(reorderPersistKey(scope));
   if(!ok){ arr.splice(0, arr.length, ...prev); reorderRender(scope); toast('Gagal menyimpan urutan'); }
 }
-// Delegasi event di level kontainer (sekali pasang aja, tahan biarpun isinya di-render ulang berkali-kali).
-function bindReorderContainer(containerId){
-  const container = document.getElementById(containerId);
-  if(!container || container.dataset.reorderBound) return;
-  container.dataset.reorderBound = '1';
-  container.addEventListener('dragstart', e=>{
-    const item = e.target.closest('[data-reorder-idx]');
-    if(!item || !container.contains(item)){ e.preventDefault(); return; }
-    reorderDragEl = item;
-    reorderDragScope = item.dataset.reorderScope;
-    item.classList.add('dragging');
-    if(item._holdTimer){ clearTimeout(item._holdTimer); item._holdTimer = null; }
-    item.classList.remove('card-pressed');
-    closeHoldPopup(); closeActionMenus();
-    e.dataTransfer.effectAllowed = 'move';
-    try{ e.dataTransfer.setData('text/plain', ''); }catch(err){}
+// Simpen posisi (getBoundingClientRect) semua item satu scope, dipakai buat animasi FLIP
+// (First-Last-Invert-Play) pas item lain harus geser ngasih ruang.
+function captureReorderRects(container, scope){
+  const map = new Map();
+  container.querySelectorAll(`[data-reorder-scope="${scope}"]`).forEach(el=> map.set(el, el.getBoundingClientRect()));
+  return map;
+}
+function flipReorderSiblings(container, scope, prevRects){
+  container.querySelectorAll(`[data-reorder-scope="${scope}"]`).forEach(el=>{
+    const prev = prevRects.get(el);
+    if(!prev) return;
+    const next = el.getBoundingClientRect();
+    const dx = prev.left - next.left, dy = prev.top - next.top;
+    if(!dx && !dy) return;
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    requestAnimationFrame(()=>{
+      el.style.transition = 'transform .18s cubic-bezier(.2,.8,.2,1)';
+      el.style.transform = '';
+    });
+    el.addEventListener('transitionend', function te(){ el.style.transition=''; el.removeEventListener('transitionend', te); }, { once:true });
   });
-  container.addEventListener('dragover', e=>{
-    if(!reorderDragEl) return;
-    e.preventDefault();
-    const { closest, before } = nearestReorderSibling(container, e.clientX, e.clientY, reorderDragEl, reorderDragScope);
-    if(!closest) return;
-    if(before) closest.parentNode.insertBefore(reorderDragEl, closest);
-    else closest.parentNode.insertBefore(reorderDragEl, closest.nextSibling);
-  });
-  container.addEventListener('dragend', e=>{
-    const item = e.target.closest('[data-reorder-idx]') || reorderDragEl;
-    if(item) item.classList.remove('dragging');
-    const scope = reorderDragScope;
-    reorderDragEl = null; reorderDragScope = null;
-    if(scope) commitReorder(container, scope);
-  });
+}
+// Bikin "ghost": salinan tampilan item yang ngambang ngikutin kursor (posisi aslinya cuma
+// disembunyikan di tempat, bukan dipindah, biar tabel/kolomnya gak berantakan).
+function buildReorderGhost(item, rect){
+  const outer = document.createElement('div');
+  outer.className = 'reorder-ghost';
+  outer.style.left = rect.left+'px';
+  outer.style.top = rect.top+'px';
+  outer.style.width = rect.width+'px';
+  outer.style.height = rect.height+'px';
+  if(item.tagName === 'TR'){
+    const table = document.createElement('table');
+    const tbody = document.createElement('tbody');
+    const trClone = item.cloneNode(true);
+    trClone.classList.remove('card-pressed');
+    Array.from(item.children).forEach((td,i)=>{ const w = td.getBoundingClientRect().width; if(trClone.children[i]) trClone.children[i].style.width = w+'px'; });
+    tbody.appendChild(trClone);
+    table.appendChild(tbody);
+    outer.appendChild(table);
+  } else {
+    const clone = item.cloneNode(true);
+    clone.classList.remove('card-pressed');
+    clone.style.width = '100%';
+    clone.style.height = '100%';
+    outer.appendChild(clone);
+  }
+  document.body.appendChild(outer);
+  requestAnimationFrame(()=> outer.classList.add('active'));
+  return outer;
+}
+let flying = null; // { item, ghost, container, scope, offsetX, offsetY, w, h, pointerId, settled }
+function beginCustomDrag(item, e){
+  const scope = item.dataset.reorderScope;
+  if(scope === undefined) return;
+  const container = item.parentElement;
+  closeHoldPopup(); closeActionMenus();
+  const rect = item.getBoundingClientRect();
+  const ghost = buildReorderGhost(item, rect);
+  item.style.visibility = 'hidden'; // tetap makan ruang di tempatnya (jadi "lubang" buat digeser-geser)
+  document.body.style.cursor = 'grabbing';
+  flying = { item, ghost, container, scope, offsetX: e.clientX-rect.left, offsetY: e.clientY-rect.top, w: rect.width, h: rect.height, pointerId: e.pointerId, settled: false };
+  document.addEventListener('pointermove', onFlyMove);
+  document.addEventListener('pointerup', endCustomDrag);
+  document.addEventListener('pointercancel', endCustomDrag);
+}
+function onFlyMove(e){
+  if(!flying) return;
+  const { item, ghost, container, scope, offsetX, offsetY, w, h } = flying;
+  const x = e.clientX - offsetX, y = e.clientY - offsetY;
+  ghost.style.left = x+'px';
+  ghost.style.top = y+'px';
+  const cx = x + w/2, cy = y + h/2;
+  const { closest, before } = nearestReorderSibling(container, cx, cy, item, scope);
+  if(!closest) return;
+  const target = before ? closest : closest.nextSibling;
+  if(item.nextSibling === target || item === target) return; // posisinya udah pas, gak usah geser ulang
+  const prevRects = captureReorderRects(container, scope);
+  closest.parentNode.insertBefore(item, target);
+  flipReorderSiblings(container, scope, prevRects);
+}
+function endCustomDrag(){
+  if(!flying || flying.settled) return;
+  flying.settled = true;
+  const { item, ghost, container, scope, pointerId } = flying;
+  document.removeEventListener('pointermove', onFlyMove);
+  document.removeEventListener('pointerup', endCustomDrag);
+  document.removeEventListener('pointercancel', endCustomDrag);
+  document.body.style.cursor = '';
+  // "mendarat": ghost meluncur pelan ke slot terakhir item (posisi aslinya, yang masih hidden), baru abis itu ditampakin lagi
+  const naturalRect = item.getBoundingClientRect();
+  ghost.classList.remove('active');
+  ghost.style.transition = 'left .18s cubic-bezier(.2,.8,.2,1), top .18s cubic-bezier(.2,.8,.2,1), width .18s, height .18s';
+  ghost.style.left = naturalRect.left+'px';
+  ghost.style.top = naturalRect.top+'px';
+  ghost.style.width = naturalRect.width+'px';
+  ghost.style.height = naturalRect.height+'px';
+  let done = false;
+  const finish = ()=>{
+    if(done) return; done = true;
+    ghost.remove();
+    item.style.visibility = '';
+    flying = null;
+    commitReorder(container, scope);
+  };
+  ghost.addEventListener('transitionend', finish, { once:true });
+  setTimeout(finish, 260); // jaga-jaga kalau transitionend gak nembak (misalnya gak ada perpindahan sama sekali)
 }
 
 /* ================= KARTU & BARIS TABEL: tahan lama (mobile) atau klik kanan (desktop) buat munculin opsi Edit/Hapus ================= */
 function bindCardHold(containerId){
   const el = document.getElementById(containerId);
   if(!el) return;
-  bindReorderContainer(containerId);
   el.querySelectorAll('[data-hold-edit]').forEach(card=>{
     if(card.dataset.holdBound) return;
     card.dataset.holdBound = '1';
-    const start = ()=>{ card.classList.add('card-pressed'); card._holdTimer=setTimeout(()=>{ card._holdTimer=null; openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete')); }, 480); };
-    const cancel = ()=>{ if(card._holdTimer){ clearTimeout(card._holdTimer); card._holdTimer=null; } card.classList.remove('card-pressed'); };
+    const DRAG_THRESHOLD = 6;
+    const start = (e)=>{
+      if(e.pointerType === 'mouse' && e.button !== 0) return; // cuma klik kiri yang mulai tahan/seret
+      card.classList.add('card-pressed');
+      card._holdTimer = setTimeout(()=>{ card._holdTimer=null; openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete')); }, 480);
+      const sx = e.clientX, sy = e.clientY;
+      const watchMove = (e2)=>{
+        if(Math.hypot(e2.clientX-sx, e2.clientY-sy) < DRAG_THRESHOLD) return;
+        card.removeEventListener('pointermove', watchMove);
+        card._cancelWatch = null;
+        if(card._holdTimer){ clearTimeout(card._holdTimer); card._holdTimer=null; }
+        card.classList.remove('card-pressed');
+        if(card.dataset.reorderScope !== undefined) beginCustomDrag(card, e2);
+      };
+      card.addEventListener('pointermove', watchMove);
+      card._cancelWatch = ()=>{ card.removeEventListener('pointermove', watchMove); card._cancelWatch=null; };
+    };
+    const cancel = ()=>{ if(card._holdTimer){ clearTimeout(card._holdTimer); card._holdTimer=null; } card.classList.remove('card-pressed'); if(card._cancelWatch) card._cancelWatch(); };
     card.addEventListener('pointerdown', start);
     card.addEventListener('pointerup', cancel);
     card.addEventListener('pointerleave', cancel);
@@ -954,7 +1048,7 @@ function renderModels(){
   const q = (document.getElementById('models-search').value||'').toLowerCase();
   const rows = DB.models.map((m,i)=>({m,i})).filter(({m})=> !q || m.name.toLowerCase().includes(q));
   document.getElementById('models-tbody').innerHTML = rows.map(({m,i},n)=>`
-    <tr draggable="true" data-reorder-scope="models" data-reorder-idx="${i}" data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
+    <tr data-reorder-scope="models" data-reorder-idx="${i}" data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
       <td class="row-num">${n+1}</td>
       <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(m.thumb))}</td>
       <td class="judul-col" style="font-weight:700;">${esc(m.name)}</td>
@@ -963,7 +1057,7 @@ function renderModels(){
       <td class="chip-col">${m.app_target ? `<span class="chip">${esc(m.app_target)}</span>` : '-'}</td>
     </tr>`).join('') || `<tr><td colspan="6" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('models-grid', rows, ({m,i})=>`
-    <div class="mimic-model-card" draggable="true" data-reorder-scope="models" data-reorder-idx="${i}" data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
+    <div class="mimic-model-card" data-reorder-scope="models" data-reorder-idx="${i}" data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
       <img class="thumb" src="${esc(m.thumb)}" onerror="this.style.opacity=0.3">
       ${m.app_target ? `<span class="badge">${esc(m.app_target)}</span>` : ''}
       <div class="body">
@@ -1028,7 +1122,7 @@ function renderVideos(){
   const q = (document.getElementById('videos-search').value||'').toLowerCase();
   const rows = DB.videos.map((v,i)=>({v,i})).filter(({v})=> !q || v.title.toLowerCase().includes(q));
   document.getElementById('videos-tbody').innerHTML = rows.map(({v,i},n)=>`
-    <tr draggable="true" data-reorder-scope="videos" data-reorder-idx="${i}" data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
+    <tr data-reorder-scope="videos" data-reorder-idx="${i}" data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
       <td class="row-num">${n+1}</td>
       <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">Thumbnail YouTube</td>
       <td class="cell-ellipsis" style="font-weight:700;">${esc(v.title)}</td>
@@ -1036,7 +1130,7 @@ function renderVideos(){
       <td>${esc(v.added)}</td>
     </tr>`).join('') || `<tr><td colspan="5" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('videos-grid', rows, ({v,i})=>`
-    <div class="video-card" draggable="true" data-reorder-scope="videos" data-reorder-idx="${i}" data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
+    <div class="video-card" data-reorder-scope="videos" data-reorder-idx="${i}" data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
       <img class="thumb" src="${esc(ytThumb(v.url))}" onerror="this.style.opacity=0.3">
       <div class="body">
         <div class="title">${esc(v.title)}</div>
@@ -1085,13 +1179,13 @@ async function saveVideo(idx){
 /* ================= RENDER: BANNER ================= */
 function renderBanner(){
   document.getElementById('banner-tbody').innerHTML = DB.banner.map((b,i)=>`
-    <tr draggable="true" data-reorder-scope="banner" data-reorder-idx="${i}" data-hold-edit="openBannerForm(${i})" data-hold-delete="removeItem('banner',${i})">
+    <tr data-reorder-scope="banner" data-reorder-idx="${i}" data-hold-edit="openBannerForm(${i})" data-hold-delete="removeItem('banner',${i})">
       <td class="row-num">${i+1}</td>
       <td class="cell-ellipsis" style="font-size:12px;">${esc(fileName(b.img))}</td>
       <td class="cell-ellipsis">${esc(b.url)}</td>
     </tr>`).join('') || `<tr><td colspan="3" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('banner-grid', DB.banner.map((b,i)=>({b,i})), ({b,i})=>`
-    <div class="video-card" draggable="true" data-reorder-scope="banner" data-reorder-idx="${i}" data-hold-edit="openBannerForm(${i})" data-hold-delete="removeItem('banner',${i})">
+    <div class="video-card" data-reorder-scope="banner" data-reorder-idx="${i}" data-hold-edit="openBannerForm(${i})" data-hold-delete="removeItem('banner',${i})">
       <img class="thumb" src="${esc(b.img)}" onerror="this.style.opacity=0.3">
       <div class="body">
         <div style="font-size:11px; color:var(--text-sub); word-break:break-all;">${esc(b.url)}</div>
@@ -1128,12 +1222,12 @@ async function saveBanner(idx){
 /* ================= RENDER: MARQUEE ================= */
 function renderMarquee(){
   document.getElementById('marquee-tbody').innerHTML = DB.marquee.map((t,i)=>`
-    <tr draggable="true" data-reorder-scope="marquee" data-reorder-idx="${i}" data-hold-edit="openMarqueeForm(${i})" data-hold-delete="removeItem('marquee',${i})">
+    <tr data-reorder-scope="marquee" data-reorder-idx="${i}" data-hold-edit="openMarqueeForm(${i})" data-hold-delete="removeItem('marquee',${i})">
       <td class="row-num">${i+1}</td>
       <td class="cell-ellipsis">${esc(t)}</td>
     </tr>`).join('') || `<tr><td colspan="2" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('marquee-grid', DB.marquee.map((t,i)=>({t,i})), ({t,i})=>`
-    <div class="panel p-3 data-card" draggable="true" data-reorder-scope="marquee" data-reorder-idx="${i}" data-hold-edit="openMarqueeForm(${i})" data-hold-delete="removeItem('marquee',${i})">
+    <div class="panel p-3 data-card" data-reorder-scope="marquee" data-reorder-idx="${i}" data-hold-edit="openMarqueeForm(${i})" data-hold-delete="removeItem('marquee',${i})">
       <div class="marquee-card-text">${esc(t)}</div>
     </div>`);
   lucide.createIcons();
@@ -1197,7 +1291,7 @@ function renderMember(){
     DB.member[gen].forEach((m,i)=> rows.push({gen, m, i}));
   });
   document.getElementById('member-tbody').innerHTML = rows.map(({gen,m,i},n)=>`
-    <tr draggable="true" data-reorder-scope="member:${gen}" data-reorder-idx="${i}" data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
+    <tr data-reorder-scope="member:${gen}" data-reorder-idx="${i}" data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
       <td class="row-num">${n+1}</td>
       <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(m.foto))}</td>
       <td class="cell-ellipsis" style="font-weight:700;">${esc(m.identitas||'')} ${esc(m.nama)}</td>
@@ -1205,7 +1299,7 @@ function renderMember(){
       <td style="font-size:12px; color:var(--text-sub);">${memberInfoValues(m).map(esc).join('<br>')}</td>
     </tr>`).join('') || `<tr><td colspan="5" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('member-grid', rows, ({gen,m,i})=>`
-    <div class="mimic-id-card" draggable="true" data-reorder-scope="member:${gen}" data-reorder-idx="${i}" data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
+    <div class="mimic-id-card" data-reorder-scope="member:${gen}" data-reorder-idx="${i}" data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
       <img class="photo" src="${esc(m.foto)}" onerror="this.style.opacity=0.3">
       <div class="namebar"><span>${esc(m.identitas||'')} ${esc(m.nama)}</span></div>
       <div class="meta">
@@ -1295,7 +1389,7 @@ async function removeMember(gen, idx){
 /* ================= RENDER: RANKING ================= */
 function renderRanking(){
   document.getElementById('ranking-tbody').innerHTML = DB.ranking.map((r,i)=>`
-    <tr draggable="true" data-reorder-scope="ranking" data-reorder-idx="${i}" data-hold-edit="openRankingForm(${i})" data-hold-delete="removeItem('ranking',${i})">
+    <tr data-reorder-scope="ranking" data-reorder-idx="${i}" data-hold-edit="openRankingForm(${i})" data-hold-delete="removeItem('ranking',${i})">
       <td class="row-num">${i+1}</td>
       <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(r.gambar))}</td>
       <td class="chip-col"><span class="chip">${esc(r.juara)}</span></td>
@@ -1303,7 +1397,7 @@ function renderRanking(){
       <td class="cell-ellipsis">${esc(r.caption)}</td>
     </tr>`).join('') || `<tr><td colspan="5" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
   dataGrid('ranking-grid', DB.ranking.map((r,i)=>({r,i})), ({r,i})=>`
-    <div class="ranking-card" draggable="true" data-reorder-scope="ranking" data-reorder-idx="${i}" data-hold-edit="openRankingForm(${i})" data-hold-delete="removeItem('ranking',${i})">
+    <div class="ranking-card" data-reorder-scope="ranking" data-reorder-idx="${i}" data-hold-edit="openRankingForm(${i})" data-hold-delete="removeItem('ranking',${i})">
       <img class="photo" src="${esc(r.gambar)}" onerror="this.style.opacity=0.3">
       ${r.juara ? `<span class="badge">${esc(r.juara)}</span>` : ''}
       <div class="body">
