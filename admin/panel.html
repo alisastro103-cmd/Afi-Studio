@@ -94,11 +94,12 @@
   label { font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color: var(--text-sub); display:block; margin-bottom:5px; }
 
   /* --- Tabel: sembunyikan garis scrollbar bawaan browser, tapi tetap bisa discroll ke samping --- */
-  .data-table-wrap { scrollbar-width:none; -ms-overflow-style:none; }
+  /* --- Tampilan ala Excel: garis kotak di sekeliling tabel + header abu-abu bergaris, biar kelihatan benar-benar seperti tabel/spreadsheet --- */
+  .data-table-wrap { scrollbar-width:none; -ms-overflow-style:none; border:1px solid var(--border); border-radius:10px; overflow-y:hidden; }
   .data-table-wrap::-webkit-scrollbar { display:none; height:0; }
   table { width:auto; border-collapse: collapse; font-size:12.5px; }
-  th { text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-sub); padding:9px 12px; white-space:nowrap; position:relative; border-bottom:1px solid color-mix(in srgb, var(--text-sub) 18%, transparent); }
-  td { padding:10px 12px; vertical-align:middle; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-bottom:1px solid color-mix(in srgb, var(--text-sub) 10%, transparent); border-right:1px solid color-mix(in srgb, var(--text-sub) 10%, transparent); }
+  th { text-align:center; font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:var(--text-sub); padding:9px 12px; white-space:nowrap; position:relative; background: color-mix(in srgb, var(--text-sub) 9%, var(--surface)); border-bottom:1px solid var(--border); border-right:1px solid color-mix(in srgb, var(--text-sub) 18%, transparent); }
+  td { padding:10px 12px; vertical-align:middle; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-bottom:1px solid color-mix(in srgb, var(--text-sub) 12%, transparent); border-right:1px solid color-mix(in srgb, var(--text-sub) 12%, transparent); }
   tbody tr:last-child td { border-bottom:none; }
   /* --- Kolom bisa diatur lebar/jaraknya lewat tarik di pinggir header (tidak ada titik, cukup area tarik tipis) --- */
   .col-resizer { position:absolute; top:0; right:-5px; width:10px; height:100%; cursor:col-resize; z-index:5; touch-action:none; }
@@ -774,14 +775,42 @@ function reorderRender(scope){
   (REORDER_RENDERERS[key] || function(){})();
   renderDashboard();
 }
+// Ambil posisi (rect) elemen kartu/baris yang sedang menempati slot idx tertentu, dari SEMUA
+// tampilan yang ada (mode kotak & mode tabel sekaligus), sebelum urutan datanya diubah.
+function reorderSlotRects(scope, idx){
+  return Array.from(document.querySelectorAll(`[data-reorder-scope="${scope}"][data-reorder-idx="${idx}"]`))
+    .map(el=>el.getBoundingClientRect());
+}
+// FLIP animation: elemen yang sekarang ada di slot "newIdx" digeser dulu ke posisi lamanya
+// (oldRects), lalu dilepas balik ke posisi aslinya lewat transition -> kelihatan meluncur
+// dari posisi lama ke posisi baru, arahnya otomatis ikut posisi asli masing-masing (bukan selalu naik/turun).
+function reorderPlayFlip(scope, newIdx, oldRects){
+  const els = document.querySelectorAll(`[data-reorder-scope="${scope}"][data-reorder-idx="${newIdx}"]`);
+  els.forEach((el, i)=>{
+    const oldRect = oldRects[i];
+    if(!oldRect) return;
+    const newRect = el.getBoundingClientRect();
+    const dx = oldRect.left - newRect.left, dy = oldRect.top - newRect.top;
+    if(!dx && !dy) return;
+    el.style.transition = 'none';
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    requestAnimationFrame(()=>{
+      el.style.transition = 'transform .28s cubic-bezier(.16,1,.3,1)';
+      el.style.transform = '';
+      el.addEventListener('transitionend', function done(){ el.style.transition=''; el.removeEventListener('transitionend', done); }, { once:true });
+    });
+  });
+}
 async function moveReorderItem(scope, idx, dir){
   const arr = reorderArrayRef(scope);
   if(!arr) return;
   const j = idx + dir;
   if(j < 0 || j >= arr.length) return;
   const prev = arr.slice();
+  const rectsAtIdx = reorderSlotRects(scope, idx), rectsAtJ = reorderSlotRects(scope, j);
   const tmp = arr[idx]; arr[idx] = arr[j]; arr[j] = tmp;
   reorderRender(scope);
+  requestAnimationFrame(()=>{ reorderPlayFlip(scope, idx, rectsAtJ); reorderPlayFlip(scope, j, rectsAtIdx); });
   const ok = await persist(reorderPersistKey(scope));
   if(!ok){ arr.splice(0, arr.length, ...prev); reorderRender(scope); toast('Gagal menyimpan urutan'); }
 }
