@@ -215,9 +215,9 @@
   .toast.closing { animation: toastOut .16s ease forwards; }
 
   /* --- Board opsi Edit/Hapus saat kartu (mode kotak) ditahan, ATAU baris tabel ditahan/klik kanan --- */
-  [data-hold-edit] { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; cursor:pointer; transition: transform .15s, opacity .15s, background-color .15s; }
-  [data-hold-edit].card-pressed { transform: scale(0.96); opacity: 0.7; }
-  tr[data-hold-edit].card-pressed { transform:none; opacity:1; background: color-mix(in srgb, var(--accent) 22%, transparent); }
+  [data-hold-edit] { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:none; cursor:pointer; transition: transform .15s, opacity .15s, background-color .15s; }
+  [data-hold-edit].card-pressed { opacity: 0.7; }
+  tr[data-hold-edit].card-pressed { opacity:1; background: color-mix(in srgb, var(--accent) 22%, transparent); }
 
   /* --- Seret buat ubah urutan: klik kiri mouse tahan lalu geser (tanpa nunggu, langsung seret) ---
      Item asli disembunyikan di tempat (visibility:hidden, tetap makan ruang) sambil dipindah-pindah di
@@ -917,6 +917,11 @@ function endCustomDrag(){
   document.removeEventListener('pointerup', endCustomDrag);
   document.removeEventListener('pointercancel', endCustomDrag);
   document.body.style.cursor = '';
+  if(!item.isConnected){ // jaga-jaga: kalau item ilang dari DOM di tengah drag, jangan sampai "lompat" ke posisi ngaco
+    ghost.remove();
+    flying = null;
+    return;
+  }
   // "mendarat": ghost meluncur pelan ke slot terakhir item (posisi aslinya, yang masih hidden), baru abis itu ditampakin lagi
   const naturalRect = item.getBoundingClientRect();
   ghost.classList.remove('active');
@@ -954,6 +959,7 @@ function bindCardHold(containerId){
       lastEvt = e;
       dragFired = false;
       card.classList.add('card-pressed');
+      try{ card.setPointerCapture(e.pointerId); }catch(err){}
       card.addEventListener('pointermove', trackMove);
       card._holdTimer = setTimeout(()=>{
         card._holdTimer = null;
@@ -961,6 +967,7 @@ function bindCardHold(containerId){
         card.removeEventListener('pointermove', trackMove);
         if(card.dataset.reorderScope !== undefined){
           dragFired = true;
+          try{ card.releasePointerCapture(lastEvt.pointerId); }catch(err){}
           beginCustomDrag(card, lastEvt);
         }
       }, HOLD_MS);
@@ -969,6 +976,7 @@ function bindCardHold(containerId){
       if(card._holdTimer){ clearTimeout(card._holdTimer); card._holdTimer=null; }
       card.classList.remove('card-pressed');
       card.removeEventListener('pointermove', trackMove);
+      if(e){ try{ card.releasePointerCapture(e.pointerId); }catch(err){} }
       if(!dragFired && e && e.type === 'pointerup'){
         openCardActions(card, card.getAttribute('data-hold-edit'), card.getAttribute('data-hold-delete'));
       }
@@ -986,11 +994,13 @@ function bindCardHold(containerId){
     });
   });
 }
+let holdPopupOwner = null;
 function openCardActions(card, editCall, deleteCall){
   closeActionMenus();
   document.querySelectorAll('.hold-popup').forEach(p=>p.remove());
   document.querySelectorAll('.card-pressed').forEach(c=>{ if(c!==card) c.classList.remove('card-pressed'); });
-  document.removeEventListener('click', outsideCloseHoldPopup, true);
+  document.removeEventListener('pointerdown', outsideCloseHoldPopup, true);
+  holdPopupOwner = card;
   // Tombol Naik/Turun: cuma muncul kalau ada tetangga ke arah itu (baris paling atas gak ada "Naik", paling bawah gak ada "Turun").
   const scope = card.dataset.reorderScope;
   const idx = card.dataset.reorderIdx !== undefined ? parseInt(card.dataset.reorderIdx,10) : NaN;
@@ -1016,7 +1026,9 @@ function openCardActions(card, editCall, deleteCall){
   pop.style.right = 'auto';
   pop.style.zIndex = 90;
   lucide.createIcons();
-  setTimeout(()=> document.addEventListener('click', outsideCloseHoldPopup, true), 0);
+  // Langsung dipasang (gak pake delay/setTimeout) — pointerdown yang bisa nyampe sini artinya
+  // memang sentuhan/klik BARU (jarinya udah pasti terangkat dulu buat munculin board ini).
+  document.addEventListener('pointerdown', outsideCloseHoldPopup, true);
 }
 function closeHoldPopup(){
   document.querySelectorAll('.hold-popup').forEach(p=>{
@@ -1025,10 +1037,13 @@ function closeHoldPopup(){
     setTimeout(()=>p.remove(), 140);
   });
   document.querySelectorAll('.card-pressed').forEach(c=>c.classList.remove('card-pressed'));
-  document.removeEventListener('click', outsideCloseHoldPopup, true);
+  document.removeEventListener('pointerdown', outsideCloseHoldPopup, true);
+  holdPopupOwner = null;
 }
 function outsideCloseHoldPopup(e){
-  if(!e.target.closest('.hold-popup')) closeHoldPopup();
+  if(e.target.closest && e.target.closest('.hold-popup')) return;
+  if(holdPopupOwner && e.target.closest && e.target.closest('[data-hold-edit]') === holdPopupOwner) return; // ini sentuhan yang sama yang lagi mbuka board ini, jangan langsung ditutup lagi
+  closeHoldPopup();
 }
 
 /* ================= RENDER: MODELS ================= */
