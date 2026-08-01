@@ -94,7 +94,7 @@
   /* --- Kolom teks di form: melebar mengikuti panjang isi saat diketik, biar seluruh teks kelihatan --- */
   .modal-box textarea, .modal-box input[type="text"], .modal-box input:not([type]) { transition: width .12s ease; }
   .modal-box textarea[wrap="off"] { white-space:pre; overflow-x:auto; overflow-y:hidden; }
-  .modal-box textarea:not([wrap="off"]) { resize:none; overflow:hidden; }
+  .modal-box textarea:not([wrap="off"]) { resize:none; overflow:hidden; min-height:40px; line-height:1.4; transition: height .1s ease; }
   .gen-filter { border:none; width:auto; max-width:200px; height:38px; font-weight:700; cursor:pointer; }
   label { font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color: var(--text-sub); display:block; margin-bottom:5px; }
 
@@ -710,8 +710,7 @@ function openModal(html){
   document.getElementById('modal-root').appendChild(wrap);
   lucide.createIcons();
   requestAnimationFrame(()=>{
-    wrap.querySelectorAll('textarea, input[type="text"], input:not([type])').forEach(autoGrowField);
-    wrap.querySelectorAll('textarea:not([wrap="off"])').forEach(autoGrowHeight);
+    wrap.querySelectorAll('textarea').forEach(autoGrowHeight);
   });
 }
 function closeModal(){
@@ -721,37 +720,13 @@ function closeModal(){
   setTimeout(()=>m.remove(), 160);
 }
 
-/* ================= FORM: kolom teks melebar mengikuti panjang isi ================= */
-function shouldAutoGrow(el){
-  if(!el || !el.closest || !el.closest('.modal-box')) return false;
-  if(el.closest('.grid')) return false; // kolom berdampingan (mis. Creator/Converter) biar tidak saling tabrak
-  if(el.tagName === 'TEXTAREA') return el.getAttribute('wrap') === 'off';
-  if(el.tagName === 'INPUT'){
-    const type = (el.type||'text').toLowerCase();
-    return type === 'text' || type === 'url';
-  }
-  return false;
-}
-function autoGrowField(el){
-  if(!shouldAutoGrow(el)) return;
-  const modalBox = el.closest('.modal-box');
-  const contentWidth = el.scrollWidth + 8;
-  const minWidth = 220;
-  const viewportCap = Math.min(window.innerWidth - 64, 760);
-  const targetWidth = Math.max(minWidth, Math.min(contentWidth, viewportCap));
-  el.style.width = targetWidth + 'px';
-  if(modalBox){
-    const boxTarget = Math.min(window.innerWidth - 32, targetWidth + 44);
-    modalBox.style.maxWidth = Math.max(320, boxTarget) + 'px';
-  }
-}
+/* ================= FORM: tinggi textarea ngikutin isi (lebar dibiarkan tetap/konsisten, gak ikut berubah pas ngetik) ================= */
 function autoGrowHeight(el){
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
 }
 document.addEventListener('input', e=>{
-  autoGrowField(e.target);
-  if(e.target.tagName === 'TEXTAREA' && e.target.getAttribute('wrap') !== 'off') autoGrowHeight(e.target);
+  if(e.target.tagName === 'TEXTAREA') autoGrowHeight(e.target);
 });
 function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
 function ytThumb(url){
@@ -1090,7 +1065,7 @@ function openModelForm(idx){
     <h3 class="text-sm font-bold mb-4">${isEdit?'Edit':'Tambah'} Model</h3>
     <div class="flex flex-col gap-3">
       <div><label>Nama</label><input id="f-name" value="${esc(m.name)}"></div>
-      <div><label>Caption</label><textarea id="f-caption" rows="2">${esc(m.caption)}</textarea></div>
+      <div><label>Caption</label><textarea id="f-caption" rows="1">${esc(m.caption)}</textarea></div>
       <div class="grid grid-cols-2 gap-3">
         <div><label>Creator</label><input id="f-creator" value="${esc(m.creator)}"></div>
         <div><label>Converter</label><input id="f-converter" value="${esc(m.converter)}"></div>
@@ -1252,7 +1227,7 @@ function openMarqueeForm(idx){
   const t = isEdit ? DB.marquee[idx] : '';
   openModal(`
     <h3 class="text-sm font-bold mb-4">${isEdit?'Edit':'Tambah'} Teks Marquee</h3>
-    <div><label>Teks</label><textarea id="f-marquee" rows="2">${esc(t)}</textarea></div>
+    <div><label>Teks</label><textarea id="f-marquee" rows="1">${esc(t)}</textarea></div>
     <div class="flex justify-end gap-2 mt-5">
       <button class="btn btn-outline" onclick="closeModal()">Batal</button>
       <button class="btn btn-accent" onclick="saveMarquee(${isEdit?idx:'undefined'})">Simpan</button>
@@ -1440,7 +1415,7 @@ function openRankingForm(idx){
         </div>
       </div>
       <div><label>Nama Pemenang</label><textarea id="f-rnama" rows="1">${esc(r.nama)}</textarea></div>
-      <div><label>Caption</label><textarea id="f-rcaption" rows="2">${esc(r.caption)}</textarea></div>
+      <div><label>Caption</label><textarea id="f-rcaption" rows="1">${esc(r.caption)}</textarea></div>
       <div><label>URL Gambar</label><textarea id="f-rgambar" rows="1">${esc(r.gambar)}</textarea></div>
     </div>
     <div class="flex justify-end gap-2 mt-5">
