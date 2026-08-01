@@ -798,6 +798,7 @@ function bindCardHold(containerId){
     };
     const start = (e)=>{
       if(e.pointerType === 'mouse' && e.button !== 0) return; // cuma klik kiri
+      if(e.cancelable) e.preventDefault(); // cegah event "click" susulan dari sentuhan, yang bisa jatuh di overlay modal dan langsung nutup modal yang baru kebuka
       lastPointerType = e.pointerType;
       startX = e.clientX; startY = e.clientY;
       moved = false; opened = false;
