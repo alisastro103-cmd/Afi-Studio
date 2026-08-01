@@ -17,11 +17,13 @@ let activeCategory = "Semua";
 // "ada duluan" walau belum dipasang ke model manapun.
 let CATEGORY_MASTER = [];
 
-// Daftar kategori khusus untuk "Target Aplikasi" (Viontri, Prisma3D, Blender,
-// Mine-Imator, C4D, Lainnya). Daftar ini SELALU muncul sebagai tab filter di
-// halaman Models, walau belum ada satupun model yang pakai kategori tsb —
-// disamakan dengan pilihan Target App di Panel Admin biar konsisten.
-const APP_TARGET_CATEGORIES = ["Viontri", "Prisma3D", "Blender", "Mine-Imator", "C4D", "Lainnya"];
+// Kategori khusus "Target Aplikasi" (Prisma3D, Mine-Imator, Blender, Viontri,
+// C4D, Lainnya) — ini BARIS TERPISAH dari kategori model biasa di atas, dan
+// datanya diatur sendiri lewat Panel Admin > Kategori Aplikasi (tersimpan di
+// Redis/appcategories.json lewat loadAppCategories()), BUKAN daftar tetap di kode.
+let APP_CATEGORIES = ["Semua"];
+let activeAppCategory = "Semua";
+let APP_CATEGORY_MASTER = [];
 
 // Ambil daftar kategori master (custom) dari categories.json lewat API,
 // supaya kategori yang diatur admin lewat Panel Admin ikut tampil di sini
@@ -37,25 +39,42 @@ async function loadCategories() {
     }
 }
 
-// Hitung ulang daftar kategori dari: (1) kategori master custom dari admin,
-// (2) kategori yang beneran dipakai di data models.json, digabung & diurutkan,
-// lalu (3) daftar kategori khusus Target Aplikasi (selalu tampil semua) plus
-// nilai "Target App" lain yang mungkin dipakai model tapi belum ada di daftar
-// tsb, ditaruh sebagai tab tambahan DI BAWAH kategori di atas.
+// Ambil daftar kategori Target Aplikasi dari Panel Admin (Kategori Aplikasi),
+// disimpan terpisah dari kategori model biasa lewat /api/data/appcategories.
+async function loadAppCategories() {
+    try {
+        const res = await fetch('/api/data/appcategories');
+        const data = await res.json();
+        APP_CATEGORY_MASTER = Array.isArray(data) ? data : [];
+    } catch (err) {
+        console.error('Gagal memuat app-categories.json:', err);
+        APP_CATEGORY_MASTER = [];
+    }
+}
+
+// Hitung ulang daftar kategori model biasa dari: (1) kategori master custom
+// dari admin, (2) kategori yang beneran dipakai di data models.json — digabung & diurutkan.
 function recomputeFilters() {
     const catSet = new Set(CATEGORY_MASTER);
     MODELS.forEach(m => {
         (m.category || []).forEach(c => c && catSet.add(c));
     });
-    const appTargetSet = new Set(APP_TARGET_CATEGORIES.filter(t => !catSet.has(t)));
-    MODELS.forEach(m => {
-        if (m.app_target && !catSet.has(m.app_target)) appTargetSet.add(m.app_target);
-    });
     CATEGORIES = [
         "Semua",
         ...Array.from(catSet).sort((a, b) => a.localeCompare(b)),
-        ...Array.from(appTargetSet).sort((a, b) => a.localeCompare(b)),
     ];
+}
+
+// Hitung ulang daftar kategori Target Aplikasi dari: (1) urutan yang diatur
+// admin lewat Panel Admin > Kategori Aplikasi (urutan dipertahankan APA ADANYA,
+// tidak diurutkan ulang, biar sesuai urutan yang diatur admin), lalu (2) nilai
+// app_target lain yang mungkin dipakai model tapi belum ada di daftar tsb.
+function recomputeAppFilters() {
+    const appSet = new Set(APP_CATEGORY_MASTER);
+    MODELS.forEach(m => {
+        if (m.app_target) appSet.add(m.app_target);
+    });
+    APP_CATEGORIES = ["Semua", ...Array.from(appSet)];
 }
 
 // Merender tombol filter kategori
@@ -70,6 +89,18 @@ function renderCategoryButtons() {
     `).join('');
 }
 
+// Merender tombol filter kategori Target Aplikasi (baris terpisah)
+function renderAppCategoryButtons() {
+    const container = document.getElementById('app-category-filter');
+    if (!container) return;
+    container.innerHTML = APP_CATEGORIES.map(cat => `
+        <button class="filter-btn ${activeAppCategory === cat ? 'active' : ''}" 
+                onclick="filterByAppCategory('${cat}')">
+            ${cat}
+        </button>
+    `).join('');
+}
+
 // Fungsi filter berdasarkan kategori
 function filterByCategory(cat) {
     activeCategory = cat;
@@ -78,6 +109,15 @@ function filterByCategory(cat) {
         titleElement.textContent = cat.toLowerCase() === "semua" ? "SEMUA ITEM" : cat.toUpperCase();
     }
     renderCategoryButtons();
+    const searchInput = document.getElementById('search-input');
+    const searchTerm = searchInput ? searchInput.value : '';
+    renderModels(searchTerm);
+}
+
+// Fungsi filter berdasarkan kategori Target Aplikasi (independen dari kategori model biasa)
+function filterByAppCategory(cat) {
+    activeAppCategory = cat;
+    renderAppCategoryButtons();
     const searchInput = document.getElementById('search-input');
     const searchTerm = searchInput ? searchInput.value : '';
     renderModels(searchTerm);
@@ -175,15 +215,17 @@ function renderModels(filter = '') {
         const categoriesArray = Array.isArray(m.category) ? m.category : [m.category];
 
         const categoryMatch = activeCategory === "Semua" ||
-            categoriesArray.some(c => c.toLowerCase() === activeCategory.toLowerCase()) ||
-            (m.app_target && m.app_target.toLowerCase() === activeCategory.toLowerCase());
+            categoriesArray.some(c => c.toLowerCase() === activeCategory.toLowerCase());
+
+        const appCategoryMatch = activeAppCategory === "Semua" ||
+            (m.app_target && m.app_target.toLowerCase() === activeAppCategory.toLowerCase());
 
         const textMatch = m.name.toLowerCase().includes(s) ||
             categoriesArray.join(' ').toLowerCase().includes(s) ||
             (m.converter && m.converter.toLowerCase().includes(s)) ||
             (m.creator && m.creator.toLowerCase().includes(s));
 
-        return categoryMatch && textMatch;
+        return categoryMatch && appCategoryMatch && textMatch;
     });
 
     if (filtered.length === 0) {
@@ -284,17 +326,19 @@ async function loadModels() {
         MODELS = [];
     }
     recomputeFilters();
+    recomputeAppFilters();
     renderCategoryButtons();
+    renderAppCategoryButtons();
     renderModels();
     if (typeof lucide !== 'undefined') lucide.createIcons();
     // Beri tahu script lain (misal index.html) bahwa MODELS sudah siap
     document.dispatchEvent(new CustomEvent('modelsLoaded'));
 }
-// Kategori master (categories.json) perlu selesai dimuat dulu sebelum
-// loadModels() menghitung daftar filter, supaya kategori custom dari admin
-// ikut muncul sejak render pertama (bukan menunggu render kedua).
+// Kategori master (categories.json) & kategori Target Aplikasi (appcategories.json)
+// perlu selesai dimuat dulu sebelum loadModels() menghitung daftar filter, supaya
+// kategori custom dari admin ikut muncul sejak render pertama (bukan menunggu render kedua).
 (async function initModelsAndCategories() {
-    await loadCategories();
+    await Promise.all([loadCategories(), loadAppCategories()]);
     await loadModels();
 })();
 loadMarquee();

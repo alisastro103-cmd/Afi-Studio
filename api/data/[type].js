@@ -22,6 +22,7 @@ const TYPES = {
   member:     { redisKey: 'afi-studio:data:member',     file: 'member-Afi-Studio/member.json' },
   ranking:    { redisKey: 'afi-studio:data:ranking',    file: 'ranking/ranking.json' },
   categories: { redisKey: 'afi-studio:data:categories', file: 'categories.json' },
+  appcategories: { redisKey: 'afi-studio:data:appcategories', file: 'app-categories.json' },
   settings:   { redisKey: 'afi-studio:data:settings',   file: 'settings.json' },
 };
 

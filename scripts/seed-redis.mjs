@@ -32,6 +32,7 @@ const SOURCES = {
   'afi-studio:data:member':  'member-Afi-Studio/member.json',
   'afi-studio:data:ranking': 'ranking/ranking.json',
   'afi-studio:data:categories': 'categories.json',
+  'afi-studio:data:appcategories': 'app-categories.json',
 };
 
 async function main() {

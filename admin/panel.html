@@ -246,6 +246,7 @@
     <div class="side-item active" data-view="dashboard"><i data-lucide="layout-dashboard"></i>Dashboard</div>
     <div class="side-item" data-view="models"><i data-lucide="box"></i>Models</div>
     <div class="side-item" data-view="kategori"><i data-lucide="tag"></i>Kategori Model</div>
+    <div class="side-item" data-view="kategori-app"><i data-lucide="layers"></i>Kategori Aplikasi</div>
     <div class="side-item" data-view="videos"><i data-lucide="clapperboard"></i>Video &amp; Tutorial</div>
     <div class="side-item" data-view="banner"><i data-lucide="image"></i>Banner</div>
     <div class="side-item" data-view="marquee"><i data-lucide="megaphone"></i>Marquee / Info</div>
@@ -311,9 +312,6 @@
 
       <!-- KATEGORI MODEL -->
       <section class="section-view" id="view-kategori">
-        <div class="panel p-3 mb-3">
-          <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6;">Daftar kategori di sini dipakai sebagai saran/pilihan kategori model di halaman Models, dan otomatis muncul jadi tab filter kategori di website utama walau belum dipasang ke model manapun.</p>
-        </div>
         <div class="panel overflow-x-auto data-table-wrap">
           <table>
             <thead><tr><th>No</th><th>Nama Kategori</th></tr></thead>
@@ -321,6 +319,17 @@
           </table>
         </div>
         <div class="data-grid" id="kategori-grid"></div>
+      </section>
+
+      <!-- KATEGORI APLIKASI (Target App) -->
+      <section class="section-view" id="view-kategori-app">
+        <div class="panel overflow-x-auto data-table-wrap">
+          <table>
+            <thead><tr><th>No</th><th>Nama Kategori Aplikasi</th></tr></thead>
+            <tbody id="kategoriapp-tbody"></tbody>
+          </table>
+        </div>
+        <div class="data-grid" id="kategoriapp-grid"></div>
       </section>
 
       <!-- VIDEOS -->
@@ -452,9 +461,8 @@
 <script>
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
-let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false }, categories: [] };
-const APP_TARGETS = ["Prisma3D","Blender","Mine-Imator","Viontri","C4D","Lainnya"];
-const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories'];
+let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false }, categories: [], appcategories: [] };
+const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories','appcategories'];
 
 /* ================= LOGIN & TOKEN ================= */
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
@@ -514,7 +522,7 @@ async function bootAdminApp(){
   document.getElementById('app-root').style.display = 'flex';
   toast('Memuat data...');
   await loadAllData();
-  renderDashboard(); renderModels(); renderKategori(); renderVideos(); renderBanner();
+  renderDashboard(); renderModels(); renderKategori(); renderKategoriApp(); renderVideos(); renderBanner();
   renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderEvent(); renderPengaturan();
   lucide.createIcons();
 }
@@ -562,7 +570,7 @@ document.querySelectorAll('.side-item[data-view]').forEach(el=>{
   });
 });
 /* --- Tombol tambah (+) mengambang, mengikuti halaman yang sedang aktif --- */
-const FAB_ACTIONS = { models: openModelForm, kategori: openKategoriForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm };
+const FAB_ACTIONS = { models: openModelForm, kategori: openKategoriForm, 'kategori-app': openKategoriAppForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm };
 const globalFab = document.getElementById('global-fab');
 const globalFabBtn = document.getElementById('global-fab-btn');
 const genFabWrap = document.getElementById('gen-fab-wrap');
@@ -583,7 +591,7 @@ function updateFab(view){
   }
 }
 /* --- TOGGLE TAMPILAN: Tabel <-> Kotak (kartu database), tidak berlaku di Dashboard --- */
-const VIEWS_WITH_TABLE = ['models','kategori','videos','banner','marquee','member','ranking','event'];
+const VIEWS_WITH_TABLE = ['models','kategori','kategori-app','videos','banner','marquee','member','ranking','event'];
 const VIEWS_WITH_SEARCH = ['models','videos','member'];
 const viewToggleBtn = document.getElementById('view-toggle-btn');
 const searchToggleBtn = document.getElementById('search-toggle-btn');
@@ -808,7 +816,7 @@ document.querySelector('main').addEventListener('scroll', closeActionMenus);
 /* ================= URUTAN: tombol Naik/Turun di board opsi (tahan kartu/baris buat munculin board-nya) ================= */
 // "scope" nunjukin array asalnya: 'models','videos','banner','marquee','ranking', atau 'member:<gen>' khusus member
 // (member dipisah per generasi karena datanya memang disimpan per folder generasi, bukan satu array besar).
-const REORDER_RENDERERS = { models:()=>renderModels(), categories:()=>renderKategori(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember(), event:()=>renderEvent() };
+const REORDER_RENDERERS = { models:()=>renderModels(), categories:()=>renderKategori(), appcategories:()=>renderKategoriApp(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember(), event:()=>renderEvent() };
 function reorderArrayRef(scope){
   if(scope && scope.startsWith('member:')) return DB.member[scope.slice(7)];
   return DB[scope];
@@ -1012,7 +1020,7 @@ function openModelForm(idx){
       </div>
       <div><label>Kategori (pisahkan koma)</label><input id="f-category" list="category-suggestions" value="${esc(m.category.join(', '))}"><datalist id="category-suggestions">${DB.categories.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
       <div><label>Target App</label>
-        <select id="f-apptarget"><option value="">-</option>${APP_TARGETS.map(a=>`<option ${a===m.app_target?'selected':''}>${a}</option>`).join('')}</select>
+        <select id="f-apptarget"><option value="">-</option>${DB.appcategories.map(a=>`<option ${a===m.app_target?'selected':''}>${a}</option>`).join('')}</select>
       </div>
       <div><label>URL Thumbnail</label><input id="f-thumb" value="${esc(m.thumb)}"></div>
       <div><label>URL Download</label><input id="f-link" value="${esc(m.link)}"></div>
@@ -1223,6 +1231,44 @@ async function saveKategori(idx){
   closeModal(); renderKategori(); renderDashboard();
   const ok = await persist('categories');
   if(ok) toast('Tersimpan'); else DB.categories = prev, renderKategori(), renderDashboard();
+}
+
+/* ================= RENDER: KATEGORI APLIKASI (Target App) ================= */
+function renderKategoriApp(){
+  document.getElementById('kategoriapp-tbody').innerHTML = DB.appcategories.map((c,i)=>`
+    <tr data-reorder-scope="appcategories" data-reorder-idx="${i}" data-hold-edit="openKategoriAppForm(${i})" data-hold-delete="removeItem('appcategories',${i})">
+      <td class="row-num">${i+1}</td>
+      <td class="cell-ellipsis" style="font-weight:700;">${esc(c)}</td>
+    </tr>`).join('') || `<tr><td colspan="2" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada kategori aplikasi</td></tr>`;
+  dataGrid('kategoriapp-grid', DB.appcategories.map((c,i)=>({c,i})), ({c,i})=>`
+    <div class="panel p-3 data-card" data-reorder-scope="appcategories" data-reorder-idx="${i}" data-hold-edit="openKategoriAppForm(${i})" data-hold-delete="removeItem('appcategories',${i})">
+      <div class="marquee-card-text" style="font-weight:700;">${esc(c)}</div>
+    </div>`);
+  lucide.createIcons();
+  bindCardHold('kategoriapp-grid');
+  bindCardHold('kategoriapp-tbody');
+}
+function openKategoriAppForm(idx){
+  const isEdit = idx !== undefined;
+  const c = isEdit ? DB.appcategories[idx] : '';
+  openModal(`
+    <h3 class="text-sm font-bold mb-4">${isEdit?'Edit':'Tambah'} Kategori Aplikasi</h3>
+    <div><label>Nama Kategori Aplikasi</label><input id="f-kategoriapp" value="${esc(c)}"></div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-accent" onclick="saveKategoriApp(${isEdit?idx:'undefined'})">Simpan</button>
+    </div>`);
+}
+async function saveKategoriApp(idx){
+  const val = document.getElementById('f-kategoriapp').value.trim();
+  if(!val){ toast('Nama kategori tidak boleh kosong'); return; }
+  const dup = DB.appcategories.some((c,i)=> c.toLowerCase()===val.toLowerCase() && i!==idx);
+  if(dup){ toast('Kategori ini sudah ada'); return; }
+  const prev = DB.appcategories.slice();
+  if(idx!==undefined) DB.appcategories[idx]=val; else DB.appcategories.push(val);
+  closeModal(); renderKategoriApp(); renderDashboard();
+  const ok = await persist('appcategories');
+  if(ok) toast('Tersimpan'); else DB.appcategories = prev, renderKategoriApp(), renderDashboard();
 }
 
 /* ================= RENDER: MEMBER ================= */
@@ -1473,10 +1519,10 @@ async function removeItem(key, idx){
   if(!confirm('Hapus data ini?')) return;
   const prev = DB[key].slice();
   DB[key].splice(idx,1);
-  ({models:renderModels, categories:renderKategori, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key]();
+  ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key]();
   renderDashboard();
   const ok = await persist(key);
-  if(ok) toast('Dihapus'); else { DB[key] = prev; ({models:renderModels, categories:renderKategori, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key](); renderDashboard(); }
+  if(ok) toast('Dihapus'); else { DB[key] = prev; ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key](); renderDashboard(); }
 }
 
 /* ================= DASHBOARD ================= */
