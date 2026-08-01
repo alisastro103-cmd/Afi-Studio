@@ -207,6 +207,12 @@
   .ranking-card .body { padding:12px; display:flex; flex-direction:column; gap:6px; }
   .ranking-card .title { font-weight:700; font-size:13px; }
   .ranking-card .caption { font-size:11px; color:var(--text-sub); line-height:1.4; }
+  /* --- EVENT: kartu (mode kotak), gambar full-bleed seperti Ranking --- */
+  .event-card { position:relative; border-radius:10px; overflow:hidden; background:var(--surface); }
+  .event-card .photo { width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:var(--bg); }
+  .event-card .body { padding:12px; display:flex; flex-direction:column; gap:6px; }
+  .event-card .title { font-weight:700; font-size:13px; }
+  .event-card .caption { font-size:11px; color:var(--text-sub); line-height:1.4; }
   .toast { position:fixed; bottom:20px; right:20px; background:var(--success); color:#fff; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; z-index:70; box-shadow:0 4px 14px rgba(0,0,0,.2); animation: toastIn .25s cubic-bezier(.16,1,.3,1); }
   .toast.closing { animation: toastOut .16s ease forwards; }
 
@@ -332,6 +338,9 @@
 
       <!-- MEMBER -->
       <section class="section-view" id="view-member">
+        <div class="flex justify-between items-center mb-1">
+          <input type="text" id="member-search" class="search-input" placeholder="Cari member..." style="max-width:260px;">
+        </div>
         <div class="panel overflow-x-auto data-table-wrap">
           <table>
             <thead><tr><th>No</th><th>Foto</th><th>Nama</th><th>Generasi</th><th>Info</th></tr></thead>
@@ -354,10 +363,13 @@
 
       <!-- EVENT -->
       <section class="section-view" id="view-event">
-        <div class="panel p-4">
-          <h3 class="text-sm font-bold mb-2">Event Render</h3>
-          <p style="font-size:13px; color:var(--text-sub); line-height:1.6;">Pengelolaan peraturan &amp; panduan halaman Event belum dikembangkan di panel ini. Untuk sekarang, konten diedit langsung di <code>event/index.html</code>.</p>
+        <div class="panel overflow-x-auto data-table-wrap">
+          <table>
+            <thead><tr><th>No</th><th>Gambar</th><th>Judul</th><th>Caption</th></tr></thead>
+            <tbody id="event-tbody"></tbody>
+          </table>
         </div>
+        <div class="data-grid" id="event-grid"></div>
       </section>
 
       <!-- FEEDBACK -->
@@ -423,9 +435,9 @@
 <script>
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
-let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false } };
+let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false } };
 const APP_TARGETS = ["Prisma3D","Blender","Mine-Imator","Viontri","C4D","Lainnya"];
-const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','settings'];
+const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings'];
 
 /* ================= LOGIN & TOKEN ================= */
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
@@ -486,7 +498,7 @@ async function bootAdminApp(){
   toast('Memuat data...');
   await loadAllData();
   renderDashboard(); renderModels(); renderVideos(); renderBanner();
-  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderPengaturan();
+  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderEvent(); renderPengaturan();
   lucide.createIcons();
 }
 
@@ -532,7 +544,7 @@ document.querySelectorAll('.side-item[data-view]').forEach(el=>{
   });
 });
 /* --- Tombol tambah (+) mengambang, mengikuti halaman yang sedang aktif --- */
-const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm };
+const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm };
 const globalFab = document.getElementById('global-fab');
 const globalFabBtn = document.getElementById('global-fab-btn');
 const genFabWrap = document.getElementById('gen-fab-wrap');
@@ -553,8 +565,8 @@ function updateFab(view){
   }
 }
 /* --- TOGGLE TAMPILAN: Tabel <-> Kotak (kartu database), tidak berlaku di Dashboard --- */
-const VIEWS_WITH_TABLE = ['models','videos','banner','marquee','member','ranking'];
-const VIEWS_WITH_SEARCH = ['models','videos'];
+const VIEWS_WITH_TABLE = ['models','videos','banner','marquee','member','ranking','event'];
+const VIEWS_WITH_SEARCH = ['models','videos','member'];
 const viewToggleBtn = document.getElementById('view-toggle-btn');
 const searchToggleBtn = document.getElementById('search-toggle-btn');
 function updateTopbarTools(view){
@@ -574,7 +586,7 @@ viewToggleBtn.addEventListener('click', ()=>{
   if(!g) requestAnimationFrame(initResizableTables);
 });
 searchToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
-const SEARCH_RENDER = { models: renderModels, videos: renderVideos };
+const SEARCH_RENDER = { models: renderModels, videos: renderVideos, member: renderMember };
 searchToggleBtn.addEventListener('click', ()=>{
   const view = document.querySelector('.side-item.active').dataset.view;
   const input = document.getElementById(view+'-search');
@@ -764,7 +776,7 @@ document.querySelector('main').addEventListener('scroll', closeActionMenus);
 /* ================= URUTAN: tombol Naik/Turun di board opsi (tahan kartu/baris buat munculin board-nya) ================= */
 // "scope" nunjukin array asalnya: 'models','videos','banner','marquee','ranking', atau 'member:<gen>' khusus member
 // (member dipisah per generasi karena datanya memang disimpan per folder generasi, bukan satu array besar).
-const REORDER_RENDERERS = { models:()=>renderModels(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember() };
+const REORDER_RENDERERS = { models:()=>renderModels(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember(), event:()=>renderEvent() };
 function reorderArrayRef(scope){
   if(scope && scope.startsWith('member:')) return DB.member[scope.slice(7)];
   return DB[scope];
@@ -1169,10 +1181,14 @@ const SOCIAL_KEYS = [
 ];
 function renderMember(){
   const filterGen = document.getElementById('member-gen-filter').value || '__all';
+  const q = (document.getElementById('member-search').value||'').toLowerCase();
   let rows = [];
   memberGens().forEach(gen=>{
     if(filterGen!=='__all' && filterGen!==gen) return;
-    DB.member[gen].forEach((m,i)=> rows.push({gen, m, i}));
+    DB.member[gen].forEach((m,i)=>{
+      if(q && !((m.nama||'').toLowerCase().includes(q) || (m.identitas||'').toLowerCase().includes(q))) return;
+      rows.push({gen, m, i});
+    });
   });
   document.getElementById('member-tbody').innerHTML = rows.map(({gen,m,i},n)=>`
     <tr data-reorder-scope="member:${gen}" data-reorder-idx="${i}" data-hold-edit="openMemberForm('${gen}',${i})" data-hold-delete="removeMember('${gen}',${i})">
@@ -1331,15 +1347,62 @@ async function saveRanking(idx){
   if(ok) toast('Tersimpan'); else DB.ranking = prev, renderRanking(), renderDashboard();
 }
 
+/* ================= EVENT (render/art event) ================= */
+function renderEvent(){
+  document.getElementById('event-tbody').innerHTML = DB.event.map((e,i)=>`
+    <tr data-reorder-scope="event" data-reorder-idx="${i}" data-hold-edit="openEventForm(${i})" data-hold-delete="removeItem('event',${i})">
+      <td class="row-num">${i+1}</td>
+      <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(e.gambar))}</td>
+      <td class="cell-ellipsis" style="font-weight:700;">${esc(e.judul)}</td>
+      <td class="desc-col">${esc(e.caption)}</td>
+    </tr>`).join('') || `<tr><td colspan="4" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
+  dataGrid('event-grid', DB.event.map((e,i)=>({e,i})), ({e,i})=>`
+    <div class="event-card" data-reorder-scope="event" data-reorder-idx="${i}" data-hold-edit="openEventForm(${i})" data-hold-delete="removeItem('event',${i})">
+      <img class="photo" src="${esc(e.gambar)}" onerror="this.style.opacity=0.3">
+      <div class="body">
+        <div class="title">${esc(e.judul)}</div>
+        <div class="caption">${esc(e.caption)}</div>
+      </div>
+    </div>`);
+  lucide.createIcons();
+  bindCardHold('event-grid');
+  bindCardHold('event-tbody');
+}
+function openEventForm(idx){
+  const isEdit = idx !== undefined;
+  const e = isEdit ? DB.event[idx] : { judul:'', caption:'', gambar:'' };
+  openModal(`
+    <h3 class="text-sm font-bold mb-4">${isEdit?'Edit':'Tambah'} Render Event</h3>
+    <div class="flex flex-col gap-3">
+      <div><label>Judul</label><textarea id="f-ejudul" rows="1">${esc(e.judul)}</textarea></div>
+      <div><label>Caption</label><textarea id="f-ecaption" rows="1">${esc(e.caption)}</textarea></div>
+      <div><label>URL Gambar</label><textarea id="f-egambar" rows="1">${esc(e.gambar)}</textarea></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-accent" onclick="saveEvent(${isEdit?idx:'undefined'})">Simpan</button>
+    </div>`);
+}
+async function saveEvent(idx){
+  const data = { judul: document.getElementById('f-ejudul').value.trim(), caption: document.getElementById('f-ecaption').value.trim(), gambar: document.getElementById('f-egambar').value.trim() };
+  if(!data.judul){ toast('Judul wajib diisi'); return; }
+  if(!data.gambar){ toast('URL gambar wajib diisi'); return; }
+  const prev = DB.event.slice();
+  if(idx!==undefined) DB.event[idx]=data; else DB.event.push(data);
+  closeModal(); renderEvent(); renderDashboard();
+  const ok = await persist('event');
+  if(ok) toast('Tersimpan'); else DB.event = prev, renderEvent(), renderDashboard();
+}
+
 /* ================= GENERIC REMOVE ================= */
 async function removeItem(key, idx){
   if(!confirm('Hapus data ini?')) return;
   const prev = DB[key].slice();
   DB[key].splice(idx,1);
-  ({models:renderModels, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking})[key]();
+  ({models:renderModels, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key]();
   renderDashboard();
   const ok = await persist(key);
-  if(ok) toast('Dihapus'); else { DB[key] = prev; ({models:renderModels, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking})[key](); renderDashboard(); }
+  if(ok) toast('Dihapus'); else { DB[key] = prev; ({models:renderModels, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key](); renderDashboard(); }
 }
 
 /* ================= DASHBOARD ================= */
@@ -1352,6 +1415,7 @@ function renderDashboard(){
     {label:'Marquee', val:DB.marquee.length, icon:'megaphone'},
     {label:'Member', val:totalMembers, icon:'users'},
     {label:'Ranking Slot', val:DB.ranking.length, icon:'trophy'},
+    {label:'Event', val:DB.event.length, icon:'calendar'},
   ];
   document.getElementById('stat-cards').innerHTML = cards.map(c=>`
     <div class="panel p-3">
@@ -1382,6 +1446,7 @@ async function updateSetting(key, value){
 document.getElementById('models-search').addEventListener('input', renderModels);
 document.getElementById('videos-search').addEventListener('input', renderVideos);
 document.getElementById('member-gen-filter').addEventListener('change', renderMember);
+document.getElementById('member-search').addEventListener('input', renderMember);
 
 renderMemberFilter(); // supaya dropdown filter tidak error sebelum login (masih kosong)
 requestAnimationFrame(initResizableTables);
