@@ -165,8 +165,14 @@
 
   .section-view { display:none; }
   .section-view.active { display:block; }
-  input.search-input { display:none; }
-  input.search-input.open { display:block; }
+  /* --- Kolom pencarian: satu overlay melayang untuk semua halaman (Models/Videos/Member),
+     nempel tepat di bawah navbar tapi posisinya di atas board/panel manapun, dengan animasi
+     geser+fade halus saat muncul & tertutup. Ditaruh terpisah dari alur scroll konten, jadi
+     tetap "diam" di tempat walau board di bawahnya discroll. --- */
+  .topbar-wrap { position: relative; z-index: 45; }
+  .search-overlay { position:absolute; left:14px; right:14px; top:100%; z-index:45; opacity:0; transform:translateY(-8px) scale(.98); transform-origin:top; pointer-events:none; transition: opacity .18s ease, transform .2s cubic-bezier(.16,1,.3,1); }
+  .search-overlay.open { opacity:1; transform:translateY(6px) scale(1); pointer-events:auto; }
+  .search-overlay-input { width:100%; box-shadow:0 10px 28px rgba(0,0,0,.22); }
 
   /* --- TOGGLE TAMPILAN: Tabel <-> Kotak (kartu database) --- */
   .data-grid { display:none; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap:12px; }
@@ -217,7 +223,7 @@
   .toast.closing { animation: toastOut .16s ease forwards; }
 
   /* --- Board opsi Edit/Hapus saat kartu (mode kotak) ditahan, ATAU baris tabel ditahan/klik kanan --- */
-  [data-hold-edit] { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:none; cursor:pointer; transition: transform .15s, opacity .15s, background-color .15s; }
+  [data-hold-edit] { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; touch-action:pan-y; cursor:pointer; transition: transform .15s, opacity .15s, background-color .15s; }
   [data-hold-edit].card-pressed { opacity: 0.7; }
   tr[data-hold-edit].card-pressed { opacity:1; background: color-mix(in srgb, var(--accent) 22%, transparent); }
 
@@ -256,19 +262,24 @@
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
   <div class="flex-1 flex flex-col overflow-hidden">
-    <nav class="topbar">
-      <div class="px-5 py-3 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <button class="menu-toggle" id="menu-toggle-btn" aria-label="Buka menu"><i data-lucide="menu"></i></button>
-          <h2 id="view-title" style="font-size:16px; font-weight:800;">Dashboard</h2>
+    <div class="topbar-wrap">
+      <nav class="topbar">
+        <div class="px-5 py-3 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <button class="menu-toggle" id="menu-toggle-btn" aria-label="Buka menu"><i data-lucide="menu"></i></button>
+            <h2 id="view-title" style="font-size:16px; font-weight:800;">Dashboard</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="icon-btn-plain" id="search-toggle-btn" aria-label="Cari"></button>
+            <button class="icon-btn-plain" id="view-toggle-btn" aria-label="Ganti tampilan tabel/kotak"></button>
+            <button class="icon-btn-plain" id="topbar-theme-btn" aria-label="Ganti mode gelap/terang"></button>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button class="icon-btn-plain" id="search-toggle-btn" aria-label="Cari"></button>
-          <button class="icon-btn-plain" id="view-toggle-btn" aria-label="Ganti tampilan tabel/kotak"></button>
-          <button class="icon-btn-plain" id="topbar-theme-btn" aria-label="Ganti mode gelap/terang"></button>
-        </div>
+      </nav>
+      <div class="search-overlay" id="search-overlay">
+        <input type="text" id="global-search-input" class="search-overlay-input" placeholder="Cari...">
       </div>
-    </nav>
+    </div>
 
     <main class="flex-1 overflow-y-auto px-5 pb-5" id="main-content">
 
@@ -288,9 +299,6 @@
 
       <!-- MODELS -->
       <section class="section-view" id="view-models">
-        <div class="flex justify-between items-center mb-1">
-          <input type="text" id="models-search" class="search-input" placeholder="Cari model..." style="max-width:260px;">
-        </div>
         <div class="panel overflow-x-auto data-table-wrap">
           <table>
             <thead><tr><th>No</th><th>Thumb</th><th>Judul</th><th>Deskripsi</th><th>Kategori</th><th>Target App</th></tr></thead>
@@ -302,9 +310,6 @@
 
       <!-- VIDEOS -->
       <section class="section-view" id="view-videos">
-        <div class="flex justify-between items-center mb-1">
-          <input type="text" id="videos-search" class="search-input" placeholder="Cari video..." style="max-width:260px;">
-        </div>
         <div class="panel overflow-x-auto data-table-wrap">
           <table>
             <thead><tr><th>No</th><th>Thumb</th><th>Judul</th><th>URL</th><th>Ditambahkan</th></tr></thead>
@@ -338,9 +343,6 @@
 
       <!-- MEMBER -->
       <section class="section-view" id="view-member">
-        <div class="flex justify-between items-center mb-1">
-          <input type="text" id="member-search" class="search-input" placeholder="Cari member..." style="max-width:260px;">
-        </div>
         <div class="panel overflow-x-auto data-table-wrap">
           <table>
             <thead><tr><th>No</th><th>Foto</th><th>Nama</th><th>Generasi</th><th>Info</th></tr></thead>
@@ -531,12 +533,13 @@ document.getElementById('menu-toggle-btn').addEventListener('click', ()=>{
 overlayEl.addEventListener('click', closeSidebar);
 document.querySelectorAll('.side-item[data-view]').forEach(el=>{
   el.addEventListener('click', ()=>{
+    const prevView = document.querySelector('.side-item.active')?.dataset.view;
     document.querySelectorAll('.side-item[data-view]').forEach(x=>x.classList.remove('active'));
     el.classList.add('active');
     document.querySelectorAll('.section-view').forEach(v=>v.classList.remove('active'));
     document.getElementById('view-'+el.dataset.view).classList.add('active');
     document.getElementById('view-title').textContent = el.textContent.trim();
-    document.querySelectorAll('.search-input.open').forEach(inp=>{ inp.classList.remove('open'); inp.value=''; });
+    closeGlobalSearch(prevView);
     updateTopbarTools(el.dataset.view);
     updateFab(el.dataset.view);
     closeSidebar();
@@ -587,13 +590,27 @@ viewToggleBtn.addEventListener('click', ()=>{
 });
 searchToggleBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
 const SEARCH_RENDER = { models: renderModels, videos: renderVideos, member: renderMember };
+const searchOverlay = document.getElementById('search-overlay');
+const globalSearchInput = document.getElementById('global-search-input');
+// Nutup overlay pencarian + kosongkan isinya. Kalau lagi ada teks pencarian aktif,
+// halaman yang ditinggalkan (viewToReset) dirender ulang biar daftarnya balik utuh (tidak nyangkut ke-filter).
+function closeGlobalSearch(viewToReset){
+  searchOverlay.classList.remove('open');
+  if(globalSearchInput.value){
+    globalSearchInput.value = '';
+    if(viewToReset && SEARCH_RENDER[viewToReset]) SEARCH_RENDER[viewToReset]();
+  }
+}
 searchToggleBtn.addEventListener('click', ()=>{
   const view = document.querySelector('.side-item.active').dataset.view;
-  const input = document.getElementById(view+'-search');
-  if(!input) return;
-  const show = !input.classList.contains('open');
-  input.classList.toggle('open', show);
-  if(show) input.focus(); else { input.value=''; SEARCH_RENDER[view] && SEARCH_RENDER[view](); }
+  const show = !searchOverlay.classList.contains('open');
+  searchOverlay.classList.toggle('open', show);
+  if(show) globalSearchInput.focus();
+  else { globalSearchInput.value=''; SEARCH_RENDER[view] && SEARCH_RENDER[view](); }
+});
+globalSearchInput.addEventListener('input', ()=>{
+  const view = document.querySelector('.side-item.active').dataset.view;
+  SEARCH_RENDER[view] && SEARCH_RENDER[view]();
 });
 updateTopbarTools('dashboard');
 updateFab('dashboard');
@@ -941,7 +958,7 @@ function outsideCloseHoldPopup(e){
 
 /* ================= RENDER: MODELS ================= */
 function renderModels(){
-  const q = (document.getElementById('models-search').value||'').toLowerCase();
+  const q = (document.getElementById('global-search-input').value||'').toLowerCase();
   const rows = DB.models.map((m,i)=>({m,i})).filter(({m})=> !q || m.name.toLowerCase().includes(q));
   document.getElementById('models-tbody').innerHTML = rows.map(({m,i},n)=>`
     <tr data-reorder-scope="models" data-reorder-idx="${i}" data-hold-edit="openModelForm(${i})" data-hold-delete="removeItem('models',${i})">
@@ -1015,7 +1032,7 @@ function slugify(s){
   return base || ('video-' + Date.now());
 }
 function renderVideos(){
-  const q = (document.getElementById('videos-search').value||'').toLowerCase();
+  const q = (document.getElementById('global-search-input').value||'').toLowerCase();
   const rows = DB.videos.map((v,i)=>({v,i})).filter(({v})=> !q || v.title.toLowerCase().includes(q));
   document.getElementById('videos-tbody').innerHTML = rows.map(({v,i},n)=>`
     <tr data-reorder-scope="videos" data-reorder-idx="${i}" data-hold-edit="openVideoForm(${i})" data-hold-delete="removeItem('videos',${i})">
@@ -1181,7 +1198,7 @@ const SOCIAL_KEYS = [
 ];
 function renderMember(){
   const filterGen = document.getElementById('member-gen-filter').value || '__all';
-  const q = (document.getElementById('member-search').value||'').toLowerCase();
+  const q = (document.getElementById('global-search-input').value||'').toLowerCase();
   let rows = [];
   memberGens().forEach(gen=>{
     if(filterGen!=='__all' && filterGen!==gen) return;
@@ -1443,10 +1460,7 @@ async function updateSetting(key, value){
 }
 
 /* ================= INIT ================= */
-document.getElementById('models-search').addEventListener('input', renderModels);
-document.getElementById('videos-search').addEventListener('input', renderVideos);
 document.getElementById('member-gen-filter').addEventListener('change', renderMember);
-document.getElementById('member-search').addEventListener('input', renderMember);
 
 renderMemberFilter(); // supaya dropdown filter tidak error sebelum login (masih kosong)
 requestAnimationFrame(initResizableTables);
