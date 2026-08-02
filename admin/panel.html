@@ -711,15 +711,20 @@ function initResizableTables(){
       const handle = document.createElement('div');
       handle.className = 'col-resizer';
       th.appendChild(handle);
-      let startX = 0, startWidth = 0, startTableWidth = 0, activePointerId = null;
+      let prevX = 0, activePointerId = null;
       const onMove = (e)=>{
         if(activePointerId !== null && e.pointerId !== activePointerId) return;
         e.preventDefault();
-        let newWidth = Math.max(minW, startWidth + (e.clientX - startX));
+        const dx = e.clientX - prevX;
+        prevX = e.clientX; // acuan gerakan SELALU posisi terakhir, bukan titik awal tarik (biar tidak meleset kalau layar/viewport bergeser di tengah gesture)
+        if(!dx) return;
+        const curThWidth = th.getBoundingClientRect().width; // ukur ulang lebar NYATA saat ini, bukan pakai angka lama
+        const curTableWidth = table.getBoundingClientRect().width;
+        let newWidth = Math.max(minW, curThWidth + dx);
         if(maxW !== Infinity) newWidth = Math.min(maxW, newWidth);
-        const delta = newWidth - startWidth;
+        const appliedDelta = newWidth - curThWidth;
         th.style.width = newWidth + 'px';
-        table.style.width = (startTableWidth + delta) + 'px';
+        table.style.width = (curTableWidth + appliedDelta) + 'px';
       };
       const onUp = (e)=>{
         document.removeEventListener('pointermove', onMove);
@@ -735,9 +740,7 @@ function initResizableTables(){
       };
       handle.addEventListener('pointerdown', e=>{
         e.preventDefault(); e.stopPropagation();
-        startX = e.clientX;
-        startWidth = th.getBoundingClientRect().width;
-        startTableWidth = table.getBoundingClientRect().width;
+        prevX = e.clientX;
         table.dataset.userResized = '1'; // sekali ditarik manual, jangan ditimpa pengukuran otomatis lagi
         handle.classList.add('resizing');
         activePointerId = e.pointerId;

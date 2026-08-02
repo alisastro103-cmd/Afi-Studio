@@ -171,10 +171,7 @@ Afi-Studio-main/
 - Search/filter di halaman Member
 - Sorting (model terbaru/terlama, member alfabet)
 - Isi foto render juara asli di `/ranking/` (ganti `coming_soon.webp`)
-- Counter download/like sungguhan dari pengunjung (butuh skema baru di Redis, bukan cuma localStorage)
-- Field `id` unik untuk model (saat ini favorit model pakai `link` sebagai id — rapuh kalau link berubah)
-- Riwayat/undo perubahan admin panel (saat ini "timpa semua" tanpa versi sebelumnya tersimpan otomatis — cadangan cuma lewat `export-redis.mjs` manual)
-- Multi-admin dengan token/peran berbeda (saat ini cuma satu token untuk semua)
+- **Konfirmasi sebelum hapus** di admin panel — mengingat sistemnya "timpa semua data" (§6), salah pencet hapus bisa langsung hilang permanen tanpa undo. Ini prioritas berikutnya yang mau dikerjakan.
 
 ## 10. Kalau Ada yang Error
 
