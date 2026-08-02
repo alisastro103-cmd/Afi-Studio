@@ -711,41 +711,28 @@ function initResizableTables(){
       const handle = document.createElement('div');
       handle.className = 'col-resizer';
       th.appendChild(handle);
-      let prevX = 0, activePointerId = null;
+      let startX = 0, startWidth = 0, startTableWidth = 0;
       const onMove = (e)=>{
-        if(activePointerId !== null && e.pointerId !== activePointerId) return;
-        e.preventDefault();
-        const dx = e.clientX - prevX;
-        prevX = e.clientX; // acuan gerakan SELALU posisi terakhir, bukan titik awal tarik (biar tidak meleset kalau layar/viewport bergeser di tengah gesture)
-        if(!dx) return;
-        const curThWidth = th.getBoundingClientRect().width; // ukur ulang lebar NYATA saat ini, bukan pakai angka lama
-        const curTableWidth = table.getBoundingClientRect().width;
-        let newWidth = Math.max(minW, curThWidth + dx);
+        let newWidth = Math.max(minW, startWidth + (e.clientX - startX));
         if(maxW !== Infinity) newWidth = Math.min(maxW, newWidth);
-        const appliedDelta = newWidth - curThWidth;
+        const delta = newWidth - startWidth;
         th.style.width = newWidth + 'px';
-        table.style.width = (curTableWidth + appliedDelta) + 'px';
+        table.style.width = (startTableWidth + delta) + 'px';
       };
-      const onUp = (e)=>{
+      const onUp = ()=>{
         document.removeEventListener('pointermove', onMove);
         document.removeEventListener('pointerup', onUp);
-        document.removeEventListener('pointercancel', onUp);
         handle.classList.remove('resizing');
-        if(activePointerId !== null){
-          try{ handle.releasePointerCapture(activePointerId); }catch(err){}
-        }
-        activePointerId = null;
       };
       handle.addEventListener('pointerdown', e=>{
         e.preventDefault(); e.stopPropagation();
-        prevX = e.clientX;
+        startX = e.clientX;
+        startWidth = th.getBoundingClientRect().width;
+        startTableWidth = table.getBoundingClientRect().width;
         table.dataset.userResized = '1'; // sekali ditarik manual, jangan ditimpa pengukuran otomatis lagi
         handle.classList.add('resizing');
-        activePointerId = e.pointerId;
-        try{ handle.setPointerCapture(e.pointerId); }catch(err){}
         document.addEventListener('pointermove', onMove);
         document.addEventListener('pointerup', onUp);
-        document.addEventListener('pointercancel', onUp);
       });
     });
     // Ukur ulang otomatis kalau isi tabel berubah (tambah/edit/hapus data) supaya kolom teks tetap ikut melebar
