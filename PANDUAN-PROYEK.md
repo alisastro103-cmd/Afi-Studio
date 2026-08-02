@@ -1,186 +1,133 @@
-# Panduan & Konteks Proyek Afi Studio
+# Panduan Lengkap Afi Studio (Konteks Internal)
 
-> **Dokumen ini bukan README untuk GitHub.** Ini catatan konteks internal — buat dibaca ulang (oleh Ali atau AI assistant manapun) sebelum nambah fitur/UI baru, biar tidak perlu mikir ulang dari nol tiap kali balik ke proyek ini. Untuk sisi teknis ringkas + daftar file, baca `README.md`. Untuk format field JSON, baca `data.schema.md`. Untuk langkah setup Redis/env var, baca `SETUP-ADMIN-DATABASE.md`.
+> Dokumen ini BUKAN untuk ditampilkan di repo publik — ini catatan konteks buat kamu (atau AI assistant lain) biar gak perlu mikir ulang dari nol tiap kali balik ke proyek ini untuk nambah fitur/UI baru. Kalau butuh detail teknis per file, baca `README.md`. Kalau butuh detail format field JSON, baca `data.schema.md`.
 
-🔗 **Live site:** [afi-studio.vercel.app](https://afi-studio.vercel.app) — 🔒 **Admin:** `/admin`
+🔗 **Live site:** [afi-studio.vercel.app](https://afi-studio.vercel.app)
 
 ---
 
-## 1. Proyek Ini Apa?
+## 1. Ini Proyek Apa?
 
-Afi Studio adalah website komunitas untuk berbagi aset Minecraft — model 3D, rig karakter, map, furniture. Ada juga halaman kenalan member komunitas, video tutorial, papan ranking event render, favorit pribadi, dan form feedback.
+Afi Studio adalah website komunitas untuk berbagi aset Minecraft — model 3D, rig karakter, map, furniture — biar orang lain bisa lihat dan download. Ada juga halaman kenalan member komunitas, video tutorial, papan ranking event render, dan form feedback.
 
-**Riwayat arsitektur (penting biar tidak salah asumsi):**
-1. Awalnya: pure static site, semua data di file `.json`, edit = `git push`, tanpa admin/database.
-2. Sempat dicoba migrasi ke database (Turso) + admin panel — **direvert total**.
-3. **Kondisi sekarang:** balik pakai database, tapi versi baru — **Upstash Redis** (bukan Turso) + **admin panel di `/admin`** yang beneran nyimpen data (bukan cuma di memory browser). Web utama baca data lewat `/api/data/:type`, file `.json` di repo jadi fallback/cadangan aja.
+**Status arsitektur saat ini: web utama + admin panel + database (Redis) + serverless API.** Ini bukan lagi situs "murni statis tanpa database" seperti versi lama proyek ini — sekarang ada panel admin di `/admin` yang bisa CRUD semua data lewat browser (tanpa perlu edit file JSON manual/git push tiap kali update konten), datanya tersimpan di Upstash Redis lewat serverless function di Vercel.
 
-Jangan bingung kalau nemu jejak "tanpa database" di riwayat commit lama — itu kondisi sebelum poin 3.
+> Catatan sejarah singkat: proyek ini pernah dua kali gonta-ganti arsitektur — sempat murni JSON manual (tanpa DB), sempat dicoba migrasi ke Turso lalu di-revert total, dan **sekarang** settle di kombinasi Redis + admin panel + fallback JSON. File JSON (`Models/models.json`, dst) tetap ada di repo, tapi sekarang fungsinya cuma **seed awal & fallback darurat**, bukan sumber data utama lagi.
 
 ## 2. Istilah-Istilah Penting
 
 | Istilah | Penjelasan gampangnya |
 |---|---|
 | **Repo / Repository** | "Folder proyek" ini, disimpan di GitHub biar ada riwayat perubahannya |
-| **Vercel** | Tempat website ini "tinggal" di internet + tempat jalannya serverless function (`api/`). Tiap `git push`, Vercel auto-deploy |
-| **Upstash Redis** | Database key-value yang dipakai. 1 key = 1 koleksi data (models, videos, dst), isinya JSON apa adanya — bukan tabel/relasi seperti SQL |
-| **Serverless Function** | Kode kecil di `api/` yang jalan otomatis di server Vercel cuma pas ada request — dipakai buat baca/tulis Redis dan kirim feedback ke Telegram |
-| **ADMIN_TOKEN** | Password tunggal (bukan akun banyak orang) buat login `/admin`, disimpan sebagai Environment Variable di Vercel |
-| **Fallback file JSON** | Kalau Redis kosong/lagi down, `GET /api/data/:type` otomatis baca file `.json` di repo supaya web tidak mati total |
-| **PWA** | Website yang bisa di-"install" ke HP kayak aplikasi. Cuma halaman `/` (Beranda) yang di-cache untuk mode semi-offline |
-| **Termux** | Aplikasi terminal Android, dipakai buat `git push` / jalanin script dari HP tanpa laptop |
-| **Seed** | `npm run seed` — isi Redis pertama kali dari file `.json` yang ada. Sekali aja, jangan diulang setelah admin panel dipakai |
+| **GitHub** | Tempat nyimpen kode proyek |
+| **Vercel** | Tempat website ini "tinggal" di internet, sekaligus tempat serverless function jalan. Tiap `git push`, Vercel otomatis deploy ulang |
+| **Serverless Function** | Kode kecil (di folder `api/`) yang jalan otomatis di server Vercel cuma pas ada request — dipakai buat `api/data/[type].js`, `api/admin/verify.js`, `api/feedback.js` |
+| **Upstash Redis** | Database key-value yang dipakai proyek ini. 1 key = 1 koleksi data (mis. `afi-studio:data:models` isinya seluruh array model dalam bentuk JSON) |
+| **JSON** | Format file teks buat nyimpen data terstruktur. Sekarang cuma dipakai sebagai *seed*/fallback, bukan sumber utama |
+| **Fallback** | Kalau Redis kosong (belum di-seed) atau lagi down, endpoint `GET /api/data/:type` otomatis baca file JSON di repo supaya web tetap jalan |
+| **Admin Token** | Password tunggal (disimpan di Environment Variable `ADMIN_TOKEN` di Vercel) buat login `/admin`. Bukan sistem akun per-user |
+| **PWA (Progressive Web App)** | Website yang bisa di-"install" ke HP, halaman utama tetap bisa dibuka meski offline (lewat Service Worker) |
+| **Service Worker (`sw.js`)** | Script yang cache halaman root supaya bisa dibuka offline. Setiap kali daftar aset yang di-cache berubah, `CACHE_NAME` di dalamnya wajib dinaikkan versinya, kalau tidak browser pengunjung akan nyangkut di versi cache lama |
+| **Termux** | Aplikasi terminal Android, dipakai Randy buat `git` (add/commit/push/pull --rebase) dari HP tanpa laptop |
+| **Validasi** | Proses ngecek format JSON sebelum dipakai/di-push, biar situs tidak error |
 
-## 3. Peta Halaman (Lengkap)
+## 3. Peta Halaman
 
-| Alamat | Isinya | Data live dari |
+| Alamat | Isinya | Butuh login? |
 |---|---|---|
-| `/` | Beranda — pengantar, sample video acak, navigasi ke semua halaman | `/api/data/videos` |
-| `/Models/` | Katalog model — filter kategori & aplikasi tujuan, pencarian, banner slider, marquee info | `/api/data/models`, `categories`, `appcategories`, `banner`, `marquee` |
-| `/tutorial/` | Semua video & tutorial YouTube — pencarian, badge "Baru", penanda populer | `/api/data/videos` |
-| `/member-Afi-Studio/` | Daftar member, dikelompokkan per generasi (`gen_id`) | `/api/data/member` |
-| `/ranking/` | Papan Top 3 + Top 10 karya render, lightbox | `/api/data/ranking` |
-| `/favorit/` | Video & model yang ditandai favorit pengunjung (per-device) | `/api/data/videos` + `models`, disaring pakai id di `localStorage` |
-| `/event/` | Aturan & panduan ikut event render | statis (tidak fetch) |
-| `/bantuan/` | FAQ — pertanyaan umum cara pakai situs | statis (tidak fetch) |
-| `/feedback/` | Form kritik & saran → Telegram tim | `POST /api/feedback` |
-| `/admin/` | Login (`index.html`) + Dashboard CRUD (`panel.html`) — kelola SEMUA koleksi di atas plus Banner, Marquee, Pengaturan | semua `/api/data/:type` (GET+POST) |
+| `/` | Beranda — banner, marquee, sample model & video, navigasi | Tidak |
+| `/Models/` | Katalog model — filter kategori (dari koleksi `categories`) + filter aplikasi tujuan (dari koleksi `appcategories`, chip: Viontri/Prisma3D/Blender/Mine-Imator/C4D/Other) + pencarian | Tidak |
+| `/tutorial/` | Video & tutorial YouTube — pencarian, badge "Baru", penanda populer (localStorage per-device) | Tidak |
+| `/member-Afi-Studio/` | Daftar member per generasi | Tidak |
+| `/ranking/` | Top 3 + Top 10 karya render, lightbox | Tidak |
+| `/event/` | Aturan & konten event render (HUT RI, dsb) | Tidak |
+| `/bantuan/` | FAQ | Tidak |
+| `/feedback/` | Form kritik & saran → Telegram tim | Tidak |
+| `/admin/` | Panel kelola semua data di atas (kecuali Feedback yang cuma info, riwayat aslinya di Telegram) | **Ya, token admin** |
 
-## 4. Dari Mana Datanya? (Alur Lengkap)
+## 4. Dari Mana Datanya? (Alur Data Sekarang)
 
-Tiap koleksi data punya **satu key di Redis** dan **satu file JSON cadangan** di repo — daftarnya didefinisikan di `api/data/[type].js` (objek `TYPES`):
-
-| `type` | Redis key | File cadangan |
-|---|---|---|
-| `models` | `afi-studio:data:models` | `Models/models.json` |
-| `videos` | `afi-studio:data:videos` | `videos.json` |
-| `banner` | `afi-studio:data:banner` | `banner.json` |
-| `marquee` | `afi-studio:data:marquee` | `marquee.json` |
-| `member` | `afi-studio:data:member` | `member-Afi-Studio/member.json` |
-| `ranking` | `afi-studio:data:ranking` | `ranking/ranking.json` |
-| `categories` | `afi-studio:data:categories` | `categories.json` |
-| `appcategories` | `afi-studio:data:appcategories` | `app-categories.json` |
-| `settings` | `afi-studio:data:settings` | `settings.json` |
-
-**Alur baca (pengunjung buka halaman):**
-```
-Halaman fetch("/api/data/models")
-  → api/data/[type].js: redis.get("afi-studio:data:models")
-  → ada isinya? kirim balik (cache browser 30 detik, categories/appcategories 0 detik biar filter selalu akurat)
-  → kosong/Redis error? baca Models/models.json di repo, kirim itu sebagai gantinya
-```
-
-**Alur tulis (admin ubah data):**
-```
-Admin isi form di /admin → panel.html
-  → POST /api/data/models, header x-admin-token: <ADMIN_TOKEN>, body: array/objek data baru
-  → api/data/[type].js cek token cocok → redis.set("afi-studio:data:models", body)
-  → sukses → toast hijau di panel, web utama otomatis kebaca versi baru (~30 detik karena cache)
-  → gagal (token salah/Redis down) → toast merah, perubahan di layar admin dibatalkan (rollback tampilan)
-```
-
-Nambah konten sekarang **tidak perlu** `git push` — cukup lewat `/admin`. File `.json` manual masih berguna untuk: isi awal (`npm run seed`), backup (`npm run` script export), dan jaring pengaman kalau Redis bermasalah.
-
-## 5. Struktur File & Peran Tiap Bagian
+Semua koleksi data lewat satu endpoint dinamis: `api/data/[type].js`, dengan tipe yang valid: `models`, `videos`, `banner`, `marquee`, `member`, `ranking`, `categories`, `appcategories`, `settings`, `event`.
 
 ```
-Afi-Studio-main/
-├── index.html              ← Beranda: HTML+CSS+JS dalam satu file, semua logic (nav, slider, marquee) inline
-├── config.js                ← Toggle jalur pendaftaran, nilai diambil dari /api/data/settings (bukan diedit manual)
-├── theme-toggle.js          ← Toggle tema gelap/terang, persist ke localStorage 'afi-theme'
-├── favorites.js             ← Sistem favorit (localStorage per-device): simpan id video, simpan `link` model sebagai id
-├── data.schema.md           ← Dokumentasi field wajib tiap koleksi data
-├── validate_data.py         ← Validator format models.json/videos.json
-├── vercel.json               ← Aturan Cache-Control per jenis file
-├── tailwind.config.js        ← Scan class Tailwind web utama
-├── src/input.css → dist/output.css   ← Source & hasil compile Tailwind web utama
-├── manifest.json, sw.js      ← Config PWA, cuma cache halaman "/"
-├── *.json (root & subfolder)  ← Cadangan/fallback tiap koleksi (lihat tabel §4)
-│
-├── Models/                   ← Katalog model (index.html + script.js + models.json fallback)
-├── tutorial/                  ← Video & tutorial
-├── member-Afi-Studio/         ← Daftar member per generasi + folder profile/ (foto)
-├── ranking/                    ← Papan ranking render
-├── favorit/                    ← Halaman favorit pengunjung
-├── event/, bantuan/, feedback/ ← Halaman statis / form
-│
-├── admin/                      ← ADMIN PANEL (terpisah total dari web utama, folder sendiri biar nama file tidak tabrakan)
-│   ├── index.html               ← Layar login: input token → POST /api/admin/verify → simpan ke sessionStorage kalau benar
-│   ├── panel.html (paling besar, ~1600 baris) ← Dashboard: sidebar per koleksi, tabel/kartu (bisa switch mode + resize kolom tabel manual), modal tambah/edit/hapus, semua CRUD manggil POST /api/data/:type
-│   ├── src/input.css → dist/output.css  ← Tailwind KHUSUS admin (config & build terpisah dari web utama)
-│   ├── fonts/, icons/            ← Aset khusus admin (font + ikon Lucide lokal)
-│   └── coming_soon.webp
-│
-├── api/                          ← SEMUA backend (Vercel Serverless Functions)
-│   ├── data/[type].js             ← Endpoint generik GET (publik)/POST (admin) untuk 9 koleksi data, baca-tulis Redis + fallback JSON
-│   ├── admin/verify.js            ← Cek token login, tidak nyimpen apapun (stateless)
-│   └── feedback.js                ← Kirim form feedback ke Telegram (rate-limit Upstash + reCAPTCHA)
-│
-├── scripts/
-│   ├── seed-redis.mjs             ← Isi Redis pertama kali dari file .json yang ada di repo
-│   └── export-redis.mjs           ← Kebalikannya: tarik isi Redis sekarang → jadi file .json (backup manual)
-│
-├── fonts/, icons/                  ← Aset self-hosted web utama (terpisah dari admin/fonts, admin/icons)
-└── robots.txt, sitemap.xml          ← SEO dasar
+Halaman publik           →  GET /api/data/:type
+                          →  coba baca Redis dulu (key afi-studio:data:<type>)
+                          →  kalau Redis kosong/error → baca file JSON fallback di repo
+                          →  balikin JSON ke browser (dengan Cache-Control, biasanya ~30 detik)
+
+Admin panel (/admin)     →  POST /api/data/:type  (wajib header x-admin-token)
+                          →  server cek token ke ADMIN_TOKEN
+                          →  kalau cocok → tulis langsung ke Redis
+                          →  kalau salah/tidak ada → 401, tidak ada yang berubah
 ```
 
-## 6. Fungsi Kode Kunci (Detail)
+Artinya: **cara resmi update konten sekarang adalah lewat admin panel**, bukan edit file JSON + push. Edit file JSON langsung di repo cuma efektif kalau Redis untuk koleksi itu belum pernah di-seed, atau untuk keperluan reset/recovery (lihat bagian 9).
 
-- **`api/data/[type].js`** — jantung backend. Satu file menangani 9 jenis koleksi lewat parameter URL `:type`. `GET` selalu publik (dipakai semua halaman pengunjung); `POST` selalu dicek header `x-admin-token` dulu sebelum boleh `redis.set()`. Kalau `UPSTASH_REDIS_REST_URL`/`TOKEN` belum di-set di environment, `redis` jadi `null` dan otomatis fallback ke file JSON untuk `GET` (tapi `POST` akan gagal dengan pesan error jelas, bukan diam-diam gagal).
-- **`admin/panel.html`** — semua UI admin ada di satu file ini (SPA sederhana tanpa router beneran, ganti tampilan lewat `data-view` + JS toggle class). Fitur penting di dalamnya:
-  - Mode tampilan **tabel** dan **kotak/kartu**, bisa di-switch, tersimpan di `localStorage 'afi-view'`.
-  - **Resize kolom tabel manual** (`initResizableTables`) — user bisa tarik pinggir kolom, lebar tersimpan per-sesi (di-reset kalau data tabelnya di-remount/reload halaman, karena tidak dipersist ke storage). Drag pakai Pointer Events + pointer capture, dan scroll horizontal tabel dimatikan sementara selama drag supaya pegangan kolom benar-benar ikut jari, tidak dibajak jadi gesture scroll layar sentuh.
-  - **Reorder data** (naik/turun urutan) lewat tombol di board opsi saat kartu/baris ditahan.
-  - Semua form CRUD (Model, Kategori, Video, Banner, Marquee, Member, Ranking, Pengaturan) kirim `POST /api/data/:type` dengan **seluruh isi koleksi** (bukan cuma 1 item) — artinya tiap simpan itu "timpa semua", jadi kalau ada 2 admin edit bersamaan, yang terakhir simpan yang menang (tidak ada penguncian/konflik-detection).
-- **`favorites.js`** — dipakai bareng oleh `Models/script.js`, `tutorial/script.js`, dan `/favorit/`. Video pakai id video sebagai penanda; model belum punya field `id` di skema data-nya, jadi dipakai `link` (URL download) sebagai penanda unik — **kalau `link` sebuah model diubah, status favorit pengunjung untuk model itu akan hilang** (poin penting kalau mau redesain skema model nanti).
-- **`config.js`** — sekarang cuma "jembatan": nilai default di kode dipakai sekilas sebelum `fetch('/api/data/settings')` selesai / kalau offline, lalu langsung ditimpa hasil dari Redis begitu berhasil.
+## 5. Fitur yang Sudah Ada
 
-## 7. Keamanan
+**Web publik:**
+- Katalog model dengan filter kategori otomatis (ikut apa yang didefinisikan admin) + filter aplikasi tujuan + pencarian
+- Video & tutorial dengan badge "Baru" otomatis dan penanda populer per-device
+- Halaman member per generasi, grup baru otomatis muncul kalau ada `gen_id` baru
+- Ranking render Top 3 + Top 10 dengan lightbox (caption width dihitung dari ukuran asli gambar)
+- Tema gelap/terang (ikut sistem HP otomatis, bisa toggle manual)
+- PWA — bisa di-install ke homescreen, halaman utama tetap terbuka semi-offline
+- SEO dasar (sitemap, robots.txt)
+- Cache diatur lewat `vercel.json` (aset statis lama, data JSON pendek) + `Cache-Control` per koleksi di `api/data/[type].js`
 
-- **Autentikasi admin:** token tunggal (`ADMIN_TOKEN`), dicek server-side di dua tempat: `api/admin/verify.js` (saat login) dan `api/data/[type].js` (saat setiap `POST`). Tidak ada sesi/JWT — token mentah dikirim ulang di header `x-admin-token` tiap request tulis.
-- **Penyimpanan token di browser:** `sessionStorage`, bukan `localStorage` — otomatis hilang saat tab admin ditutup, jadi tidak nempel permanen di device kalau admin lupa logout.
-- **Endpoint publik vs terproteksi:** `GET /api/data/:type` sengaja publik tanpa auth (memang untuk ditampilkan ke semua pengunjung). Hanya `POST` (tulis) yang diproteksi. Kalau ke depan mau ada data admin-only yang tidak boleh publik, itu **butuh endpoint/skema baru** — jangan taruh di koleksi yang sama dengan data publik.
-- **Kredensial:** semua secret (`ADMIN_TOKEN`, `UPSTASH_REDIS_REST_URL/TOKEN`, `TELEGRAM_BOT_TOKEN`, `RECAPTCHA_SECRET_KEY`) di Environment Variable Vercel, tidak pernah di kode/repo.
-- **Rate-limit & anti-spam:** form Feedback pakai Upstash untuk rate-limit + reCAPTCHA — endpoint `api/data/:type` **tidak** punya rate-limit sendiri (mengandalkan proteksi token admin saja untuk `POST`).
-- **Lokasi file Python:** `validate_data.py` wajib di luar folder `api/` — Vercel otomatis coba jalankan apapun di `api/` sebagai serverless function, file Python di situ bisa bikin deploy gagal.
-- **`.gitignore`:** jaga `node_modules/`, `.env`, `.vercel` supaya tidak ke-commit.
+**Admin panel (`/admin`):**
+- Login token tunggal, sesi tersimpan di `sessionStorage` (hilang saat tab ditutup)
+- CRUD penuh untuk: Models, Kategori Model, Kategori Aplikasi, Videos, Banner, Marquee, Member, Ranking, Event
+- Kategori terpusat: kategori yang diedit di tab Kategori otomatis nyambung ke form Model, filter chip publik, dan homepage — tidak perlu update manual di banyak tempat
+- Toggle Pengaturan: buka/tutup jalur pendaftaran Model 3D & Member (dibaca `config.js` di semua halaman publik lewat `/api/data/settings`)
+- Dua mode tampilan data: Tabel (kolom bisa di-resize manual, lebar juga auto-menyesuaikan isi terpanjang) dan Kotak/kartu grid
+- Interaksi mobile-friendly: tap = edit, tahan/klik-kanan = menu popup Edit/Hapus (bukan drag-to-reorder, karena gesture drag sering meleset di Android)
+- Rollback otomatis di UI kalau simpan ke server gagal, supaya tampilan admin tidak pernah beda dari data asli di Redis
 
-## 8. Cara Kerja Admin Panel (Untuk Dipahami Sebelum Ubah Fitur)
-
-1. Buka `/admin` → diarahkan ke layar login kalau belum ada token valid di `sessionStorage`.
-2. Login sukses → `panel.html` dimuat, sidebar kiri berisi menu: Dashboard, Models, Kategori, Video & Tutorial, Banner, Marquee/Info, Member, Ranking Render, Event, Feedback, Pengaturan.
-3. Tiap menu = satu `section-view` yang fetch datanya sendiri dari `/api/data/:type` terkait saat pertama dibuka.
-4. Tambah/edit data = buka modal, isi form, simpan → kirim ulang **seluruh array/objek koleksi** (bukan delta) ke `POST /api/data/:type`.
-5. Reorder/hapus juga langsung `POST` ulang seluruh koleksi dengan urutan/isi baru.
-6. Tabel bisa diganti mode kotak, dan lebar kolom tabel bisa ditarik manual (lihat §6) — berguna kalau kolom deskripsi/teks panjang perlu dilebarkan sementara saat mengecek data.
-7. Kalau nambah **jenis data baru** (misal koleksi baru di luar 9 yang ada): daftarkan dulu di `TYPES` (`api/data/[type].js`), baru bikin section + form-nya di `admin/panel.html`. Tanpa didaftarkan di `TYPES`, endpoint akan balas 404 untuk `type` itu.
-
-## 9. Yang Sudah Ada vs Belum
-
-**Sudah:**
-- Admin panel penuh (CRUD 9 koleksi data + Pengaturan toggle pendaftaran), tersimpan ke Redis
-- Katalog model dengan filter kategori/aplikasi + pencarian
-- Video & tutorial dengan badge "Baru" & penanda populer (`localStorage`, per-device)
-- Halaman member per generasi (grup baru otomatis muncul dari `gen_id`)
-- **Fitur Favorit** — sudah live di `/favorit/` (bukan lagi rencana), `localStorage` per-device
-- Papan Ranking Render (Top 3 + Top 10) — sudah ambil data dari `/api/data/ranking`, tapi foto masih placeholder `coming_soon.webp` di beberapa entri
-- Tema gelap/terang, PWA (halaman `/` semi-offline), SEO dasar
-- Fallback otomatis ke file JSON kalau Redis kosong/down — web tidak akan mati total
-
-**Belum / Ide ke Depan:**
+### Belum Dikerjakan (Ide ke Depan)
 - Search/filter di halaman Member
 - Sorting (model terbaru/terlama, member alfabet)
-- Isi foto render juara asli di `/ranking/` (ganti `coming_soon.webp`)
-- **Konfirmasi sebelum hapus** di admin panel — mengingat sistemnya "timpa semua data" (§6), salah pencet hapus bisa langsung hilang permanen tanpa undo. Ini prioritas berikutnya yang mau dikerjakan.
+- Counter download / like dari pengunjung (secara teknis sekarang sudah ada database, jadi ini lebih mudah diimplementasi dibanding versi lama proyek yang murni statis)
+- Fitur Favorit (nandain model/video favorit tanpa login, tersimpan lokal `localStorage`) — masih ide, belum diputuskan cakupannya (Model saja/Video saja/dua-duanya)
+- Riwayat/log siapa yang login admin & kapan (sekarang admin cuma token tunggal tanpa audit trail)
+- Halaman riwayat Feedback di dalam admin panel (sekarang feedback cuma masuk ke Telegram, tidak tersimpan/terlihat di panel)
 
-## 10. Kalau Ada yang Error
+## 6. Kalau Ada yang Error
 
-- **Situs nampilin data kosong:** cek `afi-studio.vercel.app/api/data/models` langsung di browser — kalau error, cek Redis (Upstash dashboard) dan fallback file JSON-nya (`python3 validate_data.py`)
-- **Perubahan di admin tidak muncul di web:** tunggu ~30 detik (cache), kalau masih belum, cek toast di admin panel — merah berarti simpan gagal (token/Redis)
-- **Tidak bisa login admin:** cek `ADMIN_TOKEN` di Vercel Environment Variables sudah ke-set dan sama persis dengan yang diketik
-- **Form feedback tidak jalan:** cek `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `RECAPTCHA_SECRET_KEY`, `UPSTASH_REDIS_REST_URL/TOKEN` di Vercel
-- **Style hilang setelah nambah class Tailwind baru:** pastikan file halaman ada di `content` (`tailwind.config.js` untuk web utama, `admin/tailwind.config.js` untuk admin), lalu compile ulang `output.css` yang sesuai
-- **Resize kolom tabel admin tidak ikut jari (khususnya di layar sentuh):** lihat implementasi `initResizableTables` di `admin/panel.html` — sudah diperbaiki pakai Pointer Capture + matikan scroll wadah tabel sementara saat drag; kalau bug serupa muncul lagi di komponen drag lain, pola perbaikannya sama
+- **Halaman publik nampilin data kosong:** cek langsung `afi-studio.vercel.app/api/data/models` (ganti `models` sesuai koleksi) di browser — kalau ini juga kosong/error, cek Redis (env var `UPSTASH_REDIS_REST_URL`/`TOKEN` di Vercel) dan pastikan file fallback JSON-nya masih valid (`python3 validate_data.py` atau `python3 -m json.tool <file>.json`)
+- **Perubahan di admin panel tidak muncul di web publik:** tunggu ~30 detik (cache `GET /api/data/:type`), kalau masih belum muncul cek console/network di HP (kalau bisa) atau minta orang lain coba refresh paksa
+- **Login admin gagal terus:** pastikan `ADMIN_TOKEN` sudah di-set di Environment Variables Vercel dan sudah redeploy setelah nambah/ubah env var
+- **Simpan data di admin panel gagal (toast merah):** biasanya `UPSTASH_REDIS_REST_URL`/`TOKEN` belum di-set atau Redis lagi down — perubahan di layar otomatis batal, aman untuk dicoba ulang
+- **Ikon Lucide baru tidak muncul di admin panel:** `admin/icons/lucide-local.js` (dan `icons/lucide-local.js` untuk web publik) adalah bundel yang **di-trim manual**, bukan package npm penuh — ikon yang belum ada di file itu harus ditambahkan manual sebelum dipakai
+- **Update di `sw.js` (CORE_ASSETS) tidak kepakai pengunjung lama:** naikkan `CACHE_NAME` (mis. `v6` → `v7`), kalau tidak Service Worker lama tetap dipakai browser pengunjung
+- **Tampilan halaman berantakan / style hilang setelah nambah class Tailwind baru:** pastikan file halaman itu ada di daftar `content` pada `tailwind.config.js` (root untuk web publik, `admin/tailwind.config.js` untuk admin panel), lalu build ulang `output.css` masing-masing
+- **Kolom tabel admin susah di-resize / lari sendiri saat ditarik di HP:** area tarik (`.col-resizer`) sudah pakai `touch-action:none` + pointer capture + kunci scroll horizontal wrap selama drag — kalau masih ada masalah serupa di elemen draggable lain, pola perbaikannya sama: `setPointerCapture` di `pointerdown`, matikan scroll container selama drag, baru dikembalikan di `pointerup`/`pointercancel`
+
+## 7. Kebiasaan/Preferensi Kerja Randy (buat AI assistant berikutnya)
+
+- **Patch bertarget, jangan nyenggol fungsi lain.** Randy sangat sensitif soal regresi — kalau minta perbaikan 1 hal, jangan ikut "merapikan" bagian lain yang tidak diminta.
+- **Konfirmasi dulu sebelum eksekusi perubahan besar**, terutama yang menyentuh banyak file atau berpotensi mengubah tampilan/perilaku yang sudah jalan.
+- Randy kerja dari **Android** pakai Termux (git) + aplikasi editor HTML — **tidak bisa pakai DevTools browser**, jadi debugging harus dijelaskan lewat gejala yang terlihat/dites langsung di HP, bukan asumsi "buka console".
+- Setelah selesai perbaikan multi-file, Randy biasanya minta **file di-zip ulang** untuk didownload, bukan ditempel satu-satu.
+- Hemat token/analisis: kerjakan sesuai yang diminta, jangan mengerjakan banyak hal sekaligus tanpa diminta.
+- Kalau ada kemungkinan gesture/interaksi Android bermasalah (drag, resize, tahan/long-press), curigai dulu konflik dengan native scroll/gesture browser — pola solusinya biasanya `touch-action:none` + `setPointerCapture` + kunci scroll container sementara selama drag berlangsung (lihat bagian 6, kasus resize kolom tabel).
+
+## 8. Environment Variables yang Dipakai (di Vercel)
+
+| Variable | Untuk apa |
+|---|---|
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Koneksi ke database Redis (dipakai `api/data/[type].js` dan rate-limit di `api/feedback.js`) |
+| `ADMIN_TOKEN` | Password tunggal login `/admin` |
+| `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Tujuan pesan form Feedback |
+| `RECAPTCHA_SECRET_KEY` | Verifikasi reCAPTCHA di form Feedback |
+
+Detail cara setup awal ada di `SETUP-ADMIN-DATABASE.md`.
+
+## 9. Seed / Reset / Backup Data
+
+- `node scripts/seed-redis.mjs` — push isi file JSON di repo ke Redis (dipakai waktu setup awal atau kalau mau reset koleksi tertentu balik ke data seed)
+- `node scripts/export-redis.mjs` — tarik isi Redis saat ini balik jadi file JSON (backup, atau supaya file di repo ikut sinkron dengan data terbaru hasil edit lewat admin panel)
+- Metode env var yang terbukti jalan di Termux: `vercel env pull` lalu `set -o allexport` sebelum load file `.env` (metode `xargs` pernah gagal karena karakter spesial di isi env value)
 
 ---
 © 2026 Afi Studio — dokumen ini dibuat biar tidak perlu mikir ulang dari nol tiap kali balik ke proyek ini.

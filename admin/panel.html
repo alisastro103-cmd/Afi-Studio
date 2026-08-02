@@ -711,18 +711,23 @@ function initResizableTables(){
       const handle = document.createElement('div');
       handle.className = 'col-resizer';
       th.appendChild(handle);
-      let startX = 0, startWidth = 0, startTableWidth = 0;
+      handle.style.touchAction = 'none'; // pastikan browser gak nyolong gesture buat scroll walau CSS class kepasang belakangan
+      let startX = 0, startWidth = 0, startTableWidth = 0, prevOverflowX = '';
       const onMove = (e)=>{
+        e.preventDefault();
         let newWidth = Math.max(minW, startWidth + (e.clientX - startX));
         if(maxW !== Infinity) newWidth = Math.min(maxW, newWidth);
         const delta = newWidth - startWidth;
         th.style.width = newWidth + 'px';
         table.style.width = (startTableWidth + delta) + 'px';
       };
-      const onUp = ()=>{
+      const onUp = (e)=>{
         document.removeEventListener('pointermove', onMove);
         document.removeEventListener('pointerup', onUp);
+        document.removeEventListener('pointercancel', onUp);
         handle.classList.remove('resizing');
+        wrap.style.overflowX = prevOverflowX; // balikin scroll horizontal wrap setelah selesai tarik
+        try{ handle.releasePointerCapture(e.pointerId); }catch(_){}
       };
       handle.addEventListener('pointerdown', e=>{
         e.preventDefault(); e.stopPropagation();
@@ -731,8 +736,12 @@ function initResizableTables(){
         startTableWidth = table.getBoundingClientRect().width;
         table.dataset.userResized = '1'; // sekali ditarik manual, jangan ditimpa pengukuran otomatis lagi
         handle.classList.add('resizing');
+        prevOverflowX = wrap.style.overflowX;
+        wrap.style.overflowX = 'hidden'; // kunci scroll horizontal wrap selama narik biar jari gak "ditelan" gesture scroll
+        try{ handle.setPointerCapture(e.pointerId); }catch(_){} // kunci semua event pointer ke handle ini, gak lari ke elemen lain di bawah jari
         document.addEventListener('pointermove', onMove);
         document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onUp);
       });
     });
     // Ukur ulang otomatis kalau isi tabel berubah (tambah/edit/hapus data) supaya kolom teks tetap ikut melebar
