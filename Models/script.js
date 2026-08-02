@@ -52,29 +52,20 @@ async function loadAppCategories() {
     }
 }
 
-// Hitung ulang daftar kategori model biasa dari: (1) kategori master custom
-// dari admin, (2) kategori yang beneran dipakai di data models.json — digabung & diurutkan.
+// Hitung ulang daftar kategori model biasa — murni dari kategori master yang
+// diatur admin lewat Panel Admin > Kategori Model (diurutkan A-Z).
 function recomputeFilters() {
-    const catSet = new Set(CATEGORY_MASTER);
-    MODELS.forEach(m => {
-        (m.category || []).forEach(c => c && catSet.add(c));
-    });
     CATEGORIES = [
         "Semua",
-        ...Array.from(catSet).sort((a, b) => a.localeCompare(b)),
+        ...CATEGORY_MASTER.slice().sort((a, b) => a.localeCompare(b)),
     ];
 }
 
-// Hitung ulang daftar kategori Target Aplikasi dari: (1) urutan yang diatur
-// admin lewat Panel Admin > Kategori Aplikasi (urutan dipertahankan APA ADANYA,
-// tidak diurutkan ulang, biar sesuai urutan yang diatur admin), lalu (2) nilai
-// app_target lain yang mungkin dipakai model tapi belum ada di daftar tsb.
+// Hitung ulang daftar kategori Target Aplikasi — murni dari urutan yang
+// diatur admin lewat Panel Admin > Kategori Aplikasi (urutan dipertahankan
+// APA ADANYA, tidak diurutkan ulang).
 function recomputeAppFilters() {
-    const appSet = new Set(APP_CATEGORY_MASTER);
-    MODELS.forEach(m => {
-        if (m.app_target) appSet.add(m.app_target);
-    });
-    APP_CATEGORIES = ["Semua", ...Array.from(appSet)];
+    APP_CATEGORIES = ["Semua", ...APP_CATEGORY_MASTER];
 }
 
 // Merender tombol filter kategori

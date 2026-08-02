@@ -21,10 +21,12 @@ const TYPES = {
   marquee:    { redisKey: 'afi-studio:data:marquee',    file: 'marquee.json' },
   member:     { redisKey: 'afi-studio:data:member',     file: 'member-Afi-Studio/member.json' },
   ranking:    { redisKey: 'afi-studio:data:ranking',    file: 'ranking/ranking.json' },
-  categories: { redisKey: 'afi-studio:data:categories', file: 'categories.json' },
-  appcategories: { redisKey: 'afi-studio:data:appcategories', file: 'app-categories.json' },
+  categories: { redisKey: 'afi-studio:data:categories', file: 'categories.json', cache: 'public, max-age=0, must-revalidate' },
+  appcategories: { redisKey: 'afi-studio:data:appcategories', file: 'app-categories.json', cache: 'public, max-age=0, must-revalidate' },
   settings:   { redisKey: 'afi-studio:data:settings',   file: 'settings.json' },
 };
+
+const DEFAULT_CACHE = 'public, max-age=30, stale-while-revalidate=120';
 
 const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
   ? Redis.fromEnv()
@@ -54,7 +56,7 @@ export default async function handler(req, res) {
       try {
         const cached = await redis.get(meta.redisKey);
         if (cached !== null && cached !== undefined) {
-          res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+          res.setHeader('Cache-Control', meta.cache || DEFAULT_CACHE);
           return res.status(200).json(cached);
         }
       } catch (e) {
@@ -63,7 +65,7 @@ export default async function handler(req, res) {
     }
     const fallback = readFallbackFile(meta.file);
     if (fallback !== null) {
-      res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+      res.setHeader('Cache-Control', meta.cache || DEFAULT_CACHE);
       return res.status(200).json(fallback);
     }
     return res.status(500).json({ error: 'Data tidak tersedia: Redis kosong dan file cadangan tidak ditemukan.' });
