@@ -134,20 +134,87 @@ html.dark {
   }
 }
 
-/* Layar sangat lebar: tambah satu kolom supaya kartu tidak melar. */
+/* ===================== 2b. LAYAR SANGAT LEBAR (>=1600px) ================
+   Sengaja TIDAK menambah kolom lagi di sini. Grid 1320px yang sama tetap
+   dipakai dan hanya dipusatkan, jadi:
+     - kartu tidak menyusut jadi terlalu kecil (5 kolom di dalam 1320px),
+     - banner tetap 2:1 dengan lebar yang sama (tidak jadi raksasa),
+     - tampilan 1600px / 1920px / ultrawide identik dan rapi.
+   Yang ditambah hanya sedikit ruang atas-bawah supaya konten tidak
+   "nempel" di layar besar. */
+
 @media (min-width: 1600px) {
-  main.max-w-6xl > #content-grid.xl\:grid-cols-4 {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+  main.max-w-6xl,
+  main.max-w-5xl,
+  main.max-w-3xl {
+    padding-top: 8px;
+  }
+}
+
+/* ====================== 2c. TABLET (768px - 1023px) ====================
+   Sebelumnya rentang ini "kosong": `zoom: 0.75` (yang dibuat untuk ponsel)
+   masih berlaku, sehingga di tablet semuanya terlihat kecil dan grid 2 kolom
+   menyisakan white space lebar. Di sini skala dinaikkan sedikit dan
+   containernya dibuat memakai lebar layar, tetapi susunannya tetap gaya
+   mobile (video masih scroller horizontal), jadi mobile & desktop tetap beda.
+   Tidak ada elemen gambar/banner yang rasionya diubah. */
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
-  #video-scroll {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  body {
+    zoom: 0.9;
+  }
+
+  .nav-bar > .max-w-7xl,
+  main.max-w-6xl,
+  main.max-w-5xl,
+  .site-footer-inner {
+    max-width: 100%;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  main.max-w-3xl {
+    max-width: 720px;
+  }
+
+  /* Banner & marquee: hanya lebar container-nya yang disesuaikan.
+     Rasio 2:1 banner tidak disentuh. */
+  .banner-container,
+  .marquee-bar {
+    max-width: 100%;
+  }
+
+  /* 3 kolom terasa pas di lebar tablet, 2 kolom terlalu melar. */
+  #content-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Chip kategori membungkus, tidak ada chip yang terpotong. */
+  #category-filter,
+  #app-category-filter {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  /* Tetap scroller horizontal (khas mobile), lebar kartu disesuaikan. */
+  #video-scroll .video-card {
+    width: min(58vw, 460px);
+  }
+
+  .app-container {
+    max-width: 720px;
   }
 }
 
 /* ============================ 3. MOBILE ================================= */
 
-@media (max-width: 1023px) {
+@media (max-width: 767.98px) {
   /* Jaga supaya tidak ada elemen yang bikin scroll horizontal tak sengaja. */
   html,
   body {
