@@ -1,0 +1,207 @@
+/* =========================================================================
+   Afi Studio — Layout & Theme refinement (CSS only)
+   -------------------------------------------------------------------------
+   File ini SENGAJA dipisah dan di-load PALING AKHIR di setiap halaman,
+   supaya:
+     - tidak ada satu pun logic JS / struktur HTML yang perlu diubah,
+     - semua penyesuaian bisa dilihat / di-rollback dari satu tempat,
+     - style asli tiap halaman tetap utuh (ini cuma lapisan override).
+
+   Isi:
+     1. Token warna (light & dark) — nuansa slate-biru lama dipertahankan,
+        hanya kontras & kedalamannya dirapikan.
+     2. Perbaikan layout desktop (hilangkan white space kiri/kanan,
+        lebar container konsisten, grid lebih seimbang).
+     3. Penyesuaian mobile supaya tetap rapi.
+     4. Admin panel (admin/*.html).
+   ========================================================================= */
+
+/* ============================ 1. TOKEN WARNA ============================ */
+
+:root {
+  /* Aksen biru tetap, dinaikkan sedikit saturasinya supaya teks putih
+     di atas tombol terbaca dan warna terasa "punya identitas". */
+  --accent: #4f86d6;
+  --accent-hover: #3b72c0;
+
+  /* Latar & permukaan: lebih terang dan bersih, tetap abu-kebiruan. */
+  --bg: #e5eaf2;
+  --surface: #f5f8fc;
+
+  --text: #26313f;
+  --text-sub: #5b6b80;
+  --text-light: #5b6b80; /* dipakai di event & feedback */
+  --disabled: #8e9cb0;
+
+  --border: #c8d3e1;
+  --grid-line: rgba(100, 116, 139, 0.16);
+}
+
+.dark,
+html.dark {
+  --accent: #4c7bc0;
+  --accent-hover: #5e8ed4;
+
+  --bg: #151e2e;
+  --surface: #1f2a3c;
+
+  --text: #dde5ef;
+  --text-sub: #93a2b8;
+  --text-light: #93a2b8;
+  --disabled: #64748b;
+
+  --border: #33415a;
+  --grid-line: rgba(148, 163, 184, 0.12);
+}
+
+/* ====================== 2. LAYOUT DESKTOP (>=1024px) ==================== */
+
+@media (min-width: 1024px) {
+  /* `zoom: 0.75` dibuat untuk tampilan mobile. Di desktop efeknya adalah
+     layout dirender seolah layar 1.33x lebih lebar, sehingga konten mengecil
+     dan menyisakan white space besar di kiri/kanan. Di layar lebar kita
+     kembalikan ke skala normal. Mobile tidak tersentuh. */
+  body {
+    zoom: 1;
+  }
+
+  /* Lebar container disamakan: navbar, banner, konten, dan footer
+     memakai grid 1280px yang sama. */
+  .nav-bar > .max-w-7xl {
+    max-width: 1320px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  main.max-w-6xl,
+  main.max-w-5xl {
+    max-width: 1320px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  main.max-w-3xl {
+    max-width: 900px;
+  }
+
+  .banner-container {
+    max-width: 1320px;
+  }
+
+  .marquee-bar {
+    max-width: 1320px;
+  }
+
+  .site-footer-inner {
+    max-width: 1320px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  /* Banner 2:1 terlalu tinggi di layar lebar (bisa >600px).
+     Rasio dipendekkan; gambar tetap `object-fit: cover` jadi tidak gepeng. */
+  .banner-container::before {
+    padding-top: 30%;
+  }
+
+  /* Baris filter kategori: di mobile scroll horizontal, di desktop
+     lebih rapi kalau membungkus ke bawah (tidak ada chip terpotong). */
+  #category-filter,
+  #app-category-filter {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  /* Video & tutorial: dari scroller horizontal (kartu 460px, terpotong)
+     menjadi grid 3 kolom yang seimbang. */
+  #video-scroll {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    overflow: visible;
+  }
+
+  #video-scroll .video-card {
+    width: auto;
+  }
+
+  /* Halaman member: container dibiarkan mengikuti grid yang sama. */
+  .app-container {
+    max-width: 1320px;
+  }
+
+  /* Event & feedback tidak punya container; beri lebar baca yang wajar
+     supaya tidak melebar penuh ke tepi layar. */
+  main > .rules-section,
+  main > form#feedbackForm {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Layar sangat lebar: tambah satu kolom supaya kartu tidak melar. */
+@media (min-width: 1600px) {
+  main.max-w-6xl > #content-grid.xl\:grid-cols-4 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  #video-scroll {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ============================ 3. MOBILE ================================= */
+
+@media (max-width: 1023px) {
+  /* Jaga supaya tidak ada elemen yang bikin scroll horizontal tak sengaja. */
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Kartu video full-lebar minus sedikit peek kartu berikutnya,
+     menggantikan lebar tetap 460px yang jauh melebihi layar ponsel. */
+  #video-scroll .video-card {
+    width: min(86vw, 460px);
+  }
+
+  /* Sedikit ruang napas di tepi layar kecil. */
+  .site-footer-inner {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* ========================= 4. ADMIN PANEL =============================== */
+/* Admin memakai Tailwind + `html { zoom: 0.85 }`. Sama seperti halaman
+   publik: di desktop skala dikembalikan normal dan lebar konten dinaikkan,
+   tanpa menyentuh markup, gesture, atau handler apa pun. */
+
+@media (min-width: 1024px) {
+  html.afi-admin {
+    zoom: 1;
+  }
+
+  /* Konten utama panel memakai lebar penuh, tapi tetap punya batas nyaman. */
+  .afi-admin #main-content > * {
+    max-width: 1320px;
+  }
+}
+
+
+/* ========================= 5. HALAMAN RANKING =========================== */
+/* Di desktop grid "Runner Up" 2 kolom membuat kartu jadi raksasa. */
+
+@media (min-width: 1024px) {
+  #runner-up-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023.98px) {
+  #runner-up-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
