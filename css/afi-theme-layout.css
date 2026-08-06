@@ -98,12 +98,6 @@ html.dark {
     padding-right: 32px;
   }
 
-  /* Banner 2:1 terlalu tinggi di layar lebar (bisa >600px).
-     Rasio dipendekkan; gambar tetap `object-fit: cover` jadi tidak gepeng. */
-  .banner-container::before {
-    padding-top: 30%;
-  }
-
   /* Baris filter kategori: di mobile scroll horizontal, di desktop
      lebih rapi kalau membungkus ke bawah (tidak ada chip terpotong). */
   #category-filter,
