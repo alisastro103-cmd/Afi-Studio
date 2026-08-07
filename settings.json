@@ -1,4 +1,8 @@
 {
   "isDaftarModelOpen": true,
-  "isDaftarMemberOpen": false
+  "isDaftarMemberOpen": false,
+  "isEventOpen": true,
+  "daftarModelUrl": "https://forms.gle/KvbgZP3CrziGGZBU8",
+  "daftarMemberUrl": "https://forms.gle/JmYJ1S5GFCEscAnU7",
+  "eventDriveUrl": "https://drive.google.com/drive/folders/1wZwtLzkCXjhMoWQ_DGO0UuJO-u9zVUAc"
 }

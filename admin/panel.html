@@ -430,6 +430,33 @@
               <span class="switch-track"></span>
             </label>
           </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-row-title">Event Render</div>
+              <div class="setting-row-desc">Tombol &ldquo;Lanjutkan ke Event Render&rdquo; di halaman Event.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-event-toggle" onchange="updateSetting('isEventOpen', this.checked)">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel p-4">
+          <h3 class="text-sm font-bold mb-1">Ubah Jalur Link</h3>
+          <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6; margin-bottom:14px;">Ganti tujuan tombol di atas tanpa perlu edit kode. Tekan Enter atau klik di luar kolom untuk menyimpan, link di semua halaman otomatis ikut berubah.</p>
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+            <div class="setting-row-title">Link Daftar Model 3D</div>
+            <input type="text" id="setting-model-url" placeholder="https://forms.gle/..." onchange="updateSettingUrl('daftarModelUrl', this.value.trim())">
+          </div>
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+            <div class="setting-row-title">Link Daftar Member</div>
+            <input type="text" id="setting-member-url" placeholder="https://forms.gle/..." onchange="updateSettingUrl('daftarMemberUrl', this.value.trim())">
+          </div>
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px; border-bottom:none;">
+            <div class="setting-row-title">Link Drive Event Render</div>
+            <input type="text" id="setting-event-url" placeholder="https://drive.google.com/drive/folders/..." onchange="updateSettingUrl('eventDriveUrl', this.value.trim())">
+          </div>
         </div>
       </section>
 
@@ -457,7 +484,7 @@
 <script>
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
-let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false }, categories: [], appcategories: [] };
+let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [] };
 const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories','appcategories'];
 
 /* ================= LOGIN & TOKEN ================= */
@@ -1578,6 +1605,10 @@ function renderDashboard(){
 function renderPengaturan(){
   document.getElementById('setting-model-toggle').checked = !!DB.settings.isDaftarModelOpen;
   document.getElementById('setting-member-toggle').checked = !!DB.settings.isDaftarMemberOpen;
+  document.getElementById('setting-event-toggle').checked = !!DB.settings.isEventOpen;
+  document.getElementById('setting-model-url').value = DB.settings.daftarModelUrl || '';
+  document.getElementById('setting-member-url').value = DB.settings.daftarMemberUrl || '';
+  document.getElementById('setting-event-url').value = DB.settings.eventDriveUrl || '';
 }
 
 // Dipanggil saat saklar di halaman Pengaturan digeser. Update state di memory
@@ -1589,6 +1620,18 @@ async function updateSetting(key, value){
   const ok = await persist('settings');
   if(ok){ toast('Pengaturan disimpan'); }
   else { DB.settings = { ...DB.settings, [key]: prev }; renderPengaturan(); }
+}
+
+// Sama seperti updateSetting, tapi khusus buat kolom link: link tidak boleh
+// dikosongkan / diisi teks yang jelas bukan URL, biar tombol di web utama
+// tidak sampai nunjuk ke jalur kosong/rusak.
+async function updateSettingUrl(key, value){
+  if(!value || !/^https?:\/\/.+/i.test(value)){
+    toast('Link tidak valid, harus diawali http:// atau https://');
+    renderPengaturan();
+    return;
+  }
+  await updateSetting(key, value);
 }
 
 /* ================= INIT ================= */
