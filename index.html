@@ -94,32 +94,37 @@
  
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 
-        /* Panel pencarian: menempel & selalu ikut navbar (sticky tepat di bawahnya),
-           layernya di bawah navbar (z-index lebih kecil) supaya saat dibuka terlihat
-           "keluar dari belakang" navbar lalu turun ke bawah. */
-        .search-container {
+        /* Panel pencarian: melayang (floating) di bawah navbar, TIDAK mendorong
+           elemen lain (banner, grid, dst) — karena anchornya tinggi 0 dan
+           kolomnya sendiri position:absolute. Sticky di navbar supaya selalu
+           ikut navbar ke mana pun. Layernya di atas banner/konten, di bawah
+           navbar (39 vs 40) + efek kaca (blur + transparan) + sudut membulat. */
+        .search-anchor {
             position: sticky;
             top: var(--nav-h, 56px);
+            height: 0;
             z-index: 39;
-            background: color-mix(in srgb, var(--bg) 92%, transparent);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            max-height: 0;
-            overflow: hidden;
+        }
+        .search-container {
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            width: calc(100% - 32px);
+            max-width: 640px;
+            transform: translate(-50%, -14px) scale(0.97);
             opacity: 0;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.4s ease;
-            transform: translateY(-14px);
-            border-bottom: 1px solid transparent;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
         }
         .search-container.active {
-            max-height: 100px;
             opacity: 1;
-            transform: translateY(0);
-            border-bottom-color: var(--border);
+            visibility: visible;
+            pointer-events: auto;
+            transform: translate(-50%, 0) scale(1);
         }
-        .search-container-inner { position: relative; padding-top: 14px; padding-bottom: 18px; }
  
-        .search-input { width: 100%; padding: 14px 18px 14px 48px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--text); outline: none; transition: border-color 0.2s; font-size: 14px; }
+        .search-input { width: 100%; padding: 14px 18px 14px 48px; border-radius: 18px; background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px solid var(--border); color: var(--text); outline: none; transition: border-color 0.2s; font-size: 14px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
         .search-input:focus { border-color: var(--accent); }
  
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -598,9 +603,9 @@
             })();
         </script>
 
-        <div id="search-wrapper" class="search-container">
-            <div class="search-container-inner max-w-6xl mx-auto px-4 sm:px-6">
-                <i data-lucide="search" class="absolute left-8 sm:left-10 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
+        <div class="search-anchor">
+            <div id="search-wrapper" class="search-container">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
                 <input type="text" id="search-input" class="search-input" placeholder="Cari Model, Kategori, Creator, atau Converter...">
             </div>
         </div>
