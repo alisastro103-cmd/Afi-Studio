@@ -287,7 +287,13 @@ function toggleCurrentModelFavorite() {
 
 // Fungsi Download & Copy Link
 function handleDownload() {
-    if (currentModel) window.location.href = currentModel.link;
+    if (!currentModel) return;
+    // Tampilkan layar "Terima kasih" dulu (lihat favorites.js), baru redirect
+    // ke link download setelah sempat terlihat sebentar.
+    if (typeof showThankYouOverlay === 'function') showThankYouOverlay();
+    setTimeout(function () {
+        window.location.href = currentModel.link;
+    }, 1700);
 }
 
 function handleCopyLink() {
