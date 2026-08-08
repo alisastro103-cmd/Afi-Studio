@@ -57,6 +57,16 @@ export default async function handler(req, res) {
         const cached = await redis.get(meta.redisKey);
         if (cached !== null && cached !== undefined) {
           res.setHeader('Cache-Control', meta.cache || DEFAULT_CACHE);
+          // Khusus "settings": data lama di Redis bisa saja belum punya field
+          // baru (mis. daftarModelUrl) kalau field itu ditambahkan belakangan.
+          // Supaya field baru tidak tampil kosong sebelum admin sempat isi
+          // manual, gabungkan dengan default dari settings.json — field yang
+          // SUDAH ada di Redis tetap dipakai (tidak ditimpa), cuma field yang
+          // belum ada yang diisi dari default.
+          if (type === 'settings') {
+            const defaults = readFallbackFile(meta.file) || {};
+            return res.status(200).json({ ...defaults, ...cached });
+          }
           return res.status(200).json(cached);
         }
       } catch (e) {
