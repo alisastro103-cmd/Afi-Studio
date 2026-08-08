@@ -179,7 +179,7 @@
   #app-category-filter {
     flex-wrap: wrap;
     overflow-x: visible;
-    gap: 10px;
+    gap: 6px;
     padding-bottom: 20px;
   }
 
@@ -208,15 +208,16 @@
      4 kolom di ~1120px, 5 kolom di layar lebar, tanpa pernah overflow. */
   #content-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: var(--afi-gap);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
     align-items: start;
   }
 
-  /* Kartu: kedalaman halus + hover yang lebih hidup, tetap pakai token. */
+  /* Kartu: kedalaman halus + hover yang lebih hidup, tetap pakai token.
+     Radius dikurangi sedikit (14px -> 10px) — tetap tumpul, tidak tajam. */
   .model-card {
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: 10px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     transition: transform 0.2s ease, border-color 0.2s ease,
       box-shadow 0.2s ease;
@@ -233,16 +234,22 @@
     font-size: 16px;
   }
 
-  /* Video & tutorial: dari scroller horizontal menjadi grid 3 kolom rapi. */
+  /* Video & tutorial: dari scroller horizontal menjadi grid 3 kolom rapi.
+     Gap dipersempit supaya tiap kartu video tampil lebih lebar. */
   #video-scroll {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--afi-gap);
+    gap: 14px;
     overflow: visible;
     padding-bottom: 0;
   }
   #video-scroll .video-card {
     width: auto;
+  }
+
+  /* Thumbnail video: radius sedikit dikurangi, senada dengan .model-card. */
+  .video-thumb-wrap {
+    border-radius: 7px;
   }
 }
 

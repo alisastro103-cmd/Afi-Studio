@@ -299,7 +299,11 @@
             touch-action: pan-y; 
             cursor: grab; 
             background: var(--surface);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
+        .banner-container:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         /* Padding-top trick: rasio banner 1200x600 = 2:1, jadi 600/1200 * 100 = 50% */
         .banner-container::before {
             content: '';
@@ -318,8 +322,8 @@
         }
  
         .banner-wrapper { display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
-        .banner-link { min-width: 100%; height: 100%; display: block; flex-shrink: 0; pointer-events: auto; }
-        .banner-slide { width: 100%; height: 100%; object-fit: cover; object-position: center; -webkit-user-drag: none; }
+        .banner-link { min-width: 100%; height: 100%; display: block; flex-shrink: 0; pointer-events: auto; -webkit-user-drag: none; user-drag: none; }
+        .banner-slide { width: 100%; height: 100%; object-fit: cover; object-position: center; -webkit-user-drag: none; user-drag: none; }
  
         .dots-container { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
         .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); border: 0.5px solid rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
@@ -574,7 +578,7 @@
             </div>
         </nav>
  
-        <div class="banner-container" id="banner-container">
+        <div class="banner-container" id="banner-container" tabindex="0" role="region" aria-label="Banner promosi, geser dengan kursor atau tombol panah kiri/kanan">
             <div id="banner-slider" class="banner-wrapper"></div>
             <div class="dots-container" id="dots-container"></div>
         </div>
@@ -718,16 +722,37 @@
     </script>
  
     <script>
-        // --- LOGIKA ACAK 6 MODEL & PENCARIAN ---
+        // --- LOGIKA ACAK MODEL & PENCARIAN ---
         const originalRenderModels = renderModels;
-        
+
+        // Di desktop, grid #content-grid pakai auto-fill (lihat layout-desktop.css)
+        // sehingga jumlah kolom berubah mengikuti lebar/zoom browser. Fungsi ini
+        // membaca jumlah kolom yang benar-benar muat saat ini lalu menampilkan
+        // kira-kira 2 baris penuh — secukupnya, tidak sekaligus semua data.
+        // Di mobile/tablet (<1024px) jumlahnya tetap seperti semula (6).
+        function getHomeModelCount() {
+            const grid = document.getElementById('content-grid');
+            if (!grid || !MODELS.length) return 6;
+
+            const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+            if (!isDesktop) return 6;
+
+            const template = window.getComputedStyle(grid).getPropertyValue('grid-template-columns');
+            const colCount = template.split(' ').filter(Boolean).length || 1;
+
+            let count = colCount * 2;
+            count = Math.min(count, MODELS.length);
+            count = Math.max(count, Math.min(colCount, MODELS.length));
+            return count;
+        }
+
         renderModels = function(filter = '') {
             const grid = document.getElementById('content-grid');
             if (!grid) return;
  
             if (filter === '' && activeCategory === "Semua") {
                 const shuffled = [...MODELS].sort(() => 0.5 - Math.random());
-                const selected = shuffled.slice(0, 6);
+                const selected = shuffled.slice(0, getHomeModelCount());
                 
                 grid.innerHTML = selected.map(model => `
                     <article class="model-card" onclick="openModal(${MODELS.indexOf(model)})">
@@ -743,6 +768,21 @@
                 originalRenderModels(filter);
             }
         };
+
+        // Render ulang saat ukuran/zoom browser berubah, supaya jumlah board model
+        // di homepage ikut menyesuaikan (hanya kalau sedang menampilkan "Semua"
+        // tanpa pencarian aktif, biar hasil pencarian pengguna tidak ke-reset).
+        let homeModelResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(homeModelResizeTimer);
+            homeModelResizeTimer = setTimeout(() => {
+                const searchEl = document.getElementById('search-input');
+                const isSearching = searchEl && searchEl.value.trim() !== '';
+                if (!isSearching && activeCategory === "Semua") {
+                    renderModels('');
+                }
+            }, 250);
+        });
  
         // --- BANNER & UI LOGIC ---
         const container = document.getElementById('banner-container');
@@ -771,6 +811,9 @@
                 linkTag.appendChild(imgTag);
                 slider.appendChild(linkTag);
  
+                linkTag.draggable = false;
+                imgTag.draggable = false;
+
                 const dot = document.createElement('div');
                 dot.className = `dot ${index === 0 ? 'active' : ''}`;
                 dot.onclick = () => goToSlide(index);
@@ -802,6 +845,9 @@
             slideTimer = setInterval(nextSlide, 5000);
         }
  
+        let isBannerHovered = false;
+        let dragMoved = 0;
+
         container.addEventListener('mousedown', dragStart);
         container.addEventListener('touchstart', dragStart);
         container.addEventListener('mouseup', dragEnd);
@@ -809,18 +855,35 @@
         container.addEventListener('touchend', dragEnd);
         container.addEventListener('mousemove', dragAction);
         container.addEventListener('touchmove', dragAction);
+        container.addEventListener('mouseenter', () => { isBannerHovered = true; });
+        container.addEventListener('mouseleave', () => { isBannerHovered = false; });
+        container.addEventListener('focus', () => { isBannerHovered = true; });
+        container.addEventListener('blur', () => { isBannerHovered = false; });
+
+        // Cegah link kebuka kalau ternyata ini geseran (drag), bukan klik/tap biasa.
+        container.addEventListener('click', (e) => {
+            if (dragMoved > 8) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, true);
  
         function dragStart(e) {
+            if (e.type === 'mousedown' && e.button !== 0) return; // abaikan klik kanan dsb.
             isDragging = true;
+            dragMoved = 0;
             startX = (e.type.includes('mouse')) ? e.pageX : e.touches[0].clientX;
             clearInterval(slideTimer);
             slider.style.transition = 'none';
+            // Cegah browser memulai seleksi teks/gambar bawaan saat mouse ditekan-geser.
+            if (e.type === 'mousedown') e.preventDefault();
         }
  
         function dragAction(e) {
             if (!isDragging) return;
             const currentX = (e.type.includes('mouse')) ? e.pageX : e.touches[0].clientX;
             const diff = currentX - startX;
+            dragMoved = Math.abs(diff);
             const translate = prevTranslate + diff;
             slider.style.transform = `translateX(${translate}px)`;
         }
@@ -839,6 +902,23 @@
             updateSlider();
             resetTimer();
         }
+
+        // Navigasi pakai tombol panah kiri/kanan saat kursor berada di atas banner
+        // (atau banner sedang fokus lewat keyboard/Tab).
+        document.addEventListener('keydown', (e) => {
+            if (!isBannerHovered || !bannerData.length) return;
+            if (e.key === 'ArrowRight' && currentIndex < bannerData.length - 1) {
+                e.preventDefault();
+                currentIndex++;
+                updateSlider();
+                resetTimer();
+            } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                e.preventDefault();
+                currentIndex--;
+                updateSlider();
+                resetTimer();
+            }
+        });
  
         // Baru bangun slide + mulai auto-slide setelah banner.json selesai dimuat
         // (dipicu dari Models/script.js lewat event 'bannerLoaded').
