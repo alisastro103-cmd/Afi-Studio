@@ -94,23 +94,20 @@
  
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 
-        /* Panel pencarian: melayang (floating) di bawah navbar, TIDAK mendorong
-           elemen lain (banner, grid, dst) — karena anchornya tinggi 0 dan
-           kolomnya sendiri position:absolute. Sticky di navbar supaya selalu
-           ikut navbar ke mana pun. Layernya di atas banner/konten, di bawah
-           navbar (39 vs 40) + efek kaca (blur + transparan) + sudut membulat. */
-        .search-anchor {
-            position: sticky;
-            top: var(--nav-h, 56px);
-            height: 0;
-            z-index: 39;
-        }
+        /* Panel pencarian: melayang (floating) tepat di bawah navbar, TIDAK
+           mendorong elemen lain (banner, grid, dst) dan TIDAK ikut bergeser
+           sedikit pun saat halaman discroll — pakai position:fixed terhadap
+           layar (bukan sticky), jadi posisinya benar-benar diam, cuma nempel
+           di bawah navbar (var(--nav-h)). Layernya di atas banner/konten, di
+           bawah navbar (39 vs 40) + efek kaca (blur + transparan) + sudut
+           membulat. */
         .search-container {
-            position: absolute;
+            position: fixed;
             left: 50%;
-            top: 10px;
+            top: calc(var(--nav-h, 56px) + 10px);
             width: calc(100% - 32px);
             max-width: 640px;
+            z-index: 39;
             transform: translate(-50%, -14px) scale(0.97);
             opacity: 0;
             visibility: hidden;
@@ -291,15 +288,6 @@
         .video-youtube-btn { -webkit-tap-highlight-color: transparent; }
         .video-youtube-btn svg { width: 16px; height: 16px; }
 
-        .contact-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-        .contact-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); text-decoration: none; transition: background 0.2s; }
-        .contact-item:last-child { border-bottom: none; }
-        .contact-item:hover { background: color-mix(in srgb, var(--text) 5%, transparent); }
-        .contact-info { display: flex; align-items: center; gap: 14px; }
-        .icon-circle { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-        .contact-label { font-weight: 700; font-size: 14px; color: var(--text); }
-        .contact-sub { font-size: 11px; color: var(--text-sub); }
- 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; position: relative; }
@@ -603,11 +591,9 @@
             })();
         </script>
 
-        <div class="search-anchor">
-            <div id="search-wrapper" class="search-container">
-                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
-                <input type="text" id="search-input" class="search-input" placeholder="Cari Model, Kategori, Creator, atau Converter...">
-            </div>
+        <div id="search-wrapper" class="search-container">
+            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
+            <input type="text" id="search-input" class="search-input" placeholder="Cari Model, Kategori, Creator, atau Converter...">
         </div>
  
         <div class="banner-container" id="banner-container" tabindex="0" role="region" aria-label="Banner promosi, geser dengan kursor atau tombol panah kiri/kanan">

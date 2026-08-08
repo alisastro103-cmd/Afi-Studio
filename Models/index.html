@@ -91,22 +91,19 @@
             margin-right: 10px;
         }
  
-        /* Panel pencarian: melayang (floating) di bawah navbar, TIDAK mendorong
-           elemen lain — anchornya tinggi 0, kolomnya sendiri position:absolute.
-           Sticky di navbar supaya selalu ikut navbar ke mana pun. Layernya di
-           atas konten, di bawah navbar (39 vs 40) + efek kaca + sudut membulat. */
-        .search-anchor {
-            position: sticky;
-            top: var(--nav-h, 56px);
-            height: 0;
-            z-index: 39;
-        }
+        /* Panel pencarian: melayang (floating) tepat di bawah navbar, TIDAK
+           mendorong elemen lain dan TIDAK ikut bergeser sedikit pun saat
+           halaman discroll — pakai position:fixed terhadap layar (bukan
+           sticky), jadi posisinya benar-benar diam, cuma nempel di bawah
+           navbar (var(--nav-h)). Layernya di atas konten, di bawah navbar
+           (39 vs 40) + efek kaca (blur + transparan) + sudut membulat. */
         .search-container {
-            position: absolute;
+            position: fixed;
             left: 50%;
-            top: 10px;
+            top: calc(var(--nav-h, 56px) + 10px);
             width: calc(100% - 32px);
             max-width: 640px;
+            z-index: 39;
             transform: translate(-50%, -14px) scale(0.97);
             opacity: 0;
             visibility: hidden;
@@ -369,11 +366,9 @@
                 })();
             </script>
 
-            <div class="search-anchor">
-                <div id="search-wrapper" class="search-container">
-                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
-                    <input type="text" id="search-input" class="search-input" placeholder="Cari Model, Kategori, Creator...">
-                </div>
+            <div id="search-wrapper" class="search-container">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="Cari Model, Kategori, Creator...">
             </div>
      
             <main class="max-w-6xl mx-auto px-4 pt-4 pb-6 sm:px-6">
