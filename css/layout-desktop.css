@@ -1,0 +1,346 @@
+/* =========================================================================
+   Afi Studio — Layout DESKTOP ONLY (>= 1024px)  •  versi redesign
+   -------------------------------------------------------------------------
+   File ini di-load lewat <link media="(min-width: 1024px)"> sehingga
+   TIDAK PERNAH aktif di mobile/tablet (< 1024px = wilayah layout-mobile.css).
+
+   Aturan yang dipatuhi:
+     - HANYA file ini yang diubah. Semua selector (class/id) mengikat ke HTML
+       yang sudah ada dan dipakai persis sama; tidak ada markup/JS yang diubah.
+     - Semua rule berada di dalam @media (min-width: 1024px) atau breakpoint
+       desktop yang lebih besar (1280 / 1440 / 1600 / 1920). Tidak ada rule
+       yang aktif di bawah 1024px.
+     - Warna memakai token dari theme-tokens.css: --accent, --accent-hover,
+       --bg, --surface, --text, --text-sub, --text-light, --disabled,
+       --border, --grid-line. Tidak ada warna baru yang di-hardcode.
+     - Tidak ada overflow horizontal dari 1024px sampai ultrawide (grid
+       memakai auto-fill + container ber-max-width, jadi tidak pernah melebar
+       melebihi viewport). Sticky navbar tetap aman (tidak memakai
+       overflow-x:hidden pada html/body).
+     - Padding & gap dibuat lega, dan makin lega di layar lebar (>=1600px)
+       supaya konten tidak "mengambang kecil" di tengah, tapi juga tidak
+       mepet ke tepi.
+
+   Strategi lebar container:
+     Semua wadah utama (navbar, banner, marquee, main, footer, member,
+     admin) dipusatkan pada satu sistem lebar via variabel:
+       --afi-max  = lebar maksimum konten
+       --afi-pad  = padding kiri/kanan
+       --afi-read = lebar "baca" untuk halaman teks (event, feedback, FAQ)
+     Nilainya naik bertahap per breakpoint supaya proporsional di tiap layar.
+   ========================================================================= */
+
+/* ============================ 0. SKALA LEBAR =========================== */
+
+@media (min-width: 1024px) {
+  :root {
+    --afi-max: 1120px;
+    --afi-pad: 40px;
+    --afi-read: 820px;
+    --afi-gap: 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --afi-max: 1200px;
+    --afi-pad: 48px;
+    --afi-read: 860px;
+    --afi-gap: 26px;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    --afi-max: 1320px;
+    --afi-pad: 56px;
+    --afi-read: 900px;
+    --afi-gap: 28px;
+  }
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --afi-max: 1440px;
+    --afi-pad: 64px;
+    --afi-read: 920px;
+    --afi-gap: 32px;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --afi-max: 1520px;
+    --afi-pad: 72px;
+    --afi-read: 940px;
+    --afi-gap: 34px;
+  }
+}
+
+/* ===================== 1. FONDASI LAYOUT (>=1024px) ==================== */
+
+@media (min-width: 1024px) {
+  /* `zoom: 0.75` (inline, untuk mobile) dikembalikan ke skala normal di
+     desktop supaya konten tidak mengecil & menyisakan white space besar. */
+  body {
+    zoom: 1;
+    max-width: 100%;
+  }
+
+  /* --- Container inti disamakan lebar & padding-nya --- */
+  .nav-bar > .max-w-7xl,
+  main.max-w-6xl,
+  main.max-w-5xl,
+  .banner-container,
+  .marquee-bar,
+  .site-footer-inner {
+    max-width: var(--afi-max);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--afi-pad);
+    padding-right: var(--afi-pad);
+    width: 100%;
+  }
+
+  /* Banner & marquee: paddingnya cukup dari container di atas, tapi banner
+     memakai padding-top untuk rasio — jadi jangan tambah padding horizontal
+     dobel yang menggeser gambar. Reset ke 0, lebar sudah dibatasi max-width. */
+  .banner-container,
+  .marquee-bar {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Navbar terasa lebih lega secara vertikal di desktop. */
+  .nav-bar > .max-w-7xl {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  /* --- Banner hero: dari 2:1 (terlalu tinggi di layar lebar) menjadi
+     rasio yang lebih sinematik. Gambar memakai object-fit:cover sehingga
+     hanya ter-crop sedikit, rasio aslinya tidak dipaksakan. --- */
+  .banner-container {
+    border-radius: 14px;
+    margin-top: 20px;
+    box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.45);
+  }
+  .banner-container::before {
+    padding-top: 42%;
+  }
+
+  /* Marquee sedikit lebih lega & menyatu dengan banner. */
+  .marquee-bar {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    margin-top: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  /* --- Jarak konten utama --- */
+  main.max-w-6xl,
+  main.max-w-5xl {
+    padding-top: 24px;
+    padding-bottom: 56px;
+  }
+
+  /* Halaman bertumpu-teks: lebar baca yang nyaman & terpusat. */
+  main.max-w-3xl {
+    max-width: var(--afi-read);
+    padding-left: var(--afi-pad);
+    padding-right: var(--afi-pad);
+    padding-top: 28px;
+    padding-bottom: 64px;
+  }
+
+  /* ------------------------ Label seksi (signature) --------------------
+     Header seksi diberi aksen garis kiri supaya jelas menandai section,
+     konsisten di homepage, tutorial, dll. */
+  .category-header {
+    border-left: 3px solid var(--accent);
+    padding-left: 14px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+  }
+
+  /* Filter kategori: membungkus rapi (tidak ada chip terpotong) + jarak lega. */
+  #category-filter,
+  #app-category-filter {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+
+  .filter-btn {
+    padding: 9px 18px;
+    border-radius: 999px;
+    opacity: 0.75;
+    transition: transform 0.18s ease, opacity 0.2s ease, background 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .filter-btn:hover {
+    opacity: 1;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .filter-btn.active {
+    opacity: 1;
+  }
+}
+
+/* ====================== 2. GRID KONTEN & KARTU ======================== */
+
+@media (min-width: 1024px) {
+  /* Grid model (homepage, Models, tutorial): kolom otomatis mengikuti lebar
+     layar. auto-fill + minmax menjaga ukuran kartu tetap proporsional —
+     4 kolom di ~1120px, 5 kolom di layar lebar, tanpa pernah overflow. */
+  #content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--afi-gap);
+    align-items: start;
+  }
+
+  /* Kartu: kedalaman halus + hover yang lebih hidup, tetap pakai token. */
+  .model-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .model-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--accent-hover);
+    box-shadow: 0 16px 30px -20px rgba(0, 0, 0, 0.5);
+  }
+  .card-content {
+    padding: 14px 16px 16px;
+  }
+  .card-title {
+    font-size: 16px;
+  }
+
+  /* Video & tutorial: dari scroller horizontal menjadi grid 3 kolom rapi. */
+  #video-scroll {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--afi-gap);
+    overflow: visible;
+    padding-bottom: 0;
+  }
+  #video-scroll .video-card {
+    width: auto;
+  }
+}
+
+/* ============ 2b. Kartu makin besar → boleh 4 kolom video ============= */
+
+@media (min-width: 1600px) {
+  #video-scroll {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* ========================= 3. HALAMAN TUTORIAL ========================= */
+
+@media (min-width: 1024px) {
+  /* #content-grid sudah menang (id) untuk grid utama tutorial. Grid populer
+     tetap sebagai scroller horizontal khas-nya, hanya beri jarak lega. */
+  #popular-grid {
+    gap: var(--afi-gap);
+    padding-bottom: 8px;
+  }
+}
+
+/* ========================= 4. HALAMAN FAVORIT ========================== */
+
+@media (min-width: 1024px) {
+  /* Grid favorit (video & model) mengikuti pola auto-fill yang sama. */
+  #video-fav-grid,
+  #model-fav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--afi-gap);
+    align-items: start;
+  }
+}
+
+/* ========================= 5. HALAMAN RANKING ========================== */
+
+@media (min-width: 1024px) {
+  /* Top 3 tetap 3 kolom (podium), diberi jarak lebih lega. */
+  #top3-grid {
+    gap: var(--afi-gap);
+  }
+  /* "Runner Up" 2 kolom membuat kartu jadi raksasa → jadikan 4 kolom. */
+  #runner-up-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--afi-gap);
+  }
+}
+
+@media (min-width: 1600px) {
+  #runner-up-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* ========================= 6. HALAMAN MEMBER =========================== */
+/* SENGAJA DIKOSONGKAN: member-Afi-Studio/index.html sudah punya media query
+   1024px & 1200px sendiri untuk .app-container (termasuk navbar, title-img,
+   modal-details, background gradient). Kalau file ini ikut mengatur
+   .app-container, aturannya menang (loaded belakangan) dan menimpa lebar
+   yang sudah dirancang khusus (1152px -> 1040px), jadi halaman member
+   sengaja dibiarkan diatur oleh style bawaannya sendiri. */
+
+/* =================== 7. HALAMAN EVENT & FEEDBACK ======================= */
+
+@media (min-width: 1024px) {
+  /* Event & feedback tidak punya container ber-max-width sendiri; beri
+     lebar baca nyaman & terpusat supaya tidak melebar penuh ke tepi. */
+  main > .rules-section,
+  main > form#feedbackForm {
+    max-width: var(--afi-read);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--afi-pad);
+    padding-right: var(--afi-pad);
+    padding-top: 28px;
+    padding-bottom: 56px;
+  }
+}
+
+/* ============================= 8. FOOTER =============================== */
+
+@media (min-width: 1024px) {
+  .site-footer {
+    margin-top: 64px;
+  }
+  .site-footer-inner {
+    gap: 40px;
+    padding-top: 44px;
+    padding-bottom: 12px;
+  }
+  .site-footer-bottom {
+    padding-top: 24px;
+    padding-bottom: 36px;
+  }
+}
+
+/* ========================= 9. ADMIN PANEL ============================== */
+/* Admin memakai Tailwind + `html { zoom: 0.85 }`. Skala dikembalikan normal
+   dan lebar konten disatukan dengan sistem yang sama, tanpa menyentuh markup,
+   gesture, atau handler apa pun. */
+
+@media (min-width: 1024px) {
+  html.afi-admin {
+    zoom: 1;
+  }
+  .afi-admin #main-content > * {
+    max-width: var(--afi-max);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

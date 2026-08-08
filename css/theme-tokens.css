@@ -1,0 +1,45 @@
+/* =========================================================================
+   Afi Studio — Theme Tokens (warna, light & dark)
+   -------------------------------------------------------------------------
+   File ini SHARED antara layout-mobile.css dan layout-desktop.css.
+   JANGAN diedit saat mengerjakan redesign desktop — token warna harus
+   tetap sama di kedua device supaya identitas visual (brand color,
+   dark mode) konsisten. Kalau perlu ubah warna, edit di sini saja,
+   otomatis kepakai di mobile & desktop.
+   ========================================================================= */
+
+:root {
+  /* Aksen biru tetap, dinaikkan sedikit saturasinya supaya teks putih
+     di atas tombol terbaca dan warna terasa "punya identitas". */
+  --accent: #4f86d6;
+  --accent-hover: #3b72c0;
+
+  /* Latar & permukaan: lebih terang dan bersih, tetap abu-kebiruan. */
+  --bg: #e5eaf2;
+  --surface: #f5f8fc;
+
+  --text: #26313f;
+  --text-sub: #5b6b80;
+  --text-light: #5b6b80; /* dipakai di event & feedback */
+  --disabled: #8e9cb0;
+
+  --border: #c8d3e1;
+  --grid-line: rgba(100, 116, 139, 0.16);
+}
+
+.dark,
+html.dark {
+  --accent: #4c7bc0;
+  --accent-hover: #5e8ed4;
+
+  --bg: #151e2e;
+  --surface: #1f2a3c;
+
+  --text: #dde5ef;
+  --text-sub: #93a2b8;
+  --text-light: #93a2b8;
+  --disabled: #64748b;
+
+  --border: #33415a;
+  --grid-line: rgba(148, 163, 184, 0.12);
+}

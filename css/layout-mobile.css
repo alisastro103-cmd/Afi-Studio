@@ -1,0 +1,106 @@
+/* =========================================================================
+   Afi Studio — Layout MOBILE & TABLET ONLY (< 1024px)
+   -------------------------------------------------------------------------
+   ⚠️ FILE INI DIPERTAHANKAN — jangan diubah tanpa alasan kuat.
+   Layout mobile sudah stabil dan sudah teruji. File ini di-load lewat
+   <link media="(max-width: 1023.98px)"> sehingga TIDAK PERNAH aktif di
+   desktop, dan sebaliknya perubahan di layout-desktop.css TIDAK PERNAH
+   memengaruhi file ini.
+
+   Isi:
+     1. Tablet (768px – 1023.98px)
+     2. Mobile (<= 767.98px)
+     3. Halaman ranking — Runner Up grid (tablet)
+   ========================================================================= */
+
+/* ====================== 1. TABLET (768px - 1023px) =====================
+   Rentang ini sebelumnya "kosong": `zoom: 0.75` (yang dibuat untuk ponsel)
+   masih berlaku, sehingga di tablet semuanya terlihat kecil dan grid 2 kolom
+   menyisakan white space lebar. Di sini skala dinaikkan sedikit dan
+   containernya dibuat memakai lebar layar, tetapi susunannya tetap gaya
+   mobile (video masih scroller horizontal), jadi mobile & desktop tetap beda.
+   Tidak ada elemen gambar/banner yang rasionya diubah. */
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    zoom: 0.9;
+  }
+
+  .nav-bar > .max-w-7xl,
+  main.max-w-6xl,
+  main.max-w-5xl,
+  .site-footer-inner {
+    max-width: 100%;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  main.max-w-3xl {
+    max-width: 720px;
+  }
+
+  /* Banner & marquee: hanya lebar container-nya yang disesuaikan.
+     Rasio 2:1 banner tidak disentuh. */
+  .banner-container,
+  .marquee-bar {
+    max-width: 100%;
+  }
+
+  /* 3 kolom terasa pas di lebar tablet, 2 kolom terlalu melar. */
+  #content-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  /* Chip kategori membungkus, tidak ada chip yang terpotong. */
+  #category-filter,
+  #app-category-filter {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  /* Tetap scroller horizontal (khas mobile), lebar kartu disesuaikan. */
+  #video-scroll .video-card {
+    width: min(58vw, 460px);
+  }
+
+  .app-container {
+    max-width: 720px;
+  }
+}
+
+/* ============================ 2. MOBILE ================================= */
+
+@media (max-width: 767.98px) {
+  /* Jaga supaya tidak ada elemen yang bikin scroll horizontal tak sengaja. */
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Kartu video full-lebar minus sedikit peek kartu berikutnya,
+     menggantikan lebar tetap 460px yang jauh melebihi layar ponsel. */
+  #video-scroll .video-card {
+    width: min(86vw, 460px);
+  }
+
+  /* Sedikit ruang napas di tepi layar kecil. */
+  .site-footer-inner {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* ==================== 3. HALAMAN RANKING (tablet) ======================== */
+
+@media (min-width: 640px) and (max-width: 1023.98px) {
+  #runner-up-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
