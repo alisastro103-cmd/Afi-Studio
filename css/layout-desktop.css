@@ -87,8 +87,9 @@
     max-width: 100%;
   }
 
-  /* --- Container inti disamakan lebar & padding-nya --- */
-  .nav-bar > .max-w-7xl,
+  /* --- Container inti disamakan lebar & padding-nya (banner & marquee
+     tetap ikut skala ini, sama seperti sebelumnya — cuma radius/rasio/
+     jarak-nya yang dibetulkan di bawah). --- */
   main.max-w-6xl,
   main.max-w-5xl,
   .banner-container,
@@ -111,31 +112,41 @@
     padding-right: 0;
   }
 
-  /* Navbar terasa lebih lega secara vertikal di desktop. */
-  .nav-bar > .max-w-7xl {
+  /* Navbar: lebar dibuat 100% (TIDAK dibatasi max-width seperti konten),
+     hanya padding kiri/kanan yang mengikuti skala layar. Ini supaya tombol
+     back/theme/menu selalu nempel dekat tepi layar dan konsisten di semua
+     halaman — termasuk .navbar di halaman member yang strukturnya beda
+     tapi sekarang diberi padding yang sama persis. */
+  .nav-bar > .max-w-7xl,
+  .navbar {
+    max-width: 100%;
+    width: 100%;
+    padding-left: var(--afi-pad);
+    padding-right: var(--afi-pad);
     padding-top: 10px;
     padding-bottom: 10px;
   }
 
-  /* --- Banner hero: dari 2:1 (terlalu tinggi di layar lebar) menjadi
-     rasio yang lebih sinematik. Gambar memakai object-fit:cover sehingga
-     hanya ter-crop sedikit, rasio aslinya tidak dipaksakan. --- */
+  /* --- Banner hero: rasio dikembalikan ke bawaan aslinya (2:1, 50%)
+     supaya gambar tampil utuh lagi (sebelumnya 42% bikin bagian bawah
+     ke-crop). Sudut dibuat tajam lagi (tanpa border-radius/shadow) dan
+     nempel langsung di bawah navbar (tanpa margin-top). --- */
   .banner-container {
-    border-radius: 14px;
-    margin-top: 20px;
-    box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.45);
+    margin-top: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
   .banner-container::before {
-    padding-top: 42%;
+    padding-top: 50%;
   }
 
-  /* Marquee sedikit lebih lega & menyatu dengan banner. */
+  /* Marquee nempel langsung di bawah banner (tanpa margin-top), sudut
+     tajam, tanpa border tambahan — border-bottom bawaan aslinya sudah
+     cukup jadi pembatas antar section. */
   .marquee-bar {
-    padding-top: 6px;
-    padding-bottom: 6px;
-    margin-top: 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    margin-top: 0;
+    border-radius: 0;
+    border: none;
   }
 
   /* --- Jarak konten utama --- */
