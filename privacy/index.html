@@ -117,6 +117,29 @@
 
     .footer-text { text-align: center; font-size: 11px; color: var(--text-light); padding: 16px 0 28px; font-weight: 500; }
 
+    @keyframes pageEnter {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .header-section, main > .btn-secondary {
+      animation: pageEnter 0.55s ease both;
+    }
+    main > .btn-secondary { animation-delay: 0.1s; }
+    .policy-box {
+      animation: pageEnter 0.5s ease both;
+    }
+    .policy-box:nth-of-type(1) { animation-delay: 0.06s; }
+    .policy-box:nth-of-type(2) { animation-delay: 0.1s; }
+    .policy-box:nth-of-type(3) { animation-delay: 0.14s; }
+    .policy-box:nth-of-type(4) { animation-delay: 0.18s; }
+    .policy-box:nth-of-type(5) { animation-delay: 0.22s; }
+    .policy-box:nth-of-type(6) { animation-delay: 0.26s; }
+    .policy-box:nth-of-type(7) { animation-delay: 0.3s; }
+    .policy-box:nth-of-type(8) { animation-delay: 0.34s; }
+    @media (prefers-reduced-motion: reduce) {
+      .header-section, main > .btn-secondary, .policy-box { animation: none; }
+    }
+
     .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
     .back-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; margin-right: 10px; }
     #theme-toggle-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
@@ -199,7 +222,7 @@
         <a href="../about/index.html" class="page-menu-item">Tentang Kami</a>
         <a href="index.html" class="page-menu-item active">Kebijakan Privasi</a>
         <div class="page-menu-divider"></div>
-        <a href="https://forms.gle/KvbgZP3CrziGGZBU8" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+        <a href="../daftar-model/index.html" class="link-daftar-model page-menu-item page-menu-item-cta" rel="noopener"  onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
         <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
        </div>
       </div>

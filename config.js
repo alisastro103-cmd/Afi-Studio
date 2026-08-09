@@ -11,15 +11,16 @@ let isEventOpen = true;         // Jalur Event Render (Drive)
 
 // Jalur/link tujuan — bisa diubah admin tanpa perlu edit kode, cukup lewat
 // halaman Pengaturan. Nilai di bawah ini dipakai sebagai default/cadangan.
-let daftarModelUrl = 'https://forms.gle/KvbgZP3CrziGGZBU8';
+let daftarModelUrl = '/daftar-model/';
 let daftarMemberUrl = 'https://forms.gle/JmYJ1S5GFCEscAnU7';
 let eventDriveUrl = 'https://drive.google.com/drive/folders/1wZwtLzkCXjhMoWQ_DGO0UuJO-u9zVUAc';
 
 // Terapkan link terbaru ke elemen <a> di halaman (kalau ada). Dipanggil saat
 // DOM sudah siap, dan dipanggil lagi setelah fetch ke database selesai.
 function applyDaftarLinks() {
-  var modelLink = document.getElementById('link-daftar-model');
-  if (modelLink) modelLink.href = daftarModelUrl;
+  document.querySelectorAll('.link-daftar-model').forEach(function (el) {
+    el.href = daftarModelUrl;
+  });
   var memberLink = document.getElementById('link-daftar-member');
   if (memberLink) memberLink.href = daftarMemberUrl;
   var eventLink = document.querySelector('[data-event-drive-link]');

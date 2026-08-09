@@ -101,13 +101,37 @@
     .feature-icon {
       width: 40px; height: 40px;
       display: flex; align-items: center; justify-content: center;
-      border-radius: 10px;
-      background: color-mix(in srgb, var(--accent) 18%, transparent);
       color: var(--accent-hover);
       margin-bottom: 12px;
     }
     html.dark .feature-icon { color: #93C5FD; }
-    .feature-icon svg { width: 20px; height: 20px; }
+    .feature-icon svg { width: 26px; height: 26px; }
+
+    @keyframes pageEnter {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .header-section, .intro-text, .section-title, .community-box, main > .btn-secondary {
+      animation: pageEnter 0.55s ease both;
+    }
+    .intro-text { animation-delay: 0.06s; }
+    .section-title { animation-delay: 0.1s; }
+    .community-box { animation-delay: 0.15s; }
+    main > .btn-secondary { animation-delay: 0.2s; }
+    .feature-card {
+      animation: pageEnter 0.5s ease both;
+    }
+    .feature-card:nth-child(1) { animation-delay: 0.12s; }
+    .feature-card:nth-child(2) { animation-delay: 0.17s; }
+    .feature-card:nth-child(3) { animation-delay: 0.22s; }
+    .feature-card:nth-child(4) { animation-delay: 0.27s; }
+    .feature-card:nth-child(5) { animation-delay: 0.32s; }
+    .feature-card:nth-child(6) { animation-delay: 0.37s; }
+    @media (prefers-reduced-motion: reduce) {
+      .header-section, .intro-text, .section-title, .community-box, main > .btn-secondary, .feature-card {
+        animation: none;
+      }
+    }
 
     .feature-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
     .feature-desc { font-size: 13px; color: var(--text-light); line-height: 1.5; }
@@ -238,7 +262,7 @@
         <a href="index.html" class="page-menu-item active">Tentang Kami</a>
         <a href="../privacy/index.html" class="page-menu-item">Kebijakan Privasi</a>
         <div class="page-menu-divider"></div>
-        <a href="https://forms.gle/KvbgZP3CrziGGZBU8" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+        <a href="../daftar-model/index.html" class="link-daftar-model page-menu-item page-menu-item-cta" rel="noopener"  onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
         <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
        </div>
       </div>
