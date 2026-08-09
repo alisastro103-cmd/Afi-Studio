@@ -419,7 +419,7 @@
           </p>
         </div>
         <div id="pendingmodels-list" class="flex flex-col gap-3"></div>
-        <div id="pendingmodels-empty" class="panel p-6 text-center" style="display:none; color:var(--text-sub); font-size:13px;">Belum ada pendaftaran masuk.</div>
+        <div id="pendingmodels-empty" style="display:none; text-align:center; color:var(--text-sub); font-size:13px; padding:32px 0;">Belum ada pendaftaran masuk.</div>
       </section>
 
       <!-- PENGATURAN -->
@@ -1703,7 +1703,12 @@ function renderPendingModels(){
             <div class="text-sm font-bold">${escapeHtml(item.name)}</div>
             <div style="font-size:11px; color:var(--text-sub);">${submittedDate}</div>
           </div>
-          <div style="font-size:11px; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, var(--accent) 18%, transparent); font-weight:700; white-space:nowrap;">${roleLabel}</div>
+          <div class="flex items-center gap-2">
+            <div style="font-size:11px; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, var(--accent) 18%, transparent); font-weight:700; white-space:nowrap;">${roleLabel}</div>
+            <button onclick="deletePendingModel('${escapeHtml(item.id)}')" title="Hapus notifikasi ini dari panel" style="background:none; border:none; cursor:pointer; color:var(--text-sub); padding:2px;">
+              <i data-lucide="x" style="width:16px;height:16px;"></i>
+            </button>
+          </div>
         </div>
         <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6; margin-bottom:8px;">${escapeHtml(item.caption)}</p>
         <div style="font-size:12px; line-height:1.9; color:var(--text-sub);">
@@ -1815,6 +1820,15 @@ async function rejectPendingModel(id){
   DB.pendingmodels = DB.pendingmodels.filter(p => p.id !== id);
   const ok = await persist('pendingmodels');
   if(ok){ toast('Pendaftaran ditolak & dihapus dari antrian.'); renderPendingModels(); }
+  else { DB.pendingmodels = prev; renderPendingModels(); }
+}
+
+async function deletePendingModel(id){
+  if(!confirm('Hapus notifikasi ini dari panel admin? Chat aslinya di Telegram TIDAK akan terhapus, dan ini permanen di panel.')) return;
+  const prev = DB.pendingmodels;
+  DB.pendingmodels = DB.pendingmodels.filter(p => p.id !== id);
+  const ok = await persist('pendingmodels');
+  if(ok){ toast('Notifikasi dihapus dari panel.'); renderPendingModels(); }
   else { DB.pendingmodels = prev; renderPendingModels(); }
 }
 

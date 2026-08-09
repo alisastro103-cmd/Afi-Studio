@@ -38,22 +38,50 @@ Bagian yang manggil serverless function:
 | `/event/` | `event/index.html` | `/api/data/event` (lewat panel Event di admin) | Aturan & konten event render |
 | `/bantuan/` | `bantuan/index.html` | — | FAQ statis |
 | `/feedback/` | `feedback/index.html` + `api/feedback.js` | — | Kirim pesan ke Telegram, pakai reCAPTCHA + rate-limit |
+| `/about/` | `about/index.html` | — | Halaman "Tentang Kami", statis, sudut pandang pengunjung. Ada di navbar & footer |
+| `/privacy/` | `privacy/index.html` | — | Kebijakan Privasi, statis. Ada di navbar & footer |
+| `/daftar-model/` | `daftar-model/index.html` + `api/model-submit.js` | `/api/data/categories` (buat pilihan kategori) | Form pendaftaran model publik. **Sengaja tidak ditaruh di navbar/footer** — cuma bisa diakses lewat link langsung. Alur lengkap di bagian 2b |
 | `/admin/` | `admin/index.html` (login) + `admin/panel.html` (panel) | Semua endpoint `/api/data/:type` (GET+POST) | Lihat bagian 5 |
+
+## 2b. Alur Pendaftaran Model (`/daftar-model/`)
+
+Beda dari koleksi data lain di situs ini — submission dari halaman ini **tidak langsung masuk ke `models.json`**, tapi lewat alur tinjau-dulu:
+
+```
+User isi form di /daftar-model/ (nama, caption, thumbnail, file model, kategori, dst.)
+  → POST /api/model-submit
+  → Validasi server (field wajib, rasio thumbnail 16:9, ukuran file, reCAPTCHA, rate-limit)
+  → File asli (kalau upload, bukan link) dikirim ke bot Telegram (sendPhoto/sendDocument)
+  → Metadata TANPA file disimpan ke Redis key afi-studio:data:pendingmodels
+  → Admin buka tab "Pendaftaran" di /admin
+  → Kalau ada file upload: admin ambil dari chat Telegram → rehost manual ke Drive/Mediafire
+  → Admin isi link final di form approve → klik "Konfirmasi & Publish"
+  → Entry baru masuk ke koleksi `models` (format sesuai data.schema.md) + dihapus dari pendingmodels
+```
+
+**Batasan teknis penting:**
+- Ukuran upload dibatasi **3MB per file**, dan **~3.8MB gabungan** kalau thumbnail & file model diupload bersamaan dalam satu submission — ini bukan pilihan desain, tapi limit keras platform Vercel Functions (maksimal 4.5MB per request, tidak bisa dinaikkan lewat config apapun). File lebih besar dari itu wajib pakai link.
+- Rasio thumbnail wajib **16:9** (contoh 800×450, resolusi bebas asal rasionya sama), divalidasi server-side pakai package `image-size`, berlaku baik untuk link maupun upload.
+- File yang dikirim ke Telegram (thumbnail & file model) **tidak pernah disimpan di Redis atau repo** — Redis cuma nyimpen metadata teks (nama file, ukuran, atau link kalau mode link) supaya panel admin bisa nampilin daftar antrian tanpa perlu buka Telegram.
+- Thumbnail yang diupload (bukan link) tetap bisa di-preview sebagai gambar di admin panel lewat proxy `api/admin/telegram-file.js` — ambil file dari Telegram pakai bot token di server, jadi token gak pernah nyampe ke browser.
+- Admin bisa **Setujui** (isi link final → publish ke `models`), **Tolak** (hapus dari antrian, dianggap submission ditolak), atau **Hapus** (ikon ✕, buat beres-beres notifikasi tanpa makna "ditolak") — ketiganya sama-sama cuma menghapus entry dari Redis `pendingmodels`, chat asli di Telegram tidak pernah terhapus/terpengaruh.
 
 ## 3. File/Source Penting
 
 | File | Peran |
 |---|---|
-| `api/data/[type].js` | Satu endpoint dinamis untuk semua koleksi (`models`, `videos`, `banner`, `marquee`, `member`, `ranking`, `categories`, `appcategories`, `settings`). GET publik (cache singkat), POST khusus admin (tulis ke Redis). Fallback otomatis ke file JSON kalau Redis kosong/down |
+| `api/data/[type].js` | Satu endpoint dinamis untuk semua koleksi (`models`, `videos`, `banner`, `marquee`, `member`, `ranking`, `categories`, `appcategories`, `settings`, `pendingmodels`). GET publik (cache singkat), POST khusus admin (tulis ke Redis). Fallback otomatis ke file JSON kalau Redis kosong/down |
 | `api/admin/verify.js` | Cocokkan header `x-admin-token` dengan env `ADMIN_TOKEN`, tanpa nyimpen state apapun |
+| `api/admin/telegram-file.js` | Proxy admin-only: ambil file/gambar dari Telegram (pakai bot token di server) buat ditampilkan sebagai preview di panel Pendaftaran, token gak pernah nyampe ke browser |
 | `api/feedback.js` | Kirim form feedback ke Telegram, pakai rate-limit Upstash + reCAPTCHA |
-| `admin/panel.html` | Seluruh UI & logic admin panel (CRUD tiap koleksi, drag-reorder disederhanakan jadi tap=edit/tahan=menu, resize kolom tabel, dsb) — satu file besar, vanilla JS |
+| `api/model-submit.js` | Terima submission dari `/daftar-model/`: validasi (termasuk rasio thumbnail 16:9 pakai `image-size`) → kirim ke Telegram → simpan metadata ke Redis `pendingmodels`. Detail alur di bagian 2b |
+| `admin/panel.html` | Seluruh UI & logic admin panel (CRUD tiap koleksi + tab Pendaftaran, drag-reorder disederhanakan jadi tap=edit/tahan=menu, resize kolom tabel, dsb) — satu file besar, vanilla JS |
 | `admin/icons/lucide-local.js`, `icons/lucide-local.js` | Bundel ikon Lucide yang **di-trim manual** (bukan npm package penuh) — nambah ikon baru harus ditambahkan manual ke file ini |
-| `categories.json`, `app-categories.json` | Seed awal untuk koleksi `categories`/`appcategories` di Redis — dikelola lewat tab "Kategori" di admin panel, otomatis dipropagasi ke form Model, filter chip publik, dan homepage |
-| `Models/models.json`, `member-Afi-Studio/member.json`, `videos.json`, `banner.json`, `marquee.json`, `ranking/ranking.json`, `settings.json` | Seed awal / fallback tiap koleksi kalau Redis belum di-seed atau down |
+| `categories.json`, `app-categories.json` | Seed awal untuk koleksi `categories`/`appcategories` di Redis — dikelola lewat tab "Kategori" di admin panel, otomatis dipropagasi ke form Model, form Daftar Model publik, filter chip publik, dan homepage |
+| `Models/models.json`, `member-Afi-Studio/member.json`, `videos.json`, `banner.json`, `marquee.json`, `ranking/ranking.json`, `settings.json`, `pendingmodels.json` | Seed awal / fallback tiap koleksi kalau Redis belum di-seed atau down. `pendingmodels.json` fallback-nya array kosong `[]` |
 | `data.schema.md` | Dokumentasi field wajib tiap koleksi data — baca dulu sebelum ubah struktur |
 | `validate_data.py` | Cek format `videos.json`/`models.json` sebelum push (`python3 validate_data.py`) |
-| `config.js` | Fetch `/api/data/settings` untuk tahu status buka/tutup jalur pendaftaran Model 3D & Member (diatur dari tab Pengaturan di admin panel), dengan nilai default sebagai fallback offline |
+| `config.js` | Fetch `/api/data/settings` untuk tahu status buka/tutup jalur pendaftaran Model 3D & Member (diatur dari tab Pengaturan di admin panel). Link "Daftar Model 3D" di seluruh situs sekarang default ke `/daftar-model/` (bukan Google Form lagi), disinkronkan lewat class `.link-daftar-model` (bisa ada lebih dari satu elemen per halaman, misalnya di dropdown menu & footer sekaligus) |
 | `theme-toggle.js` | Logic tema gelap/terang + persist pilihan user |
 | `sw.js` + `manifest.json` | Service worker & config PWA — hanya halaman root (`/`) yang di-cache untuk mode offline. **Penting:** tiap kali `CORE_ASSETS` di `sw.js` diubah, naikkan `CACHE_NAME` (mis. `afi-studio-root-v6` → `v7`) supaya browser pengunjung ambil cache baru, bukan versi lama yang nyangkut |
 | `src/input.css` → `dist/output.css` (root & `admin/`) | Source Tailwind → hasil compile. Jalankan `npx tailwindcss -i ./src/input.css -o ./dist/output.css --minify` tiap habis nambah class Tailwind baru |
@@ -75,12 +103,15 @@ Afi-Studio-main/
 ├── vercel.json                    ← includeFiles fallback + aturan cache header
 ├── tailwind.config.js, src/input.css, dist/output.css   ← Tailwind (web utama)
 ├── manifest.json, sw.js           ← Konfigurasi PWA & offline cache (versi di CACHE_NAME)
-├── categories.json, app-categories.json, settings.json, banner.json, marquee.json  ← Seed/fallback koleksi
+├── categories.json, app-categories.json, settings.json, banner.json, marquee.json, pendingmodels.json  ← Seed/fallback koleksi
 ├── robots.txt, sitemap.xml        ← SEO dasar
 ├── api/
 │   ├── data/[type].js             ← Endpoint dinamis GET/POST semua koleksi (Redis + fallback JSON)
-│   ├── admin/verify.js            ← Cek token login admin
-│   └── feedback.js                ← Serverless function → Telegram
+│   ├── admin/
+│   │   ├── verify.js              ← Cek token login admin
+│   │   └── telegram-file.js       ← Proxy admin-only: preview gambar upload dari Telegram
+│   ├── feedback.js                ← Serverless function → Telegram
+│   └── model-submit.js            ← Serverless function pendaftaran model → Telegram + Redis pendingmodels
 ├── admin/
 │   ├── index.html                 ← Halaman login token admin
 │   ├── panel.html                 ← UI & logic panel admin (CRUD semua koleksi)
@@ -102,6 +133,10 @@ Afi-Studio-main/
 ├── bantuan/     (FAQ, statis)
 ├── feedback/
 │   └── index.html
+├── about/       (halaman Tentang Kami, statis)
+├── privacy/     (halaman Kebijakan Privasi, statis)
+├── daftar-model/
+│   └── index.html                 ← Form pendaftaran model publik, tidak ada di navbar/footer
 ├── scripts/
 │   ├── seed-redis.mjs             ← Push JSON repo → Redis
 │   └── export-redis.mjs           ← Tarik Redis → JSON
@@ -112,7 +147,7 @@ Afi-Studio-main/
 ## 5. Admin Panel (`/admin`)
 
 - **Login:** `/admin` (redirect ke `admin/index.html`) minta token, dicek lewat `POST /api/admin/verify` (header `x-admin-token`, dicocokkan ke env `ADMIN_TOKEN`). Token valid disimpan di `sessionStorage`, hilang begitu tab ditutup. `admin/panel.html` menolak render kalau tidak ada token valid di session — jadi buka `panel.html` langsung tanpa login tetap terlempar balik ke layar login.
-- **Tab yang tersedia:** Dashboard, Models, Kategori (Kategori Model + Kategori Aplikasi, dua tabel terpisah), Videos, Banner, Marquee, Member, Ranking, Event, Feedback (read-only info, riwayat asli ada di Telegram), Pengaturan (toggle jalur pendaftaran Model 3D & Member).
+- **Tab yang tersedia:** Dashboard, Models, Kategori (Kategori Model + Kategori Aplikasi, dua tabel terpisah), Videos, Banner, Marquee, Member, Ranking, Event, Feedback (read-only info, riwayat asli ada di Telegram), **Pendaftaran** (antrian submission dari `/daftar-model/` — lihat bagian 2b), Pengaturan (toggle jalur pendaftaran Model 3D & Member, sekarang menerima link internal seperti `/daftar-model/` selain `http(s)://`).
 - **Dua mode tampilan:** Tabel (bisa di-resize antar kolom lewat tarik di pinggir header) dan Kotak/kartu (grid, mirip tampilan asli di web publik). Tersimpan di `localStorage` (`afi-view`).
 - **Interaksi baris/kartu:** tap = buka form edit, tahan (long-press) atau klik-kanan = munculkan menu popup (Edit/Hapus). Model gesture ini sengaja disederhanakan dari drag-to-reorder karena gesture drag sering meleset di Android.
 - **Simpan data:** tiap create/update/delete langsung `POST /api/data/:type` ke Redis. Kalau gagal (network/putus), perubahan di layar otomatis di-rollback dan muncul toast merah — supaya UI admin tidak pernah beda dari data di server.
@@ -156,7 +191,8 @@ Vercel CLI otomatis membaca Environment Variables dari `vercel env pull` / dashb
 - Endpoint `GET /api/data/:type` publik (tanpa token) by design karena memang dipakai halaman publik — jangan taruh data sensitif di koleksi ini.
 - Endpoint `POST /api/data/:type` wajib header `x-admin-token` yang cocok `ADMIN_TOKEN`, kalau tidak ada/salah selalu balas 401 — jangan longgarkan pengecekan ini.
 - `validate_data.py` boleh ada di mana saja di root, **kecuali di dalam `api/`** — Vercel otomatis menjalankan apapun di `api/` sebagai serverless function, file Python di situ bisa bikin deploy gagal.
-- Form Feedback dilindungi reCAPTCHA + rate-limit berbasis Redis, mencegah spam ke Telegram.
+- Form Feedback dilindungi reCAPTCHA + rate-limit berbasis Redis, mencegah spam ke Telegram. Form pendaftaran model (`api/model-submit.js`) pakai proteksi yang sama, plus validasi ukuran & rasio thumbnail.
+- File yang diupload user di form pendaftaran model **tidak pernah disimpan** di Redis/repo — cuma diteruskan ke Telegram. Preview gambar di admin panel diambil live lewat `api/admin/telegram-file.js` yang dilindungi `x-admin-token` sama seperti endpoint admin lain; bot token tidak pernah dikirim ke browser (fetch dengan header, bukan `<img src>` langsung).
 
 ## 9. Kontribusi & Lisensi
 

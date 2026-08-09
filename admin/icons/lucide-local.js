@@ -47,7 +47,12 @@
     // --- ikon tambahan: tombol Naik/Turun di board Edit/Hapus (drag-reorder) ---
     'arrow-up': '<line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline>',
     'arrow-down': '<line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline>',
-    'tag': '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42Z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle>'
+    'tag': '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42Z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle>',
+    // --- ikon tambahan: tab Pendaftaran & tombol Setujui/Tolak/Hapus ---
+    'inbox': '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>',
+    'check': '<polyline points="20 6 9 17 4 12"></polyline>',
+    'check-circle': '<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>',
+    'x-circle': '<circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path>'
   };
 
   function buildSvg(name, sourceEl) {

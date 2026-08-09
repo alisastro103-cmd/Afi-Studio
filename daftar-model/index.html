@@ -208,10 +208,9 @@
       from { opacity: 0; transform: translateY(14px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .header-section, .notice-box {
+    .header-section {
       animation: pageEnter 0.55s ease both;
     }
-    .notice-box { animation-delay: 0.06s; }
     .form-group, .captcha-wrapper, #submit-btn, .btn-secondary {
       animation: pageEnter 0.5s ease both;
     }
@@ -226,7 +225,7 @@
     #submit-btn { animation-delay: 0.42s; }
     .btn-secondary { animation-delay: 0.46s; }
     @media (prefers-reduced-motion: reduce) {
-      .header-section, .notice-box, .form-group, .captcha-wrapper, #submit-btn, .btn-secondary { animation: none; }
+      .header-section, .form-group, .captcha-wrapper, #submit-btn, .btn-secondary { animation: none; }
     }
 
     .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
@@ -248,7 +247,7 @@
       transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
     }
     .page-menu-dropdown.open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); }
-    .page-menu-item { display: block; padding: 10px 12px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; }
+    .page-menu-item { display: block; padding: 7px 12px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.3; font-weight: 600; font-family: 'Outfit', sans-serif; }
     .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
     .page-menu-item:active { opacity: 0.6; }
     .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); }
@@ -312,11 +311,6 @@
    </div>
 
    <main>
-    <div class="notice-box">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-      <div>Semua pendaftaran ditinjau manual oleh admin sebelum dipublikasikan. Kalau kamu upload file/gambar langsung, filenya dikirim ke Telegram — bukan disimpan di server.</div>
-    </div>
-
     <form id="daftarModelForm">
 
       <div class="form-group">
