@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+    <script src="/config.js"></script>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('afi-theme');
+      var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Afi Studio - Tentang Kami</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="manifest" href="/manifest.json">
+
+    <link rel="canonical" href="https://afi-studio.vercel.app/about/">
+    <meta name="description" content="Kenalan sama Afi Studio — platform berbagi aset Minecraft gratis (rig, model 3D, map, texture, furniture) dari komunitas, lengkap dengan event render bulanan.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/about/">
+    <meta property="og:title" content="Afi Studio - Tentang Kami">
+    <meta property="og:site_name" content="Afi Studio">
+    <meta property="og:description" content="Platform berbagi aset Minecraft gratis dari komunitas — rig, model 3D, map, dan event render bulanan.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Tentang Kami">
+    <meta name="twitter:description" content="Platform berbagi aset Minecraft gratis dari komunitas — rig, model 3D, map, dan event render bulanan.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+  <link rel="stylesheet" href="/dist/output.css">
+  <script src="/theme-toggle.js" defer></script>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3 { font-family: 'Outfit', sans-serif; font-weight: 600; }
+
+    :root {
+      --accent: #93C5FD;
+      --accent-hover: #7DD3FC;
+      --bg: #D0D7E1;
+      --surface: #E1E7EE;
+      --text: #334155;
+      --text-light: #64748B;
+      --border: #B9C4D3;
+      --grid-line: rgba(100,116,139,0.22);
+    }
+    html.dark {
+      --accent: #3B5578;
+      --accent-hover: #4A6690;
+      --bg: #1E293B;
+      --surface: #334155;
+      --text: #CBD5E1;
+      --text-light: #94A3B8;
+      --border: #475569;
+      --grid-line: rgba(148,163,184,0.16);
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--text);
+      line-height: 1.5;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      zoom: 0.75;
+    }
+
+    .header-section { max-width: 1152px; margin: 0 auto; padding: 48px 24px 24px; text-align: center; }
+    .header-title { font-size: 42px; font-weight: 800; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+    .header-subtitle { font-size: 15px; color: var(--text-light); font-weight: 500; max-width: 640px; margin: 0 auto; }
+
+    main { max-width: 900px; margin: 0 auto; padding: 0 24px 48px; }
+
+    .intro-text { font-size: 15px; color: var(--text); margin-bottom: 40px; text-align: center; line-height: 1.7; }
+    .intro-text strong { color: var(--text); }
+
+    .section-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--text-light); margin-bottom: 16px; text-align: center;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .feature-icon {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      color: var(--accent-hover);
+      margin-bottom: 12px;
+    }
+    html.dark .feature-icon { color: #93C5FD; }
+    .feature-icon svg { width: 20px; height: 20px; }
+
+    .feature-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+    .feature-desc { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+
+    .community-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .community-box h2 { font-size: 18px; margin-bottom: 8px; }
+    .community-box p { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px;
+      border: 2px solid var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+    .btn:hover { background: transparent; color: var(--accent-hover); }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      margin-top: 12px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 8px;
+    }
+    .btn-secondary:hover { border-color: var(--text-light); color: var(--text); }
+
+    .footer-text { text-align: center; font-size: 11px; color: var(--text-light); padding: 16px 0 28px; font-weight: 500; }
+
+    .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .back-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; margin-right: 10px; }
+    #theme-toggle-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+    #theme-toggle-btn .icon-moon { display: none; }
+    html.dark #theme-toggle-btn .icon-sun { display: none; }
+    html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+    .page-menu { position: relative; }
+    .page-menu-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+    .page-menu-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      min-width: 190px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); padding: 6px;
+      display: flex; flex-direction: column; gap: 2px; z-index: 50;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transform: translateY(-6px) scale(0.98); transform-origin: top right;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+    .page-menu-dropdown.open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); }
+    .page-menu-item { display: block; padding: 10px 12px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 600; font-family: 'Outfit', sans-serif; }
+    .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .page-menu-item:active { opacity: 0.6; }
+    .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+    html.dark .page-menu-item.active { color: #fff; }
+    .page-menu-item.active::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; margin-right: 8px; vertical-align: middle; }
+    .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+    .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: space-between; }
+    html.dark .page-menu-item-cta { color: #fff; }
+    .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .page-menu-item-cta:active { opacity: 0.6; }
+  </style>
+
+    <style>
+        .toast-daftar {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translate(-50%, 80px);
+            background: var(--accent, #6c5ce7); color: #fff;
+            padding: 12px 24px; border-radius: 999px;
+            font-weight: 700; font-size: 14px;
+            transition: transform 0.3s ease; z-index: 3000;
+        }
+        .toast-daftar.show { transform: translate(-50%, 0); }
+    </style>
+    <link rel="stylesheet" href="/css/theme-tokens.css">
+    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
+    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+</head>
+ <body class="h-full">
+  <div id="app" class="h-full overflow-auto w-full">
+   <nav class="nav-bar">
+    <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+     <div class="flex items-center">
+      <a href="../index.html" class="back-btn" aria-label="Kembali ke beranda">
+       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </a>
+      <div class="cursor-pointer flex items-center gap-1">
+       <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+       <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">Afi-Studio</div>
+      </div>
+     </div>
+
+     <div class="flex items-center gap-4">
+      <button id="theme-toggle-btn" aria-label="Ganti tema">
+       <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+       <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+      </button>
+      <div class="page-menu">
+       <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+       </button>
+       <div id="page-menu-dropdown" class="page-menu-dropdown">
+        <a href="../index.html" class="page-menu-item">Beranda</a>
+        <a href="../member-Afi-Studio/index.html" class="page-menu-item">Member Afi-Studio</a>
+        <a href="../event/index.html" class="page-menu-item">Event Render</a>
+        <a href="../ranking/index.html" class="page-menu-item">Ranking Render</a>
+        <a href="../tutorial/index.html" class="page-menu-item">Video &amp; Tutorial</a>
+        <a href="../bantuan/index.html" class="page-menu-item">Bantuan</a>
+        <a href="../feedback/" class="page-menu-item">Feedback</a>
+        <a href="../favorit/index.html" class="page-menu-item">Favorit</a>
+        <a href="index.html" class="page-menu-item active">Tentang Kami</a>
+        <a href="../privacy/index.html" class="page-menu-item">Kebijakan Privasi</a>
+        <div class="page-menu-divider"></div>
+        <a href="https://forms.gle/KvbgZP3CrziGGZBU8" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Model 3D</a>
+        <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }">Daftar Member</a>
+       </div>
+      </div>
+     </div>
+    </div>
+   </nav>
+
+   <div class="header-section">
+    <h1 class="header-title">Tentang Afi Studio</h1>
+    <p class="header-subtitle">Tempat kumpul kreator Minecraft Indonesia buat berbagi aset render & animasi — gratis, tanpa ribet.</p>
+   </div>
+
+   <main>
+    <p class="intro-text">
+      <strong>Afi Studio</strong> adalah platform berbagi aset Minecraft yang dibuat oleh komunitas, untuk komunitas.
+      Di sini kamu bisa jelajahi dan unduh rig, model 3D, map, texture, sampai furniture yang siap dipakai buat
+      kebutuhan render dan animasi kamu — semuanya gratis.
+    </p>
+
+    <h2 class="section-title">Apa Aja yang Bisa Kamu Lakukan di Sini?</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
+        </div>
+        <div class="feature-title">Jelajahi &amp; Unduh Aset</div>
+        <div class="feature-desc">Cari rig, model 3D, map, texture, dan furniture Minecraft lewat filter kategori, langsung unduh tanpa akun.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10"></path><path d="M17 4v8a5 5 0 0 1-10 0V4"></path><path d="M5 4h2"></path><path d="M17 4h2"></path></svg>
+        </div>
+        <div class="feature-title">Ikut Event Render</div>
+        <div class="feature-desc">Ikutan event render bulanan, submit hasil karya kamu, dan naik ke papan ranking komunitas.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg>
+        </div>
+        <div class="feature-title">Belajar Lewat Tutorial</div>
+        <div class="feature-desc">Nonton kumpulan video &amp; tutorial buat belajar rigging, render, sampai animasi dari nol.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <div class="feature-title">Gabung Komunitas</div>
+        <div class="feature-desc">Kenalan sama sesama kreator lewat halaman Member, dan pantengin siapa aja yang aktif berkontribusi.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"></path></svg>
+        </div>
+        <div class="feature-title">Simpan Favorit</div>
+        <div class="feature-desc">Tandai aset yang kamu suka biar gampang ditemukan lagi kapan aja lewat halaman Favorit.</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <div class="feature-title">Kasih Masukan</div>
+        <div class="feature-desc">Punya saran atau nemu bug? Kirim feedback langsung ke tim Afi Studio lewat halaman Feedback.</div>
+      </div>
+    </div>
+
+    <div class="community-box">
+      <h2>Gabung Komunitas WhatsApp</h2>
+      <p>Info event, aset baru, dan update terbaru Afi Studio dikirim rutin lewat saluran WhatsApp komunitas.</p>
+      <a href="https://whatsapp.com/channel/0029Vb349aLDDmFMp1EAsL29" rel="noopener" class="btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91C21.96 6.45 17.5 2 12.04 2Z" opacity="0"></path><path d="M17.47 14.38c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.24-.46-2.37-1.46-.87-.78-1.46-1.74-1.63-2.04-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.6-.92-2.2-.24-.58-.49-.5-.67-.5-.17 0-.37-.02-.57-.02s-.52.07-.8.37c-.27.3-1.05 1.02-1.05 2.5s1.07 2.9 1.22 3.1c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z"></path></svg>
+        Buka Saluran WhatsApp
+      </a>
+    </div>
+
+    <a href="../index.html" class="btn-secondary">Kembali ke halaman utama</a>
+   </main>
+   <footer class="footer-text">
+     <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+   </footer>
+  </div>
+
+  <script>
+    (function () {
+      const menuBtn = document.getElementById('page-menu-btn');
+      const menuDropdown = document.getElementById('page-menu-dropdown');
+      menuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        menuDropdown.classList.toggle('open');
+      });
+      document.addEventListener('click', function () {
+        menuDropdown.classList.remove('open');
+      });
+    })();
+  </script>
+     <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
+    <script src="/pwa-install.js" defer></script>
+</body>
+</html>

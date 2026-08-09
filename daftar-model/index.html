@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+    <script src="/config.js"></script>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('afi-theme');
+      var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Afi Studio - Daftar Model</title>
+  <link rel="icon" type="image/png" href="../favicon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="robots" content="noindex, nofollow">
+
+    <link rel="canonical" href="https://afi-studio.vercel.app/daftar-model/">
+    <meta name="description" content="Daftarkan model, rig, atau aset kamu ke Afi Studio.">
+  <link rel="stylesheet" href="/dist/output.css">
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script src="/theme-toggle.js" defer></script>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3 { font-family: 'Outfit', sans-serif; font-weight: 600; }
+
+    :root {
+      --accent: #93C5FD;
+      --accent-hover: #7DD3FC;
+      --bg: #D0D7E1;
+      --surface: #E1E7EE;
+      --text: #334155;
+      --text-light: #64748B;
+      --border: #B9C4D3;
+      --disabled: #94A3B8;
+      --grid-line: rgba(100,116,139,0.22);
+    }
+    html.dark {
+      --accent: #3B5578;
+      --accent-hover: #4A6690;
+      --bg: #1E293B;
+      --surface: #334155;
+      --text: #CBD5E1;
+      --text-light: #94A3B8;
+      --border: #475569;
+      --disabled: #64748B;
+      --grid-line: rgba(148,163,184,0.16);
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--text);
+      line-height: 1.4;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      zoom: 0.75;
+    }
+
+    .header-section { max-width: 1152px; margin: 0 auto; padding: 48px 24px 24px; text-align: center; }
+    .header-title { font-size: 42px; font-weight: 800; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+    .header-subtitle { font-size: 15px; color: var(--text-light); font-weight: 500; }
+
+    main { max-width: 720px; margin: 0 auto; padding: 0 24px 48px; }
+
+    .notice-box {
+      background: color-mix(in srgb, #F59E0B 16%, var(--surface));
+      border: 1px solid color-mix(in srgb, #F59E0B 45%, var(--border));
+      color: var(--text);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      margin-bottom: 28px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .notice-box svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; color: #F59E0B; }
+
+    .form-group { margin-bottom: 22px; }
+
+    .label-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+
+    .form-label { font-size: 14px; font-weight: 600; color: var(--text); font-family: 'Outfit', sans-serif; }
+    .form-label .required { color: #EF4444; margin-left: 2px; }
+    .form-hint { font-size: 12px; color: var(--text-light); margin-top: 6px; }
+
+    .char-count { font-size: 12px; color: var(--text-light); }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+    .form-textarea { resize: vertical; min-height: 110px; }
+
+    .toggle-row {
+      display: flex;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+    }
+    .toggle-option {
+      flex: 1;
+      text-align: center;
+      padding: 9px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Outfit', sans-serif;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-light);
+      user-select: none;
+    }
+    .toggle-option input { display: none; }
+    .toggle-option.active { background: var(--accent); color: #fff; }
+
+    .conditional-field {
+      margin-top: 12px;
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+    .conditional-field.show { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .category-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .category-chip {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-light);
+      background: var(--surface);
+      user-select: none;
+    }
+    .category-chip input { display: none; }
+    .category-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .category-empty { font-size: 12px; color: var(--text-light); }
+
+    .btn {
+      width: 100%;
+      padding: 14px 40px;
+      border: 2px solid var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      font-family: 'Outfit', sans-serif;
+      transition: all 0.3s ease;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-radius: 6px;
+    }
+    .btn:hover { background: transparent; color: #ffffff; }
+    .btn[disabled] {
+      background: var(--disabled);
+      border-color: var(--disabled);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .btn[disabled]:hover { color: #fff; background: var(--disabled); }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--text-light);
+      font-weight: 600;
+      margin-top: 12px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      border-radius: 6px;
+    }
+    .btn-secondary:hover { border-color: var(--text-light); color: var(--text); }
+
+    .footer-note { text-align: center; font-size: 12px; color: var(--text-light); margin-top: 24px; }
+    .footer-text { text-align: center; font-size: 11px; color: var(--text-light); padding: 16px 0 28px; font-weight: 500; }
+
+    .captcha-wrapper { margin: 24px 0; display: flex; justify-content: center; }
+
+    .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .back-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; margin-right: 10px; }
+    #theme-toggle-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+    #theme-toggle-btn .icon-moon { display: none; }
+    html.dark #theme-toggle-btn .icon-sun { display: none; }
+    html.dark #theme-toggle-btn .icon-moon { display: block; }
+  </style>
+    <link rel="stylesheet" href="/css/theme-tokens.css">
+    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
+    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+</head>
+ <body class="h-full">
+  <div id="app" class="h-full overflow-auto w-full">
+   <nav class="nav-bar">
+    <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+     <div class="flex items-center">
+      <a href="../index.html" class="back-btn" aria-label="Kembali ke beranda">
+       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </a>
+      <div class="cursor-pointer flex items-center gap-1">
+       <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+       <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">Afi-Studio</div>
+      </div>
+     </div>
+     <div class="flex items-center gap-4">
+      <button id="theme-toggle-btn" aria-label="Ganti tema">
+       <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+       <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+      </button>
+     </div>
+    </div>
+   </nav>
+
+   <div class="header-section">
+    <h1 class="header-title">Daftar Model</h1>
+    <p class="header-subtitle">Isi data model/rig/aset kamu untuk didaftarkan ke Afi Studio</p>
+   </div>
+
+   <main>
+    <div class="notice-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      <div><strong>Halaman ini masih tampilan awal (UI).</strong> Sistem pengiriman &amp; validasi belum aktif — tombol kirim sengaja dinonaktifkan dulu.</div>
+    </div>
+
+    <form id="daftarModelForm" onsubmit="return false;">
+
+      <div class="form-group">
+        <div class="label-wrapper">
+          <label class="form-label" for="modelName">Nama Model<span class="required">*</span></label>
+          <span class="char-count" id="nameCount">0 / 60</span>
+        </div>
+        <input type="text" id="modelName" class="form-input" placeholder="Contoh: Rig Mob Minecraft" maxlength="60" oninput="updateCount('modelName','nameCount',60)">
+      </div>
+
+      <div class="form-group">
+        <div class="label-wrapper">
+          <label class="form-label" for="modelCaption">Caption<span class="required">*</span></label>
+          <span class="char-count" id="captionCount">0 / 600</span>
+        </div>
+        <textarea id="modelCaption" class="form-textarea" placeholder="Ceritain aset ini — apa isinya, cocok buat apa, dll." maxlength="600" oninput="updateCount('modelCaption','captionCount',600)"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Thumbnail<span class="required">*</span></label>
+        <div class="toggle-row" data-toggle-group="thumb">
+          <label class="toggle-option active" data-value="link">
+            <input type="radio" name="thumbMode" value="link" checked> Pakai Link
+          </label>
+          <label class="toggle-option" data-value="upload">
+            <input type="radio" name="thumbMode" value="upload"> Upload Gambar
+          </label>
+        </div>
+        <div class="conditional-field show" data-field="thumb-link">
+          <input type="url" class="form-input" style="margin-top:12px;" placeholder="https://...">
+        </div>
+        <div class="conditional-field" data-field="thumb-upload">
+          <input type="file" class="form-input" style="margin-top:12px;" accept="image/png, image/jpeg, image/webp">
+          <p class="form-hint">Maks 10MB. Rasio gambar akan disesuaikan dengan kartu model di situs (detail menyusul). Lebih dari 10MB otomatis diminta pakai link.</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">File Model / Download<span class="required">*</span></label>
+        <div class="toggle-row" data-toggle-group="file">
+          <label class="toggle-option active" data-value="link">
+            <input type="radio" name="fileMode" value="link" checked> Pakai Link
+          </label>
+          <label class="toggle-option" data-value="upload">
+            <input type="radio" name="fileMode" value="upload"> Upload File
+          </label>
+        </div>
+        <div class="conditional-field show" data-field="file-link">
+          <input type="url" class="form-input" style="margin-top:12px;" placeholder="Link Mediafire / Google Drive / dll">
+        </div>
+        <div class="conditional-field" data-field="file-upload">
+          <input type="file" class="form-input" style="margin-top:12px;">
+          <p class="form-hint">Maks 10MB. Lebih dari itu, wajib pakai link.</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Kamu ini Kreator atau Konverter?<span class="required">*</span></label>
+        <div class="toggle-row" data-toggle-group="role">
+          <label class="toggle-option active" data-value="creator">
+            <input type="radio" name="roleMode" value="creator" checked> Creator
+          </label>
+          <label class="toggle-option" data-value="converter">
+            <input type="radio" name="roleMode" value="converter"> Converter
+          </label>
+        </div>
+        <div class="conditional-field" data-field="role-source">
+          <div class="form-group" style="margin-top:12px; margin-bottom:0;">
+            <label class="form-label" for="sourceInput">Dari mana sumber yang kamu dapatkan?<span class="required">*</span></label>
+            <input type="text" id="sourceInput" class="form-input" style="margin-top:8px;" placeholder="Contoh: nama kreator asli / link sumber asli">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="creatorName">Nama Kreator/Konverter<span class="required">*</span></label>
+        <input type="text" id="creatorName" class="form-input" style="margin-top:8px;" placeholder="Nama kamu / username kamu">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Kategori<span class="required">*</span> <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(pilih minimal 1)</span></label>
+        <div class="category-grid" id="categoryGrid" style="margin-top:10px;">
+          <span class="category-empty" id="categoryLoading">Memuat kategori...</span>
+        </div>
+      </div>
+
+      <div class="captcha-wrapper">
+        <div class="g-recaptcha" data-sitekey="6LcxpEAtAAAAAHgoGI0JAei1dUeIjHQaESwDmFuv" data-theme="dark"></div>
+      </div>
+
+      <button type="submit" class="btn" id="submit-btn" disabled>Sistem Belum Aktif</button>
+      <a href="../index.html" class="btn-secondary">Kembali ke halaman utama</a>
+    </form>
+
+    <p class="footer-note">Semua submission ditinjau manual oleh admin sebelum dipublikasikan di situs.</p>
+   </main>
+   <footer class="footer-text">
+     <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+   </footer>
+  </div>
+
+  <script>
+    function updateCount(inputId, countId, maxLimit) {
+      const input = document.getElementById(inputId);
+      const countSpan = document.getElementById(countId);
+      countSpan.innerText = `${input.value.length} / ${maxLimit}`;
+    }
+
+    // Toggle link/upload & creator/converter — murni UI, belum ada logic kirim.
+    document.querySelectorAll('[data-toggle-group]').forEach(function (group) {
+      const name = group.dataset.toggleGroup;
+      group.querySelectorAll('.toggle-option').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+          group.querySelectorAll('.toggle-option').forEach(function (o) { o.classList.remove('active'); });
+          opt.classList.add('active');
+          opt.querySelector('input').checked = true;
+
+          if (name === 'thumb' || name === 'file') {
+            const val = opt.dataset.value;
+            document.querySelector(`[data-field="${name}-link"]`).classList.toggle('show', val === 'link');
+            document.querySelector(`[data-field="${name}-upload"]`).classList.toggle('show', val === 'upload');
+          }
+          if (name === 'role') {
+            document.querySelector('[data-field="role-source"]').classList.toggle('show', opt.dataset.value === 'converter');
+          }
+        });
+      });
+    });
+
+    // Ambil kategori live dari database (sama seperti yang dipakai filter di halaman Models).
+    (function loadCategories() {
+      const grid = document.getElementById('categoryGrid');
+      fetch('/api/data/categories')
+        .then(function (res) { return res.ok ? res.json() : []; })
+        .then(function (categories) {
+          if (!Array.isArray(categories) || categories.length === 0) {
+            grid.innerHTML = '<span class="category-empty">Belum ada kategori. Hubungi admin.</span>';
+            return;
+          }
+          grid.innerHTML = '';
+          categories.forEach(function (cat) {
+            const label = document.createElement('label');
+            label.className = 'category-chip';
+            label.innerHTML = `<input type="checkbox" value="${cat}"> ${cat}`;
+            label.addEventListener('click', function (e) {
+              if (e.target.tagName !== 'INPUT') {
+                const cb = label.querySelector('input');
+                cb.checked = !cb.checked;
+              }
+              label.classList.toggle('active', label.querySelector('input').checked);
+            });
+            grid.appendChild(label);
+          });
+        })
+        .catch(function () {
+          grid.innerHTML = '<span class="category-empty">Gagal memuat kategori. Coba refresh halaman.</span>';
+        });
+    })();
+  </script>
+    <script src="/pwa-install.js" defer></script>
+</body>
+</html>
