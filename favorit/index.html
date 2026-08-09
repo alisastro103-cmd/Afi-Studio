@@ -206,12 +206,12 @@
             transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
         }
         .page-menu-dropdown.open { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); }
-        .page-menu-item { display: block; padding: 7px 12px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.3; font-weight: 600; font-family: 'Outfit', sans-serif; }
+        .page-menu-item { display: flex; align-items: center; padding: 6px 12px; line-height: 1.15; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px;  font-weight: 600; font-family: 'Outfit', sans-serif; }
         .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item:active { opacity: 0.6; }
-        .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); gap: 8px; }
         html.dark .page-menu-item.active { color: #fff; }
-        .page-menu-item.active::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: currentColor; margin-right: 8px; vertical-align: middle; }
+        .page-menu-item.active::before { content: ""; width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: currentColor; }
         .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
         .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: space-between; }
         html.dark .page-menu-item-cta { color: #fff; }
