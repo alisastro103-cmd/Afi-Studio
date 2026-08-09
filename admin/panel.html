@@ -256,6 +256,7 @@
     <div class="side-item" data-view="ranking"><i data-lucide="trophy"></i>Ranking Render</div>
     <div class="side-item" data-view="event"><i data-lucide="calendar"></i>Event</div>
     <div class="side-item" data-view="feedback"><i data-lucide="message-square"></i>Feedback</div>
+    <div class="side-item" data-view="pendingmodels"><i data-lucide="inbox"></i>Pendaftaran<span id="pending-badge" style="display:none; margin-left:auto; background:#EF4444; color:#fff; font-size:10px; font-weight:800; padding:1px 6px; border-radius:999px;"></span></div>
     <div class="side-item" data-view="pengaturan"><i data-lucide="settings"></i>Pengaturan</div>
     <div class="mt-auto pt-3" style="border-top:1px solid var(--border);">
       <div class="side-item" id="theme-toggle-btn"><i data-lucide="moon-star"></i>Ganti Tema</div>
@@ -407,6 +408,20 @@
         </div>
       </section>
 
+      <!-- PENDAFTARAN MODEL (PENDING) -->
+      <section class="section-view" id="view-pendingmodels">
+        <div class="panel p-4 mb-3">
+          <h3 class="text-sm font-bold mb-1">Antrian Pendaftaran Model</h3>
+          <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6;">
+            Submission dari halaman <code>/daftar-model/</code>. Kalau ada yang upload file/gambar langsung (bukan link),
+            cek chat Telegram bot buat ambil filenya, rehost manual ke Drive/Mediafire, baru isi link finalnya di sini
+            sebelum menyetujui.
+          </p>
+        </div>
+        <div id="pendingmodels-list" class="flex flex-col gap-3"></div>
+        <div id="pendingmodels-empty" class="panel p-6 text-center" style="display:none; color:var(--text-sub); font-size:13px;">Belum ada pendaftaran masuk.</div>
+      </section>
+
       <!-- PENGATURAN -->
       <section class="section-view" id="view-pengaturan">
         <div class="panel p-4 mb-3">
@@ -486,8 +501,8 @@
 <script>
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
-let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [] };
-const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories','appcategories'];
+let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [] };
+const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories','appcategories','pendingmodels'];
 
 /* ================= LOGIN & TOKEN ================= */
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
@@ -548,7 +563,7 @@ async function bootAdminApp(){
   toast('Memuat data...');
   await loadAllData();
   renderDashboard(); renderModels(); renderKategori(); renderKategoriApp(); renderVideos(); renderBanner();
-  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderEvent(); renderPengaturan();
+  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderEvent(); renderPengaturan(); renderPendingModels();
   lucide.createIcons();
 }
 
@@ -1628,12 +1643,179 @@ async function updateSetting(key, value){
 // dikosongkan / diisi teks yang jelas bukan URL, biar tombol di web utama
 // tidak sampai nunjuk ke jalur kosong/rusak.
 async function updateSettingUrl(key, value){
-  if(!value || !/^https?:\/\/.+/i.test(value)){
-    toast('Link tidak valid, harus diawali http:// atau https://');
+  if(!value || !(/^https?:\/\/.+/i.test(value) || /^\//.test(value))){
+    toast('Link tidak valid, harus diawali http://, https://, atau / (link internal).');
     renderPengaturan();
     return;
   }
   await updateSetting(key, value);
+}
+
+/* ================= PENDAFTARAN MODEL (PENDING) ================= */
+const APP_TARGET_OPTIONS = ['Prisma3D','Blender','Mine-Imator','Viontri','C4D','Lainnya'];
+
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderPendingModels(){
+  const list = document.getElementById('pendingmodels-list');
+  const empty = document.getElementById('pendingmodels-empty');
+  const badge = document.getElementById('pending-badge');
+  const items = Array.isArray(DB.pendingmodels) ? DB.pendingmodels : [];
+
+  if(badge){
+    if(items.length){ badge.textContent = items.length; badge.style.display = 'inline-block'; }
+    else { badge.style.display = 'none'; }
+  }
+
+  if(!items.length){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = items.map(item => {
+    const thumbInfo = item.thumb?.type === 'link'
+      ? `<a href="${escapeHtml(item.thumb.value)}" target="_blank" rel="noopener" style="color:var(--accent-hover);">${escapeHtml(item.thumb.value)}</a>`
+      : `📎 Upload di Telegram — <em>${escapeHtml(item.thumb?.filename || '-')}</em> (${item.thumb?.sizeKb || '?'} KB)`;
+    const downloadInfo = item.download?.type === 'link'
+      ? `<a href="${escapeHtml(item.download.value)}" target="_blank" rel="noopener" style="color:var(--accent-hover);">${escapeHtml(item.download.value)}</a>`
+      : `📎 Upload di Telegram — <em>${escapeHtml(item.download?.filename || '-')}</em> (${item.download?.sizeKb || '?'} KB)`;
+    const roleLabel = item.role === 'converter' ? 'Converter' : 'Creator';
+    const submittedDate = item.submittedAt ? new Date(item.submittedAt).toLocaleString('id-ID') : '-';
+
+    let thumbPreviewHtml = '';
+    if (item.thumb?.type === 'link') {
+      thumbPreviewHtml = `<img src="${escapeHtml(item.thumb.value)}" alt="Preview thumbnail" style="max-width:200px; width:100%; border-radius:8px; margin-top:8px; display:block;" onerror="this.style.display='none'">`;
+    } else if (item.thumb?.fileId) {
+      thumbPreviewHtml = `<img data-tg-file-id="${escapeHtml(item.thumb.fileId)}" class="pending-thumb-preview" alt="Memuat preview..." style="max-width:200px; width:100%; min-height:70px; border-radius:8px; margin-top:8px; display:block; background:color-mix(in srgb, var(--text-sub) 10%, var(--surface));">`;
+    }
+
+    const needsThumbUrl = item.thumb?.type !== 'link';
+    const needsDownloadUrl = item.download?.type !== 'link';
+
+    return `
+      <div class="panel p-4" data-pending-id="${escapeHtml(item.id)}">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <div>
+            <div class="text-sm font-bold">${escapeHtml(item.name)}</div>
+            <div style="font-size:11px; color:var(--text-sub);">${submittedDate}</div>
+          </div>
+          <div style="font-size:11px; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, var(--accent) 18%, transparent); font-weight:700; white-space:nowrap;">${roleLabel}</div>
+        </div>
+        <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6; margin-bottom:8px;">${escapeHtml(item.caption)}</p>
+        <div style="font-size:12px; line-height:1.9; color:var(--text-sub);">
+          <div><strong style="color:var(--text);">Nama ${roleLabel}:</strong> ${escapeHtml(item.creatorConverterName)}</div>
+          ${item.role === 'converter' ? `<div><strong style="color:var(--text);">Sumber asal:</strong> ${escapeHtml(item.source)}</div>` : ''}
+          <div><strong style="color:var(--text);">Kategori:</strong> ${escapeHtml((item.category||[]).join(', '))}</div>
+          <div><strong style="color:var(--text);">Aplikasi:</strong> ${escapeHtml(item.appTarget || '-')}</div>
+          <div><strong style="color:var(--text);">Thumbnail:</strong> ${thumbInfo}</div>
+          ${thumbPreviewHtml}
+          <div><strong style="color:var(--text);">File Model:</strong> ${downloadInfo}</div>
+        </div>
+
+        <div id="approve-form-${escapeHtml(item.id)}" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+          ${needsThumbUrl ? `
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:6px; border-bottom:none; padding:6px 0;">
+            <div class="setting-row-title" style="font-size:12px;">Link Thumbnail Final (setelah kamu rehost)</div>
+            <input type="text" id="final-thumb-${escapeHtml(item.id)}" placeholder="https://i.ibb.co/...">
+          </div>` : `<input type="hidden" id="final-thumb-${escapeHtml(item.id)}" value="${escapeHtml(item.thumb?.value || '')}">`}
+          ${needsDownloadUrl ? `
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:6px; border-bottom:none; padding:6px 0;">
+            <div class="setting-row-title" style="font-size:12px;">Link Download Final (setelah kamu rehost)</div>
+            <input type="text" id="final-download-${escapeHtml(item.id)}" placeholder="https://mediafire.com/...">
+          </div>` : `<input type="hidden" id="final-download-${escapeHtml(item.id)}" value="${escapeHtml(item.download?.value || '')}">`}
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:6px; border-bottom:none; padding:6px 0;">
+            <div class="setting-row-title" style="font-size:12px;">Aplikasi Tujuan</div>
+            <select id="final-apptarget-${escapeHtml(item.id)}" style="padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text);">
+              <option value="">— Pilih —</option>
+              ${APP_TARGET_OPTIONS.map(a => `<option value="${a}" ${a===item.appTarget?'selected':''}>${a}</option>`).join('')}
+            </select>
+          </div>
+          <button class="btn btn-accent text-xs mt-2" onclick="confirmApprovePendingModel('${escapeHtml(item.id)}')"><i data-lucide="check" style="width:14px;height:14px;"></i>Konfirmasi &amp; Publish</button>
+        </div>
+
+        <div class="flex gap-2 mt-3">
+          <button class="btn btn-accent text-xs" onclick="toggleApproveForm('${escapeHtml(item.id)}')" style="background:#16A34A;"><i data-lucide="check-circle" style="width:14px;height:14px;"></i>Setujui</button>
+          <button class="btn btn-outline text-xs" onclick="rejectPendingModel('${escapeHtml(item.id)}')" style="border-color:#EF4444; color:#EF4444;"><i data-lucide="x-circle" style="width:14px;height:14px;"></i>Tolak</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  if(typeof lucide !== 'undefined') lucide.createIcons();
+
+  // Muat preview gambar yang diupload lewat Telegram (bukan link) —
+  // pakai fetch + header x-admin-token (bukan <img src> biasa) supaya
+  // token admin gak pernah nongol di URL/riwayat browser.
+  document.querySelectorAll('.pending-thumb-preview[data-tg-file-id]').forEach(async img => {
+    const fileId = img.dataset.tgFileId;
+    try {
+      const res = await fetch(`/api/admin/telegram-file?fileId=${encodeURIComponent(fileId)}`, {
+        headers: { 'x-admin-token': getToken() },
+      });
+      if(!res.ok) throw new Error('gagal muat');
+      const blob = await res.blob();
+      img.src = URL.createObjectURL(blob);
+    } catch(e){
+      img.alt = 'Gagal memuat preview (mungkin sudah kadaluarsa)';
+      img.style.minHeight = '';
+      img.style.background = 'none';
+    }
+  });
+}
+
+function toggleApproveForm(id){
+  const el = document.getElementById(`approve-form-${id}`);
+  if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function confirmApprovePendingModel(id){
+  const item = (DB.pendingmodels || []).find(p => p.id === id);
+  if(!item) return;
+
+  const thumbUrl = (document.getElementById(`final-thumb-${id}`)?.value || '').trim();
+  const downloadUrl = (document.getElementById(`final-download-${id}`)?.value || '').trim();
+  const appTarget = document.getElementById(`final-apptarget-${id}`)?.value || '';
+
+  if(!/^https?:\/\//i.test(thumbUrl)){ toast('Link thumbnail final wajib diisi & valid.'); return; }
+  if(!/^https?:\/\//i.test(downloadUrl)){ toast('Link download final wajib diisi & valid.'); return; }
+
+  const newModel = {
+    name: item.name,
+    caption: item.caption,
+    creator: item.role === 'creator' ? item.creatorConverterName : '',
+    converter: item.role === 'converter' ? item.creatorConverterName : '',
+    category: item.category || [],
+    app_target: appTarget || '',
+    thumb: thumbUrl,
+    link: downloadUrl,
+  };
+
+  const prevModels = DB.models;
+  const prevPending = DB.pendingmodels;
+  DB.models = [...DB.models, newModel];
+  DB.pendingmodels = DB.pendingmodels.filter(p => p.id !== id);
+
+  const ok1 = await persist('models');
+  const ok2 = await persist('pendingmodels');
+  if(ok1 && ok2){
+    toast('Model dipublikasikan!');
+    renderModels(); renderPendingModels(); renderDashboard();
+  } else {
+    DB.models = prevModels; DB.pendingmodels = prevPending;
+    renderPendingModels();
+  }
+}
+
+async function rejectPendingModel(id){
+  if(!confirm('Tolak pendaftaran ini? Data pending akan dihapus (chat di Telegram tetap ada sebagai arsip).')) return;
+  const prev = DB.pendingmodels;
+  DB.pendingmodels = DB.pendingmodels.filter(p => p.id !== id);
+  const ok = await persist('pendingmodels');
+  if(ok){ toast('Pendaftaran ditolak & dihapus dari antrian.'); renderPendingModels(); }
+  else { DB.pendingmodels = prev; renderPendingModels(); }
 }
 
 /* ================= INIT ================= */

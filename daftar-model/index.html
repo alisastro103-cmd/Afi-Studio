@@ -313,11 +313,11 @@
 
    <main>
     <div class="notice-box">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-      <div><strong>Halaman ini masih tampilan awal (UI).</strong> Sistem pengiriman &amp; validasi belum aktif — tombol kirim sengaja dinonaktifkan dulu.</div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+      <div>Semua pendaftaran ditinjau manual oleh admin sebelum dipublikasikan. Kalau kamu upload file/gambar langsung, filenya dikirim ke Telegram — bukan disimpan di server.</div>
     </div>
 
-    <form id="daftarModelForm" onsubmit="return false;">
+    <form id="daftarModelForm">
 
       <div class="form-group">
         <div class="label-wrapper">
@@ -346,11 +346,11 @@
           </label>
         </div>
         <div class="conditional-field show" data-field="thumb-link">
-          <input type="url" class="form-input" style="margin-top:12px;" placeholder="https://...">
+          <input type="url" id="thumbLink" class="form-input" style="margin-top:12px;" placeholder="https://...">
         </div>
         <div class="conditional-field" data-field="thumb-upload">
-          <input type="file" class="form-input" style="margin-top:12px;" accept="image/png, image/jpeg, image/webp">
-          <p class="form-hint">Maks 10MB. Rasio gambar akan disesuaikan dengan kartu model di situs (detail menyusul). Lebih dari 10MB otomatis diminta pakai link.</p>
+          <input type="file" id="thumbFile" class="form-input" style="margin-top:12px;" accept="image/png, image/jpeg, image/webp">
+          <p class="form-hint">Maks 3MB, rasio wajib 16:9 (contoh 800x450, resolusi bebas asal rasionya sama). Lebih dari 3MB otomatis diminta pakai link.</p>
         </div>
       </div>
 
@@ -365,11 +365,11 @@
           </label>
         </div>
         <div class="conditional-field show" data-field="file-link">
-          <input type="url" class="form-input" style="margin-top:12px;" placeholder="Link Mediafire / Google Drive / dll">
+          <input type="url" id="downloadLink" class="form-input" style="margin-top:12px;" placeholder="Link Mediafire / Google Drive / dll">
         </div>
         <div class="conditional-field" data-field="file-upload">
-          <input type="file" class="form-input" style="margin-top:12px;">
-          <p class="form-hint">Maks 10MB. Lebih dari itu, wajib pakai link.</p>
+          <input type="file" id="downloadFile" class="form-input" style="margin-top:12px;">
+          <p class="form-hint">Maks 3MB (batas teknis server). Lebih dari itu, wajib pakai link. Kalau upload thumbnail & file bersamaan, totalnya jangan lebih dari ~3.8MB.</p>
         </div>
       </div>
 
@@ -397,6 +397,19 @@
       </div>
 
       <div class="form-group">
+        <label class="form-label" for="appTarget">Aplikasi Tujuan <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(opsional)</span></label>
+        <select id="appTarget" class="form-select" style="margin-top:8px;">
+          <option value="">— Pilih aplikasi —</option>
+          <option value="Prisma3D">Prisma3D</option>
+          <option value="Blender">Blender</option>
+          <option value="Mine-Imator">Mine-Imator</option>
+          <option value="Viontri">Viontri</option>
+          <option value="C4D">C4D</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label class="form-label">Kategori<span class="required">*</span> <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(pilih minimal 1)</span></label>
         <div class="category-grid" id="categoryGrid" style="margin-top:10px;">
           <span class="category-empty" id="categoryLoading">Memuat kategori...</span>
@@ -407,7 +420,9 @@
         <div class="g-recaptcha" data-sitekey="6LcxpEAtAAAAAHgoGI0JAei1dUeIjHQaESwDmFuv" data-theme="dark"></div>
       </div>
 
-      <button type="submit" class="btn" id="submit-btn" disabled>Sistem Belum Aktif</button>
+      <div id="form-message" style="display:none; font-size:13px; text-align:center; padding:12px; border-radius:8px; margin-bottom:16px;"></div>
+
+      <button type="submit" class="btn" id="submit-btn">Kirim Pendaftaran</button>
       <a href="../index.html" class="btn-secondary">Kembali ke halaman utama</a>
     </form>
 
@@ -437,7 +452,7 @@
       countSpan.innerText = `${input.value.length} / ${maxLimit}`;
     }
 
-    // Toggle link/upload & creator/converter — murni UI, belum ada logic kirim.
+    // Toggle link/upload & creator/converter
     document.querySelectorAll('[data-toggle-group]').forEach(function (group) {
       const name = group.dataset.toggleGroup;
       group.querySelectorAll('.toggle-option').forEach(function (opt) {
@@ -456,6 +471,123 @@
           }
         });
       });
+    });
+
+    // Kalau file yang dipilih lebih dari 3MB, otomatis balik ke mode "link"
+    // + kasih tau user, biar gak nunggu upload gagal di server. Batasnya
+    // 3MB (bukan lebih) karena limit keras Vercel: 1 request maksimal
+    // 4.5MB total, dan kalau thumbnail+file diupload bareng harus muat
+    // berdua dalam batas itu.
+    const MAX_SIZE = 3 * 1024 * 1024;
+    function guardFileSize(inputId, groupName) {
+      const input = document.getElementById(inputId);
+      input.addEventListener('change', function () {
+        const f = input.files[0];
+        if (f && f.size > MAX_SIZE) {
+          showMessage(`File "${f.name}" ukurannya ${(f.size / 1024 / 1024).toFixed(1)}MB, lebih dari 3MB. Otomatis dialihkan ke mode link — silakan upload ke Mediafire/Drive/ibb.co dulu.`, 'error');
+          input.value = '';
+          const group = document.querySelector(`[data-toggle-group="${groupName}"]`);
+          const linkOpt = group.querySelector('.toggle-option[data-value="link"]');
+          linkOpt.click();
+        }
+      });
+    }
+    guardFileSize('thumbFile', 'thumb');
+    guardFileSize('downloadFile', 'file');
+
+    function showMessage(msg, type) {
+      const box = document.getElementById('form-message');
+      box.textContent = msg;
+      box.style.display = 'block';
+      box.style.background = type === 'success' ? 'color-mix(in srgb, #22C55E 18%, var(--surface))' : 'color-mix(in srgb, #EF4444 18%, var(--surface))';
+      box.style.color = type === 'success' ? '#16A34A' : '#DC2626';
+      box.style.border = '1px solid ' + (type === 'success' ? 'color-mix(in srgb, #22C55E 45%, var(--border))' : 'color-mix(in srgb, #EF4444 45%, var(--border))');
+      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function getToggleValue(groupName) {
+      const active = document.querySelector(`[data-toggle-group="${groupName}"] .toggle-option.active`);
+      return active ? active.dataset.value : '';
+    }
+
+    document.getElementById('daftarModelForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submit-btn');
+
+      const name = document.getElementById('modelName').value.trim();
+      const caption = document.getElementById('modelCaption').value.trim();
+      const creatorConverterName = document.getElementById('creatorName').value.trim();
+      const role = getToggleValue('role');
+      const source = document.getElementById('sourceInput').value.trim();
+      const appTarget = document.getElementById('appTarget').value;
+      const thumbMode = getToggleValue('thumb');
+      const thumbLink = document.getElementById('thumbLink').value.trim();
+      const thumbFile = document.getElementById('thumbFile').files[0];
+      const downloadMode = getToggleValue('file');
+      const downloadLink = document.getElementById('downloadLink').value.trim();
+      const downloadFile = document.getElementById('downloadFile').files[0];
+      const checkedCategories = Array.from(document.querySelectorAll('#categoryGrid input[type="checkbox"]:checked')).map(c => c.value);
+
+      // Validasi ringan di client (validasi lengkap tetap di server)
+      if (!name || !caption || !creatorConverterName) {
+        return showMessage('Nama, caption, dan nama kreator/konverter wajib diisi.', 'error');
+      }
+      if (!role) return showMessage('Pilih Creator atau Converter.', 'error');
+      if (role === 'converter' && !source) return showMessage('Sumber asal wajib diisi kalau kamu Converter.', 'error');
+      if (checkedCategories.length === 0) return showMessage('Pilih minimal 1 kategori.', 'error');
+      if (thumbMode === 'link' && !thumbLink) return showMessage('Link thumbnail wajib diisi.', 'error');
+      if (thumbMode === 'upload' && !thumbFile) return showMessage('Thumbnail wajib diupload.', 'error');
+      if (downloadMode === 'link' && !downloadLink) return showMessage('Link download wajib diisi.', 'error');
+      if (downloadMode === 'upload' && !downloadFile) return showMessage('File model wajib diupload.', 'error');
+      if (thumbMode === 'upload' && downloadMode === 'upload' && thumbFile && downloadFile && (thumbFile.size + downloadFile.size) > 3.8 * 1024 * 1024) {
+        return showMessage('Thumbnail + file model kalau diupload bersamaan totalnya harus di bawah 3.8MB. Pakai link buat salah satunya.', 'error');
+      }
+      const recaptchaToken = typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : '';
+      if (!recaptchaToken) return showMessage('Selesaikan verifikasi reCAPTCHA dulu.', 'error');
+
+      const fd = new FormData();
+      fd.append('name', name);
+      fd.append('caption', caption);
+      fd.append('creatorConverterName', creatorConverterName);
+      fd.append('role', role);
+      fd.append('source', source);
+      fd.append('appTarget', appTarget);
+      fd.append('categories', JSON.stringify(checkedCategories));
+      fd.append('thumbMode', thumbMode);
+      if (thumbMode === 'link') fd.append('thumbLink', thumbLink); else fd.append('thumbFile', thumbFile);
+      fd.append('downloadMode', downloadMode);
+      if (downloadMode === 'link') fd.append('downloadLink', downloadLink); else fd.append('downloadFile', downloadFile);
+      fd.append('g-recaptcha-response', recaptchaToken);
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Mengirim...';
+
+      try {
+        const res = await fetch('/api/model-submit', { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Gagal mengirim pendaftaran.');
+
+        showMessage('Pendaftaran berhasil dikirim! Tim admin akan meninjau sebelum dipublikasikan.', 'success');
+        document.getElementById('daftarModelForm').reset();
+        document.querySelectorAll('.category-chip.active').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('[data-toggle-group]').forEach(function (group) {
+          group.querySelectorAll('.toggle-option').forEach((o, i) => o.classList.toggle('active', i === 0));
+        });
+        document.querySelector('[data-field="thumb-link"]').classList.add('show');
+        document.querySelector('[data-field="thumb-upload"]').classList.remove('show');
+        document.querySelector('[data-field="file-link"]').classList.add('show');
+        document.querySelector('[data-field="file-upload"]').classList.remove('show');
+        document.querySelector('[data-field="role-source"]').classList.remove('show');
+        if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+        updateCount('modelName', 'nameCount', 60);
+        updateCount('modelCaption', 'captionCount', 600);
+      } catch (err) {
+        showMessage(err.message || 'Gagal mengirim pendaftaran. Coba lagi nanti.', 'error');
+        if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Kirim Pendaftaran';
+      }
     });
 
     // Ambil kategori live dari database (sama seperti yang dipakai filter di halaman Models).
