@@ -116,34 +116,60 @@
       font-family: 'Outfit', sans-serif;
       line-height: 1;
       cursor: pointer;
-      margin-left: 6px;
       flex-shrink: 0;
       padding: 0;
     }
     .info-btn:active { opacity: 0.6; }
-    .form-label-row { display: flex; align-items: center; }
+    .form-label-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .label-wrapper-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
-    .info-modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
-      display: none; align-items: center; justify-content: center;
-      z-index: 200; padding: 24px;
-    }
-    .info-modal-overlay.show { display: flex; }
-    .info-modal {
+    /* Balon info bergaya chat bubble, mengambang di atas tombol "i"
+       dengan panah pendek menunjuk ke bawah ke arah tombolnya. */
+    .info-tooltip {
+      position: fixed;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      max-width: 340px;
-      width: 100%;
+      border-radius: 10px;
+      padding: 12px 14px;
+      width: 260px;
+      max-width: calc(100vw - 32px);
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: var(--text-light);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.22);
+      z-index: 210;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(6px);
+      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+      pointer-events: none;
+      --arrow-left: 20px;
     }
-    .info-modal-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 8px; color: var(--text); }
-    .info-modal-text { font-size: 13px; color: var(--text-light); line-height: 1.6; margin-bottom: 16px; }
-    .info-modal-close {
-      width: 100%; padding: 10px; border-radius: 8px; border: none;
-      background: var(--accent); color: #fff; font-weight: 700; font-size: 13px;
-      font-family: 'Outfit', sans-serif; cursor: pointer;
+    .info-tooltip.show { opacity: 1; visibility: visible; transform: translateY(0); pointer-events: auto; }
+    .info-tooltip-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--text); }
+    .info-tooltip-text { color: var(--text-light); }
+    .info-tooltip::before,
+    .info-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: var(--arrow-left);
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
     }
+    .info-tooltip::before { border-top: 9px solid var(--border); }
+    .info-tooltip::after { top: calc(100% - 1px); border-top: 8px solid var(--surface); }
+    .info-tooltip.arrow-top::before,
+    .info-tooltip.arrow-top::after {
+      top: auto; bottom: 100%;
+      border-top: none;
+    }
+    .info-tooltip.arrow-top::before { border-bottom: 9px solid var(--border); }
+    .info-tooltip.arrow-top::after { bottom: calc(100% - 1px); border-bottom: 8px solid var(--surface); }
+
     .form-hint { font-size: 12px; color: var(--text-light); margin-top: 6px; }
 
     .char-count { font-size: 12px; color: var(--text-light); }
@@ -412,22 +438,22 @@
 
       <div class="form-group">
         <div class="label-wrapper">
-          <div class="form-label-row">
-            <label class="form-label" for="modelName">Nama Model</label>
-            <button type="button" class="info-btn" onclick="showInfo('Nama Model', 'Nama singkat buat model/rig/aset kamu. Ini yang bakal muncul sebagai judul kartu di halaman Models, jadi usahain jelas dan gampang dikenali.')">i</button>
+          <label class="form-label" for="modelName">Nama Model</label>
+          <div class="label-wrapper-right">
+            <span class="char-count" id="nameCount">0 / 60</span>
+            <button type="button" class="info-btn" onclick="showInfo(this, 'Nama Model', 'Nama singkat buat model/rig/aset kamu. Ini yang bakal muncul sebagai judul kartu di halaman Models, jadi usahain jelas dan gampang dikenali.')">i</button>
           </div>
-          <span class="char-count" id="nameCount">0 / 60</span>
         </div>
         <input type="text" id="modelName" class="form-input" placeholder="Contoh: Rig Mob Minecraft" maxlength="60" oninput="updateCount('modelName','nameCount',60)">
       </div>
 
       <div class="form-group">
         <div class="label-wrapper">
-          <div class="form-label-row">
-            <label class="form-label" for="modelCaption">Caption</label>
-            <button type="button" class="info-btn" onclick="showInfo('Caption', 'Deskripsi tentang aset kamu — isinya apa aja, cocok dipakai buat apa, dan info lain yang perlu orang tau sebelum download.')">i</button>
+          <label class="form-label" for="modelCaption">Caption</label>
+          <div class="label-wrapper-right">
+            <span class="char-count" id="captionCount">0 / 600</span>
+            <button type="button" class="info-btn" onclick="showInfo(this, 'Caption', 'Deskripsi tentang aset kamu — isinya apa aja, cocok dipakai buat apa, dan info lain yang perlu orang tau sebelum download.')">i</button>
           </div>
-          <span class="char-count" id="captionCount">0 / 600</span>
         </div>
         <textarea id="modelCaption" class="form-textarea" placeholder="Ceritain aset ini — apa isinya, cocok buat apa, dll." maxlength="600" oninput="updateCount('modelCaption','captionCount',600)"></textarea>
       </div>
@@ -435,7 +461,7 @@
       <div class="form-group">
         <div class="form-label-row">
           <label class="form-label">Thumbnail</label>
-          <button type="button" class="info-btn" onclick="showInfo('Thumbnail', 'Gambar preview yang mewakili aset kamu, bakal muncul di kartu model. Wajib rasio 16:9 (contoh 800x450, resolusi bebas asal rasionya sama). Bisa pakai link gambar yang udah di-hosting, atau upload langsung.')">i</button>
+          <button type="button" class="info-btn" onclick="showInfo(this, 'Thumbnail', 'Gambar preview yang mewakili aset kamu, bakal muncul di kartu model. Wajib rasio 16:9 (contoh 800x450, resolusi bebas asal rasionya sama). Bisa pakai link gambar yang udah di-hosting, atau upload langsung.')">i</button>
         </div>
         <div class="toggle-row" data-toggle-group="thumb">
           <label class="toggle-option active" data-value="link">
@@ -458,7 +484,7 @@
       <div class="form-group">
         <div class="form-label-row">
           <label class="form-label">File Model / Download</label>
-          <button type="button" class="info-btn" onclick="showInfo('File Model / Download', 'File aset yang bakal didownload orang lain. Bisa berupa link (Mediafire/Google Drive/dll), atau upload langsung kalau ukurannya kecil (di bawah 3MB).')">i</button>
+          <button type="button" class="info-btn" onclick="showInfo(this, 'File Model / Download', 'File aset yang bakal didownload orang lain. Bisa berupa link (Mediafire/Google Drive/dll), atau upload langsung kalau ukurannya kecil (di bawah 3MB).')">i</button>
         </div>
         <div class="toggle-row" data-toggle-group="file">
           <label class="toggle-option active" data-value="link">
@@ -480,7 +506,7 @@
       <div class="form-group">
         <div class="form-label-row">
           <label class="form-label">Kamu ini Kreator atau Konverter?</label>
-          <button type="button" class="info-btn" onclick="showInfo('Creator vs Converter', '• Creator = kamu yang bikin model/rig/aset ini dari nol, hasil karya sendiri.\n\n• Converter = kamu yang mengubah/konversi aset dari sumber lain (misalnya dari game atau aplikasi lain) supaya bisa dipakai di Minecraft.\n\nKalau kamu pilih Converter, nanti bakal diminta sumber aslinya dari mana.')">i</button>
+          <button type="button" class="info-btn" onclick="showInfo(this, 'Creator vs Converter', '• Creator = kamu yang bikin model/rig/aset ini dari nol, hasil karya sendiri.\n\n• Converter = kamu yang mengubah/konversi aset dari sumber lain (misalnya dari game atau aplikasi lain) supaya bisa dipakai di Minecraft.\n\nKalau kamu pilih Converter, nanti bakal diminta sumber aslinya dari mana.')">i</button>
         </div>
         <div class="toggle-row" data-toggle-group="role">
           <label class="toggle-option active" data-value="creator">
@@ -494,7 +520,7 @@
           <div class="form-group" style="margin-top:12px; margin-bottom:0;">
             <div class="form-label-row">
               <label class="form-label" for="sourceInput">Dari mana sumber yang kamu dapatkan?</label>
-              <button type="button" class="info-btn" onclick="showInfo('Sumber Asal', 'Dari mana kamu dapetin aset aslinya sebelum dikonversi — bisa nama kreator asli, link sumber, atau nama game/aplikasi asalnya. Ini penting buat kasih kredit ke pembuat aslinya.')">i</button>
+              <button type="button" class="info-btn" onclick="showInfo(this, 'Sumber Asal', 'Dari mana kamu dapetin aset aslinya sebelum dikonversi — bisa nama kreator asli, link sumber, atau nama game/aplikasi asalnya. Ini penting buat kasih kredit ke pembuat aslinya.')">i</button>
             </div>
             <input type="text" id="sourceInput" class="form-input" style="margin-top:8px;" placeholder="Contoh: nama kreator asli / link sumber asli">
           </div>
@@ -504,7 +530,7 @@
       <div class="form-group">
         <div class="form-label-row">
           <label class="form-label" for="creatorName">Nama Kreator/Konverter</label>
-          <button type="button" class="info-btn" onclick="showInfo('Nama Kreator/Konverter', 'Nama atau username kamu yang bakal ditampilkan sebagai pembuat/pengonversi aset ini di halaman Models.')">i</button>
+          <button type="button" class="info-btn" onclick="showInfo(this, 'Nama Kreator/Konverter', 'Nama atau username kamu yang bakal ditampilkan sebagai pembuat/pengonversi aset ini di halaman Models.')">i</button>
         </div>
         <input type="text" id="creatorName" class="form-input" style="margin-top:8px;" placeholder="Nama kamu / username kamu">
       </div>
@@ -512,7 +538,7 @@
       <div class="form-group">
         <div class="form-label-row">
           <label class="form-label" for="appTarget">Aplikasi Tujuan</label>
-          <button type="button" class="info-btn" onclick="showInfo('Aplikasi Tujuan', 'Aplikasi yang dipakai buat bikin/convert aset ini, atau aplikasi yang cocok dipakai buat pakai aset ini (Prisma3D, Blender, Mine-Imator, dll). Ini bantu orang lain nyari aset yang sesuai sama aplikasi yang mereka pakai.')">i</button>
+          <button type="button" class="info-btn" onclick="showInfo(this, 'Aplikasi Tujuan', 'Aplikasi yang dipakai buat bikin/convert aset ini, atau aplikasi yang cocok dipakai buat pakai aset ini (Prisma3D, Blender, Mine-Imator, dll). Ini bantu orang lain nyari aset yang sesuai sama aplikasi yang mereka pakai.')">i</button>
         </div>
         <select id="appTarget" class="form-select" style="margin-top:8px;">
           <option value="Prisma3D">Prisma3D</option>
@@ -527,7 +553,7 @@
       <div class="form-group">
         <div class="form-label-row">
           <label class="form-label">Kategori <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(pilih minimal 1)</span></label>
-          <button type="button" class="info-btn" onclick="showInfo('Kategori', 'Pilih kategori yang sesuai sama aset kamu, biar gampang ditemukan orang lain lewat filter di halaman Models. Boleh pilih lebih dari satu kategori.')">i</button>
+          <button type="button" class="info-btn" onclick="showInfo(this, 'Kategori', 'Pilih kategori yang sesuai sama aset kamu, biar gampang ditemukan orang lain lewat filter di halaman Models. Boleh pilih lebih dari satu kategori.')">i</button>
         </div>
         <div class="category-grid" id="categoryGrid" style="margin-top:10px;">
           <span class="category-empty" id="categoryLoading">Memuat kategori...</span>
@@ -551,23 +577,84 @@
    </footer>
   </div>
 
-  <div id="infoModalOverlay" class="info-modal-overlay" onclick="if(event.target===this) closeInfo()">
-    <div class="info-modal">
-      <div class="info-modal-title" id="infoModalTitle"></div>
-      <div class="info-modal-text" id="infoModalText"></div>
-      <button type="button" class="info-modal-close" onclick="closeInfo()">Oke, paham</button>
-    </div>
+  <div id="infoTooltip" class="info-tooltip" role="tooltip">
+    <div class="info-tooltip-title" id="infoTooltipTitle"></div>
+    <div class="info-tooltip-text" id="infoTooltipText"></div>
   </div>
 
   <script>
-    function showInfo(title, text) {
-      document.getElementById('infoModalTitle').textContent = title;
-      document.getElementById('infoModalText').innerHTML = text.replace(/\n/g, '<br>');
-      document.getElementById('infoModalOverlay').classList.add('show');
-    }
-    function closeInfo() {
-      document.getElementById('infoModalOverlay').classList.remove('show');
-    }
+    // Balon info kecil ala chat bubble, muncul tepat di atas tombol "i"
+    // yang ditekan/disentuh, dengan panah pendek yang nunjuk ke bawah
+    // ke arah tombolnya. Satu elemen tooltip dipakai ulang buat semua
+    // tombol info di form ini.
+    (function () {
+      const tooltip = document.getElementById('infoTooltip');
+      const tooltipTitle = document.getElementById('infoTooltipTitle');
+      const tooltipText = document.getElementById('infoTooltipText');
+      let activeBtn = null;
+
+      function positionTooltip(btn) {
+        const rect = btn.getBoundingClientRect();
+        const tw = tooltip.offsetWidth;
+        const th = tooltip.offsetHeight;
+        const margin = 16;
+        const gap = 12; // jarak antara balon & tombol, buat ruang panahnya
+
+        let left = rect.right - tw;
+        left = Math.max(margin, Math.min(left, window.innerWidth - tw - margin));
+
+        let top = rect.top - th - gap;
+        let arrowAtTop = false;
+        if (top < margin) {
+          // Kalau ruang di atas gak cukup (misal tombol ada di paling atas layar),
+          // balonnya ditampilin di bawah tombol, panahnya ganti nunjuk ke atas.
+          top = rect.bottom + gap;
+          arrowAtTop = true;
+        }
+
+        tooltip.style.left = left + 'px';
+        tooltip.style.top = top + 'px';
+        tooltip.classList.toggle('arrow-top', arrowAtTop);
+
+        const btnCenter = rect.left + rect.width / 2;
+        const arrowLeft = Math.max(14, Math.min(btnCenter - left, tw - 14));
+        tooltip.style.setProperty('--arrow-left', arrowLeft + 'px');
+      }
+
+      window.showInfo = function (btn, title, text) {
+        if (activeBtn === btn && tooltip.classList.contains('show')) {
+          window.closeInfo();
+          return;
+        }
+        tooltipTitle.textContent = title;
+        tooltipText.innerHTML = text.replace(/\n/g, '<br>');
+        tooltip.style.left = '-9999px';
+        tooltip.style.top = '-9999px';
+        tooltip.classList.add('show');
+        activeBtn = btn;
+        // offsetWidth/Height butuh render dulu, makanya diposisiin di frame berikutnya
+        requestAnimationFrame(function () { positionTooltip(btn); });
+      };
+
+      window.closeInfo = function () {
+        tooltip.classList.remove('show');
+        activeBtn = null;
+      };
+
+      document.addEventListener('click', function (e) {
+        if (e.target.closest('.info-btn') || e.target.closest('.info-tooltip')) return;
+        window.closeInfo();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') window.closeInfo();
+      });
+      window.addEventListener('resize', function () {
+        if (activeBtn) positionTooltip(activeBtn);
+      });
+      window.addEventListener('scroll', function () {
+        if (activeBtn) window.closeInfo();
+      }, true);
+    })();
   </script>
 
   <script>
