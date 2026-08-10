@@ -109,14 +109,21 @@
             background: color-mix(in srgb, var(--bg) 85%, transparent);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            padding: 6px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             position: sticky;
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid var(--border);
+        }
+        /* Wrapper konten navbar dipisah dari .navbar (yang full-bleed untuk
+           background/border) supaya di desktop bisa dibatasi max-width tanpa
+           membuat background/border navbar ikut menyempit dan menyisakan
+           celah di tepi layar (lihat css/layout-desktop.css). */
+        .navbar-inner {
+            width: 100%;
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .nav-left { display: flex; align-items: center; }
         .nav-right { 
@@ -388,7 +395,7 @@
                                   radial-gradient(circle at 80% 70%, rgba(74,144,217,0.04) 0%, transparent 50%);
             }
  
-            .navbar {
+            .navbar-inner {
                 padding: 6px 40px;
             }
  
@@ -491,6 +498,7 @@
 <body>
   <div id="app">
     <nav class="navbar">
+      <div class="navbar-inner">
         <div class="nav-left">
             <a href="../index.html" style="display:flex; align-items:center; color: var(--text); padding: 5px; margin-right:10px;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -522,6 +530,7 @@
                 <a id="link-daftar-member" href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6.2 6-6.2s6 2.7 6 6.2"/><path d="M18 8v6M15 11h6"/></svg><span class="page-menu-label">Daftar Member</span></a>
             </div>
         </div>
+      </div>
     </nav>
  
     <div class="app-container">

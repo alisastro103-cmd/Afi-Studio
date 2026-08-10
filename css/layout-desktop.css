@@ -121,7 +121,7 @@
      halaman lain) maupun ".navbar" (halaman member yang strukturnya beda).
      Admin panel tidak memakai class ini sama sekali, jadi tidak terdampak. */
   .nav-bar > .max-w-7xl,
-  .navbar {
+  .navbar-inner {
     max-width: calc(var(--afi-max) + 80px);
     width: 100%;
     margin-left: auto;
