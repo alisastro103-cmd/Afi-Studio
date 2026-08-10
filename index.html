@@ -458,12 +458,13 @@
            andalkan tombol menu (☰) saja. Antara 1024px–1279px hanya
            sebagian link yang muncul (biar tidak sesak), sisanya baru
            tampil mulai 1280px ke atas.
-           Nav-links digabung SATU GRUP dengan tombol search/tema/menu di
-           kanan (bukan nempel ke logo) — supaya layout jadi 2 blok besar:
-           kiri = logo+title, kanan = nav-links + 3 tombol. Blok kiri mentok
-           tepi kiri, blok kanan mentok tepi kanan (mengikuti lebar banner
-           di bawahnya, karena max-width-nya sama), jadi tetap simetris dan
-           tidak akan "loncat" posisi di lebar layar berapa pun. */
+           Di desktop (>=1024px), logo + nav-links + tombol digabung jadi
+           SATU blok yang di-tengah-kan (justify-content:center) dengan
+           jarak tetap 40px antar-bagian — jadi ruang kosong di kiri&kanan
+           blok selalu SAMA (simetris) berapa pun lebar browsernya, dan
+           bagian-bagiannya selalu berdekatan, tidak akan "loncat" lagi.
+           Mobile/tablet (<1024px) TIDAK disentuh — tetap justify-between
+           seperti desain awal (logo kiri, tombol kanan). */
         .nav-links { display: none; align-items: center; gap: 4px; margin-right: 20px; }
         .nav-link {
             display: flex;
@@ -490,6 +491,13 @@
         /* Title 'Afi-Studio' diberi sedikit jarak dari tepi kiri banner
            (bukan mepet 0px), sesuai gaya mikrotik.com. */
         .nav-brand { margin-left: 6px; }
+
+        /* Blok navbar (logo + nav-links + tombol) di-tengah-kan sebagai satu
+           kesatuan di desktop, dengan jarak tetap ke logo. Mobile/tablet
+           tidak disentuh (media query hanya aktif >=1024px). */
+        @media (min-width: 1024px) {
+            .nav-row-flex { justify-content: center; gap: 40px; }
+        }
 
         .page-menu { position: relative; }
         .page-menu-btn {
@@ -563,7 +571,7 @@
 <body class="h-full">
     <div id="app" class="h-full overflow-auto w-full">
         <nav class="nav-bar">
-            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between nav-row-flex">
                 <div class="cursor-pointer flex items-center gap-1 nav-brand" onclick="window.location.reload()">
                     <img src="icon.png" alt="Logo" class="w-10 h-10 object-contain">
                     <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
