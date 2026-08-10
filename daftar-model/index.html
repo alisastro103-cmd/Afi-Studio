@@ -151,24 +151,28 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
     .category-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 4px 12px;
     }
-    .category-chip {
-      padding: 8px 14px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      font-size: 12.5px;
-      font-weight: 600;
+    .category-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 4px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
       cursor: pointer;
-      color: var(--text-light);
-      background: var(--surface);
       user-select: none;
     }
-    .category-chip input { display: none; }
-    .category-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .category-empty { font-size: 12px; color: var(--text-light); }
+    .category-check input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+    .category-empty { font-size: 12px; color: var(--text-light); grid-column: 1 / -1; }
 
     .btn {
       width: 100%;
@@ -327,7 +331,7 @@
 
       <div class="form-group">
         <div class="label-wrapper">
-          <label class="form-label" for="modelName">Nama Model<span class="required">*</span></label>
+          <label class="form-label" for="modelName">Nama Model</label>
           <span class="char-count" id="nameCount">0 / 60</span>
         </div>
         <input type="text" id="modelName" class="form-input" placeholder="Contoh: Rig Mob Minecraft" maxlength="60" oninput="updateCount('modelName','nameCount',60)">
@@ -335,14 +339,14 @@
 
       <div class="form-group">
         <div class="label-wrapper">
-          <label class="form-label" for="modelCaption">Caption<span class="required">*</span></label>
+          <label class="form-label" for="modelCaption">Caption</label>
           <span class="char-count" id="captionCount">0 / 600</span>
         </div>
         <textarea id="modelCaption" class="form-textarea" placeholder="Ceritain aset ini — apa isinya, cocok buat apa, dll." maxlength="600" oninput="updateCount('modelCaption','captionCount',600)"></textarea>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Thumbnail<span class="required">*</span></label>
+        <label class="form-label">Thumbnail</label>
         <div class="toggle-row" data-toggle-group="thumb">
           <label class="toggle-option active" data-value="link">
             <input type="radio" name="thumbMode" value="link" checked> Pakai Link
@@ -358,10 +362,11 @@
           <input type="file" id="thumbFile" class="form-input" style="margin-top:12px;" accept="image/png, image/jpeg, image/webp">
           <p class="form-hint">Maks 3MB, rasio wajib 16:9 (contoh 800x450, resolusi bebas asal rasionya sama). Lebih dari 3MB otomatis diminta pakai link.</p>
         </div>
+        <img id="thumbPreview" style="display:none; margin-top:12px; max-width:100%; max-height:220px; border-radius:8px; border:1px solid var(--border);">
       </div>
 
       <div class="form-group">
-        <label class="form-label">File Model / Download<span class="required">*</span></label>
+        <label class="form-label">File Model / Download</label>
         <div class="toggle-row" data-toggle-group="file">
           <label class="toggle-option active" data-value="link">
             <input type="radio" name="fileMode" value="link" checked> Pakai Link
@@ -380,7 +385,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Kamu ini Kreator atau Konverter?<span class="required">*</span></label>
+        <label class="form-label">Kamu ini Kreator atau Konverter?</label>
         <div class="toggle-row" data-toggle-group="role">
           <label class="toggle-option active" data-value="creator">
             <input type="radio" name="roleMode" value="creator" checked> Creator
@@ -391,21 +396,20 @@
         </div>
         <div class="conditional-field" data-field="role-source">
           <div class="form-group" style="margin-top:12px; margin-bottom:0;">
-            <label class="form-label" for="sourceInput">Dari mana sumber yang kamu dapatkan?<span class="required">*</span></label>
+            <label class="form-label" for="sourceInput">Dari mana sumber yang kamu dapatkan?</label>
             <input type="text" id="sourceInput" class="form-input" style="margin-top:8px;" placeholder="Contoh: nama kreator asli / link sumber asli">
           </div>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="creatorName">Nama Kreator/Konverter<span class="required">*</span></label>
+        <label class="form-label" for="creatorName">Nama Kreator/Konverter</label>
         <input type="text" id="creatorName" class="form-input" style="margin-top:8px;" placeholder="Nama kamu / username kamu">
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="appTarget">Aplikasi Tujuan <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(opsional)</span></label>
+        <label class="form-label" for="appTarget">Aplikasi Tujuan</label>
         <select id="appTarget" class="form-select" style="margin-top:8px;">
-          <option value="">— Pilih aplikasi —</option>
           <option value="Prisma3D">Prisma3D</option>
           <option value="Blender">Blender</option>
           <option value="Mine-Imator">Mine-Imator</option>
@@ -416,7 +420,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Kategori<span class="required">*</span> <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(pilih minimal 1)</span></label>
+        <label class="form-label">Kategori <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(pilih minimal 1)</span></label>
         <div class="category-grid" id="categoryGrid" style="margin-top:10px;">
           <span class="category-empty" id="categoryLoading">Memuat kategori...</span>
         </div>
@@ -501,6 +505,39 @@
     guardFileSize('thumbFile', 'thumb');
     guardFileSize('downloadFile', 'file');
 
+    // Preview thumbnail langsung di halaman — baik dari link maupun upload,
+    // biar user bisa mastiin gambarnya bener sebelum dikirim.
+    const thumbPreview = document.getElementById('thumbPreview');
+    function hideThumbPreview() { thumbPreview.style.display = 'none'; thumbPreview.src = ''; }
+
+    document.getElementById('thumbLink').addEventListener('input', function () {
+      const val = this.value.trim();
+      if (!val) return hideThumbPreview();
+      thumbPreview.src = val;
+      thumbPreview.style.display = 'block';
+    });
+    thumbPreview.addEventListener('error', hideThumbPreview);
+
+    document.getElementById('thumbFile').addEventListener('change', function () {
+      const f = this.files[0];
+      if (!f) return hideThumbPreview();
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        thumbPreview.src = e.target.result;
+        thumbPreview.style.display = 'block';
+      };
+      reader.readAsDataURL(f);
+    });
+
+    // Kalau pindah mode (link/upload), preview ikut disembunyikan dulu
+    // biar gak nampilin gambar dari mode sebelumnya.
+    document.querySelector('[data-toggle-group="thumb"]').addEventListener('click', function (e) {
+      const opt = e.target.closest('.toggle-option');
+      if (!opt) return;
+      if (opt.dataset.value === 'upload' && !document.getElementById('thumbFile').files[0]) hideThumbPreview();
+      if (opt.dataset.value === 'link' && !document.getElementById('thumbLink').value.trim()) hideThumbPreview();
+    });
+
     function showMessage(msg, type) {
       const box = document.getElementById('form-message');
       box.textContent = msg;
@@ -539,6 +576,7 @@
         return showMessage('Nama, caption, dan nama kreator/konverter wajib diisi.', 'error');
       }
       if (!role) return showMessage('Pilih Creator atau Converter.', 'error');
+      if (!appTarget) return showMessage('Pilih aplikasi tujuan.', 'error');
       if (role === 'converter' && !source) return showMessage('Sumber asal wajib diisi kalau kamu Converter.', 'error');
       if (checkedCategories.length === 0) return showMessage('Pilih minimal 1 kategori.', 'error');
       if (thumbMode === 'link' && !thumbLink) return showMessage('Link thumbnail wajib diisi.', 'error');
@@ -575,7 +613,7 @@
 
         showMessage('Pendaftaran berhasil dikirim! Tim admin akan meninjau sebelum dipublikasikan.', 'success');
         document.getElementById('daftarModelForm').reset();
-        document.querySelectorAll('.category-chip.active').forEach(c => c.classList.remove('active'));
+        hideThumbPreview();
         document.querySelectorAll('[data-toggle-group]').forEach(function (group) {
           group.querySelectorAll('.toggle-option').forEach((o, i) => o.classList.toggle('active', i === 0));
         });
@@ -609,12 +647,8 @@
           grid.innerHTML = '';
           categories.forEach(function (cat) {
             const label = document.createElement('label');
-            label.className = 'category-chip';
-            label.innerHTML = `<input type="checkbox" value="${cat}"> ${cat}`;
-            const cb = label.querySelector('input');
-            cb.addEventListener('change', function () {
-              label.classList.toggle('active', cb.checked);
-            });
+            label.className = 'category-check';
+            label.innerHTML = `<input type="checkbox" value="${cat}"><span>${cat}</span>`;
             grid.appendChild(label);
           });
         })

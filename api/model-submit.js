@@ -160,7 +160,7 @@ export default async function handler(req, res) {
     if (role !== 'creator' && role !== 'converter') errors.push('Pilih Creator atau Converter.');
     if (role === 'converter' && !source) errors.push('Sumber asal wajib diisi kalau kamu Converter.');
     if (categories.length === 0) errors.push('Pilih minimal 1 kategori.');
-    if (appTarget && !APP_TARGET_VALUES.includes(appTarget)) errors.push('Aplikasi tujuan tidak valid.');
+    if (!appTarget || !APP_TARGET_VALUES.includes(appTarget)) errors.push('Aplikasi tujuan wajib dipilih.');
 
     if (thumbMode === 'link') {
       if (!thumbLink || !/^https?:\/\//i.test(thumbLink)) errors.push('Link thumbnail wajib diisi dan valid.');
@@ -236,15 +236,15 @@ export default async function handler(req, res) {
     };
 
     const roleLabel = role === 'converter' ? 'Converter' : 'Creator';
-    let text = `🧩 *PENDAFTARAN MODEL BARU*\n\n`;
-    text += `📦 *Nama:* ${safe.name}\n`;
-    text += `📝 *Caption:* ${safe.caption}\n`;
-    text += `👤 *${roleLabel}:* ${safe.creatorConverterName}\n`;
-    if (role === 'converter') text += `🔗 *Sumber asal:* ${safe.source}\n`;
-    text += `🏷️ *Kategori:* ${safe.categories}\n`;
-    text += `🎯 *Aplikasi Tujuan:* ${safe.appTarget}\n`;
-    text += `🖼️ *Thumbnail:* ${thumbMode === 'link' ? thumbLink : `Upload (lihat lampiran, ${thumbFile ? Math.round(thumbFile.size / 1024) : '?'} KB)`}\n`;
-    text += `📁 *File Model:* ${downloadMode === 'link' ? downloadLink : `Upload (lihat lampiran, ${downloadFile ? Math.round(downloadFile.size / 1024) : '?'} KB)`}`;
+    let text = `PENDAFTARAN MODEL BARU\n\n`;
+    text += `Nama: ${safe.name}\n`;
+    text += `Caption: ${safe.caption}\n`;
+    text += `${roleLabel}: ${safe.creatorConverterName}\n`;
+    if (role === 'converter') text += `Sumber asal: ${safe.source}\n`;
+    text += `Kategori: ${safe.categories}\n`;
+    text += `Aplikasi Tujuan: ${safe.appTarget}\n`;
+    text += `Thumbnail: ${thumbMode === 'link' ? thumbLink : `Upload (lihat lampiran, ${thumbFile ? Math.round(thumbFile.size / 1024) : '?'} KB)`}\n`;
+    text += `File Model: ${downloadMode === 'link' ? downloadLink : `Upload (lihat lampiran, ${downloadFile ? Math.round(downloadFile.size / 1024) : '?'} KB)`}`;
 
     let thumbFileId = null;
 
@@ -265,7 +265,7 @@ export default async function handler(req, res) {
         const tf = new FormData();
         tf.append('chat_id', CHAT_ID);
         tf.append('photo', blob, thumbFile.originalFilename || 'thumbnail.jpg');
-        tf.append('caption', `🖼️ Thumbnail untuk: ${name}`);
+        tf.append('caption', `Thumbnail untuk: ${name}`);
         const tfResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: tf });
         const tfResult = await tfResp.json();
         if (tfResult.ok) {
@@ -282,7 +282,7 @@ export default async function handler(req, res) {
         const df = new FormData();
         df.append('chat_id', CHAT_ID);
         df.append('document', blob, downloadFile.originalFilename || 'model-file');
-        df.append('caption', `📁 File model untuk: ${name}`);
+        df.append('caption', `File model untuk: ${name}`);
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: df });
         fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
       }
