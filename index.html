@@ -458,11 +458,11 @@
            andalkan tombol menu (☰) saja. Antara 1024px–1279px hanya
            sebagian link yang muncul (biar tidak sesak), sisanya baru
            tampil mulai 1280px ke atas.
-           Di desktop (>=1024px), logo + nav-links + tombol digabung jadi
-           SATU blok yang di-tengah-kan (justify-content:center) dengan
-           jarak tetap 40px antar-bagian — jadi ruang kosong di kiri&kanan
-           blok selalu SAMA (simetris) berapa pun lebar browsernya, dan
-           bagian-bagiannya selalu berdekatan, tidak akan "loncat" lagi.
+           Di desktop (>=1024px), logo tetap rata kiri dan nav-links+tombol
+           tetap rata kanan (justify-between, gaya asli) — TAPI baris navbar
+           dibatasi max-width yang sama dengan konten utama (var(--afi-max),
+           dipusatkan) supaya logo & menu sejajar dengan tepi banner/konten
+           di bawahnya, tidak mepet ke ujung layar penuh.
            Mobile/tablet (<1024px) TIDAK disentuh — tetap justify-between
            seperti desain awal (logo kiri, tombol kanan). */
         .nav-links { display: none; align-items: center; gap: 4px; margin-right: 20px; }
@@ -492,11 +492,21 @@
            (bukan mepet 0px), sesuai gaya mikrotik.com. */
         .nav-brand { margin-left: 6px; }
 
-        /* Blok navbar (logo + nav-links + tombol) di-tengah-kan sebagai satu
-           kesatuan di desktop, dengan jarak tetap ke logo. Mobile/tablet
-           tidak disentuh (media query hanya aktif >=1024px). */
+        /* Logo rata kiri, nav-links+tombol rata kanan (justify-between,
+           class asli dari HTML) — baris navbar dibatasi selebar konten
+           utama (sama seperti banner/thumbnail di bawahnya) dan dipusatkan,
+           jadi logo & menu tidak nempel ke ujung layar penuh.
+           Selector dibuat lebih spesifik (.nav-bar > .max-w-7xl.nav-row-flex)
+           supaya menang dari aturan max-width:100% di layout-desktop.css
+           yang berlaku untuk navbar halaman lain. Mobile/tablet tidak
+           disentuh (media query hanya aktif >=1024px). */
         @media (min-width: 1024px) {
-            .nav-row-flex { justify-content: center; gap: 40px; }
+            .nav-bar > .max-w-7xl.nav-row-flex {
+                max-width: var(--afi-max);
+                margin-left: auto;
+                margin-right: auto;
+                justify-content: space-between;
+            }
         }
 
         .page-menu { position: relative; }
