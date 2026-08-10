@@ -496,6 +496,9 @@
            class asli dari HTML) — baris navbar dibatasi selebar konten
            utama (sama seperti banner/thumbnail di bawahnya) dan dipusatkan,
            jadi logo & menu tidak nempel ke ujung layar penuh.
+           Padding kiri/kanan ditambah sedikit (afi-pad + 32px) supaya ada
+           jarak lebih dari tepi layar dibanding versi awal, tapi tetap
+           simetris kiri-kanan dan TIDAK kembali jadi satu blok di tengah.
            Selector dibuat lebih spesifik (.nav-bar > .max-w-7xl.nav-row-flex)
            supaya menang dari aturan max-width:100% di layout-desktop.css
            yang berlaku untuk navbar halaman lain. Mobile/tablet tidak
@@ -506,6 +509,8 @@
                 margin-left: auto;
                 margin-right: auto;
                 justify-content: space-between;
+                padding-left: calc(var(--afi-pad) + 32px);
+                padding-right: calc(var(--afi-pad) + 32px);
             }
         }
 
