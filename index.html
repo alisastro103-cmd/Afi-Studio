@@ -492,27 +492,10 @@
            (bukan mepet 0px), sesuai gaya mikrotik.com. */
         .nav-brand { margin-left: 6px; }
 
-        /* Logo rata kiri, nav-links+tombol rata kanan (justify-between,
-           class asli dari HTML) — baris navbar dibatasi selebar konten
-           utama (sama seperti banner/thumbnail di bawahnya) dan dipusatkan,
-           jadi logo & menu tidak nempel ke ujung layar penuh.
-           Padding kiri/kanan ditambah sedikit (afi-pad + 32px) supaya ada
-           jarak lebih dari tepi layar dibanding versi awal, tapi tetap
-           simetris kiri-kanan dan TIDAK kembali jadi satu blok di tengah.
-           Selector dibuat lebih spesifik (.nav-bar > .max-w-7xl.nav-row-flex)
-           supaya menang dari aturan max-width:100% di layout-desktop.css
-           yang berlaku untuk navbar halaman lain. Mobile/tablet tidak
-           disentuh (media query hanya aktif >=1024px). */
-        @media (min-width: 1024px) {
-            .nav-bar > .max-w-7xl.nav-row-flex {
-                max-width: var(--afi-max);
-                margin-left: auto;
-                margin-right: auto;
-                justify-content: space-between;
-                padding-left: calc(var(--afi-pad) + 32px);
-                padding-right: calc(var(--afi-pad) + 32px);
-            }
-        }
+        /* Posisi navbar (logo rata kiri, nav-links+tombol rata kanan) kini
+           diatur terpusat di css/layout-desktop.css supaya SAMA persis di
+           semua halaman, bukan hanya di beranda. Lihat rule
+           ".nav-bar > .max-w-7xl, .navbar" di file itu. */
 
         .page-menu { position: relative; }
         .page-menu-btn {

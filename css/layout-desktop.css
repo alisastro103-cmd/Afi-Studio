@@ -112,17 +112,22 @@
     padding-right: 0;
   }
 
-  /* Navbar: lebar dibuat 100% (TIDAK dibatasi max-width seperti konten),
-     hanya padding kiri/kanan yang mengikuti skala layar. Ini supaya tombol
-     back/theme/menu selalu nempel dekat tepi layar dan konsisten di semua
-     halaman — termasuk .navbar di halaman member yang strukturnya beda
-     tapi sekarang diberi padding yang sama persis. */
+  /* Navbar: isi baris (logo di kiri, menu/tombol di kanan — justify-between
+     bawaan HTML/inline) dibatasi lebar & dipusatkan (mx-auto), sedikit lebih
+     LEBAR dari kolom konten utama supaya logo & menu condong lebih dekat ke
+     tepi layar (bukan cuma sejajar konten), tapi tetap simetris kiri-kanan
+     dan TIDAK sampai mepet ke ujung layar penuh. Berlaku untuk semua
+     halaman yang memakai struktur ".nav-bar > .max-w-7xl" (beranda & semua
+     halaman lain) maupun ".navbar" (halaman member yang strukturnya beda).
+     Admin panel tidak memakai class ini sama sekali, jadi tidak terdampak. */
   .nav-bar > .max-w-7xl,
   .navbar {
-    max-width: 100%;
+    max-width: calc(var(--afi-max) + 80px);
     width: 100%;
-    padding-left: var(--afi-pad);
-    padding-right: var(--afi-pad);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: calc(var(--afi-pad) - 24px);
+    padding-right: calc(var(--afi-pad) - 24px);
     padding-top: 10px;
     padding-bottom: 10px;
   }
