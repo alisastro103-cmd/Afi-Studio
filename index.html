@@ -451,6 +451,50 @@
         html.dark #theme-toggle-btn .icon-moon { display: block; }
 
         /* Menu pindah halaman */
+        /* Navigasi teks di navbar (gaya mikrotik.com): daftar link langsung
+           terlihat di sebelah logo, tanpa perlu buka menu hamburger.
+           Disembunyikan total di bawah 1024px (mobile/tablet pakai
+           layout-mobile.css yang tidak boleh diubah) — di lebar itu ruang
+           tidak akan cukup, jadi cukup andalkan tombol menu (☰) saja.
+           Antara 1024px–1279px hanya sebagian link yang muncul (biar tidak
+           sesak), sisanya baru tampil mulai 1280px ke atas. */
+        /* Baris navbar (logo + nav-links + tombol) dibungkus lagi di dalam
+           .max-w-7xl supaya di layar sangat lebar jaraknya tidak ikut
+           melebar penuh sampai 1320px — logo tetap di kiri (tidak dipindah
+           ke tengah), hanya "jangkauan" grup kanan yang dibatasi supaya
+           terasa lebih dekat ke logo/nav-links, bukan lompat ke ujung. */
+        .nav-row { width: 100%; }
+        @media (min-width: 1024px) {
+            .nav-row { max-width: 760px; }
+        }
+        @media (min-width: 1280px) {
+            .nav-row { max-width: 860px; }
+        }
+
+        .nav-links { display: none; align-items: center; gap: 4px; margin-left: 12px; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 6px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'Outfit', sans-serif;
+            white-space: nowrap;
+            transition: color 0.15s ease, background 0.15s ease;
+        }
+        .nav-link:hover { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+        .nav-link.active { color: var(--text); font-weight: 700; }
+        .nav-link-wide { display: none; }
+        @media (min-width: 1024px) {
+            .nav-links { display: flex; }
+        }
+        @media (min-width: 1280px) {
+            .nav-link-wide { display: flex; }
+        }
+
         .page-menu { position: relative; }
         .page-menu-btn {
             display: flex;
@@ -524,13 +568,24 @@
     <div id="app" class="h-full overflow-auto w-full">
         <nav class="nav-bar">
             <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
-                <div class="cursor-pointer flex items-center gap-1" onclick="window.location.reload()">
-                    <img src="icon.png" alt="Logo" class="w-10 h-10 object-contain">
-                    <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
-                        Afi-Studio
+                <div class="nav-row flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="cursor-pointer flex items-center gap-1" onclick="window.location.reload()">
+                        <img src="icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                        <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
+                            Afi-Studio
+                        </div>
                     </div>
+
+                    <nav class="nav-links" aria-label="Navigasi halaman">
+                        <a href="/" class="nav-link active">Beranda</a>
+                        <a href="about/index.html" class="nav-link">About</a>
+                        <a href="Models/index.html" class="nav-link nav-link-wide">Models</a>
+                        <a href="tutorial/index.html" class="nav-link">Video</a>
+                        <a href="member-Afi-Studio/index.html" class="nav-link nav-link-wide">Member</a>
+                    </nav>
                 </div>
- 
+
                 <div class="flex items-center gap-4"> 
                     <button id="search-toggle-btn" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
                         <i data-lucide="search" style="width: 20px;"></i>
@@ -561,6 +616,7 @@
                             <a id="link-daftar-member" href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6.2 6-6.2s6 2.7 6 6.2"/><path d="M18 8v6M15 11h6"/></svg><span class="page-menu-label">Daftar Member</span></a>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </nav>
