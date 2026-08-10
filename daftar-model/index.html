@@ -100,6 +100,50 @@
 
     .form-label { font-size: 14px; font-weight: 600; color: var(--text); font-family: 'Outfit', sans-serif; }
     .form-label .required { color: #EF4444; margin-left: 2px; }
+
+    .info-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      border: 1.5px solid var(--text-light);
+      color: var(--text-light);
+      background: none;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      line-height: 1;
+      cursor: pointer;
+      margin-left: 6px;
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .info-btn:active { opacity: 0.6; }
+    .form-label-row { display: flex; align-items: center; }
+
+    .info-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: none; align-items: center; justify-content: center;
+      z-index: 200; padding: 24px;
+    }
+    .info-modal-overlay.show { display: flex; }
+    .info-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 340px;
+      width: 100%;
+    }
+    .info-modal-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 8px; color: var(--text); }
+    .info-modal-text { font-size: 13px; color: var(--text-light); line-height: 1.6; margin-bottom: 16px; }
+    .info-modal-close {
+      width: 100%; padding: 10px; border-radius: 8px; border: none;
+      background: var(--accent); color: #fff; font-weight: 700; font-size: 13px;
+      font-family: 'Outfit', sans-serif; cursor: pointer;
+    }
     .form-hint { font-size: 12px; color: var(--text-light); margin-top: 6px; }
 
     .char-count { font-size: 12px; color: var(--text-light); }
@@ -274,12 +318,49 @@
     html.dark .page-menu-item-cta { color: #fff; }
     .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
     .page-menu-item-cta:active { opacity: 0.6; }
+
+    .toast-daftar {
+        position: fixed; bottom: 24px; left: 50%;
+        transform: translate(-50%, 80px);
+        background: var(--accent, #6c5ce7); color: #fff;
+        padding: 12px 24px; border-radius: 999px;
+        font-weight: 700; font-size: 14px;
+        transition: transform 0.3s ease; z-index: 3000;
+    }
+    .toast-daftar.show { transform: translate(-50%, 0); }
+
+    .gate-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
   </style>
     <link rel="stylesheet" href="/css/theme-tokens.css">
     <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
     <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
 </head>
  <body class="h-full">
+  <div id="gateOverlay" class="gate-overlay"></div>
+  <script>
+    // Gerbang akses: kalau ada yang buka /daftar-model/ langsung lewat link
+    // sementara admin lagi nutup jalur pendaftaran model, lempar balik ke
+    // beranda + munculin toast "Segera Hadir" DI SANA (bukan di sini).
+    // Kalau jalurnya lagi dibuka, overlay ini langsung dihilangkan dan
+    // halaman aman diakses lewat cara apapun (link, bookmark, ketik manual).
+    fetch('/api/data/settings')
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (data) {
+        if (data && data.isDaftarModelOpen === false) {
+          window.location.replace('/?closed=model');
+          return;
+        }
+        document.getElementById('gateOverlay').remove();
+      })
+      .catch(function () {
+        // Gagal cek (offline/error) → biar aman, tetap izinkan akses.
+        document.getElementById('gateOverlay').remove();
+      });
+  </script>
   <div id="app" class="h-full overflow-auto w-full">
    <nav class="nav-bar">
     <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
@@ -314,7 +395,7 @@
         <a href="../privacy/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg><span class="page-menu-label">Kebijakan Privasi</span></a>
         <div class="page-menu-divider"></div>
         <a href="index.html" class="page-menu-item page-menu-item-cta active"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span class="page-menu-label">Daftar Model 3D</span></a>
-        <a href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6.2 6-6.2s6 2.7 6 6.2"/><path d="M18 8v6M15 11h6"/></svg><span class="page-menu-label">Daftar Member</span></a>
+        <a id="link-daftar-member" href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6.2 6-6.2s6 2.7 6 6.2"/><path d="M18 8v6M15 11h6"/></svg><span class="page-menu-label">Daftar Member</span></a>
        </div>
       </div>
      </div>
@@ -331,7 +412,10 @@
 
       <div class="form-group">
         <div class="label-wrapper">
-          <label class="form-label" for="modelName">Nama Model</label>
+          <div class="form-label-row">
+            <label class="form-label" for="modelName">Nama Model</label>
+            <button type="button" class="info-btn" onclick="showInfo('Nama Model', 'Nama singkat buat model/rig/aset kamu. Ini yang bakal muncul sebagai judul kartu di halaman Models, jadi usahain jelas dan gampang dikenali.')">i</button>
+          </div>
           <span class="char-count" id="nameCount">0 / 60</span>
         </div>
         <input type="text" id="modelName" class="form-input" placeholder="Contoh: Rig Mob Minecraft" maxlength="60" oninput="updateCount('modelName','nameCount',60)">
@@ -339,14 +423,20 @@
 
       <div class="form-group">
         <div class="label-wrapper">
-          <label class="form-label" for="modelCaption">Caption</label>
+          <div class="form-label-row">
+            <label class="form-label" for="modelCaption">Caption</label>
+            <button type="button" class="info-btn" onclick="showInfo('Caption', 'Deskripsi tentang aset kamu — isinya apa aja, cocok dipakai buat apa, dan info lain yang perlu orang tau sebelum download.')">i</button>
+          </div>
           <span class="char-count" id="captionCount">0 / 600</span>
         </div>
         <textarea id="modelCaption" class="form-textarea" placeholder="Ceritain aset ini — apa isinya, cocok buat apa, dll." maxlength="600" oninput="updateCount('modelCaption','captionCount',600)"></textarea>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Thumbnail</label>
+        <div class="form-label-row">
+          <label class="form-label">Thumbnail</label>
+          <button type="button" class="info-btn" onclick="showInfo('Thumbnail', 'Gambar preview yang mewakili aset kamu, bakal muncul di kartu model. Wajib rasio 16:9 (contoh 800x450, resolusi bebas asal rasionya sama). Bisa pakai link gambar yang udah di-hosting, atau upload langsung.')">i</button>
+        </div>
         <div class="toggle-row" data-toggle-group="thumb">
           <label class="toggle-option active" data-value="link">
             <input type="radio" name="thumbMode" value="link" checked> Pakai Link
@@ -366,7 +456,10 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">File Model / Download</label>
+        <div class="form-label-row">
+          <label class="form-label">File Model / Download</label>
+          <button type="button" class="info-btn" onclick="showInfo('File Model / Download', 'File aset yang bakal didownload orang lain. Bisa berupa link (Mediafire/Google Drive/dll), atau upload langsung kalau ukurannya kecil (di bawah 3MB).')">i</button>
+        </div>
         <div class="toggle-row" data-toggle-group="file">
           <label class="toggle-option active" data-value="link">
             <input type="radio" name="fileMode" value="link" checked> Pakai Link
@@ -385,7 +478,10 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Kamu ini Kreator atau Konverter?</label>
+        <div class="form-label-row">
+          <label class="form-label">Kamu ini Kreator atau Konverter?</label>
+          <button type="button" class="info-btn" onclick="showInfo('Creator vs Converter', '• Creator = kamu yang bikin model/rig/aset ini dari nol, hasil karya sendiri.\n\n• Converter = kamu yang mengubah/konversi aset dari sumber lain (misalnya dari game atau aplikasi lain) supaya bisa dipakai di Minecraft.\n\nKalau kamu pilih Converter, nanti bakal diminta sumber aslinya dari mana.')">i</button>
+        </div>
         <div class="toggle-row" data-toggle-group="role">
           <label class="toggle-option active" data-value="creator">
             <input type="radio" name="roleMode" value="creator" checked> Creator
@@ -396,19 +492,28 @@
         </div>
         <div class="conditional-field" data-field="role-source">
           <div class="form-group" style="margin-top:12px; margin-bottom:0;">
-            <label class="form-label" for="sourceInput">Dari mana sumber yang kamu dapatkan?</label>
+            <div class="form-label-row">
+              <label class="form-label" for="sourceInput">Dari mana sumber yang kamu dapatkan?</label>
+              <button type="button" class="info-btn" onclick="showInfo('Sumber Asal', 'Dari mana kamu dapetin aset aslinya sebelum dikonversi — bisa nama kreator asli, link sumber, atau nama game/aplikasi asalnya. Ini penting buat kasih kredit ke pembuat aslinya.')">i</button>
+            </div>
             <input type="text" id="sourceInput" class="form-input" style="margin-top:8px;" placeholder="Contoh: nama kreator asli / link sumber asli">
           </div>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="creatorName">Nama Kreator/Konverter</label>
+        <div class="form-label-row">
+          <label class="form-label" for="creatorName">Nama Kreator/Konverter</label>
+          <button type="button" class="info-btn" onclick="showInfo('Nama Kreator/Konverter', 'Nama atau username kamu yang bakal ditampilkan sebagai pembuat/pengonversi aset ini di halaman Models.')">i</button>
+        </div>
         <input type="text" id="creatorName" class="form-input" style="margin-top:8px;" placeholder="Nama kamu / username kamu">
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="appTarget">Aplikasi Tujuan</label>
+        <div class="form-label-row">
+          <label class="form-label" for="appTarget">Aplikasi Tujuan</label>
+          <button type="button" class="info-btn" onclick="showInfo('Aplikasi Tujuan', 'Aplikasi yang dipakai buat bikin/convert aset ini, atau aplikasi yang cocok dipakai buat pakai aset ini (Prisma3D, Blender, Mine-Imator, dll). Ini bantu orang lain nyari aset yang sesuai sama aplikasi yang mereka pakai.')">i</button>
+        </div>
         <select id="appTarget" class="form-select" style="margin-top:8px;">
           <option value="Prisma3D">Prisma3D</option>
           <option value="Blender">Blender</option>
@@ -420,7 +525,10 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Kategori <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(pilih minimal 1)</span></label>
+        <div class="form-label-row">
+          <label class="form-label">Kategori <span style="font-weight:400; color:var(--text-light); text-transform:none; letter-spacing:0;">(pilih minimal 1)</span></label>
+          <button type="button" class="info-btn" onclick="showInfo('Kategori', 'Pilih kategori yang sesuai sama aset kamu, biar gampang ditemukan orang lain lewat filter di halaman Models. Boleh pilih lebih dari satu kategori.')">i</button>
+        </div>
         <div class="category-grid" id="categoryGrid" style="margin-top:10px;">
           <span class="category-empty" id="categoryLoading">Memuat kategori...</span>
         </div>
@@ -442,6 +550,25 @@
      <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
    </footer>
   </div>
+
+  <div id="infoModalOverlay" class="info-modal-overlay" onclick="if(event.target===this) closeInfo()">
+    <div class="info-modal">
+      <div class="info-modal-title" id="infoModalTitle"></div>
+      <div class="info-modal-text" id="infoModalText"></div>
+      <button type="button" class="info-modal-close" onclick="closeInfo()">Oke, paham</button>
+    </div>
+  </div>
+
+  <script>
+    function showInfo(title, text) {
+      document.getElementById('infoModalTitle').textContent = title;
+      document.getElementById('infoModalText').innerHTML = text.replace(/\n/g, '<br>');
+      document.getElementById('infoModalOverlay').classList.add('show');
+    }
+    function closeInfo() {
+      document.getElementById('infoModalOverlay').classList.remove('show');
+    }
+  </script>
 
   <script>
     (function () {
@@ -657,6 +784,7 @@
         });
     })();
   </script>
+    <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
     <script src="/pwa-install.js" defer></script>
 </body>
 </html>
