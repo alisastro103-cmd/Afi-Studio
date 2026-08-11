@@ -11,12 +11,20 @@
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Afi Studio - Survey</title>
-  <link rel="icon" type="image/png" href="../favicon.png">
+  <title>Survey & Polling - Afi Studio</title>
+  <meta name="description" content="Ikut serta dalam survey dan polling dari komunitas Afi Studio. Lihat daftar survey yang sedang berjalan dan bagikan pendapatmu.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://afi-studio.vercel.app/survey/">
+  <meta property="og:title" content="Survey & Polling - Afi Studio">
+  <meta property="og:site_name" content="Afi Studio">
+  <meta property="og:description" content="Ikut serta dalam survey dan polling dari komunitas Afi Studio. Lihat daftar survey yang sedang berjalan dan bagikan pendapatmu.">
+  <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Survey & Polling - Afi Studio">
+  <meta name="twitter:description" content="Ikut serta dalam survey dan polling dari komunitas Afi Studio. Lihat daftar survey yang sedang berjalan dan bagikan pendapatmu.">
+  <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+  <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="manifest" href="/manifest.json">
-  <!-- Halaman ini sengaja gak diindeks & gak ditautkan dari navbar mana pun.
-       Cuma bisa diakses lewat link langsung yang dibagikan admin (?id=...). -->
-  <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="/dist/output.css">
   <script src="/theme-toggle.js" defer></script>
   <link rel="stylesheet" href="/fonts/fonts.css">
@@ -78,7 +86,8 @@
 
     .question-card {
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: none;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
       border-radius: 12px;
       padding: 18px;
       margin-bottom: 16px;
@@ -135,20 +144,195 @@
     .result-bar-fill { height:100%; background: var(--accent-hover); }
     .result-text-item { font-size: 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
 
+    .survey-list-card {
+      background: var(--surface);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .survey-list-title { font-size: 17px; font-weight: 700; font-family: 'Outfit', sans-serif; margin-bottom: 4px; }
+    .survey-list-desc { font-size: 13px; color: var(--text-light); margin-bottom: 10px; }
+    .survey-list-meta { font-size: 11px; color: var(--text-light); margin-bottom: 12px; }
+    .survey-list-actions { display: flex; gap: 8px; }
+    .survey-list-actions .fill-btn {
+      flex: 1; text-align: center; background: var(--accent-hover); color: #0F172A; font-weight: 700;
+      font-family: 'Outfit', sans-serif; padding: 10px; border: none; border-radius: 8px; font-size: 13px;
+      cursor: pointer; text-decoration: none; display: block;
+    }
+    .icon-copy-btn {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      width: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .icon-copy-btn svg { width: 17px; height: 17px; }
+
     .hidden { display: none !important; }
     .error-msg { font-size: 12px; color: #EF4444; margin-top: 8px; display: none; }
     .error-msg.show { display: block; }
+
+    /* Nav bar (disalin dari halaman Event Render biar posisi tombol konsisten di seluruh situs) */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      padding: 5px;
+      margin-right: 10px;
+    }
+    .theme-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      padding: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .theme-toggle-btn .icon-moon { display: none; }
+    html.dark .theme-toggle-btn .icon-sun { display: none; }
+    html.dark .theme-toggle-btn .icon-moon { display: block; }
+    .page-menu { position: relative; }
+    .page-menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      padding: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .page-menu-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-width: 220px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 50;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-6px) scale(0.98);
+      transform-origin: top right;
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+    .page-menu-dropdown.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    .page-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; line-height: 1.15; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 400; font-family: 'Outfit', sans-serif; }
+    .page-menu-item .page-menu-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.75; }
+    .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .page-menu-item:active { opacity: 0.6; }
+    .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); font-weight: 700; }
+    html.dark .page-menu-item.active { color: #fff; }
+    .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+    .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: flex-start; }
+    html.dark .page-menu-item-cta { color: #fff; }
+    .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .page-menu-item-cta:active { opacity: 0.6; }
   </style>
+  <script src="/icons/lucide-local.js"></script>
 </head>
 <body>
+  <nav class="nav-bar">
+    <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+      <div class="flex items-center">
+        <a href="/" class="back-btn">
+          <i data-lucide="arrow-left" style="width:24px;"></i>
+        </a>
+        <div class="cursor-pointer flex items-center gap-1" onclick="location.href='/'">
+          <img src="/icon.png" alt="Logo" class="w-10 h-10 object-contain">
+          <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">Afi-Studio</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Ganti tema">
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+        </button>
+        <div class="page-menu">
+          <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+          </button>
+          <div id="page-menu-dropdown" class="page-menu-dropdown">
+            <a href="/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
+            <a href="/member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
+            <a href="/event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
+            <a href="/ranking/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 5H5a2 2 0 0 0 0 4h1M16 5h3a2 2 0 0 1 0 4h-1"/><path d="M12 13v3M9 20h6M10 17h4v3h-4z"/></svg><span class="page-menu-label">Ranking Render</span></a>
+            <a href="/tutorial/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><span class="page-menu-label">Video &amp; Tutorial</span></a>
+            <a href="/bantuan/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg><span class="page-menu-label">Bantuan</span></a>
+            <a href="/feedback/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"/></svg><span class="page-menu-label">Feedback</span></a>
+            <a href="/favorit/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.6-9.5 9-9.5 9z"/></svg><span class="page-menu-label">Favorit</span></a>
+            <a href="/survey/" class="page-menu-item active"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/></svg><span class="page-menu-label">Survey</span></a>
+            <a href="/about/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/></svg><span class="page-menu-label">Tentang Kami</span></a>
+            <a href="/privacy/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg><span class="page-menu-label">Kebijakan Privasi</span></a>
+            <div class="page-menu-divider"></div>
+            <a class="link-daftar-model page-menu-item page-menu-item-cta" href="/daftar-model/index.html" rel="noopener"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span class="page-menu-label">Daftar Model 3D</span></a>
+            <a id="link-daftar-member" href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6.2 6-6.2s6 2.7 6 6.2"/><path d="M18 8v6M15 11h6"/></svg><span class="page-menu-label">Daftar Member</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    (function () {
+      const menuBtn = document.getElementById('page-menu-btn');
+      const menuDropdown = document.getElementById('page-menu-dropdown');
+      menuBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        menuDropdown.classList.toggle('open');
+      });
+      document.addEventListener('click', function () {
+        menuDropdown.classList.remove('open');
+      });
+    })();
+  </script>
+
   <main>
     <div id="loading-state" class="state-box">
       <div class="state-title">Memuat survey...</div>
     </div>
 
     <div id="error-state" class="state-box hidden">
-      <div class="state-title" id="error-title">Survey tidak ditemukan</div>
-      <div class="state-sub" id="error-sub">Link survey ini tidak valid atau sudah tidak aktif.</div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9.5" y1="13.5" x2="14.5" y2="18.5"/><line x1="14.5" y1="13.5" x2="9.5" y2="18.5"/></svg>
+      <div class="state-title" id="error-title">Link survey tidak valid atau telah expired</div>
+      <div class="state-sub" id="error-sub">Pastikan link yang kamu buka lengkap dengan kode survey-nya.</div>
+      <a href="/survey/" class="submit-btn" style="display:inline-block; width:auto; text-decoration:none; margin-top:20px; padding:12px 28px;">Kembali ke Daftar Survey</a>
+    </div>
+
+    <div id="already-state" class="state-box hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block;"><path d="M20 6 9 17l-5-5"/></svg>
+      <div class="state-title">Kamu sudah mengisi survey ini</div>
+      <div class="state-sub">Setiap orang cuma bisa mengisi survey ini sekali. Makasih partisipasinya!</div>
+      <a href="/survey/" class="submit-btn" style="display:inline-block; width:auto; text-decoration:none; margin-top:20px; padding:12px 28px;">Lihat Survey Lain</a>
+    </div>
+
+    <div id="list-state" class="hidden">
+      <div class="survey-header">
+        <div class="survey-title">Survey &amp; Polling</div>
+        <div class="survey-desc">Ikut serta dalam survey yang lagi berjalan dari komunitas Afi Studio.</div>
+      </div>
+      <div id="survey-list-items"></div>
     </div>
 
     <div id="survey-wrap" class="hidden">
@@ -174,6 +358,7 @@
       <div class="state-title">Terima kasih! 🎉</div>
       <div class="state-sub">Jawaban kamu udah tersimpan.</div>
       <div id="results-wrap" style="margin-top:24px; text-align:left;"></div>
+      <a href="/survey/" class="submit-btn" style="display:block; text-decoration:none; margin-top:20px;">Lihat Survey Lain</a>
     </div>
   </main>
 
@@ -184,7 +369,7 @@
 
     const el = id => document.getElementById(id);
     function showState(name) {
-      ['loading-state','error-state','survey-wrap','thankyou-state'].forEach(s => {
+      ['loading-state','error-state','already-state','list-state','survey-wrap','thankyou-state'].forEach(s => {
         el(s).classList.toggle('hidden', s !== name);
       });
     }
@@ -194,8 +379,23 @@
       showState('error-state');
     }
 
+    // Cookie ringan buat nyegah orang isi survey yang sama 2x dari device/browser yang sama.
+    // Ini cuma lapisan UX (biar gak nampilin form lagi ke orang yang jelas2 udah isi) —
+    // proteksi "beneran" tetap di server (cek IP, lihat api/survey-submit.js), soalnya cookie
+    // gampang dihapus/di-bypass kalau incognito.
+    function getCookie(name) {
+      const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
+      document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/survey/;SameSite=Lax`;
+    }
+    function filledCookieName(id) { return 'afi_survey_done_' + id; }
+
     async function init() {
-      if (!surveyId) { showError('Link survey tidak valid', 'Pastikan link yang kamu buka lengkap dengan kode survey-nya.'); return; }
+      if (!surveyId) { loadSurveyList(); return; }
       let list;
       try {
         const res = await fetch('/api/data/surveys');
@@ -206,14 +406,61 @@
         return;
       }
       const survey = Array.isArray(list) ? list.find(s => s.id === surveyId) : null;
-      if (!survey) { showError('Survey tidak ditemukan', 'Link ini mungkin salah ketik atau surveynya sudah dihapus.'); return; }
+      if (!survey) { showError('Link survey tidak valid atau telah expired', 'Pastikan link yang kamu buka lengkap dengan kode survey-nya.'); return; }
       if (survey.expiresAt && new Date(survey.expiresAt).getTime() <= Date.now()) {
-        showError('Survey sudah ditutup', 'Survey ini sudah melewati batas waktu pengisian. Terima kasih atas minatnya!');
+        showError('Link survey tidak valid atau telah expired', 'Pastikan link yang kamu buka lengkap dengan kode survey-nya.');
         return;
       }
+      if (getCookie(filledCookieName(surveyId))) { showState('already-state'); return; }
       currentSurvey = survey;
       renderSurvey(survey);
       showState('survey-wrap');
+    }
+
+    async function loadSurveyList() {
+      let list;
+      try {
+        const res = await fetch('/api/data/surveys');
+        if (!res.ok) throw new Error('status ' + res.status);
+        list = await res.json();
+      } catch (e) {
+        showError('Gagal memuat daftar survey', 'Coba periksa koneksi internet kamu, lalu muat ulang halaman ini.');
+        return;
+      }
+      const now = Date.now();
+      const active = (Array.isArray(list) ? list : []).filter(s => !s.expiresAt || new Date(s.expiresAt).getTime() > now);
+      const wrap = el('survey-list-items');
+      if (!active.length) {
+        wrap.innerHTML = `<div class="state-box" style="padding:40px 0;"><div class="state-title">Tidak ada survey hari ini</div><div class="state-sub">Belum ada survey yang lagi berjalan saat ini. Coba cek lagi nanti ya.</div></div>`;
+        showState('list-state');
+        return;
+      }
+      wrap.innerHTML = active.map(s => {
+        const qCount = Array.isArray(s.questions) ? s.questions.length : 0;
+        return `
+          <div class="survey-list-card">
+            <div class="survey-list-title">${escapeHtml(s.title)}</div>
+            <div class="survey-list-desc">${escapeHtml(s.description || '')}</div>
+            <div class="survey-list-meta">${qCount} pertanyaan</div>
+            <div class="survey-list-actions">
+              <a class="fill-btn" href="?id=${encodeURIComponent(s.id)}">Isi Survey</a>
+              <button type="button" class="icon-copy-btn" title="Salin link" onclick="copyPublicSurveyLink('${s.id}', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+      showState('list-state');
+    }
+
+    function copyPublicSurveyLink(id, btn) {
+      const url = `${location.origin}/survey/?id=${id}`;
+      const done = () => { const prev = btn.innerHTML; btn.innerHTML = '✓'; setTimeout(() => { btn.innerHTML = prev; }, 1200); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(() => prompt('Salin link ini:', url));
+      } else {
+        prompt('Salin link ini:', url);
+      }
     }
 
     function renderSurvey(survey) {
@@ -324,12 +571,14 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
+          if (res.status === 409) { setCookie(filledCookieName(surveyId), '1', 365); showState('already-state'); return; }
           errBox.textContent = data.error || 'Gagal mengirim jawaban. Coba lagi.';
           errBox.classList.add('show');
           btn.disabled = false;
           btn.textContent = 'Kirim Jawaban';
           return;
         }
+        setCookie(filledCookieName(surveyId), '1', 365);
         renderThankYou(data.results);
       } catch (e) {
         errBox.textContent = 'Koneksi bermasalah. Coba lagi.';

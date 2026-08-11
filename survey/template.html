@@ -314,9 +314,17 @@
     </div>
 
     <div id="error-state" class="state-box hidden">
-      <div class="state-title" id="error-title">Survey tidak ditemukan</div>
-      <div class="state-sub" id="error-sub">Link survey ini tidak valid atau sudah tidak aktif.</div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9.5" y1="13.5" x2="14.5" y2="18.5"/><line x1="14.5" y1="13.5" x2="9.5" y2="18.5"/></svg>
+      <div class="state-title" id="error-title">Link survey tidak valid atau telah expired</div>
+      <div class="state-sub" id="error-sub">Pastikan link yang kamu buka lengkap dengan kode survey-nya.</div>
       <a href="/survey/" class="submit-btn" style="display:inline-block; width:auto; text-decoration:none; margin-top:20px; padding:12px 28px;">Kembali ke Daftar Survey</a>
+    </div>
+
+    <div id="already-state" class="state-box hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block;"><path d="M20 6 9 17l-5-5"/></svg>
+      <div class="state-title">Kamu sudah mengisi survey ini</div>
+      <div class="state-sub">Setiap orang cuma bisa mengisi survey ini sekali. Makasih partisipasinya!</div>
+      <a href="/survey/" class="submit-btn" style="display:inline-block; width:auto; text-decoration:none; margin-top:20px; padding:12px 28px;">Lihat Survey Lain</a>
     </div>
 
     <div id="list-state" class="hidden">
@@ -361,7 +369,7 @@
 
     const el = id => document.getElementById(id);
     function showState(name) {
-      ['loading-state','error-state','list-state','survey-wrap','thankyou-state'].forEach(s => {
+      ['loading-state','error-state','already-state','list-state','survey-wrap','thankyou-state'].forEach(s => {
         el(s).classList.toggle('hidden', s !== name);
       });
     }
@@ -370,6 +378,21 @@
       el('error-sub').textContent = sub;
       showState('error-state');
     }
+
+    // Cookie ringan buat nyegah orang isi survey yang sama 2x dari device/browser yang sama.
+    // Ini cuma lapisan UX (biar gak nampilin form lagi ke orang yang jelas2 udah isi) —
+    // proteksi "beneran" tetap di server (cek IP, lihat api/survey-submit.js), soalnya cookie
+    // gampang dihapus/di-bypass kalau incognito.
+    function getCookie(name) {
+      const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
+      document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/survey/;SameSite=Lax`;
+    }
+    function filledCookieName(id) { return 'afi_survey_done_' + id; }
 
     async function init() {
       if (!surveyId) { loadSurveyList(); return; }
@@ -383,11 +406,12 @@
         return;
       }
       const survey = Array.isArray(list) ? list.find(s => s.id === surveyId) : null;
-      if (!survey) { showError('Link survey tidak valid', 'Pastikan link yang kamu buka lengkap dengan kode survey-nya.'); return; }
+      if (!survey) { showError('Link survey tidak valid atau telah expired', 'Pastikan link yang kamu buka lengkap dengan kode survey-nya.'); return; }
       if (survey.expiresAt && new Date(survey.expiresAt).getTime() <= Date.now()) {
-        showError('Link survey tidak valid', 'Pastikan link yang kamu buka lengkap dengan kode survey-nya.');
+        showError('Link survey tidak valid atau telah expired', 'Pastikan link yang kamu buka lengkap dengan kode survey-nya.');
         return;
       }
+      if (getCookie(filledCookieName(surveyId))) { showState('already-state'); return; }
       currentSurvey = survey;
       renderSurvey(survey);
       showState('survey-wrap');
@@ -547,12 +571,14 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
+          if (res.status === 409) { setCookie(filledCookieName(surveyId), '1', 365); showState('already-state'); return; }
           errBox.textContent = data.error || 'Gagal mengirim jawaban. Coba lagi.';
           errBox.classList.add('show');
           btn.disabled = false;
           btn.textContent = 'Kirim Jawaban';
           return;
         }
+        setCookie(filledCookieName(surveyId), '1', 365);
         renderThankYou(data.results);
       } catch (e) {
         errBox.textContent = 'Koneksi bermasalah. Coba lagi.';
