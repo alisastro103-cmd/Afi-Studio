@@ -80,6 +80,15 @@
   .survey-form-title { font-family:'Outfit', sans-serif; font-size:22px; font-weight:800; color:var(--text); }
   .img-mode-btn { font-size:11px; font-weight:700; padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:var(--bg); color:var(--text-sub); cursor:pointer; transition: all .15s; }
   .img-mode-btn.active { background: var(--accent); border-color: var(--accent); color:#fff; }
+  .img-remove-btn { position:absolute; top:8px; right:8px; width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:999px; border:none; background:rgba(15,23,42,.65); color:#fff; cursor:pointer; backdrop-filter:blur(2px); transition: background .15s; }
+  .img-remove-btn:hover { background:rgba(239,68,68,.85); }
+  .img-remove-btn svg { width:16px; height:16px; }
+  .q-nav-btn { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:7px; background:none; border:none; color:var(--text-sub); cursor:pointer; transition: background .15s, color .15s; }
+  .q-nav-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 12%, transparent); color:var(--accent); }
+  .q-nav-btn:disabled { opacity:.35; cursor:default; }
+  .q-nav-btn.danger { color: color-mix(in srgb, #EF4444 75%, var(--text-sub)); }
+  .q-nav-btn.danger:hover { background: color-mix(in srgb, #EF4444 12%, transparent); color:#EF4444; }
+  .q-nav-btn svg { width:18px; height:18px; }
 
   /* --- Toggle ringkas (checkbox + label kecil, rata kiri) --- */
   .toggle-compact { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-sub); text-transform:none; letter-spacing:normal; cursor:pointer; width:fit-content; }
@@ -1778,7 +1787,7 @@ function surveyFormHtml(bodyOnly){
     const last = surveyDraft.questions.length-1;
     const isChoice = q.type==='single' || q.type==='multiple';
     const optsHtml = isChoice ? `
-      <div class="flex flex-col gap-1 mt-2">
+      <div class="flex flex-col gap-1" style="margin-top:14px;">
         ${(q.options||[]).map((o,oidx)=>`
           <div class="flex items-center gap-2">
             <input class="form-input" style="flex:1;" value="${esc(o.label)}" placeholder="Opsi ${oidx+1}" oninput="updateSurveyOption(${idx},${oidx},this.value)">
@@ -1791,10 +1800,10 @@ function surveyFormHtml(bodyOnly){
       <div class="panel-shadow p-3 mb-3">
         <div class="flex justify-between items-center mb-2">
           <span style="font-size:11px;font-weight:700;color:var(--text-sub);">Pertanyaan ${idx+1}</span>
-          <div class="flex gap-1">
-            <button type="button" ${idx===0?'disabled':''} onclick="moveSurveyQuestion(${idx},-1)" style="background:none;border:none;cursor:pointer;color:var(--text-sub);"><i data-lucide="arrow-up" style="width:15px;height:15px;"></i></button>
-            <button type="button" ${idx===last?'disabled':''} onclick="moveSurveyQuestion(${idx},1)" style="background:none;border:none;cursor:pointer;color:var(--text-sub);"><i data-lucide="arrow-down" style="width:15px;height:15px;"></i></button>
-            <button type="button" onclick="removeSurveyQuestion(${idx})" style="background:none;border:none;cursor:pointer;color:#EF4444;"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
+          <div class="flex gap-2">
+            <button type="button" class="q-nav-btn" ${idx===0?'disabled':''} onclick="moveSurveyQuestion(${idx},-1)" aria-label="Naikkan"><i data-lucide="arrow-up"></i></button>
+            <button type="button" class="q-nav-btn" ${idx===last?'disabled':''} onclick="moveSurveyQuestion(${idx},1)" aria-label="Turunkan"><i data-lucide="arrow-down"></i></button>
+            <button type="button" class="q-nav-btn danger" onclick="removeSurveyQuestion(${idx})" aria-label="Hapus pertanyaan"><i data-lucide="trash-2"></i></button>
           </div>
         </div>
         <textarea class="form-textarea" rows="2" placeholder="Tulis pertanyaan..." oninput="updateSurveyQuestion(${idx},'text',this.value)">${esc(q.text)}</textarea>
@@ -1806,8 +1815,13 @@ function surveyFormHtml(bodyOnly){
           </div>
           ${imgMode==='link'
             ? `<input class="form-input" placeholder="Link gambar (opsional)" value="${esc(q.image||'')}" oninput="updateSurveyQuestion(${idx},'image',this.value)">`
-            : `<input type="file" accept="image/*" class="form-input" style="padding:7px 10px;" onchange="handleSurveyImageFile(${idx},this)">
-               ${q.image ? `<div style="margin-top:8px;"><img src="${esc(q.image)}" style="display:block;width:100%;max-height:260px;object-fit:contain;border-radius:8px;background:var(--bg);"><span style="font-size:11px;color:var(--text-sub);display:block;margin-top:4px;">Gambar terpasang</span></div>` : ''}`
+            : (q.image
+                ? `<div style="position:relative;">
+                     <img src="${esc(q.image)}" style="display:block;width:100%;max-height:260px;object-fit:contain;border-radius:8px;background:var(--bg);">
+                     <button type="button" class="img-remove-btn" onclick="removeSurveyImageFile(${idx})" aria-label="Hapus gambar"><i data-lucide="x"></i></button>
+                   </div>
+                   <span style="font-size:11px;color:var(--text-sub);display:block;margin-top:4px;">Gambar terpasang</span>`
+                : `<input type="file" accept="image/*" class="form-input" style="padding:7px 10px;" onchange="handleSurveyImageFile(${idx},this)">`)
           }
         </div>
 
@@ -1887,6 +1901,10 @@ function handleSurveyImageFile(idx, input){
     refreshSurveyModal();
   };
   reader.readAsDataURL(file);
+}
+function removeSurveyImageFile(idx){
+  surveyDraft.questions[idx].image = '';
+  refreshSurveyModal();
 }
 function addSurveyOption(idx){ surveyDraft.questions[idx].options.push({id:genId('opt'), label:''}); refreshSurveyModal(); }
 function removeSurveyOption(idx, oidx){ surveyDraft.questions[idx].options.splice(oidx,1); refreshSurveyModal(); }
