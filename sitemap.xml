@@ -43,4 +43,10 @@
     <priority>0.5</priority>
   </url>
 
+  <url>
+    <loc>https://afi-studio.vercel.app/survey/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
 </urlset>

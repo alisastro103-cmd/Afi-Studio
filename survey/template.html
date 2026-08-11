@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <script src="/config.js"></script>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('afi-theme');
+      var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>%%PAGE_TITLE%%</title>
+  <meta name="description" content="%%OG_DESC%%">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="%%OG_URL%%">
+  <meta property="og:title" content="%%OG_TITLE%%">
+  <meta property="og:site_name" content="Afi Studio">
+  <meta property="og:description" content="%%OG_DESC%%">
+  <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="%%OG_TITLE%%">
+  <meta name="twitter:description" content="%%OG_DESC%%">
+  <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/dist/output.css">
+  <script src="/theme-toggle.js" defer></script>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3 { font-family: 'Outfit', sans-serif; font-weight: 600; }
+
+    :root {
+      --accent: #93C5FD;
+      --accent-hover: #7DD3FC;
+      --bg: #D0D7E1;
+      --surface: #E1E7EE;
+      --text: #334155;
+      --text-light: #64748B;
+      --border: #B9C4D3;
+      --disabled: #94A3B8;
+      --grid-line: rgba(100,116,139,0.22);
+    }
+    html.dark {
+      --accent: #3B5578;
+      --accent-hover: #4A6690;
+      --bg: #1E293B;
+      --surface: #334155;
+      --text: #CBD5E1;
+      --text-light: #94A3B8;
+      --border: #475569;
+      --disabled: #64748B;
+      --grid-line: rgba(148,163,184,0.16);
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--text);
+      line-height: 1.4;
+      min-height: 100%;
+    }
+
+    main { max-width: 640px; margin: 0 auto; padding: 24px 20px 60px; }
+
+    .progress-wrap {
+      position: sticky; top: 0; z-index: 20;
+      background: var(--bg);
+      padding: 14px 0 10px;
+      margin-bottom: 8px;
+    }
+    .progress-label { font-size: 12px; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display:flex; justify-content:space-between; }
+    .progress-bar { height: 6px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.25s ease; }
+
+    .survey-header { padding: 8px 0 20px; text-align: center; }
+    .survey-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+    .survey-desc { font-size: 14px; color: var(--text-light); }
+
+    .question-card {
+      background: var(--surface);
+      border: none;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .q-number { font-size: 11px; font-weight: 700; color: var(--text-light); margin-bottom: 4px; }
+    .q-text { font-size: 15px; font-weight: 700; font-family: 'Outfit', sans-serif; margin-bottom: 4px; }
+    .q-required { color: #EF4444; margin-left: 3px; }
+    .q-image { width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px; margin: 10px 0; border: 1px solid var(--border); }
+
+    .opt-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px; cursor: pointer; }
+    .opt-row input { width: 18px; height: 18px; accent-color: var(--accent-hover); flex-shrink: 0; }
+    .opt-row span { font-size: 14px; }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      border-radius: 8px;
+      font-family: inherit;
+      margin-top: 8px;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--accent-hover); }
+    .form-textarea { resize: vertical; min-height: 90px; }
+
+    .submit-btn {
+      width: 100%;
+      background: var(--accent-hover);
+      color: #0F172A;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .submit-btn:active { opacity: 0.85; }
+    .submit-btn:disabled { background: var(--disabled); cursor: not-allowed; }
+
+    .state-box { text-align: center; padding: 60px 20px; }
+    .state-box i, .state-box svg { width: 42px; height: 42px; color: var(--text-light); margin-bottom: 14px; }
+    .state-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .state-sub { font-size: 13px; color: var(--text-light); }
+
+    .result-row { margin-bottom: 14px; }
+    .result-q { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .result-opt { display:flex; justify-content:space-between; font-size:12px; color:var(--text-light); margin-bottom:4px; }
+    .result-bar-bg { height: 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); overflow:hidden; margin-bottom: 10px; }
+    .result-bar-fill { height:100%; background: var(--accent-hover); }
+    .result-text-item { font-size: 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
+
+    .survey-list-card {
+      background: var(--surface);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .survey-list-title { font-size: 17px; font-weight: 700; font-family: 'Outfit', sans-serif; margin-bottom: 4px; }
+    .survey-list-desc { font-size: 13px; color: var(--text-light); margin-bottom: 10px; }
+    .survey-list-meta { font-size: 11px; color: var(--text-light); margin-bottom: 12px; }
+    .survey-list-actions { display: flex; gap: 8px; }
+    .survey-list-actions .fill-btn {
+      flex: 1; text-align: center; background: var(--accent-hover); color: #0F172A; font-weight: 700;
+      font-family: 'Outfit', sans-serif; padding: 10px; border: none; border-radius: 8px; font-size: 13px;
+      cursor: pointer; text-decoration: none; display: block;
+    }
+    .icon-copy-btn {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      width: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .icon-copy-btn svg { width: 17px; height: 17px; }
+
+    .hidden { display: none !important; }
+    .error-msg { font-size: 12px; color: #EF4444; margin-top: 8px; display: none; }
+    .error-msg.show { display: block; }
+  </style>
+</head>
+<body>
+  <main>
+    <div id="loading-state" class="state-box">
+      <div class="state-title">Memuat survey...</div>
+    </div>
+
+    <div id="error-state" class="state-box hidden">
+      <div class="state-title" id="error-title">Survey tidak ditemukan</div>
+      <div class="state-sub" id="error-sub">Link survey ini tidak valid atau sudah tidak aktif.</div>
+    </div>
+
+    <div id="list-state" class="hidden">
+      <div class="survey-header">
+        <div class="survey-title">Survey &amp; Polling</div>
+        <div class="survey-desc">Ikut serta dalam survey yang lagi berjalan dari komunitas Afi Studio.</div>
+      </div>
+      <div id="survey-list-items"></div>
+    </div>
+
+    <div id="survey-wrap" class="hidden">
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Progres</span>
+          <span id="progress-text">0 / 0 wajib terisi</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+
+      <div class="survey-header">
+        <div class="survey-title" id="survey-title"></div>
+        <div class="survey-desc" id="survey-desc"></div>
+      </div>
+
+      <form id="survey-form"></form>
+      <button type="button" class="submit-btn" id="submit-btn">Kirim Jawaban</button>
+      <div class="error-msg" id="submit-error"></div>
+    </div>
+
+    <div id="thankyou-state" class="state-box hidden">
+      <div class="state-title">Terima kasih! 🎉</div>
+      <div class="state-sub">Jawaban kamu udah tersimpan.</div>
+      <div id="results-wrap" style="margin-top:24px; text-align:left;"></div>
+      <a href="/survey/" class="submit-btn" style="display:block; text-decoration:none; margin-top:20px;">Lihat Survey Lain</a>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const surveyId = params.get('id');
+    let currentSurvey = null;
+
+    const el = id => document.getElementById(id);
+    function showState(name) {
+      ['loading-state','error-state','list-state','survey-wrap','thankyou-state'].forEach(s => {
+        el(s).classList.toggle('hidden', s !== name);
+      });
+    }
+    function showError(title, sub) {
+      el('error-title').textContent = title;
+      el('error-sub').textContent = sub;
+      showState('error-state');
+    }
+
+    async function init() {
+      if (!surveyId) { loadSurveyList(); return; }
+      let list;
+      try {
+        const res = await fetch('/api/data/surveys');
+        if (!res.ok) throw new Error('status ' + res.status);
+        list = await res.json();
+      } catch (e) {
+        showError('Gagal memuat survey', 'Coba periksa koneksi internet kamu, lalu muat ulang halaman ini.');
+        return;
+      }
+      const survey = Array.isArray(list) ? list.find(s => s.id === surveyId) : null;
+      if (!survey) { showError('Survey tidak ditemukan', 'Link ini mungkin salah ketik atau surveynya sudah dihapus.'); return; }
+      if (survey.expiresAt && new Date(survey.expiresAt).getTime() <= Date.now()) {
+        showError('Survey sudah ditutup', 'Survey ini sudah melewati batas waktu pengisian. Terima kasih atas minatnya!');
+        return;
+      }
+      currentSurvey = survey;
+      renderSurvey(survey);
+      showState('survey-wrap');
+    }
+
+    async function loadSurveyList() {
+      let list;
+      try {
+        const res = await fetch('/api/data/surveys');
+        if (!res.ok) throw new Error('status ' + res.status);
+        list = await res.json();
+      } catch (e) {
+        showError('Gagal memuat daftar survey', 'Coba periksa koneksi internet kamu, lalu muat ulang halaman ini.');
+        return;
+      }
+      const now = Date.now();
+      const active = (Array.isArray(list) ? list : []).filter(s => !s.expiresAt || new Date(s.expiresAt).getTime() > now);
+      const wrap = el('survey-list-items');
+      if (!active.length) {
+        wrap.innerHTML = `<div class="state-box" style="padding:40px 0;"><div class="state-title">Belum ada survey</div><div class="state-sub">Belum ada survey yang lagi berjalan saat ini. Coba cek lagi nanti ya.</div></div>`;
+        showState('list-state');
+        return;
+      }
+      wrap.innerHTML = active.map(s => {
+        const qCount = Array.isArray(s.questions) ? s.questions.length : 0;
+        return `
+          <div class="survey-list-card">
+            <div class="survey-list-title">${escapeHtml(s.title)}</div>
+            <div class="survey-list-desc">${escapeHtml(s.description || '')}</div>
+            <div class="survey-list-meta">${qCount} pertanyaan</div>
+            <div class="survey-list-actions">
+              <a class="fill-btn" href="?id=${encodeURIComponent(s.id)}">Isi Survey</a>
+              <button type="button" class="icon-copy-btn" title="Salin link" onclick="copyPublicSurveyLink('${s.id}', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+      showState('list-state');
+    }
+
+    function copyPublicSurveyLink(id, btn) {
+      const url = `${location.origin}/survey/?id=${id}`;
+      const done = () => { const prev = btn.innerHTML; btn.innerHTML = '✓'; setTimeout(() => { btn.innerHTML = prev; }, 1200); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(() => prompt('Salin link ini:', url));
+      } else {
+        prompt('Salin link ini:', url);
+      }
+    }
+
+    function renderSurvey(survey) {
+      el('survey-title').textContent = survey.title || '';
+      el('survey-desc').textContent = survey.description || '';
+      const form = el('survey-form');
+      form.innerHTML = '';
+      const questions = Array.isArray(survey.questions) ? survey.questions : [];
+
+      questions.forEach((q, idx) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.dataset.qid = q.id;
+        card.dataset.qtype = q.type;
+        card.dataset.required = q.required ? '1' : '0';
+
+        let inner = `<div class="q-number">Pertanyaan ${idx + 1} dari ${questions.length}</div>`;
+        inner += `<div class="q-text">${escapeHtml(q.text || '')}${q.required ? '<span class="q-required">*</span>' : ''}</div>`;
+        if (q.image) inner += `<img class="q-image" src="${escapeAttr(q.image)}" alt="" loading="lazy" onerror="this.remove()">`;
+
+        if (q.type === 'single') {
+          (q.options || []).forEach(o => {
+            inner += `<label class="opt-row"><input type="radio" name="q_${q.id}" value="${escapeAttr(o.id)}"><span>${escapeHtml(o.label)}</span></label>`;
+          });
+        } else if (q.type === 'multiple') {
+          (q.options || []).forEach(o => {
+            inner += `<label class="opt-row"><input type="checkbox" name="q_${q.id}" value="${escapeAttr(o.id)}"><span>${escapeHtml(o.label)}</span></label>`;
+          });
+        } else if (q.type === 'short_text') {
+          inner += `<input class="form-input" type="text" maxlength="300" name="q_${q.id}" placeholder="Ketik jawaban singkat...">`;
+        } else if (q.type === 'long_text') {
+          inner += `<textarea class="form-textarea" maxlength="3000" name="q_${q.id}" placeholder="Ketik jawaban kamu..."></textarea>`;
+        }
+
+        card.innerHTML = inner;
+        form.appendChild(card);
+      });
+
+      form.addEventListener('input', updateProgress);
+      form.addEventListener('change', updateProgress);
+      updateProgress();
+      el('submit-btn').onclick = submitSurvey;
+    }
+
+    function isQuestionAnswered(card) {
+      const type = card.dataset.qtype;
+      if (type === 'single' || type === 'multiple') {
+        return !!card.querySelector('input:checked');
+      }
+      const input = card.querySelector('input,textarea');
+      return !!(input && input.value.trim());
+    }
+
+    function updateProgress() {
+      const cards = Array.from(document.querySelectorAll('.question-card'));
+      const requiredCards = cards.filter(c => c.dataset.required === '1');
+      const answeredRequired = requiredCards.filter(isQuestionAnswered).length;
+      const total = requiredCards.length || cards.length;
+      const answered = requiredCards.length ? answeredRequired : cards.filter(isQuestionAnswered).length;
+      el('progress-text').textContent = `${answered} / ${total} ${requiredCards.length ? 'wajib' : 'pertanyaan'} terisi`;
+      el('progress-fill').style.width = total ? `${Math.round((answered / total) * 100)}%` : '0%';
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str == null ? '' : str);
+      return d.innerHTML;
+    }
+    function escapeAttr(str) { return escapeHtml(str).replace(/"/g, '&quot;'); }
+
+    async function submitSurvey() {
+      const errBox = el('submit-error');
+      errBox.classList.remove('show');
+
+      const cards = Array.from(document.querySelectorAll('.question-card'));
+      const missing = cards.find(c => c.dataset.required === '1' && !isQuestionAnswered(c));
+      if (missing) {
+        errBox.textContent = 'Masih ada pertanyaan wajib yang belum diisi.';
+        errBox.classList.add('show');
+        missing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      const answers = cards.map(c => {
+        const type = c.dataset.qtype;
+        const qid = c.dataset.qid;
+        if (type === 'single') {
+          const checked = c.querySelector('input:checked');
+          return { questionId: qid, value: checked ? checked.value : '' };
+        }
+        if (type === 'multiple') {
+          const checked = Array.from(c.querySelectorAll('input:checked')).map(i => i.value);
+          return { questionId: qid, value: checked };
+        }
+        const input = c.querySelector('input,textarea');
+        return { questionId: qid, value: input ? input.value.trim() : '' };
+      });
+
+      const btn = el('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Mengirim...';
+
+      try {
+        const res = await fetch('/api/survey-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ surveyId, answers }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          errBox.textContent = data.error || 'Gagal mengirim jawaban. Coba lagi.';
+          errBox.classList.add('show');
+          btn.disabled = false;
+          btn.textContent = 'Kirim Jawaban';
+          return;
+        }
+        renderThankYou(data.results);
+      } catch (e) {
+        errBox.textContent = 'Koneksi bermasalah. Coba lagi.';
+        errBox.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Kirim Jawaban';
+      }
+    }
+
+    function renderThankYou(results) {
+      showState('thankyou-state');
+      const wrap = el('results-wrap');
+      wrap.innerHTML = '';
+      if (!results || !Array.isArray(results)) return;
+
+      results.forEach(r => {
+        const row = document.createElement('div');
+        row.className = 'result-row';
+        const q = (currentSurvey.questions || []).find(qq => qq.id === r.questionId);
+        const qText = q ? q.text : '';
+        if (r.type === 'single' || r.type === 'multiple') {
+          const total = r.total || 0;
+          let html = `<div class="result-q">${escapeHtml(qText)}</div>`;
+          (q.options || []).forEach(o => {
+            const count = (r.counts && r.counts[o.id]) || 0;
+            const pct = total ? Math.round((count / total) * 100) : 0;
+            html += `<div class="result-opt"><span>${escapeHtml(o.label)}</span><span>${pct}% (${count})</span></div>
+                      <div class="result-bar-bg"><div class="result-bar-fill" style="width:${pct}%"></div></div>`;
+          });
+          row.innerHTML = html;
+          wrap.appendChild(row);
+        }
+        // Jawaban teks bebas gak ditampilkan ke publik (privasi jawaban orang lain),
+        // cuma dihitung buat admin lewat panel.
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>

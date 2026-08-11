@@ -64,35 +64,20 @@
   .btn-accent:hover { background: var(--accent-hover); }
   .btn-outline { background: var(--bg); color: var(--text); }
   .btn-outline:hover { background: var(--border); }
-  .icon-btn-plain { display:flex; align-items:center; justify-content:center; width:38px; height:38px; background:none; border:none; color:var(--text-sub); cursor:pointer; padding:0; flex-shrink:0; border-radius:8px; transition: background .15s, color .15s; }
-  .icon-btn-plain:hover { color:var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
-  .icon-btn-plain.danger { color: color-mix(in srgb, #EF4444 75%, var(--text-sub)); }
-  .icon-btn-plain.danger:hover { color:#EF4444; background: color-mix(in srgb, #EF4444 12%, transparent); }
+  .icon-action-btn { background:none; border:none; cursor:pointer; color:var(--text-sub); padding:6px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; transition: background .15s, color .15s; }
+  .icon-action-btn:hover { background: var(--border); color: var(--text); }
+  .icon-action-btn i, .icon-action-btn svg { width:17px; height:17px; }
+  /* Checkbox toggle di dalam modal (mis. "wajib dijawab") — dilepas dari style input teks global
+     (yang nge-set width:100%, padding besar, dsb) supaya ukurannya normal & sejajar rapi ke kiri. */
+  .modal-box input[type="checkbox"] { all: revert; width:16px; height:16px; margin:0; flex-shrink:0; cursor:pointer; accent-color: var(--accent-hover); }
+  .modal-box label.checkbox-row { display:flex; align-items:center; gap:8px; text-transform:none; font-weight:500; font-size:12px; color:var(--text); margin-bottom:0; cursor:pointer; letter-spacing:normal; }
+  .modal-box .toggle-row { display:flex; gap:4px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:3px; }
+  .modal-box .toggle-opt { flex:1; text-align:center; padding:6px 8px; font-size:12px; font-weight:600; border-radius:6px; cursor:pointer; color:var(--text-sub); user-select:none; }
+  .modal-box .toggle-opt.active { background: var(--accent-hover); color:#0F172A; }
+  .q-image-preview { width:100%; max-height:140px; object-fit:cover; border-radius:8px; margin-top:8px; display:block; }
+  .icon-btn-plain { display:flex; align-items:center; justify-content:center; width:38px; height:38px; background:none; border:none; color:var(--text-sub); cursor:pointer; padding:0; flex-shrink:0; }
+  .icon-btn-plain:hover { color:var(--accent); }
   .icon-btn-plain svg { width:21px; height:21px; }
-
-  /* --- Soft-shadow (dipakai buat board yang butuh pemisahan visual TANPA outline) --- */
-  :root { --shadow-soft: 0 2px 10px rgba(30,41,59,.10), 0 1px 2px rgba(30,41,59,.08); }
-  .dark { --shadow-soft: 0 3px 12px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.3); }
-  .panel-shadow { background: var(--surface); border-radius:10px; border:none; box-shadow: var(--shadow-soft); }
-
-  /* --- Kartu Survey --- */
-  .survey-card-title { font-family:'Outfit', sans-serif; font-size:19px; font-weight:800; line-height:1.25; color:var(--text); }
-  .survey-form-title { font-family:'Outfit', sans-serif; font-size:22px; font-weight:800; color:var(--text); }
-  .img-mode-btn { font-size:11px; font-weight:700; padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:var(--bg); color:var(--text-sub); cursor:pointer; transition: all .15s; }
-  .img-mode-btn.active { background: var(--accent); border-color: var(--accent); color:#fff; }
-  .img-remove-btn { position:absolute; top:8px; right:8px; width:30px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:999px; border:none; background:rgba(15,23,42,.65); color:#fff; cursor:pointer; backdrop-filter:blur(2px); transition: background .15s; }
-  .img-remove-btn:hover { background:rgba(239,68,68,.85); }
-  .img-remove-btn svg { width:16px; height:16px; }
-  .q-nav-btn { display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:7px; background:none; border:none; color:var(--text-sub); cursor:pointer; transition: background .15s, color .15s; }
-  .q-nav-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 12%, transparent); color:var(--accent); }
-  .q-nav-btn:disabled { opacity:.35; cursor:default; }
-  .q-nav-btn.danger { color: color-mix(in srgb, #EF4444 75%, var(--text-sub)); }
-  .q-nav-btn.danger:hover { background: color-mix(in srgb, #EF4444 12%, transparent); color:#EF4444; }
-  .q-nav-btn svg { width:18px; height:18px; }
-
-  /* --- Toggle ringkas (checkbox + label kecil, rata kiri) --- */
-  .toggle-compact { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-sub); text-transform:none; letter-spacing:normal; cursor:pointer; width:fit-content; }
-  .toggle-compact input[type="checkbox"] { width:15px; height:15px; flex-shrink:0; accent-color:var(--accent); }
 
   /* --- Tombol tambah bulat (+) dipakai di semua halaman --- */
   .btn-add-circle { width:38px; height:38px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:var(--accent); color:#fff; border:none; cursor:pointer; flex-shrink:0; transition: background .15s; }
@@ -240,6 +225,11 @@
   .ranking-card .title { font-weight:700; font-size:13px; }
   .ranking-card .caption { font-size:11px; color:var(--text-sub); line-height:1.4; }
   /* --- EVENT: kartu (mode kotak), gambar full-bleed seperti Ranking --- */
+  .event-card { position:relative; border-radius:10px; overflow:hidden; background:var(--surface); }
+  .event-card .photo { width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:var(--bg); }
+  .event-card .body { padding:12px; display:flex; flex-direction:column; gap:6px; }
+  .event-card .title { font-weight:700; font-size:13px; }
+  .event-card .caption { font-size:11px; color:var(--text-sub); line-height:1.4; }
   .toast { position:fixed; bottom:20px; right:20px; background:var(--success); color:#fff; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; z-index:70; box-shadow:0 4px 14px rgba(0,0,0,.2); animation: toastIn .25s cubic-bezier(.16,1,.3,1); }
   .toast.closing { animation: toastOut .16s ease forwards; }
 
@@ -275,6 +265,7 @@
     <div class="side-item" data-view="marquee"><i data-lucide="megaphone"></i>Marquee / Info</div>
     <div class="side-item" data-view="member"><i data-lucide="users"></i>Member</div>
     <div class="side-item" data-view="ranking"><i data-lucide="trophy"></i>Ranking Render</div>
+    <div class="side-item" data-view="event"><i data-lucide="calendar"></i>Event</div>
     <div class="side-item" data-view="feedback"><i data-lucide="message-square"></i>Feedback</div>
     <div class="side-item" data-view="pendingmodels"><i data-lucide="inbox"></i>Pendaftaran<span id="pending-badge" style="display:none; margin-left:auto; background:#EF4444; color:#fff; font-size:10px; font-weight:800; padding:1px 6px; border-radius:999px;"></span></div>
     <div class="side-item" data-view="survey"><i data-lucide="clipboard-list"></i>Survey</div>
@@ -410,6 +401,17 @@
         <div class="data-grid" id="ranking-grid"></div>
       </section>
 
+      <!-- EVENT -->
+      <section class="section-view" id="view-event">
+        <div class="panel overflow-x-auto data-table-wrap">
+          <table>
+            <thead><tr><th>No</th><th>Gambar</th><th>Judul</th><th>Caption</th></tr></thead>
+            <tbody id="event-tbody"></tbody>
+          </table>
+        </div>
+        <div class="data-grid" id="event-grid"></div>
+      </section>
+
       <!-- FEEDBACK -->
       <section class="section-view" id="view-feedback">
         <div class="panel p-4">
@@ -525,8 +527,8 @@
 <script>
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
-let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [], surveys: [] };
-const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','settings','categories','appcategories','pendingmodels','surveys'];
+let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [], surveys: [] };
+const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories','appcategories','pendingmodels','surveys'];
 
 /* ================= LOGIN & TOKEN ================= */
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
@@ -587,7 +589,7 @@ async function bootAdminApp(){
   toast('Memuat data...');
   await loadAllData();
   renderDashboard(); renderModels(); renderKategori(); renderKategoriApp(); renderVideos(); renderBanner();
-  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderPengaturan(); renderPendingModels(); renderSurvey();
+  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderEvent(); renderPengaturan(); renderPendingModels(); renderSurvey();
   lucide.createIcons();
 }
 
@@ -634,7 +636,7 @@ document.querySelectorAll('.side-item[data-view]').forEach(el=>{
   });
 });
 /* --- Tombol tambah (+) mengambang, mengikuti halaman yang sedang aktif --- */
-const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, survey: () => openSurveyForm(null) };
+const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm, survey: () => openSurveyForm(null) };
 const globalFab = document.getElementById('global-fab');
 const globalFabBtn = document.getElementById('global-fab-btn');
 const globalFabDropdown = document.getElementById('global-fab-dropdown');
@@ -670,7 +672,7 @@ function updateFab(view){
   }
 }
 /* --- TOGGLE TAMPILAN: Tabel <-> Kotak (kartu database), tidak berlaku di Dashboard --- */
-const VIEWS_WITH_TABLE = ['models','kategori','videos','banner','marquee','member','ranking'];
+const VIEWS_WITH_TABLE = ['models','kategori','videos','banner','marquee','member','ranking','event'];
 const VIEWS_WITH_SEARCH = ['models','videos','member'];
 const viewToggleBtn = document.getElementById('view-toggle-btn');
 const searchToggleBtn = document.getElementById('search-toggle-btn');
@@ -904,7 +906,7 @@ document.querySelector('main').addEventListener('scroll', closeActionMenus);
 /* ================= URUTAN: tombol Naik/Turun di board opsi (tahan kartu/baris buat munculin board-nya) ================= */
 // "scope" nunjukin array asalnya: 'models','videos','banner','marquee','ranking', atau 'member:<gen>' khusus member
 // (member dipisah per generasi karena datanya memang disimpan per folder generasi, bukan satu array besar).
-const REORDER_RENDERERS = { models:()=>renderModels(), categories:()=>renderKategori(), appcategories:()=>renderKategoriApp(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember() };
+const REORDER_RENDERERS = { models:()=>renderModels(), categories:()=>renderKategori(), appcategories:()=>renderKategoriApp(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember(), event:()=>renderEvent() };
 function reorderArrayRef(scope){
   if(scope && scope.startsWith('member:')) return DB.member[scope.slice(7)];
   return DB[scope];
@@ -1564,15 +1566,62 @@ async function saveRanking(idx){
   if(ok) toast('Tersimpan'); else DB.ranking = prev, renderRanking(), renderDashboard();
 }
 
+/* ================= EVENT (render/art event) ================= */
+function renderEvent(){
+  document.getElementById('event-tbody').innerHTML = DB.event.map((e,i)=>`
+    <tr data-reorder-scope="event" data-reorder-idx="${i}" data-hold-edit="openEventForm(${i})" data-hold-delete="removeItem('event',${i})">
+      <td class="row-num">${i+1}</td>
+      <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(e.gambar))}</td>
+      <td class="cell-ellipsis" style="font-weight:700;">${esc(e.judul)}</td>
+      <td class="desc-col">${esc(e.caption)}</td>
+    </tr>`).join('') || `<tr><td colspan="4" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
+  dataGrid('event-grid', DB.event.map((e,i)=>({e,i})), ({e,i})=>`
+    <div class="event-card" data-reorder-scope="event" data-reorder-idx="${i}" data-hold-edit="openEventForm(${i})" data-hold-delete="removeItem('event',${i})">
+      <img class="photo" src="${esc(e.gambar)}" onerror="this.style.opacity=0.3">
+      <div class="body">
+        <div class="title">${esc(e.judul)}</div>
+        <div class="caption">${esc(e.caption)}</div>
+      </div>
+    </div>`);
+  lucide.createIcons();
+  bindCardHold('event-grid');
+  bindCardHold('event-tbody');
+}
+function openEventForm(idx){
+  const isEdit = idx !== undefined;
+  const e = isEdit ? DB.event[idx] : { judul:'', caption:'', gambar:'' };
+  openModal(`
+    <h3 class="text-sm font-bold mb-4">${isEdit?'Edit':'Tambah'} Render Event</h3>
+    <div class="flex flex-col gap-3">
+      <div><label>Judul</label><textarea id="f-ejudul" rows="1">${esc(e.judul)}</textarea></div>
+      <div><label>Caption</label><textarea id="f-ecaption" rows="1">${esc(e.caption)}</textarea></div>
+      <div><label>URL Gambar</label><textarea id="f-egambar" rows="1">${esc(e.gambar)}</textarea></div>
+    </div>
+    <div class="flex justify-end gap-2 mt-5">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-accent" onclick="saveEvent(${isEdit?idx:'undefined'})">Simpan</button>
+    </div>`);
+}
+async function saveEvent(idx){
+  const data = { judul: document.getElementById('f-ejudul').value.trim(), caption: document.getElementById('f-ecaption').value.trim(), gambar: document.getElementById('f-egambar').value.trim() };
+  if(!data.judul){ toast('Judul wajib diisi'); return; }
+  if(!data.gambar){ toast('URL gambar wajib diisi'); return; }
+  const prev = DB.event.slice();
+  if(idx!==undefined) DB.event[idx]=data; else DB.event.push(data);
+  closeModal(); renderEvent(); renderDashboard();
+  const ok = await persist('event');
+  if(ok) toast('Tersimpan'); else DB.event = prev, renderEvent(), renderDashboard();
+}
+
 /* ================= GENERIC REMOVE ================= */
 async function removeItem(key, idx){
   if(!confirm('Hapus data ini?')) return;
   const prev = DB[key].slice();
   DB[key].splice(idx,1);
-  ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking})[key]();
+  ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key]();
   renderDashboard();
   const ok = await persist(key);
-  if(ok) toast('Dihapus'); else { DB[key] = prev; ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking})[key](); renderDashboard(); }
+  if(ok) toast('Dihapus'); else { DB[key] = prev; ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key](); renderDashboard(); }
 }
 
 /* ================= DASHBOARD ================= */
@@ -1585,6 +1634,7 @@ function renderDashboard(){
     {label:'Marquee', val:DB.marquee.length, icon:'megaphone'},
     {label:'Member', val:totalMembers, icon:'users'},
     {label:'Ranking Slot', val:DB.ranking.length, icon:'trophy'},
+    {label:'Event', val:DB.event.length, icon:'calendar'},
   ];
   document.getElementById('stat-cards').innerHTML = cards.map(c=>`
     <div class="panel p-3">
@@ -1746,19 +1796,19 @@ function renderSurvey(){
     const expiresLabel = s.expiresAt ? new Date(s.expiresAt).toLocaleString('id-ID') : 'Tidak pernah kadaluarsa';
     const qCount = Array.isArray(s.questions) ? s.questions.length : 0;
     return `
-      <div class="panel p-4 survey-card">
+      <div class="panel p-4">
         <div class="flex items-start justify-between gap-2 mb-1">
-          <div class="survey-card-title">${esc(s.title)}</div>
+          <h2 style="font-family:'Outfit',sans-serif; font-weight:800; font-size:20px; line-height:1.25;">${esc(s.title)}</h2>
           ${statusHtml}
         </div>
         <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">${esc(s.description||'')}</div>
         <div style="font-size:11px; color:var(--text-sub); margin-bottom:12px;">${qCount} pertanyaan &middot; Kadaluarsa: ${expiresLabel}</div>
-        <div class="flex flex-wrap gap-1">
-          <button class="icon-btn-plain" title="Hasil" aria-label="Hasil" onclick="openSurveyResults('${s.id}')"><i data-lucide="bar-chart-2"></i></button>
-          <button class="icon-btn-plain" title="Salin Link" aria-label="Salin Link" onclick="copySurveyLink('${s.id}')"><i data-lucide="link"></i></button>
-          <button class="icon-btn-plain" title="Edit" aria-label="Edit" onclick="openSurveyForm('${s.id}')"><i data-lucide="pencil"></i></button>
-          <button class="icon-btn-plain" title="Salin Sebagai Template" aria-label="Salin Sebagai Template" onclick="cloneSurvey('${s.id}')"><i data-lucide="copy-plus"></i></button>
-          <button class="icon-btn-plain danger" title="Hapus" aria-label="Hapus" onclick="deleteSurvey('${s.id}')"><i data-lucide="trash-2"></i></button>
+        <div class="flex items-center gap-1" style="border-top:1px solid var(--border); padding-top:10px;">
+          <button class="icon-action-btn" title="Lihat Hasil" onclick="openSurveyResults('${s.id}')"><i data-lucide="bar-chart-2"></i></button>
+          <button class="icon-action-btn" title="Salin Link" onclick="copySurveyLink('${s.id}')"><i data-lucide="link"></i></button>
+          <button class="icon-action-btn" title="Edit" onclick="openSurveyForm('${s.id}')"><i data-lucide="pencil"></i></button>
+          <button class="icon-action-btn" title="Salin Sebagai Template" onclick="cloneSurvey('${s.id}')"><i data-lucide="copy-plus"></i></button>
+          <button class="icon-action-btn" title="Hapus" style="color:#EF4444; margin-left:auto;" onclick="deleteSurvey('${s.id}')"><i data-lucide="trash-2"></i></button>
         </div>
       </div>`;
   }).join('');
@@ -1786,8 +1836,9 @@ function surveyFormHtml(bodyOnly){
   const qHtml = surveyDraft.questions.map((q,idx)=>{
     const last = surveyDraft.questions.length-1;
     const isChoice = q.type==='single' || q.type==='multiple';
+    const imageMode = q.imageMode === 'upload' ? 'upload' : 'link';
     const optsHtml = isChoice ? `
-      <div class="flex flex-col gap-1" style="margin-top:14px;">
+      <div class="flex flex-col gap-1 mt-2">
         ${(q.options||[]).map((o,oidx)=>`
           <div class="flex items-center gap-2">
             <input class="form-input" style="flex:1;" value="${esc(o.label)}" placeholder="Opsi ${oidx+1}" oninput="updateSurveyOption(${idx},${oidx},this.value)">
@@ -1795,59 +1846,61 @@ function surveyFormHtml(bodyOnly){
           </div>`).join('')}
         <button type="button" class="btn btn-outline" style="font-size:11px; padding:4px 10px; align-self:flex-start; margin-top:2px;" onclick="addSurveyOption(${idx})">+ Tambah Opsi</button>
       </div>` : '';
-    const imgMode = q._imgMode || (q.image && q.image.startsWith('data:') ? 'file' : 'link');
+
+    const imageFieldHtml = `
+      <div class="mt-2">
+        <div class="toggle-row">
+          <div class="toggle-opt ${imageMode==='link'?'active':''}" onclick="setSurveyQuestionImageMode(${idx},'link')">Link Gambar</div>
+          <div class="toggle-opt ${imageMode==='upload'?'active':''}" onclick="setSurveyQuestionImageMode(${idx},'upload')">Upload File</div>
+        </div>
+        ${imageMode==='link'
+          ? `<input class="form-input mt-2" placeholder="https://..." value="${esc(q.image && !q.image.startsWith('data:') ? q.image : '')}" oninput="updateSurveyQuestion(${idx},'image',this.value)">`
+          : `<input class="mt-2" type="file" accept="image/*" onchange="handleSurveyQuestionFile(${idx}, this)">
+             <div style="font-size:10.5px; color:var(--text-sub); margin-top:4px;">Maks 1.5MB. Buat gambar lebih besar, pakai opsi Link.</div>`
+        }
+        ${q.image ? `
+          <div style="position:relative; display:inline-block; margin-top:8px;">
+            <img class="q-image-preview" src="${esc(q.image)}" alt="" onerror="this.style.display='none'">
+            <button type="button" onclick="updateSurveyQuestion(${idx},'image','')" style="position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.55); border:none; border-radius:999px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i data-lucide="x" style="width:13px;height:13px; color:#fff;"></i></button>
+          </div>` : ''}
+      </div>`;
+
     return `
-      <div class="panel-shadow p-3 mb-3">
+      <div class="panel p-3 mb-2" style="box-shadow: 0 3px 14px rgba(0,0,0,0.22);">
         <div class="flex justify-between items-center mb-2">
           <span style="font-size:11px;font-weight:700;color:var(--text-sub);">Pertanyaan ${idx+1}</span>
-          <div class="flex gap-2">
-            <button type="button" class="q-nav-btn" ${idx===0?'disabled':''} onclick="moveSurveyQuestion(${idx},-1)" aria-label="Naikkan"><i data-lucide="arrow-up"></i></button>
-            <button type="button" class="q-nav-btn" ${idx===last?'disabled':''} onclick="moveSurveyQuestion(${idx},1)" aria-label="Turunkan"><i data-lucide="arrow-down"></i></button>
-            <button type="button" class="q-nav-btn danger" onclick="removeSurveyQuestion(${idx})" aria-label="Hapus pertanyaan"><i data-lucide="trash-2"></i></button>
+          <div class="flex gap-1">
+            <button type="button" ${idx===0?'disabled':''} onclick="moveSurveyQuestion(${idx},-1)" style="background:none;border:none;cursor:pointer;color:var(--text-sub);"><i data-lucide="arrow-up" style="width:15px;height:15px;"></i></button>
+            <button type="button" ${idx===last?'disabled':''} onclick="moveSurveyQuestion(${idx},1)" style="background:none;border:none;cursor:pointer;color:var(--text-sub);"><i data-lucide="arrow-down" style="width:15px;height:15px;"></i></button>
+            <button type="button" onclick="removeSurveyQuestion(${idx})" style="background:none;border:none;cursor:pointer;color:#EF4444;"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
           </div>
         </div>
         <textarea class="form-textarea" rows="2" placeholder="Tulis pertanyaan..." oninput="updateSurveyQuestion(${idx},'text',this.value)">${esc(q.text)}</textarea>
-
-        <div style="margin-top:8px;">
-          <div class="flex gap-1" style="margin-bottom:6px;">
-            <button type="button" class="img-mode-btn ${imgMode==='link'?'active':''}" onclick="setSurveyImageMode(${idx},'link')">Link Gambar</button>
-            <button type="button" class="img-mode-btn ${imgMode==='file'?'active':''}" onclick="setSurveyImageMode(${idx},'file')">Upload File</button>
-          </div>
-          ${imgMode==='link'
-            ? `<input class="form-input" placeholder="Link gambar (opsional)" value="${esc(q.image||'')}" oninput="updateSurveyQuestion(${idx},'image',this.value)">`
-            : (q.image
-                ? `<div style="position:relative;">
-                     <img src="${esc(q.image)}" style="display:block;width:100%;max-height:260px;object-fit:contain;border-radius:8px;background:var(--bg);">
-                     <button type="button" class="img-remove-btn" onclick="removeSurveyImageFile(${idx})" aria-label="Hapus gambar"><i data-lucide="x"></i></button>
-                   </div>
-                   <span style="font-size:11px;color:var(--text-sub);display:block;margin-top:4px;">Gambar terpasang</span>`
-                : `<input type="file" accept="image/*" class="form-input" style="padding:7px 10px;" onchange="handleSurveyImageFile(${idx},this)">`)
-          }
-        </div>
-
-        <div class="flex items-center gap-2" style="margin-top:8px;">
+        ${imageFieldHtml}
+        <div class="flex items-center gap-2 mt-2">
           <select class="form-select" style="flex:1;" onchange="updateSurveyQuestionType(${idx},this.value)">
             ${Object.entries(SURVEY_TYPE_LABEL).map(([val,label])=>`<option value="${val}" ${q.type===val?'selected':''}>${label}</option>`).join('')}
           </select>
         </div>
         ${optsHtml}
-        <label class="toggle-compact" style="margin-top:12px;">
-          <input type="checkbox" ${q.required?'checked':''} onchange="updateSurveyQuestion(${idx},'required',this.checked)"> Wajib dijawab
+        <label class="checkbox-row mt-2">
+          <input type="checkbox" ${q.required?'checked':''} onchange="updateSurveyQuestion(${idx},'required',this.checked)">
+          <span>Wajib dijawab</span>
         </label>
       </div>`;
   }).join('');
 
   const html = `
-    <h2 class="survey-form-title mb-4">${surveyDraftIsNew?'Buat':'Edit'} Survey</h2>
+    <h3 class="text-sm font-bold mb-4">${surveyDraftIsNew?'Buat':'Edit'} Survey</h3>
     <div class="flex flex-col gap-3">
       <div><label>Judul Survey</label><textarea id="f-stitle" rows="1" oninput="updateSurveyMeta('title',this.value)">${esc(surveyDraft.title)}</textarea></div>
       <div><label>Deskripsi</label><textarea id="f-sdesc" rows="2" oninput="updateSurveyMeta('description',this.value)">${esc(surveyDraft.description)}</textarea></div>
       <div><label>Kadaluarsa (kosongkan jika tidak pernah kadaluarsa)</label>
         <input type="datetime-local" class="form-input" value="${surveyDraft.expiresAt ? toDatetimeLocal(surveyDraft.expiresAt) : ''}" oninput="updateSurveyMeta('expiresAt', this.value ? new Date(this.value).toISOString() : '')">
       </div>
-      <label class="toggle-compact">
+      <label class="checkbox-row">
         <input type="checkbox" ${surveyDraft.showResultsAfterSubmit?'checked':''} onchange="updateSurveyMeta('showResultsAfterSubmit', this.checked)">
-        Tampilkan hasil poling ke user setelah mereka submit
+        <span>Tampilkan hasil poling ke user setelah mereka submit</span>
       </label>
     </div>
     <div class="mt-4 mb-2" style="font-size:12px; font-weight:700; color:var(--text-sub);">Pertanyaan (${surveyDraft.questions.length})</div>
@@ -1859,13 +1912,30 @@ function surveyFormHtml(bodyOnly){
     </div>`;
   return html;
 }
+function setSurveyQuestionImageMode(idx, mode){
+  surveyDraft.questions[idx].imageMode = mode;
+  refreshSurveyModal();
+}
+function handleSurveyQuestionFile(idx, inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ toast('File harus berupa gambar.'); return; }
+  if(file.size > 1.5*1024*1024){ toast('Ukuran gambar maksimal 1.5MB. Pakai opsi Link buat gambar yang lebih besar.'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    surveyDraft.questions[idx].image = reader.result;
+    refreshSurveyModal();
+  };
+  reader.onerror = () => toast('Gagal membaca file gambar.');
+  reader.readAsDataURL(file);
+}
 function toDatetimeLocal(iso){
   const d = new Date(iso);
   const pad = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 function updateSurveyMeta(field, value){ surveyDraft[field] = value; }
-function updateSurveyQuestion(idx, field, value){ surveyDraft.questions[idx][field] = value; }
+function updateSurveyQuestion(idx, field, value){ surveyDraft.questions[idx][field] = value; if(field==='image') refreshSurveyModal(); }
 function updateSurveyQuestionType(idx, type){
   const q = surveyDraft.questions[idx];
   q.type = type;
@@ -1873,7 +1943,7 @@ function updateSurveyQuestionType(idx, type){
   refreshSurveyModal();
 }
 function addSurveyQuestion(){
-  surveyDraft.questions.push({ id: genId('q'), text:'', image:'', type:'single', required:false, options:[{id:genId('opt'),label:''},{id:genId('opt'),label:''}] });
+  surveyDraft.questions.push({ id: genId('q'), text:'', image:'', imageMode:'link', type:'single', required:false, options:[{id:genId('opt'),label:''},{id:genId('opt'),label:''}] });
   refreshSurveyModal();
 }
 function removeSurveyQuestion(idx){ surveyDraft.questions.splice(idx,1); refreshSurveyModal(); }
@@ -1882,28 +1952,6 @@ function moveSurveyQuestion(idx, dir){
   if(target<0 || target>=surveyDraft.questions.length) return;
   const arr = surveyDraft.questions;
   [arr[idx], arr[target]] = [arr[target], arr[idx]];
-  refreshSurveyModal();
-}
-function setSurveyImageMode(idx, mode){
-  // Cuma dipakai buat nentuin tampilan input (link vs upload) di modal; gak nyimpen state terpisah,
-  // cukup kosongin gambar lama biar gak ketuker mode saat pindah.
-  surveyDraft.questions[idx].image = '';
-  surveyDraft.questions[idx]._imgMode = mode;
-  refreshSurveyModal();
-}
-function handleSurveyImageFile(idx, input){
-  const file = input.files && input.files[0];
-  if(!file) return;
-  if(file.size > 2*1024*1024){ toast('Ukuran gambar maksimal 2MB'); input.value=''; return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    surveyDraft.questions[idx].image = reader.result;
-    refreshSurveyModal();
-  };
-  reader.readAsDataURL(file);
-}
-function removeSurveyImageFile(idx){
-  surveyDraft.questions[idx].image = '';
   refreshSurveyModal();
 }
 function addSurveyOption(idx){ surveyDraft.questions[idx].options.push({id:genId('opt'), label:''}); refreshSurveyModal(); }
@@ -1922,7 +1970,6 @@ async function saveSurveyDraft(){
       q.options = valid;
     }
   }
-  d.questions.forEach(q => delete q._imgMode);
   const prev = DB.surveys.slice();
   const idx = DB.surveys.findIndex(s=>s.id===d.id);
   if(idx>=0) DB.surveys[idx] = d; else DB.surveys.push(d);

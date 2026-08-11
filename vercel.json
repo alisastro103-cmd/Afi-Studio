@@ -2,8 +2,15 @@
   "functions": {
     "api/data/[type].js": {
       "includeFiles": "{Models/models.json,videos.json,banner.json,marquee.json,member-Afi-Studio/member.json,ranking/ranking.json,categories.json,app-categories.json,settings.json,surveys.json}"
+    },
+    "api/survey-page.js": {
+      "includeFiles": "survey/template.html"
     }
   },
+  "rewrites": [
+    { "source": "/survey", "destination": "/api/survey-page" },
+    { "source": "/survey/", "destination": "/api/survey-page" }
+  ],
   "headers": [
     {
       "source": "/fonts/(.*)",
