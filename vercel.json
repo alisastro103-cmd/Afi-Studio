@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/data/[type].js": {
-      "includeFiles": "{Models/models.json,videos.json,banner.json,marquee.json,member-Afi-Studio/member.json,ranking/ranking.json,categories.json,app-categories.json,settings.json}"
+      "includeFiles": "{Models/models.json,videos.json,banner.json,marquee.json,member-Afi-Studio/member.json,ranking/ranking.json,categories.json,app-categories.json,settings.json,surveys.json}"
     }
   },
   "headers": [

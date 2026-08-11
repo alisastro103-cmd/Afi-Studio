@@ -257,6 +257,7 @@
     <div class="side-item" data-view="event"><i data-lucide="calendar"></i>Event</div>
     <div class="side-item" data-view="feedback"><i data-lucide="message-square"></i>Feedback</div>
     <div class="side-item" data-view="pendingmodels"><i data-lucide="inbox"></i>Pendaftaran<span id="pending-badge" style="display:none; margin-left:auto; background:#EF4444; color:#fff; font-size:10px; font-weight:800; padding:1px 6px; border-radius:999px;"></span></div>
+    <div class="side-item" data-view="survey"><i data-lucide="clipboard-list"></i>Survey</div>
     <div class="side-item" data-view="pengaturan"><i data-lucide="settings"></i>Pengaturan</div>
     <div class="mt-auto pt-3" style="border-top:1px solid var(--border);">
       <div class="side-item" id="theme-toggle-btn"><i data-lucide="moon-star"></i>Ganti Tema</div>
@@ -422,6 +423,20 @@
         <div id="pendingmodels-empty" style="display:none; text-align:center; color:var(--text-sub); font-size:13px; padding:32px 0;">Belum ada pendaftaran masuk.</div>
       </section>
 
+      <!-- SURVEY -->
+      <section class="section-view" id="view-survey">
+        <div class="panel p-4 mb-3">
+          <h3 class="text-sm font-bold mb-1">Survey / Polling</h3>
+          <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6;">
+            Buat survey dengan pertanyaan bebas, bagikan link-nya ke siapa aja yang kamu mau (belum ada tautan
+            ke halaman ini dari navbar situs — link cuma bisa ditemukan lewat tombol "Salin Link" di bawah).
+            Survey otomatis hilang dari publik setelah tanggal kadaluarsa lewat, tapi hasilnya tetap bisa dilihat di sini.
+          </p>
+        </div>
+        <div id="survey-list" class="flex flex-col gap-3"></div>
+        <div id="survey-empty" style="display:none; text-align:center; color:var(--text-sub); font-size:13px; padding:32px 0;">Belum ada survey. Tekan tombol + untuk buat survey baru.</div>
+      </section>
+
       <!-- PENGATURAN -->
       <section class="section-view" id="view-pengaturan">
         <div class="panel p-4 mb-3">
@@ -501,8 +516,8 @@
 <script>
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
-let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [] };
-const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories','appcategories','pendingmodels'];
+let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [], surveys: [] };
+const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories','appcategories','pendingmodels','surveys'];
 
 /* ================= LOGIN & TOKEN ================= */
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
@@ -563,7 +578,7 @@ async function bootAdminApp(){
   toast('Memuat data...');
   await loadAllData();
   renderDashboard(); renderModels(); renderKategori(); renderKategoriApp(); renderVideos(); renderBanner();
-  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderEvent(); renderPengaturan(); renderPendingModels();
+  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderEvent(); renderPengaturan(); renderPendingModels(); renderSurvey();
   lucide.createIcons();
 }
 
@@ -610,7 +625,7 @@ document.querySelectorAll('.side-item[data-view]').forEach(el=>{
   });
 });
 /* --- Tombol tambah (+) mengambang, mengikuti halaman yang sedang aktif --- */
-const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm };
+const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm, survey: () => openSurveyForm(null) };
 const globalFab = document.getElementById('global-fab');
 const globalFabBtn = document.getElementById('global-fab-btn');
 const globalFabDropdown = document.getElementById('global-fab-dropdown');
@@ -1748,6 +1763,247 @@ async function deletePendingModel(id){
   const ok = await persist('pendingmodels');
   if(ok){ toast('Notifikasi dihapus dari panel.'); renderPendingModels(); }
   else { DB.pendingmodels = prev; renderPendingModels(); }
+}
+
+/* ================= SURVEY ================= */
+const SURVEY_TYPE_LABEL = { single: 'Opsi (pilih satu)', multiple: 'Kolom centang (pilih banyak)', short_text: 'Teks pendek', long_text: 'Teks panjang' };
+function genId(prefix){ return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function renderSurvey(){
+  const list = document.getElementById('survey-list');
+  const empty = document.getElementById('survey-empty');
+  const items = Array.isArray(DB.surveys) ? DB.surveys : [];
+  if(!items.length){ list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  list.innerHTML = items.map(s=>{
+    const now = Date.now();
+    const expired = s.expiresAt && new Date(s.expiresAt).getTime() <= now;
+    const statusHtml = expired
+      ? `<span style="font-size:11px; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, #EF4444 18%, transparent); color:#EF4444; font-weight:700;">Kadaluarsa</span>`
+      : `<span style="font-size:11px; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, #22C55E 18%, transparent); color:#16A34A; font-weight:700;">Aktif</span>`;
+    const expiresLabel = s.expiresAt ? new Date(s.expiresAt).toLocaleString('id-ID') : 'Tidak pernah kadaluarsa';
+    const qCount = Array.isArray(s.questions) ? s.questions.length : 0;
+    return `
+      <div class="panel p-4">
+        <div class="flex items-start justify-between gap-2 mb-1">
+          <div class="text-sm font-bold">${esc(s.title)}</div>
+          ${statusHtml}
+        </div>
+        <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">${esc(s.description||'')}</div>
+        <div style="font-size:11px; color:var(--text-sub); margin-bottom:12px;">${qCount} pertanyaan &middot; Kadaluarsa: ${expiresLabel}</div>
+        <div class="flex flex-wrap gap-2">
+          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px;" onclick="openSurveyResults('${s.id}')"><i data-lucide="bar-chart-2" style="width:14px;height:14px;"></i> Hasil</button>
+          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px;" onclick="copySurveyLink('${s.id}')"><i data-lucide="link" style="width:14px;height:14px;"></i> Salin Link</button>
+          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px;" onclick="openSurveyForm('${s.id}')"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit</button>
+          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px;" onclick="cloneSurvey('${s.id}')"><i data-lucide="copy-plus" style="width:14px;height:14px;"></i> Salin Sebagai Template</button>
+          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px; color:#EF4444;" onclick="deleteSurvey('${s.id}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Hapus</button>
+        </div>
+      </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+/* --- Builder (modal) --- */
+let surveyDraft = null;
+let surveyDraftIsNew = false;
+
+function openSurveyForm(id){
+  const existing = id ? DB.surveys.find(s=>s.id===id) : null;
+  surveyDraftIsNew = !existing;
+  surveyDraft = existing
+    ? JSON.parse(JSON.stringify(existing))
+    : { id: genId('survey'), title:'', description:'', expiresAt:'', showResultsAfterSubmit:false, questions:[] };
+  openModal(surveyFormHtml());
+}
+function refreshSurveyModal(){
+  const box = document.querySelector('#active-modal .modal-box');
+  if(box) box.innerHTML = surveyFormHtml(true);
+  lucide.createIcons();
+}
+function surveyFormHtml(bodyOnly){
+  const qHtml = surveyDraft.questions.map((q,idx)=>{
+    const last = surveyDraft.questions.length-1;
+    const isChoice = q.type==='single' || q.type==='multiple';
+    const optsHtml = isChoice ? `
+      <div class="flex flex-col gap-1 mt-2">
+        ${(q.options||[]).map((o,oidx)=>`
+          <div class="flex items-center gap-2">
+            <input class="form-input" style="flex:1;" value="${esc(o.label)}" placeholder="Opsi ${oidx+1}" oninput="updateSurveyOption(${idx},${oidx},this.value)">
+            <button type="button" onclick="removeSurveyOption(${idx},${oidx})" style="background:none;border:none;cursor:pointer;color:var(--text-sub);"><i data-lucide="x" style="width:15px;height:15px;"></i></button>
+          </div>`).join('')}
+        <button type="button" class="btn btn-outline" style="font-size:11px; padding:4px 10px; align-self:flex-start; margin-top:2px;" onclick="addSurveyOption(${idx})">+ Tambah Opsi</button>
+      </div>` : '';
+    return `
+      <div class="panel p-3 mb-2" style="border:1px solid var(--border);">
+        <div class="flex justify-between items-center mb-2">
+          <span style="font-size:11px;font-weight:700;color:var(--text-sub);">Pertanyaan ${idx+1}</span>
+          <div class="flex gap-1">
+            <button type="button" ${idx===0?'disabled':''} onclick="moveSurveyQuestion(${idx},-1)" style="background:none;border:none;cursor:pointer;color:var(--text-sub);"><i data-lucide="arrow-up" style="width:15px;height:15px;"></i></button>
+            <button type="button" ${idx===last?'disabled':''} onclick="moveSurveyQuestion(${idx},1)" style="background:none;border:none;cursor:pointer;color:var(--text-sub);"><i data-lucide="arrow-down" style="width:15px;height:15px;"></i></button>
+            <button type="button" onclick="removeSurveyQuestion(${idx})" style="background:none;border:none;cursor:pointer;color:#EF4444;"><i data-lucide="trash-2" style="width:15px;height:15px;"></i></button>
+          </div>
+        </div>
+        <textarea class="form-textarea" rows="2" placeholder="Tulis pertanyaan..." oninput="updateSurveyQuestion(${idx},'text',this.value)">${esc(q.text)}</textarea>
+        <input class="form-input mt-2" placeholder="Link gambar (opsional)" value="${esc(q.image||'')}" oninput="updateSurveyQuestion(${idx},'image',this.value)">
+        <div class="flex items-center gap-2 mt-2">
+          <select class="form-select" style="flex:1;" onchange="updateSurveyQuestionType(${idx},this.value)">
+            ${Object.entries(SURVEY_TYPE_LABEL).map(([val,label])=>`<option value="${val}" ${q.type===val?'selected':''}>${label}</option>`).join('')}
+          </select>
+        </div>
+        <label class="flex items-center gap-2 mt-2" style="font-size:12px; cursor:pointer;">
+          <input type="checkbox" ${q.required?'checked':''} onchange="updateSurveyQuestion(${idx},'required',this.checked)"> Wajib dijawab
+        </label>
+        ${optsHtml}
+      </div>`;
+  }).join('');
+
+  const html = `
+    <h3 class="text-sm font-bold mb-4">${surveyDraftIsNew?'Buat':'Edit'} Survey</h3>
+    <div class="flex flex-col gap-3">
+      <div><label>Judul Survey</label><textarea id="f-stitle" rows="1" oninput="updateSurveyMeta('title',this.value)">${esc(surveyDraft.title)}</textarea></div>
+      <div><label>Deskripsi</label><textarea id="f-sdesc" rows="2" oninput="updateSurveyMeta('description',this.value)">${esc(surveyDraft.description)}</textarea></div>
+      <div><label>Kadaluarsa (kosongkan jika tidak pernah kadaluarsa)</label>
+        <input type="datetime-local" class="form-input" value="${surveyDraft.expiresAt ? toDatetimeLocal(surveyDraft.expiresAt) : ''}" oninput="updateSurveyMeta('expiresAt', this.value ? new Date(this.value).toISOString() : '')">
+      </div>
+      <label class="flex items-center gap-2" style="font-size:12px; cursor:pointer;">
+        <input type="checkbox" ${surveyDraft.showResultsAfterSubmit?'checked':''} onchange="updateSurveyMeta('showResultsAfterSubmit', this.checked)">
+        Tampilkan hasil poling ke user setelah mereka submit
+      </label>
+    </div>
+    <div class="mt-4 mb-2" style="font-size:12px; font-weight:700; color:var(--text-sub);">Pertanyaan (${surveyDraft.questions.length})</div>
+    <div>${qHtml}</div>
+    <button type="button" class="btn btn-outline" style="font-size:12px; margin-top:4px;" onclick="addSurveyQuestion()">+ Tambah Pertanyaan</button>
+    <div class="flex justify-end gap-2 mt-5">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-accent" onclick="saveSurveyDraft()">Simpan</button>
+    </div>`;
+  return html;
+}
+function toDatetimeLocal(iso){
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function updateSurveyMeta(field, value){ surveyDraft[field] = value; }
+function updateSurveyQuestion(idx, field, value){ surveyDraft.questions[idx][field] = value; }
+function updateSurveyQuestionType(idx, type){
+  const q = surveyDraft.questions[idx];
+  q.type = type;
+  if((type==='single'||type==='multiple') && !q.options) q.options = [{id:genId('opt'), label:''},{id:genId('opt'), label:''}];
+  refreshSurveyModal();
+}
+function addSurveyQuestion(){
+  surveyDraft.questions.push({ id: genId('q'), text:'', image:'', type:'single', required:false, options:[{id:genId('opt'),label:''},{id:genId('opt'),label:''}] });
+  refreshSurveyModal();
+}
+function removeSurveyQuestion(idx){ surveyDraft.questions.splice(idx,1); refreshSurveyModal(); }
+function moveSurveyQuestion(idx, dir){
+  const target = idx+dir;
+  if(target<0 || target>=surveyDraft.questions.length) return;
+  const arr = surveyDraft.questions;
+  [arr[idx], arr[target]] = [arr[target], arr[idx]];
+  refreshSurveyModal();
+}
+function addSurveyOption(idx){ surveyDraft.questions[idx].options.push({id:genId('opt'), label:''}); refreshSurveyModal(); }
+function removeSurveyOption(idx, oidx){ surveyDraft.questions[idx].options.splice(oidx,1); refreshSurveyModal(); }
+function updateSurveyOption(idx, oidx, value){ surveyDraft.questions[idx].options[oidx].label = value; }
+
+async function saveSurveyDraft(){
+  const d = surveyDraft;
+  if(!d.title || !d.title.trim()){ toast('Judul survey wajib diisi'); return; }
+  if(!d.questions.length){ toast('Tambahkan minimal 1 pertanyaan'); return; }
+  for(const q of d.questions){
+    if(!q.text || !q.text.trim()){ toast('Semua pertanyaan wajib punya teks'); return; }
+    if((q.type==='single'||q.type==='multiple')){
+      const valid = (q.options||[]).filter(o=>o.label && o.label.trim());
+      if(valid.length < 2){ toast(`Pertanyaan "${q.text}" butuh minimal 2 opsi terisi`); return; }
+      q.options = valid;
+    }
+  }
+  const prev = DB.surveys.slice();
+  const idx = DB.surveys.findIndex(s=>s.id===d.id);
+  if(idx>=0) DB.surveys[idx] = d; else DB.surveys.push(d);
+  closeModal(); renderSurvey();
+  const ok = await persist('surveys');
+  if(ok) toast('Survey tersimpan'); else { DB.surveys = prev; renderSurvey(); }
+}
+
+async function deleteSurvey(id){
+  if(!confirm('Hapus survey ini? Semua hasil jawaban yang sudah masuk tetap ada di database tapi gak akan bisa dilihat lagi lewat panel.')) return;
+  const prev = DB.surveys.slice();
+  DB.surveys = DB.surveys.filter(s=>s.id!==id);
+  const ok = await persist('surveys');
+  if(ok){ toast('Survey dihapus'); renderSurvey(); }
+  else { DB.surveys = prev; renderSurvey(); }
+}
+
+function cloneSurvey(id){
+  const src = DB.surveys.find(s=>s.id===id);
+  if(!src) return;
+  const clone = JSON.parse(JSON.stringify(src));
+  clone.id = genId('survey');
+  clone.title = clone.title + ' (Salinan)';
+  clone.expiresAt = '';
+  clone.questions.forEach(q=>{
+    q.id = genId('q');
+    if(q.options) q.options.forEach(o=> o.id = genId('opt'));
+  });
+  surveyDraftIsNew = true;
+  surveyDraft = clone;
+  openModal(surveyFormHtml());
+}
+
+function copySurveyLink(id){
+  const url = `${location.origin}/survey/?id=${id}`;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=> toast('Link disalin ke clipboard')).catch(()=> prompt('Salin link ini:', url));
+  } else {
+    prompt('Salin link ini:', url);
+  }
+}
+
+/* --- Hasil poling --- */
+async function openSurveyResults(id){
+  openModal(`<h3 class="text-sm font-bold mb-3">Hasil Survey</h3><div style="font-size:13px; color:var(--text-sub);">Memuat hasil...</div>`);
+  try{
+    const res = await fetch(`/api/survey-results?id=${encodeURIComponent(id)}`, { headers:{ 'x-admin-token': getToken() } });
+    const data = await res.json();
+    if(!res.ok){ toast(data.error || 'Gagal memuat hasil'); closeModal(); return; }
+    renderSurveyResultsModal(data);
+  }catch(e){
+    toast('Gagal memuat hasil: koneksi bermasalah'); closeModal();
+  }
+}
+function renderSurveyResultsModal(data){
+  const box = document.querySelector('#active-modal .modal-box');
+  if(!box) return;
+  let body = `<h3 class="text-sm font-bold mb-1">${esc(data.title)}</h3>
+    <div style="font-size:12px; color:var(--text-sub); margin-bottom:14px;">Total jawaban masuk: ${data.totalResponses}</div>`;
+
+  if(!data.totalResponses){
+    body += `<div style="font-size:13px; color:var(--text-sub); padding:20px 0; text-align:center;">Belum ada yang isi survey ini.</div>`;
+  } else {
+    body += data.questions.map(q=>{
+      if(q.type==='single' || q.type==='multiple'){
+        const rows = (q.options||[]).map(o=>{
+          const count = (q.counts && q.counts[o.id]) || 0;
+          const pct = data.totalResponses ? Math.round((count/data.totalResponses)*100) : 0;
+          return `<div style="font-size:12px; display:flex; justify-content:space-between; margin-bottom:4px;"><span>${esc(o.label)}</span><span>${pct}% (${count})</span></div>
+            <div style="height:7px;border-radius:999px;background:var(--bg);border:1px solid var(--border);overflow:hidden;margin-bottom:8px;"><div style="height:100%;background:var(--accent-hover);width:${pct}%;"></div></div>`;
+        }).join('');
+        return `<div class="panel p-3 mb-2"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${esc(q.text)}</div>${rows}</div>`;
+      }
+      const texts = (q.texts||[]);
+      const listHtml = texts.length
+        ? texts.map(t=>`<div style="font-size:12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-bottom:6px;">${esc(t.value)}</div>`).join('')
+        : `<div style="font-size:12px; color:var(--text-sub);">Belum ada jawaban teks.</div>`;
+      return `<div class="panel p-3 mb-2"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${esc(q.text)} <span style="font-weight:400; color:var(--text-sub);">(${texts.length} jawaban)</span></div>${listHtml}</div>`;
+    }).join('');
+  }
+  body += `<div class="flex justify-end mt-4"><button class="btn btn-outline" onclick="closeModal()">Tutup</button></div>`;
+  box.innerHTML = body;
+  lucide.createIcons();
 }
 
 /* ================= INIT ================= */

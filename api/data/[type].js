@@ -25,6 +25,7 @@ const TYPES = {
   appcategories: { redisKey: 'afi-studio:data:appcategories', file: 'app-categories.json', cache: 'public, max-age=0, must-revalidate' },
   settings:   { redisKey: 'afi-studio:data:settings',   file: 'settings.json' },
   pendingmodels: { redisKey: 'afi-studio:data:pendingmodels', file: 'pendingmodels.json' },
+  surveys: { redisKey: 'afi-studio:data:surveys', file: 'surveys.json', cache: 'public, max-age=0, must-revalidate' },
 };
 
 const DEFAULT_CACHE = 'public, max-age=30, stale-while-revalidate=120';
