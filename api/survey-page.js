@@ -40,7 +40,7 @@ export default async function handler(req, res) {
         description = survey.description && survey.description.trim() ? survey.description : DEFAULT_DESC;
         ogUrl = `${SITE_URL}/survey/?id=${encodeURIComponent(id)}`;
       } else {
-        title = 'Survey Tidak Ditemukan - Afi Studio';
+        title = 'Link Survey Tidak Valid - Afi Studio';
       }
     } catch (e) {
       console.error('Gagal ambil data survey buat meta tag:', e.message);
