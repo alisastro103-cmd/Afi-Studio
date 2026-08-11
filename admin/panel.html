@@ -64,9 +64,26 @@
   .btn-accent:hover { background: var(--accent-hover); }
   .btn-outline { background: var(--bg); color: var(--text); }
   .btn-outline:hover { background: var(--border); }
-  .icon-btn-plain { display:flex; align-items:center; justify-content:center; width:38px; height:38px; background:none; border:none; color:var(--text-sub); cursor:pointer; padding:0; flex-shrink:0; }
-  .icon-btn-plain:hover { color:var(--accent); }
+  .icon-btn-plain { display:flex; align-items:center; justify-content:center; width:38px; height:38px; background:none; border:none; color:var(--text-sub); cursor:pointer; padding:0; flex-shrink:0; border-radius:8px; transition: background .15s, color .15s; }
+  .icon-btn-plain:hover { color:var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .icon-btn-plain.danger { color: color-mix(in srgb, #EF4444 75%, var(--text-sub)); }
+  .icon-btn-plain.danger:hover { color:#EF4444; background: color-mix(in srgb, #EF4444 12%, transparent); }
   .icon-btn-plain svg { width:21px; height:21px; }
+
+  /* --- Soft-shadow (dipakai buat board yang butuh pemisahan visual TANPA outline) --- */
+  :root { --shadow-soft: 0 2px 10px rgba(30,41,59,.10), 0 1px 2px rgba(30,41,59,.08); }
+  .dark { --shadow-soft: 0 3px 12px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.3); }
+  .panel-shadow { background: var(--surface); border-radius:10px; border:none; box-shadow: var(--shadow-soft); }
+
+  /* --- Kartu Survey --- */
+  .survey-card-title { font-family:'Outfit', sans-serif; font-size:19px; font-weight:800; line-height:1.25; color:var(--text); }
+  .survey-form-title { font-family:'Outfit', sans-serif; font-size:22px; font-weight:800; color:var(--text); }
+  .img-mode-btn { font-size:11px; font-weight:700; padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:var(--bg); color:var(--text-sub); cursor:pointer; transition: all .15s; }
+  .img-mode-btn.active { background: var(--accent); border-color: var(--accent); color:#fff; }
+
+  /* --- Toggle ringkas (checkbox + label kecil, rata kiri) --- */
+  .toggle-compact { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600; color:var(--text-sub); text-transform:none; letter-spacing:normal; cursor:pointer; width:fit-content; }
+  .toggle-compact input[type="checkbox"] { width:15px; height:15px; flex-shrink:0; accent-color:var(--accent); }
 
   /* --- Tombol tambah bulat (+) dipakai di semua halaman --- */
   .btn-add-circle { width:38px; height:38px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:var(--accent); color:#fff; border:none; cursor:pointer; flex-shrink:0; transition: background .15s; }
@@ -1785,19 +1802,19 @@ function renderSurvey(){
     const expiresLabel = s.expiresAt ? new Date(s.expiresAt).toLocaleString('id-ID') : 'Tidak pernah kadaluarsa';
     const qCount = Array.isArray(s.questions) ? s.questions.length : 0;
     return `
-      <div class="panel p-4">
+      <div class="panel p-4 survey-card">
         <div class="flex items-start justify-between gap-2 mb-1">
-          <div class="text-sm font-bold">${esc(s.title)}</div>
+          <div class="survey-card-title">${esc(s.title)}</div>
           ${statusHtml}
         </div>
         <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">${esc(s.description||'')}</div>
         <div style="font-size:11px; color:var(--text-sub); margin-bottom:12px;">${qCount} pertanyaan &middot; Kadaluarsa: ${expiresLabel}</div>
-        <div class="flex flex-wrap gap-2">
-          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px;" onclick="openSurveyResults('${s.id}')"><i data-lucide="bar-chart-2" style="width:14px;height:14px;"></i> Hasil</button>
-          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px;" onclick="copySurveyLink('${s.id}')"><i data-lucide="link" style="width:14px;height:14px;"></i> Salin Link</button>
-          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px;" onclick="openSurveyForm('${s.id}')"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit</button>
-          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px;" onclick="cloneSurvey('${s.id}')"><i data-lucide="copy-plus" style="width:14px;height:14px;"></i> Salin Sebagai Template</button>
-          <button class="btn btn-outline" style="font-size:12px; padding:6px 10px; color:#EF4444;" onclick="deleteSurvey('${s.id}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i> Hapus</button>
+        <div class="flex flex-wrap gap-1">
+          <button class="icon-btn-plain" title="Hasil" aria-label="Hasil" onclick="openSurveyResults('${s.id}')"><i data-lucide="bar-chart-2"></i></button>
+          <button class="icon-btn-plain" title="Salin Link" aria-label="Salin Link" onclick="copySurveyLink('${s.id}')"><i data-lucide="link"></i></button>
+          <button class="icon-btn-plain" title="Edit" aria-label="Edit" onclick="openSurveyForm('${s.id}')"><i data-lucide="pencil"></i></button>
+          <button class="icon-btn-plain" title="Salin Sebagai Template" aria-label="Salin Sebagai Template" onclick="cloneSurvey('${s.id}')"><i data-lucide="copy-plus"></i></button>
+          <button class="icon-btn-plain danger" title="Hapus" aria-label="Hapus" onclick="deleteSurvey('${s.id}')"><i data-lucide="trash-2"></i></button>
         </div>
       </div>`;
   }).join('');
@@ -1834,8 +1851,9 @@ function surveyFormHtml(bodyOnly){
           </div>`).join('')}
         <button type="button" class="btn btn-outline" style="font-size:11px; padding:4px 10px; align-self:flex-start; margin-top:2px;" onclick="addSurveyOption(${idx})">+ Tambah Opsi</button>
       </div>` : '';
+    const imgMode = q._imgMode || (q.image && q.image.startsWith('data:') ? 'file' : 'link');
     return `
-      <div class="panel p-3 mb-2" style="border:1px solid var(--border);">
+      <div class="panel-shadow p-3 mb-3">
         <div class="flex justify-between items-center mb-2">
           <span style="font-size:11px;font-weight:700;color:var(--text-sub);">Pertanyaan ${idx+1}</span>
           <div class="flex gap-1">
@@ -1845,28 +1863,40 @@ function surveyFormHtml(bodyOnly){
           </div>
         </div>
         <textarea class="form-textarea" rows="2" placeholder="Tulis pertanyaan..." oninput="updateSurveyQuestion(${idx},'text',this.value)">${esc(q.text)}</textarea>
-        <input class="form-input mt-2" placeholder="Link gambar (opsional)" value="${esc(q.image||'')}" oninput="updateSurveyQuestion(${idx},'image',this.value)">
-        <div class="flex items-center gap-2 mt-2">
+
+        <div style="margin-top:8px;">
+          <div class="flex gap-1" style="margin-bottom:6px;">
+            <button type="button" class="img-mode-btn ${imgMode==='link'?'active':''}" onclick="setSurveyImageMode(${idx},'link')">Link Gambar</button>
+            <button type="button" class="img-mode-btn ${imgMode==='file'?'active':''}" onclick="setSurveyImageMode(${idx},'file')">Upload File</button>
+          </div>
+          ${imgMode==='link'
+            ? `<input class="form-input" placeholder="Link gambar (opsional)" value="${esc(q.image||'')}" oninput="updateSurveyQuestion(${idx},'image',this.value)">`
+            : `<input type="file" accept="image/*" class="form-input" style="padding:7px 10px;" onchange="handleSurveyImageFile(${idx},this)">
+               ${q.image ? `<div class="flex items-center gap-2" style="margin-top:6px;"><img src="${esc(q.image)}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;"><span style="font-size:11px;color:var(--text-sub);">Gambar terpasang</span></div>` : ''}`
+          }
+        </div>
+
+        <div class="flex items-center gap-2" style="margin-top:8px;">
           <select class="form-select" style="flex:1;" onchange="updateSurveyQuestionType(${idx},this.value)">
             ${Object.entries(SURVEY_TYPE_LABEL).map(([val,label])=>`<option value="${val}" ${q.type===val?'selected':''}>${label}</option>`).join('')}
           </select>
         </div>
-        <label class="flex items-center gap-2 mt-2" style="font-size:12px; cursor:pointer;">
+        ${optsHtml}
+        <label class="toggle-compact" style="margin-top:12px;">
           <input type="checkbox" ${q.required?'checked':''} onchange="updateSurveyQuestion(${idx},'required',this.checked)"> Wajib dijawab
         </label>
-        ${optsHtml}
       </div>`;
   }).join('');
 
   const html = `
-    <h3 class="text-sm font-bold mb-4">${surveyDraftIsNew?'Buat':'Edit'} Survey</h3>
+    <h2 class="survey-form-title mb-4">${surveyDraftIsNew?'Buat':'Edit'} Survey</h2>
     <div class="flex flex-col gap-3">
       <div><label>Judul Survey</label><textarea id="f-stitle" rows="1" oninput="updateSurveyMeta('title',this.value)">${esc(surveyDraft.title)}</textarea></div>
       <div><label>Deskripsi</label><textarea id="f-sdesc" rows="2" oninput="updateSurveyMeta('description',this.value)">${esc(surveyDraft.description)}</textarea></div>
       <div><label>Kadaluarsa (kosongkan jika tidak pernah kadaluarsa)</label>
         <input type="datetime-local" class="form-input" value="${surveyDraft.expiresAt ? toDatetimeLocal(surveyDraft.expiresAt) : ''}" oninput="updateSurveyMeta('expiresAt', this.value ? new Date(this.value).toISOString() : '')">
       </div>
-      <label class="flex items-center gap-2" style="font-size:12px; cursor:pointer;">
+      <label class="toggle-compact">
         <input type="checkbox" ${surveyDraft.showResultsAfterSubmit?'checked':''} onchange="updateSurveyMeta('showResultsAfterSubmit', this.checked)">
         Tampilkan hasil poling ke user setelah mereka submit
       </label>
@@ -1905,6 +1935,24 @@ function moveSurveyQuestion(idx, dir){
   [arr[idx], arr[target]] = [arr[target], arr[idx]];
   refreshSurveyModal();
 }
+function setSurveyImageMode(idx, mode){
+  // Cuma dipakai buat nentuin tampilan input (link vs upload) di modal; gak nyimpen state terpisah,
+  // cukup kosongin gambar lama biar gak ketuker mode saat pindah.
+  surveyDraft.questions[idx].image = '';
+  surveyDraft.questions[idx]._imgMode = mode;
+  refreshSurveyModal();
+}
+function handleSurveyImageFile(idx, input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  if(file.size > 2*1024*1024){ toast('Ukuran gambar maksimal 2MB'); input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    surveyDraft.questions[idx].image = reader.result;
+    refreshSurveyModal();
+  };
+  reader.readAsDataURL(file);
+}
 function addSurveyOption(idx){ surveyDraft.questions[idx].options.push({id:genId('opt'), label:''}); refreshSurveyModal(); }
 function removeSurveyOption(idx, oidx){ surveyDraft.questions[idx].options.splice(oidx,1); refreshSurveyModal(); }
 function updateSurveyOption(idx, oidx, value){ surveyDraft.questions[idx].options[oidx].label = value; }
@@ -1921,6 +1969,7 @@ async function saveSurveyDraft(){
       q.options = valid;
     }
   }
+  d.questions.forEach(q => delete q._imgMode);
   const prev = DB.surveys.slice();
   const idx = DB.surveys.findIndex(s=>s.id===d.id);
   if(idx>=0) DB.surveys[idx] = d; else DB.surveys.push(d);
