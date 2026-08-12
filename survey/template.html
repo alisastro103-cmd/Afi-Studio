@@ -18,11 +18,11 @@
   <meta property="og:title" content="%%OG_TITLE%%">
   <meta property="og:site_name" content="Afi Studio">
   <meta property="og:description" content="%%OG_DESC%%">
-  <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+  <meta property="og:image" content="%%OG_IMAGE%%">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="%%OG_TITLE%%">
   <meta name="twitter:description" content="%%OG_DESC%%">
-  <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+  <meta name="twitter:image" content="%%OG_IMAGE%%">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/dist/output.css">
@@ -84,6 +84,8 @@
     .survey-header { padding: 8px 0 20px; text-align: center; }
     .survey-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
     .survey-desc { font-size: 14px; color: var(--text-light); }
+    .survey-thumb { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border); }
+    .survey-list-thumb { width: 100%; max-height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
 
     .question-card {
       background: var(--surface);
@@ -372,6 +374,7 @@
       </div>
 
       <div class="survey-header">
+        <img class="survey-thumb hidden" id="survey-thumb" src="" alt="" onerror="this.classList.add('hidden')">
         <div class="survey-title" id="survey-title"></div>
         <div class="survey-desc" id="survey-desc"></div>
       </div>
@@ -466,6 +469,7 @@
         const qCount = Array.isArray(s.questions) ? s.questions.length : 0;
         return `
           <div class="survey-list-card" style="animation-delay:${(idx * 0.06)}s;">
+            ${s.thumbnail ? `<img class="survey-list-thumb" src="${escapeAttr(s.thumbnail)}" alt="" loading="lazy" onerror="this.remove()">` : ''}
             <div class="survey-list-title">${escapeHtml(s.title)}</div>
             <div class="survey-list-desc">${escapeHtml(s.description || '')}</div>
             <div class="survey-list-meta">${qCount} pertanyaan</div>
@@ -493,6 +497,13 @@
     function renderSurvey(survey) {
       el('survey-title').textContent = survey.title || '';
       el('survey-desc').textContent = survey.description || '';
+      const thumbEl = el('survey-thumb');
+      if (survey.thumbnail) {
+        thumbEl.src = survey.thumbnail;
+        thumbEl.classList.remove('hidden');
+      } else {
+        thumbEl.classList.add('hidden');
+      }
       const form = el('survey-form');
       form.innerHTML = '';
       const questions = Array.isArray(survey.questions) ? survey.questions : [];

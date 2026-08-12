@@ -1795,8 +1795,10 @@ function renderSurvey(){
       : `<span style="font-size:11px; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, #22C55E 18%, transparent); color:#16A34A; font-weight:700;">Aktif</span>`;
     const expiresLabel = s.expiresAt ? new Date(s.expiresAt).toLocaleString('id-ID') : 'Tidak pernah kadaluarsa';
     const qCount = Array.isArray(s.questions) ? s.questions.length : 0;
+    const thumbHtml = s.thumbnail ? `<img src="${esc(s.thumbnail)}" alt="" style="width:100%; max-height:120px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid var(--border);" onerror="this.style.display='none'">` : '';
     return `
       <div class="panel p-4">
+        ${thumbHtml}
         <div class="flex items-start justify-between gap-2 mb-1">
           <h2 style="font-family:'Outfit',sans-serif; font-weight:800; font-size:20px; line-height:1.25;">${esc(s.title)}</h2>
           ${statusHtml}
@@ -1824,7 +1826,7 @@ function openSurveyForm(id){
   surveyDraftIsNew = !existing;
   surveyDraft = existing
     ? JSON.parse(JSON.stringify(existing))
-    : { id: genId('survey'), title:'', description:'', expiresAt:'', showResultsAfterSubmit:false, questions:[] };
+    : { id: genId('survey'), title:'', description:'', thumbnail:'', thumbnailMode:'link', expiresAt:'', showResultsAfterSubmit:false, questions:[] };
   openModal(surveyFormHtml());
 }
 function refreshSurveyModal(){
@@ -1883,18 +1885,40 @@ function surveyFormHtml(bodyOnly){
           </select>
         </div>
         ${optsHtml}
-        <label class="checkbox-row mt-2">
+        <label class="checkbox-row mt-3" style="border-top:1px solid var(--border); padding-top:10px;">
           <input type="checkbox" ${q.required?'checked':''} onchange="updateSurveyQuestion(${idx},'required',this.checked)">
           <span>Wajib dijawab</span>
         </label>
       </div>`;
   }).join('');
 
+  const thumbMode = surveyDraft.thumbnailMode === 'upload' ? 'upload' : 'link';
+  const thumbnailFieldHtml = `
+    <div>
+      <label>Thumbnail Survey (opsional)</label>
+      <div style="font-size:10.5px; color:var(--text-sub); margin:-4px 0 6px;">Muncul sebagai gambar preview (bareng judul &amp; deskripsi di atas) saat link survey ini dibagikan ke WhatsApp dll. Kosongkan buat pakai gambar bawaan.</div>
+      <div class="toggle-row">
+        <div class="toggle-opt ${thumbMode==='link'?'active':''}" onclick="setSurveyThumbnailMode('link')">Link Gambar</div>
+        <div class="toggle-opt ${thumbMode==='upload'?'active':''}" onclick="setSurveyThumbnailMode('upload')">Upload File</div>
+      </div>
+      ${thumbMode==='link'
+        ? `<input class="form-input mt-2" placeholder="https://..." value="${esc(surveyDraft.thumbnail && !surveyDraft.thumbnail.startsWith('data:') ? surveyDraft.thumbnail : '')}" oninput="updateSurveyMeta('thumbnail',this.value)">`
+        : `<input class="mt-2" type="file" accept="image/*" onchange="handleSurveyThumbnailFile(this)">
+           <div style="font-size:10.5px; color:var(--text-sub); margin-top:4px;">Maks 1.5MB. Buat gambar lebih besar, pakai opsi Link.</div>`
+      }
+      ${surveyDraft.thumbnail ? `
+        <div style="position:relative; display:inline-block; margin-top:8px;">
+          <img class="q-image-preview" src="${esc(surveyDraft.thumbnail)}" alt="" onerror="this.style.display='none'">
+          <button type="button" onclick="updateSurveyMeta('thumbnail',''); refreshSurveyModal();" style="position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.55); border:none; border-radius:999px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i data-lucide="x" style="width:13px;height:13px; color:#fff;"></i></button>
+        </div>` : ''}
+    </div>`;
+
   const html = `
     <h3 class="text-sm font-bold mb-4">${surveyDraftIsNew?'Buat':'Edit'} Survey</h3>
     <div class="flex flex-col gap-3">
       <div><label>Judul Survey</label><textarea id="f-stitle" rows="1" oninput="updateSurveyMeta('title',this.value)">${esc(surveyDraft.title)}</textarea></div>
       <div><label>Deskripsi</label><textarea id="f-sdesc" rows="2" oninput="updateSurveyMeta('description',this.value)">${esc(surveyDraft.description)}</textarea></div>
+      ${thumbnailFieldHtml}
       <div><label>Kadaluarsa (kosongkan jika tidak pernah kadaluarsa)</label>
         <input type="datetime-local" class="form-input" value="${surveyDraft.expiresAt ? toDatetimeLocal(surveyDraft.expiresAt) : ''}" oninput="updateSurveyMeta('expiresAt', this.value ? new Date(this.value).toISOString() : '')">
       </div>
@@ -1915,6 +1939,23 @@ function surveyFormHtml(bodyOnly){
 function setSurveyQuestionImageMode(idx, mode){
   surveyDraft.questions[idx].imageMode = mode;
   refreshSurveyModal();
+}
+function setSurveyThumbnailMode(mode){
+  surveyDraft.thumbnailMode = mode;
+  refreshSurveyModal();
+}
+function handleSurveyThumbnailFile(inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ toast('File harus berupa gambar.'); return; }
+  if(file.size > 1.5*1024*1024){ toast('Ukuran gambar maksimal 1.5MB. Pakai opsi Link buat gambar yang lebih besar.'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    surveyDraft.thumbnail = reader.result;
+    refreshSurveyModal();
+  };
+  reader.onerror = () => toast('Gagal membaca file gambar.');
+  reader.readAsDataURL(file);
 }
 function handleSurveyQuestionFile(idx, inputEl){
   const file = inputEl.files && inputEl.files[0];

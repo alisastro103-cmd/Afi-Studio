@@ -18,6 +18,7 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const SITE_URL = 'https://afi-studio.vercel.app';
 const DEFAULT_TITLE = 'Survey & Polling - Afi Studio';
 const DEFAULT_DESC = 'Ikut serta dalam survey dan polling dari komunitas Afi Studio. Lihat daftar survey yang sedang berjalan dan bagikan pendapatmu.';
+const DEFAULT_IMAGE = `${SITE_URL}/thumbnail.webp`;
 
 function escapeHtml(str) {
   return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({
@@ -29,6 +30,7 @@ export default async function handler(req, res) {
   const id = req.query && req.query.id;
   let title = DEFAULT_TITLE;
   let description = DEFAULT_DESC;
+  let ogImage = DEFAULT_IMAGE;
   let ogUrl = `${SITE_URL}/survey/`;
 
   if (id && redis) {
@@ -39,6 +41,17 @@ export default async function handler(req, res) {
         title = `${survey.title} - Survey Afi Studio`;
         description = survey.description && survey.description.trim() ? survey.description : DEFAULT_DESC;
         ogUrl = `${SITE_URL}/survey/?id=${encodeURIComponent(id)}`;
+        // Thumbnail survey: kalau diisi lewat Link, langsung dipakai sebagai og:image.
+        // Kalau diisi lewat Upload (disimpan sebagai data: URI di Redis), arahkan ke
+        // /api/survey-thumbnail yang men-decode & nge-serve bytes-nya lewat URL asli,
+        // karena bot preview (WhatsApp dll) gak bisa baca data: URI di meta tag.
+        // Kalau kosong, tetap pakai gambar bawaan (DEFAULT_IMAGE).
+        const thumb = survey.thumbnail && String(survey.thumbnail).trim();
+        if (thumb) {
+          ogImage = thumb.startsWith('data:')
+            ? `${SITE_URL}/api/survey-thumbnail?id=${encodeURIComponent(id)}`
+            : thumb;
+        }
       } else {
         title = 'Link Survey Tidak Valid - Afi Studio';
       }
@@ -59,7 +72,8 @@ export default async function handler(req, res) {
     .split('%%PAGE_TITLE%%').join(escapeHtml(title))
     .split('%%OG_TITLE%%').join(escapeHtml(title))
     .split('%%OG_DESC%%').join(escapeHtml(description))
-    .split('%%OG_URL%%').join(escapeHtml(ogUrl));
+    .split('%%OG_URL%%').join(escapeHtml(ogUrl))
+    .split('%%OG_IMAGE%%').join(escapeHtml(ogImage));
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
