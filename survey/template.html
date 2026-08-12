@@ -171,6 +171,29 @@
     .error-msg { font-size: 12px; color: #EF4444; margin-top: 8px; display: none; }
     .error-msg.show { display: block; }
 
+    @keyframes afiStateIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #loading-state:not(.hidden),
+    #error-state:not(.hidden),
+    #already-state:not(.hidden),
+    #list-state:not(.hidden),
+    #survey-wrap:not(.hidden),
+    #thankyou-state:not(.hidden) {
+      animation: afiStateIn 0.35s ease both;
+    }
+    @keyframes afiQuestionIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .question-card {
+      animation: afiQuestionIn 0.4s ease both;
+    }
+    .survey-list-card {
+      animation: afiQuestionIn 0.4s ease both;
+    }
+
     /* Nav bar (disalin dari halaman Event Render biar posisi tombol konsisten di seluruh situs) */
     .nav-bar {
       position: sticky;
@@ -439,10 +462,10 @@
         showState('list-state');
         return;
       }
-      wrap.innerHTML = active.map(s => {
+      wrap.innerHTML = active.map((s, idx) => {
         const qCount = Array.isArray(s.questions) ? s.questions.length : 0;
         return `
-          <div class="survey-list-card">
+          <div class="survey-list-card" style="animation-delay:${(idx * 0.06)}s;">
             <div class="survey-list-title">${escapeHtml(s.title)}</div>
             <div class="survey-list-desc">${escapeHtml(s.description || '')}</div>
             <div class="survey-list-meta">${qCount} pertanyaan</div>
@@ -477,6 +500,7 @@
       questions.forEach((q, idx) => {
         const card = document.createElement('div');
         card.className = 'question-card';
+        card.style.animationDelay = (idx * 0.06) + 's';
         card.dataset.qid = q.id;
         card.dataset.qtype = q.type;
         card.dataset.required = q.required ? '1' : '0';
