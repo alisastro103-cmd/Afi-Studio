@@ -1838,7 +1838,7 @@ function surveyFormHtml(bodyOnly){
     const isChoice = q.type==='single' || q.type==='multiple';
     const imageMode = q.imageMode === 'upload' ? 'upload' : 'link';
     const optsHtml = isChoice ? `
-      <div class="flex flex-col gap-1 mt-2">
+      <div class="flex flex-col gap-2 mt-2">
         ${(q.options||[]).map((o,oidx)=>`
           <div class="flex items-center gap-2">
             <input class="form-input" style="flex:1;" value="${esc(o.label)}" placeholder="Opsi ${oidx+1}" oninput="updateSurveyOption(${idx},${oidx},this.value)">

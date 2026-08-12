@@ -251,6 +251,9 @@
     .page-menu-item-cta:active { opacity: 0.6; }
   </style>
   <script src="/icons/lucide-local.js"></script>
+  <link rel="stylesheet" href="/css/theme-tokens.css">
+  <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
+  <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
 </head>
 <body>
   <nav class="nav-bar">
@@ -455,7 +458,7 @@
 
     function copyPublicSurveyLink(id, btn) {
       const url = `${location.origin}/survey/?id=${id}`;
-      const done = () => { const prev = btn.innerHTML; btn.innerHTML = '✓'; setTimeout(() => { btn.innerHTML = prev; }, 1200); };
+      const done = () => { const prev = btn.innerHTML; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>'; setTimeout(() => { btn.innerHTML = prev; }, 1200); };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(done).catch(() => prompt('Salin link ini:', url));
       } else {
