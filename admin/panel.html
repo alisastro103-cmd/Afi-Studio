@@ -1831,7 +1831,10 @@ function openSurveyForm(id){
 }
 function refreshSurveyModal(){
   const box = document.querySelector('#active-modal .modal-box');
-  if(box) box.innerHTML = surveyFormHtml(true);
+  if(box){
+    box.innerHTML = surveyFormHtml(true);
+    box.querySelectorAll('textarea').forEach(autoGrowHeight);
+  }
   lucide.createIcons();
 }
 function surveyFormHtml(bodyOnly){
@@ -1842,9 +1845,9 @@ function surveyFormHtml(bodyOnly){
     const optsHtml = isChoice ? `
       <div class="flex flex-col gap-2 mt-2">
         ${(q.options||[]).map((o,oidx)=>`
-          <div class="flex items-center gap-2">
-            <input class="form-input" style="flex:1;" value="${esc(o.label)}" placeholder="Opsi ${oidx+1}" oninput="updateSurveyOption(${idx},${oidx},this.value)">
-            <button type="button" onclick="removeSurveyOption(${idx},${oidx})" style="background:none;border:none;cursor:pointer;color:var(--text-sub);"><i data-lucide="x" style="width:15px;height:15px;"></i></button>
+          <div class="flex items-start gap-2">
+            <textarea class="form-textarea" rows="1" style="flex:1;" placeholder="Opsi ${oidx+1}" oninput="updateSurveyOption(${idx},${oidx},this.value)">${esc(o.label)}</textarea>
+            <button type="button" onclick="removeSurveyOption(${idx},${oidx})" style="background:none;border:none;cursor:pointer;color:var(--text-sub); margin-top:9px;"><i data-lucide="x" style="width:15px;height:15px;"></i></button>
           </div>`).join('')}
         <button type="button" class="btn btn-outline" style="font-size:11px; padding:4px 10px; align-self:flex-start; margin-top:2px;" onclick="addSurveyOption(${idx})">+ Tambah Opsi</button>
       </div>` : '';
@@ -1856,7 +1859,7 @@ function surveyFormHtml(bodyOnly){
           <div class="toggle-opt ${imageMode==='upload'?'active':''}" onclick="setSurveyQuestionImageMode(${idx},'upload')">Upload File</div>
         </div>
         ${imageMode==='link'
-          ? `<input class="form-input mt-2" placeholder="https://..." value="${esc(q.image && !q.image.startsWith('data:') ? q.image : '')}" oninput="updateSurveyQuestion(${idx},'image',this.value)">`
+          ? `<textarea class="form-textarea mt-2" rows="1" style="word-break:break-all;" placeholder="https://..." oninput="updateSurveyQuestion(${idx},'image',this.value)">${esc(q.image && !q.image.startsWith('data:') ? q.image : '')}</textarea>`
           : `<input class="mt-2" type="file" accept="image/*" onchange="handleSurveyQuestionFile(${idx}, this)">
              <div style="font-size:10.5px; color:var(--text-sub); margin-top:4px;">Maks 1.5MB. Buat gambar lebih besar, pakai opsi Link.</div>`
         }
@@ -1885,7 +1888,7 @@ function surveyFormHtml(bodyOnly){
           </select>
         </div>
         ${optsHtml}
-        <label class="checkbox-row mt-3" style="border-top:1px solid var(--border); padding-top:10px;">
+        <label class="checkbox-row mt-4" style="border-top:1px solid var(--border); padding-top:12px;">
           <input type="checkbox" ${q.required?'checked':''} onchange="updateSurveyQuestion(${idx},'required',this.checked)">
           <span>Wajib dijawab</span>
         </label>
@@ -1902,7 +1905,7 @@ function surveyFormHtml(bodyOnly){
         <div class="toggle-opt ${thumbMode==='upload'?'active':''}" onclick="setSurveyThumbnailMode('upload')">Upload File</div>
       </div>
       ${thumbMode==='link'
-        ? `<input class="form-input mt-2" placeholder="https://..." value="${esc(surveyDraft.thumbnail && !surveyDraft.thumbnail.startsWith('data:') ? surveyDraft.thumbnail : '')}" oninput="updateSurveyMeta('thumbnail',this.value)">`
+        ? `<textarea class="form-textarea mt-2" rows="1" style="word-break:break-all;" placeholder="https://..." oninput="updateSurveyMeta('thumbnail',this.value)">${esc(surveyDraft.thumbnail && !surveyDraft.thumbnail.startsWith('data:') ? surveyDraft.thumbnail : '')}</textarea>`
         : `<input class="mt-2" type="file" accept="image/*" onchange="handleSurveyThumbnailFile(this)">
            <div style="font-size:10.5px; color:var(--text-sub); margin-top:4px;">Maks 1.5MB. Buat gambar lebih besar, pakai opsi Link.</div>`
       }
