@@ -2005,6 +2005,7 @@ function updateSurveyOption(idx, oidx, value){ surveyDraft.questions[idx].option
 async function saveSurveyDraft(){
   const d = surveyDraft;
   if(!d.title || !d.title.trim()){ toast('Judul survey wajib diisi'); return; }
+  if(!d.description || !d.description.trim()){ toast('Deskripsi survey wajib diisi (dipakai buat preview link WhatsApp/Discord)'); return; }
   if(!d.questions.length){ toast('Tambahkan minimal 1 pertanyaan'); return; }
   for(const q of d.questions){
     if(!q.text || !q.text.trim()){ toast('Semua pertanyaan wajib punya teks'); return; }
