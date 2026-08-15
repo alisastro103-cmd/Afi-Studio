@@ -1,0 +1,138 @@
+/* =========================================================================
+   Afi Studio — Menu Halaman: Laci Samping (Side Drawer)
+   -------------------------------------------------------------------------
+   Menggantikan menu "page-menu-dropdown" yang sebelumnya berupa popup kecil
+   di bawah tombol hamburger, menjadi laci (drawer) yang muncul dari sisi
+   kanan layar.
+
+     - Mobile & tablet (<1024px): laci disembunyikan di luar layar (translateX
+       100%) dan meluncur masuk saat tombol hamburger (#page-menu-btn)
+       ditekan, lengkap dengan overlay gelap di belakangnya. Ditutup lewat
+       tombol X, klik overlay, tombol Escape, atau memilih salah satu link.
+     - Desktop (>=1024px): laci selalu tampil sebagai panel tetap di sisi
+       kanan (tidak perlu menekan tombol apa pun), tombol hamburger dan
+       overlay disembunyikan karena tidak dibutuhkan lagi.
+
+   File ini sengaja dipisah & di-load lewat <link> di setiap halaman publik
+   (bukan admin), memakai selector #id supaya otomatis menang dari rule
+   `.page-menu-dropdown` lama di tiap halaman tanpa perlu mengubah/menghapus
+   <style> inline yang sudah ada di sana.
+   ========================================================================= */
+
+#page-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 22, 0.55);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  z-index: 4000;
+}
+#page-menu-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+#page-menu-dropdown.page-menu-dropdown {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: auto;
+  bottom: 0;
+  margin: 0;
+  width: min(320px, 85vw);
+  max-width: 85vw;
+  min-width: 0;
+  height: 100dvh;
+  background: var(--surface);
+  border: none;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.22);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: 4001;
+  opacity: 1;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(100%);
+  transform-origin: center;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.32s;
+}
+#page-menu-dropdown.page-menu-dropdown.open {
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+/* Header laci (judul + tombol tutup), disisipkan lewat JS */
+.page-menu-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.page-menu-drawer-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.page-menu-drawer-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.page-menu-drawer-close:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.page-menu-drawer-close:active { opacity: 0.6; }
+
+/* Body laci membungkus daftar link (.page-menu-item) yang sudah ada */
+.page-menu-drawer-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 10px 24px;
+}
+
+/* Kunci scroll body saat laci terbuka di mobile */
+body.page-menu-locked { overflow: hidden; }
+
+@media (min-width: 1024px) {
+  /* Tombol hamburger tidak diperlukan lagi di desktop: laci selalu tampil */
+  #page-menu-btn.page-menu-btn { display: none !important; }
+  #page-menu-overlay { display: none !important; }
+
+  #page-menu-dropdown.page-menu-dropdown {
+    position: fixed;
+    top: var(--nav-h, 60px);
+    height: calc(100dvh - var(--nav-h, 60px));
+    width: 260px;
+    max-width: 260px;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translateX(0) !important;
+    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.12);
+    border-left: 1px solid var(--border);
+  }
+
+  .page-menu-drawer-close { display: none; }
+}

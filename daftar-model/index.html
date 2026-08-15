@@ -364,6 +364,7 @@
     <link rel="stylesheet" href="/css/theme-tokens.css">
     <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
     <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="/css/page-menu-drawer.css">
 </head>
  <body class="h-full">
   <div id="gateOverlay" class="gate-overlay"></div>
@@ -658,17 +659,7 @@
   </script>
 
   <script>
-    (function () {
-      const menuBtn = document.getElementById('page-menu-btn');
-      const menuDropdown = document.getElementById('page-menu-dropdown');
-      menuBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        menuDropdown.classList.toggle('open');
-      });
-      document.addEventListener('click', function () {
-        menuDropdown.classList.remove('open');
-      });
-    })();
+    /* Menu laci samping sekarang ditangani oleh page-menu-drawer.js (lihat sebelum </body>) */
 
     function updateCount(inputId, countId, maxLimit) {
       const input = document.getElementById(inputId);

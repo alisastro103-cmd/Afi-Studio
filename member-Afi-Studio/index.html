@@ -494,6 +494,7 @@
     <link rel="stylesheet" href="/css/theme-tokens.css">
     <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
     <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="/css/page-menu-drawer.css">
 </head>
 <body>
   <div id="app">
@@ -553,17 +554,7 @@
     </div>
     <div id="toast-soon" class="toast-popup">Segera Hadir</div>
     <script>
-        (function () {
-            const menuBtn = document.getElementById('page-menu-btn');
-            const menuDropdown = document.getElementById('page-menu-dropdown');
-            menuBtn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                menuDropdown.classList.toggle('open');
-            });
-            document.addEventListener('click', function () {
-                menuDropdown.classList.remove('open');
-            });
-        })();
+        /* Menu laci samping sekarang ditangani oleh page-menu-drawer.js (lihat sebelum </body>) */
     </script>
     <script src="script.js"></script>
     <script src="/theme-toggle.js" defer></script>
