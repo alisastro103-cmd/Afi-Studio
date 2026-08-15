@@ -17,25 +17,18 @@
     var drawer = document.getElementById('page-menu-dropdown');
     if (!btn || !drawer) return;
 
-    // PENTING #1: `.nav-bar` (induk laci ini di markup asli) memakai
+    // PENTING: `.nav-bar` (induk laci ini di markup asli) memakai
     // `backdrop-filter`, dan properti itu membuat elemen tersebut jadi
     // "containing block" baru untuk anak-anaknya yang `position: fixed`.
     // Akibatnya top/right/bottom laci dihitung relatif ke kotak navbar
-    // (tinggi ±60px), bukan ke seluruh layar.
-    //
-    // PENTING #2: `<body>` di halaman publik memakai `zoom: 0.75` (mobile)
-    // / `0.9` (tablet) untuk menyesuaikan skala tampilan. `zoom` ikut
-    // menyusutkan render semua keturunannya, TERMASUK elemen
-    // `position: fixed` — jadi kalau laci ditaruh di dalam `<body>`,
-    // tinggi `100dvh` yang diminta ikut mengecil (mis. 75%-nya saja),
-    // menyisakan area kosong terpotong di bagian bawah laci.
-    //
-    // Perbaikan untuk keduanya: pindahkan (portal) laci ke `<html>`
-    // langsung (sejajar dengan `<body>`, bukan di dalamnya) — di situ
-    // tidak ada `backdrop-filter` maupun `zoom` yang memengaruhi, jadi
-    // laci benar-benar relatif ke seluruh layar dan tingginya penuh.
-    if (drawer.parentElement !== document.documentElement) {
-      document.documentElement.appendChild(drawer);
+    // (tinggi ±60px), bukan ke seluruh layar. Perbaikannya: pindahkan
+    // (portal) laci supaya jadi anak langsung <body> (BUKAN <html>,
+    // supaya laci tetap ikut `zoom` yang dipakai <body> di mobile/tablet
+    // — biar ukuran teks & ikonnya senada dengan sisa halaman; sisi
+    // tinggi yang ikut menyusut akibat zoom itu sudah dikompensasi lewat
+    // `calc(100dvh / <faktor-zoom>)` di page-menu-drawer.css).
+    if (drawer.parentElement !== document.body) {
+      document.body.appendChild(drawer);
     }
 
     // Bungkus isi laci yang sudah ada dengan header (judul + tombol tutup)
@@ -68,9 +61,9 @@
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'page-menu-overlay';
-      // Overlay juga ditaruh di <html>, bukan <body>, dengan alasan yang
-      // sama seperti laci di atas (menghindari efek `zoom` pada <body>).
-      document.documentElement.appendChild(overlay);
+      // Sama seperti laci: overlay juga anak langsung <body> (ikut zoom,
+      // tapi overlay cuma latar polos jadi tidak perlu kompensasi tinggi).
+      document.body.appendChild(overlay);
     }
 
     function isDesktop() {

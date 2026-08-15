@@ -21,7 +21,13 @@
 
 #page-menu-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  /* Sama seperti laci: dikompensasi dari efek `zoom: 0.75` di <body>
+     (mobile) supaya overlay tetap menutup penuh sampai bawah layar,
+     bukan cuma 75%-nya lalu menyisakan celah di kanan-bawah. */
+  height: calc(100dvh / 0.75);
   background: rgba(10, 14, 22, 0.55);
   backdrop-filter: blur(2px);
   opacity: 0;
@@ -36,6 +42,12 @@
   pointer-events: auto;
 }
 
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  #page-menu-overlay {
+    height: calc(100dvh / 0.9);
+  }
+}
+
 #page-menu-dropdown.page-menu-dropdown {
   position: fixed;
   top: 0;
@@ -46,7 +58,15 @@
   width: min(320px, 85vw);
   max-width: 85vw;
   min-width: 0;
-  height: 100dvh;
+  /* CATATAN ZOOM: <body> di halaman publik memakai `zoom: 0.75` (mobile,
+     lihat aturan di bawah 768px) yang ikut menyusutkan render laci ini
+     (sengaja dibiarkan begitu supaya ukuran teks/ikon di laci tetap
+     senada dengan sisa halaman, bukan tiba-tiba tampil lebih besar).
+     Konsekuensinya, deklarasi tinggi biasa (100dvh) ikut menyusut jadi
+     75% tinggi layar. Makanya di sini tingginya dikompensasi lebih dulu
+     (dibagi dengan faktor zoom) supaya SETELAH disusutkan render-nya
+     tetap persis 100dvh alias penuh sampai bawah layar. */
+  height: calc(100dvh / 0.75); /* kompensasi zoom 0.75 di mobile (<768px) */
   background: var(--surface);
   border: none;
   border-left: 1px solid var(--border);
@@ -70,6 +90,13 @@
   visibility: visible;
   pointer-events: auto;
   transform: translateX(0);
+}
+
+/* Tablet (768px–1023.98px): body memakai `zoom: 0.9`, kompensasi mengikuti. */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  #page-menu-dropdown.page-menu-dropdown {
+    height: calc(100dvh / 0.9);
+  }
 }
 
 /* Header laci (judul + tombol tutup), disisipkan lewat JS */
