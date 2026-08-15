@@ -1,45 +1,50 @@
 // api/telegram-webhook.js
 // Webhook Telegram buat kontrol balik ke database & repo Afi Studio langsung dari chat.
 // Beda sama bot yang udah ada (yang cuma KIRIM notifikasi satu arah) — endpoint ini
-// yang NERIMA pesan dari Telegram dan menjalankan perintah.
+// yang NERIMA pesan dari Telegram dan menjalankan perintah, LEWAT KETIKAN atau LEWAT
+// TOMBOL MENU (inline keyboard).
 //
 // ================= SETUP (WAJIB dibaca sebelum dipakai) =================
 // 1. Environment Variables di Vercel:
-//      TELEGRAM_WEBHOOK_SECRET   -> string acak bebas, buat validasi request bener2
-//                                    dari Telegram (bukan orang iseng nembak URL).
-//      GITHUB_TOKEN              -> Personal Access Token GitHub (scope: repo / contents:write)
-//      GITHUB_REPO               -> "username/Afi-Studio" (punya kamu)
-//      GITHUB_BRANCH             -> "main" (atau branch default kamu)
+//      TELEGRAM_WEBHOOK_SECRET    -> string acak bebas, buat validasi request bener2
+//                                     dari Telegram (bukan orang iseng nembak URL).
+//      GITHUB_TOKEN               -> Personal Access Token GitHub (scope: repo / contents:write)
+//      GITHUB_REPO                -> "username/Afi-Studio" (punya kamu)
+//      GITHUB_BRANCH               -> "main" (atau branch default kamu)
 //      TELEGRAM_BROADCAST_CHAT_ID -> (opsional) chat_id channel/grup Folofi buat /broadcast.
-//                                    Bot HARUS jadi admin di channel/grup itu dulu.
+//                                     Bot HARUS jadi admin di channel/grup itu dulu.
 //    (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, UPSTASH_*, ADMIN_TOKEN udah ada, dipakai ulang.)
 //
 // 2. Daftarin webhook ke Telegram (jalankan sekali aja lewat browser/curl, ganti placeholder):
 //      https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=https://afi-studio.vercel.app/api/telegram-webhook&secret_token=<TELEGRAM_WEBHOOK_SECRET>
 //
-// 3. Chat ke bot kamu sendiri, ketik /help buat lihat daftar perintah.
+// 3. Chat ke bot kamu sendiri, ketik /menu (atau /help) buat mulai.
+//
+// ================= MENU & PERCAKAPAN BERTAHAP =================
+// Ketik /menu buat munculin tombol-tombol, jadi gak perlu ngetik command manual lagi.
+// Beberapa aksi (misal ganti thumbnail utama) butuh info tambahan — bot bakal NANYA
+// dulu ("mau pakai link atau upload file?"), nyimpen "state" percakapan itu di Redis
+// per chat (key afi-studio:botstate:<chatId>, expire otomatis 10 menit). Selama state
+// itu aktif, pesan BEBAS (bukan command) yang kamu kirim dianggap JAWABAN dari
+// pertanyaan bot, bukan command baru. Kalau jawabannya gak sesuai yang diminta
+// (misal diminta link tapi yang dikirim bukan http/https, atau diminta foto tapi
+// yang dikirim teks), bot re-ask lagi, gak langsung dianggap gagal. Ketik /batal
+// kapan aja buat keluar dari state itu.
 //
 // ================= KEAMANAN =================
 // - Setiap request divalidasi header "X-Telegram-Bot-Api-Secret-Token" HARUS cocok
 //   dengan TELEGRAM_WEBHOOK_SECRET. Kalau gak cocok, request langsung ditolak.
-// - Setiap PESAN divalidasi chat_id pengirim HARUS sama dengan TELEGRAM_CHAT_ID
-//   (chat admin yang sudah ada). Orang lain yang chat ke bot ini akan diabaikan.
-// - Perintah yang mengubah/menghapus data (setthumb, delpending, delsurvey, dst)
-//   TIDAK ADA tombol konfirmasi tambahan — sengaja langsung eksekusi, karena satu2nya
-//   yang bisa manggil ini cuma kamu. Pengecualian: /restore, yang efeknya nimpa SEMUA
-//   data live sekaligus, jadi wajib diketik ulang dengan kata "KONFIRMASI".
+// - Setiap PESAN/TOMBOL divalidasi chat_id pengirim HARUS sama dengan TELEGRAM_CHAT_ID
+//   (chat admin yang sudah ada). Orang lain yang chat/pencet tombol bot ini diabaikan.
+// - Aksi yang menghapus/menimpa data besar (restore, hapus pending/survey) SELALU
+//   lewat langkah konfirmasi tombol [Ya]/[Batal] dulu sebelum benar-benar dieksekusi.
 //
 // ================= PENTING: KENAPA RESPONSE DIKIRIM DI PALING AKHIR =================
-// Versi awal file ini balas 200 ke Telegram DULUAN, baru lanjut proses command di
-// belakang (biar Telegram gak nunggu/retry). Ini ternyata JUSTRU jadi sumber bug
-// "kadang bot diem gak bales, baru kebales pas pesan berikutnya" — karena begitu
-// response udah keluar, Vercel/AWS Lambda kadang langsung MEMBEKUKAN container
-// sebelum kode async di belakangnya (redis.set, fetch ke Telegram, dst) sempet
-// kelar. Proses yang "kepotong" itu baru lanjut/ke-flush pas invocation BERIKUTNYA
-// masuk — makanya kerasanya harus "kirim pesan ulang baru dibales".
-// Fix-nya: semua proses di-`await` SAMPAI SELESAI dulu, baru response 200 dikirim
-// paling akhir. Command di sini ringan (beberapa panggilan redis/fetch), jadi masih
-// jauh di bawah batas timeout function Vercel.
+// Semua proses di-`await` SAMPAI SELESAI dulu, baru response 200 ke Telegram dikirim
+// di paling akhir handler. Kalau dibalik (response duluan, proses di belakang),
+// Vercel/AWS Lambda kadang membekukan container sebelum proses belakangnya kelar —
+// efeknya bot kelihatan "diem", baru kebales pas ada invocation berikutnya yang
+// "membangunkan" proses lama. JANGAN dibalik lagi.
 
 import { Redis } from '@upstash/redis';
 
@@ -59,6 +64,8 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const PENDING_KEY = 'afi-studio:data:pendingmodels';
 const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
+const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered';
+const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
 
 // Semua koleksi data yang ikut di-backup/restore. Nama di kiri dipakai sebagai
 // nama field di file backup JSON-nya; harus sinkron sama api/data/[type].js.
@@ -75,6 +82,27 @@ const BACKUP_KEYS = {
   pendingmodels: PENDING_KEY,
   surveys: SURVEYS_KEY,
 };
+
+// ================= HELPER: STATE PERCAKAPAN (per chat, di Redis) =================
+
+function stateKey(chatId) {
+  return `afi-studio:botstate:${chatId}`;
+}
+
+async function getState(chatId) {
+  if (!redis) return null;
+  try { return await redis.get(stateKey(chatId)); } catch { return null; }
+}
+
+async function setState(chatId, state) {
+  if (!redis) return;
+  try { await redis.set(stateKey(chatId), state, { ex: STATE_TTL_SEC }); } catch {}
+}
+
+async function clearState(chatId) {
+  if (!redis) return;
+  try { await redis.del(stateKey(chatId)); } catch {}
+}
 
 // ================= HELPER: TELEGRAM =================
 
@@ -93,11 +121,78 @@ async function tgSend(text, opts = {}) {
   return tgSendTo(CHAT_ID, text, opts);
 }
 
+// Buat menu bertombol: coba EDIT pesan yang lagi ditampilin (kalau dipicu dari tombol,
+// biar chat gak numpuk pesan baru tiap navigasi). Kalau gagal/gak ada messageId, kirim
+// pesan baru aja.
+async function tgSendOrEdit(chatId, messageId, text, replyMarkup) {
+  if (messageId) {
+    try {
+      const resp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message_id: messageId,
+          text,
+          parse_mode: 'HTML',
+          reply_markup: replyMarkup,
+        }),
+      });
+      const data = await resp.json();
+      if (data.ok) return data;
+    } catch {
+      // fallback ke bawah: kirim pesan baru
+    }
+  }
+  return tgSendTo(chatId, text, { reply_markup: replyMarkup });
+}
+
+async function tgAnswerCallback(callbackId, text) {
+  try {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackId, text, show_alert: false }),
+    });
+  } catch {}
+}
+
 async function tgGetFileUrl(fileId) {
   const metaResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${encodeURIComponent(fileId)}`);
   const meta = await metaResp.json();
   if (!meta.ok) throw new Error('Gagal ambil info file dari Telegram.');
   return `https://api.telegram.org/file/bot${BOT_TOKEN}/${meta.result.file_path}`;
+}
+
+// Daftarin command bot ke Telegram (bikin menu "/" native ada deskripsinya) — cukup
+// sekali aja, ditandain lewat flag di Redis biar gak dipanggil ulang tiap /menu.
+async function ensureBotMenuRegistered() {
+  if (!redis) return;
+  try {
+    const already = await redis.get(MENU_REGISTERED_KEY);
+    if (already) return;
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setMyCommands`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        commands: [
+          { command: 'menu', description: 'Buka menu utama (tombol)' },
+          { command: 'status', description: 'Ringkasan data' },
+          { command: 'pending', description: 'Pendaftaran model pending' },
+          { command: 'surveys', description: 'Daftar survey' },
+          { command: 'find', description: 'Cari model/survey' },
+          { command: 'backup', description: 'Backup data ke GitHub' },
+          { command: 'backups', description: 'Lihat daftar backup' },
+          { command: 'broadcast', description: 'Kirim pengumuman' },
+          { command: 'batal', description: 'Batalin proses yang lagi jalan' },
+          { command: 'help', description: 'Bantuan perintah' },
+        ],
+      }),
+    });
+    await redis.set(MENU_REGISTERED_KEY, '1');
+  } catch (e) {
+    console.error('Gagal daftar menu bot:', e.message);
+  }
 }
 
 // ================= HELPER: GITHUB (statis file & backup) =================
@@ -162,11 +257,46 @@ function requireGithub() {
   }
 }
 
+// ================= KEYBOARD (TOMBOL) =================
+
+function mainMenuKeyboard() {
+  return {
+    inline_keyboard: [
+      [{ text: '📊 Status', callback_data: 'menu:status' }, { text: '🔍 Cari', callback_data: 'menu:find' }],
+      [{ text: '⏳ Pending Model', callback_data: 'menu:pending' }, { text: '📋 Survey', callback_data: 'menu:surveys' }],
+      [{ text: '🖼️ Thumbnail', callback_data: 'menu:thumb' }, { text: '💾 Backup', callback_data: 'menu:backup' }],
+      [{ text: '📢 Broadcast', callback_data: 'menu:broadcast' }],
+    ],
+  };
+}
+
+function thumbMenuKeyboard() {
+  return {
+    inline_keyboard: [
+      [{ text: 'Thumbnail Utama (situs)', callback_data: 'thumb:main' }],
+      [{ text: 'Thumbnail Survey', callback_data: 'thumb:survey' }],
+      [{ text: '⬅️ Kembali', callback_data: 'menu:main' }],
+    ],
+  };
+}
+
+function backupMenuKeyboard() {
+  return {
+    inline_keyboard: [
+      [{ text: '💾 Buat Backup Baru', callback_data: 'backup:create' }],
+      [{ text: '📄 Lihat Daftar Backup', callback_data: 'backup:list' }],
+      [{ text: '♻️ Restore dari Backup', callback_data: 'backup:restore' }],
+      [{ text: '⬅️ Kembali', callback_data: 'menu:main' }],
+    ],
+  };
+}
+
 // ================= HANDLERS PER PERINTAH =================
 
 async function cmdHelp() {
   await tgSend(
     '<b>Perintah Afi Studio Bot</b>\n\n' +
+    'Paling gampang: ketik /menu buat munculin tombol, gak usah ngetik manual.\n\n' +
     '<b>Status &amp; data</b>\n' +
     '/status — ringkasan jumlah data\n' +
     '/pending — daftar pendaftaran model yang belum diproses\n' +
@@ -183,8 +313,14 @@ async function cmdHelp() {
     '/backups — lihat daftar backup yang tersimpan\n' +
     '/restore &lt;file&gt; KONFIRMASI — timpa data live pakai isi backup\n\n' +
     '<b>Broadcast</b> (butuh TELEGRAM_BROADCAST_CHAT_ID)\n' +
-    '/broadcast &lt;pesan&gt; — kirim pengumuman ke channel/grup Folofi'
+    '/broadcast &lt;pesan&gt; — kirim pengumuman ke channel/grup Folofi\n\n' +
+    '/batal — batalin proses tanya-jawab yang lagi jalan'
   );
+}
+
+async function cmdMenu(chatId, messageId) {
+  await ensureBotMenuRegistered();
+  await tgSendOrEdit(chatId, messageId, '<b>Menu Afi Studio Bot</b>\n\nPilih salah satu:', mainMenuKeyboard());
 }
 
 async function cmdStatus() {
@@ -215,7 +351,7 @@ async function cmdPending() {
   for (const item of top) {
     text += `• <code>${item.id}</code> — ${item.name || '-'} (${item.role || '-'})\n  ${new Date(item.submittedAt).toLocaleString('id-ID')}\n`;
   }
-  text += '\nHapus: <code>/delpending id</code>';
+  text += '\nHapus: <code>/delpending id</code> (atau pakai /menu)';
   await tgSend(text);
 }
 
@@ -245,7 +381,7 @@ async function cmdSurveys() {
     const expired = s.expiresAt && new Date(s.expiresAt) < new Date();
     text += `• <code>${s.id}</code> — ${s.title || '(tanpa judul)'} ${expired ? '(kadaluarsa)' : ''}\n`;
   }
-  text += '\nHapus: <code>/delsurvey id</code>\nGanti thumbnail: <code>/setsurveythumb id url</code>';
+  text += '\nHapus: <code>/delsurvey id</code>\nGanti thumbnail: <code>/setsurveythumb id url</code> (atau pakai /menu)';
   await tgSend(text);
 }
 
@@ -282,11 +418,29 @@ async function cmdSetThumbFromPhoto(fileId) {
     if (!imgResp.ok) throw new Error('Gagal download gambar dari Telegram.');
     const buffer = Buffer.from(await imgResp.arrayBuffer());
     const base64 = buffer.toString('base64');
-    await githubPutFile('thumbnail.webp', base64, 'chore: update thumbnail via Telegram bot');
+    await githubPutFile('thumbnail.webp', base64, 'chore: update thumbnail via Telegram bot (upload)');
     await tgSend(
       'Thumbnail utama berhasil diganti (commit ke GitHub).\n' +
       'Vercel bakal auto-redeploy — cek lagi dalam ~1-2 menit di link preview WhatsApp/Discord ' +
       '(mungkin perlu di-refresh cache preview-nya).'
+    );
+  } catch (e) {
+    await tgSend(`Gagal ganti thumbnail: ${e.message}`);
+  }
+}
+
+async function cmdSetThumbFromUrl(url) {
+  try {
+    requireGithub();
+    await tgSend('Lagi proses... ambil gambar dari link & commit ke repo.');
+    const imgResp = await fetch(url);
+    if (!imgResp.ok) throw new Error('Gagal download gambar dari link itu.');
+    const buffer = Buffer.from(await imgResp.arrayBuffer());
+    const base64 = buffer.toString('base64');
+    await githubPutFile('thumbnail.webp', base64, 'chore: update thumbnail via Telegram bot (link)');
+    await tgSend(
+      'Thumbnail utama berhasil diganti (commit ke GitHub).\n' +
+      'Vercel bakal auto-redeploy — cek lagi dalam ~1-2 menit di link preview WhatsApp/Discord.'
     );
   } catch (e) {
     await tgSend(`Gagal ganti thumbnail: ${e.message}`);
@@ -319,7 +473,7 @@ async function cmdFind(keyword) {
 
   if (!results.length) return tgSend(`Gak ada hasil buat "${keyword}".`);
   const shown = results.slice(0, 20);
-  let text = `<b>Hasil pencarian "${keyword}"</b> (${results.length}${results.length > 20 ? ', ditampilin 20' : ''})\n\n${shown.join('\n')}`;
+  const text = `<b>Hasil pencarian "${keyword}"</b> (${results.length}${results.length > 20 ? ', ditampilin 20' : ''})\n\n${shown.join('\n')}`;
   await tgSend(text);
 }
 
@@ -346,24 +500,26 @@ async function cmdBackup() {
 
     await tgSend(
       `Backup berhasil disimpan ✅\n<code>${filename}</code>\n\n` +
-      `Buat restore nanti kalau perlu:\n<code>/restore ${filename} KONFIRMASI</code>`
+      `Buat restore nanti kalau perlu:\n<code>/restore ${filename} KONFIRMASI</code>\n(atau lewat /menu → Backup → Restore)`
     );
   } catch (e) {
     await tgSend(`Gagal backup: ${e.message}`);
   }
 }
 
+async function listBackupFiles() {
+  requireGithub();
+  const files = await githubListDir('backups');
+  return files
+    .filter(f => f.type === 'file' && f.name.endsWith('.json'))
+    .sort((a, b) => b.name.localeCompare(a.name))
+    .slice(0, 10);
+}
+
 async function cmdBackups() {
   try {
-    requireGithub();
-    const files = await githubListDir('backups');
-    const sorted = files
-      .filter(f => f.type === 'file' && f.name.endsWith('.json'))
-      .sort((a, b) => b.name.localeCompare(a.name))
-      .slice(0, 10);
-
+    const sorted = await listBackupFiles();
     if (!sorted.length) return tgSend('Belum ada backup tersimpan. Buat dulu pakai /backup');
-
     let text = `<b>Backup Tersedia</b> (10 terbaru)\n\n`;
     for (const f of sorted) text += `• <code>${f.name}</code>\n`;
     text += '\nRestore: <code>/restore nama_file.json KONFIRMASI</code>';
@@ -427,32 +583,296 @@ async function cmdBroadcast(text) {
   }
 }
 
-// ================= ROUTER =================
+// ================= MENU: LIST DENGAN TOMBOL HAPUS =================
+
+async function sendPendingMenu(chatId, messageId) {
+  if (!redis) return tgSendOrEdit(chatId, messageId, 'Redis belum dikonfigurasi di server.', mainMenuKeyboard());
+  const list = (await redis.get(PENDING_KEY)) || [];
+  if (!Array.isArray(list) || !list.length) {
+    return tgSendOrEdit(chatId, messageId, 'Gak ada pendaftaran model yang pending. 🎉', mainMenuKeyboard());
+  }
+  const top = list.slice(-8).reverse();
+  const rows = top.map(item => [{ text: `🗑 ${(item.name || item.id).slice(0, 50)}`, callback_data: `delpending:${item.id}` }]);
+  rows.push([{ text: '⬅️ Kembali', callback_data: 'menu:main' }]);
+  await tgSendOrEdit(chatId, messageId, `<b>Pendaftaran Pending</b> (${list.length} total, 8 terbaru)\nTap buat hapus:`, { inline_keyboard: rows });
+}
+
+async function sendSurveysMenu(chatId, messageId) {
+  if (!redis) return tgSendOrEdit(chatId, messageId, 'Redis belum dikonfigurasi di server.', mainMenuKeyboard());
+  const list = (await redis.get(SURVEYS_KEY)) || [];
+  if (!Array.isArray(list) || !list.length) {
+    return tgSendOrEdit(chatId, messageId, 'Belum ada survey.', mainMenuKeyboard());
+  }
+  const rows = list.slice(0, 8).map(s => [{ text: `🗑 ${(s.title || s.id).slice(0, 50)}`, callback_data: `delsurvey:${s.id}` }]);
+  rows.push([{ text: '⬅️ Kembali', callback_data: 'menu:main' }]);
+  await tgSendOrEdit(chatId, messageId, `<b>Daftar Survey</b> (${list.length})\nTap buat hapus:`, { inline_keyboard: rows });
+}
+
+async function sendBackupPickList(chatId, messageId, forRestore) {
+  try {
+    const sorted = await listBackupFiles();
+    if (!sorted.length) return tgSendOrEdit(chatId, messageId, 'Belum ada backup. Bikin dulu lewat tombol "Buat Backup Baru".', backupMenuKeyboard());
+
+    if (forRestore) {
+      const rows = sorted.map(f => [{ text: f.name, callback_data: `restore_pick:${f.name}` }]);
+      rows.push([{ text: '⬅️ Kembali', callback_data: 'menu:backup' }]);
+      await tgSendOrEdit(chatId, messageId, 'Pilih backup yang mau di-restore:', { inline_keyboard: rows });
+    } else {
+      const text = `<b>Backup Tersedia</b> (10 terbaru)\n\n${sorted.map(f => `• <code>${f.name}</code>`).join('\n')}`;
+      await tgSendOrEdit(chatId, messageId, text, backupMenuKeyboard());
+    }
+  } catch (e) {
+    await tgSendOrEdit(chatId, messageId, `Gagal ambil daftar backup: ${e.message}`, backupMenuKeyboard());
+  }
+}
+
+// ================= HANDLER: BALASAN BEBAS SAAT ADA STATE AKTIF =================
+// Ini yang bikin bot "nanya lagi kalau jawabannya kurang jelas" — tiap cabang HANYA
+// clearState() kalau jawabannya udah valid dan diproses; kalau enggak, state
+// dibiarin aktif terus supaya pesan berikutnya masih dianggap jawaban buat
+// pertanyaan yang sama.
+
+async function handleStateReply(chatId, message, state) {
+  const text = (message.text || '').trim();
+
+  if (state.action === 'awaiting_thumb_link') {
+    if (!/^https?:\/\//i.test(text)) {
+      await tgSend('Link-nya kurang valid nih, harus diawali http:// atau https://. Coba kirim lagi, atau ketik /batal buat berhenti.');
+      return; // state tetap aktif, nanya lagi
+    }
+    await clearState(chatId);
+    if (state.target === 'main') {
+      await cmdSetThumbFromUrl(text);
+    } else if (state.target === 'survey' && state.surveyId) {
+      await cmdSetSurveyThumb(state.surveyId, text);
+    }
+    return;
+  }
+
+  if (state.action === 'awaiting_thumb_photo') {
+    // Kalau nyampe sini berarti yang dikirim BUKAN foto (foto ditangani terpisah
+    // sebelum fungsi ini dipanggil).
+    await tgSend('Itu bukan foto ya. Kirim FOTO-nya langsung (bukan sebagai dokumen/file, bukan teks), atau ketik /batal buat berhenti.');
+    return; // state tetap aktif
+  }
+
+  if (state.action === 'awaiting_broadcast_text') {
+    if (!text) {
+      await tgSend('Pesannya kosong. Ketik pesan yang mau di-broadcast, atau /batal buat berhenti.');
+      return;
+    }
+    await setState(chatId, { action: 'confirm_broadcast', text });
+    await tgSend(
+      `Preview pesan broadcast:\n\n${text}\n\nKirim ke channel/grup Folofi?`,
+      { reply_markup: { inline_keyboard: [[{ text: '✅ Kirim', callback_data: 'broadcast:confirm' }, { text: '❌ Batal', callback_data: 'broadcast:cancel' }]] } }
+    );
+    return;
+  }
+
+  if (state.action === 'awaiting_find_keyword') {
+    if (!text) {
+      await tgSend('Kata kuncinya kosong, coba ketik lagi, atau /batal buat berhenti.');
+      return;
+    }
+    await clearState(chatId);
+    await cmdFind(text);
+    return;
+  }
+
+  // State gak dikenal (harusnya gak kejadian) -> bersihin biar gak nyangkut
+  await clearState(chatId);
+}
+
+// ================= HANDLER: TOMBOL (callback_query) =================
+
+async function processCallback(cq) {
+  const chatId = cq.message && cq.message.chat && cq.message.chat.id;
+  const messageId = cq.message && cq.message.message_id;
+  const data = cq.data || '';
+
+  if (!chatId || String(chatId) !== String(CHAT_ID)) {
+    await tgAnswerCallback(cq.id, 'Bukan buat kamu.');
+    return;
+  }
+
+  await tgAnswerCallback(cq.id); // hilangin loading spinner di tombolnya
+
+  if (data === 'menu:main') { await clearState(chatId); return cmdMenu(chatId, messageId); }
+  if (data === 'menu:status') return cmdStatus();
+  if (data === 'menu:find') {
+    await setState(chatId, { action: 'awaiting_find_keyword' });
+    return tgSendOrEdit(chatId, messageId, 'Ketik kata kunci yang mau dicari:');
+  }
+  if (data === 'menu:pending') return sendPendingMenu(chatId, messageId);
+  if (data === 'menu:surveys') return sendSurveysMenu(chatId, messageId);
+  if (data === 'menu:thumb') return tgSendOrEdit(chatId, messageId, 'Mau ganti thumbnail yang mana?', thumbMenuKeyboard());
+  if (data === 'menu:backup') return tgSendOrEdit(chatId, messageId, 'Menu backup &amp; restore:', backupMenuKeyboard());
+  if (data === 'menu:broadcast') {
+    await setState(chatId, { action: 'awaiting_broadcast_text' });
+    return tgSendOrEdit(chatId, messageId, 'Ketik pesan yang mau di-broadcast ke channel/grup Folofi:');
+  }
+
+  if (data === 'thumb:main') {
+    try {
+      requireGithub();
+    } catch (e) {
+      return tgSendOrEdit(chatId, messageId, e.message, thumbMenuKeyboard());
+    }
+    return tgSendOrEdit(chatId, messageId, 'Thumbnail utama situs mau diganti pakai apa?', {
+      inline_keyboard: [
+        [{ text: '🔗 Link gambar', callback_data: 'thumbmain:link' }, { text: '📤 Upload foto', callback_data: 'thumbmain:file' }],
+        [{ text: '⬅️ Kembali', callback_data: 'menu:thumb' }],
+      ],
+    });
+  }
+  if (data === 'thumbmain:link') {
+    await setState(chatId, { action: 'awaiting_thumb_link', target: 'main' });
+    return tgSendOrEdit(chatId, messageId, 'Oke, kirim link gambar-nya (harus diawali http:// atau https://).');
+  }
+  if (data === 'thumbmain:file') {
+    await setState(chatId, { action: 'awaiting_thumb_photo', target: 'main' });
+    return tgSendOrEdit(chatId, messageId, 'Oke, kirim FOTO-nya langsung ya (bukan dikirim sebagai dokumen/file).');
+  }
+  if (data === 'thumb:survey') {
+    if (!redis) return tgSendOrEdit(chatId, messageId, 'Redis belum dikonfigurasi.', thumbMenuKeyboard());
+    const surveys = (await redis.get(SURVEYS_KEY).catch(() => [])) || [];
+    const active = (Array.isArray(surveys) ? surveys : []).filter(s => !s.expiresAt || new Date(s.expiresAt) > new Date());
+    if (!active.length) return tgSendOrEdit(chatId, messageId, 'Belum ada survey aktif.', thumbMenuKeyboard());
+    const rows = active.slice(0, 10).map(s => [{ text: (s.title || s.id).slice(0, 50), callback_data: `survthumb:${s.id}` }]);
+    rows.push([{ text: '⬅️ Kembali', callback_data: 'menu:thumb' }]);
+    return tgSendOrEdit(chatId, messageId, 'Survey mana yang mau diganti thumbnail-nya?', { inline_keyboard: rows });
+  }
+  if (data.startsWith('survthumb:')) {
+    const surveyId = data.slice('survthumb:'.length);
+    await setState(chatId, { action: 'awaiting_thumb_link', target: 'survey', surveyId });
+    return tgSendOrEdit(chatId, messageId, `Oke, kirim link thumbnail buat survey <code>${surveyId}</code> (harus http:// atau https://).`);
+  }
+
+  if (data === 'backup:create') { await cmdBackup(); return; }
+  if (data === 'backup:list') return sendBackupPickList(chatId, messageId, false);
+  if (data === 'backup:restore') return sendBackupPickList(chatId, messageId, true);
+  if (data.startsWith('restore_pick:')) {
+    const filename = data.slice('restore_pick:'.length);
+    return tgSendOrEdit(
+      chatId, messageId,
+      `⚠️ Yakin mau timpa SEMUA data live pakai backup <code>${filename}</code>? Gak bisa di-undo.`,
+      { inline_keyboard: [[{ text: '✅ Ya, timpa', callback_data: `restore_confirm:${filename}` }, { text: '❌ Batal', callback_data: 'menu:backup' }]] }
+    );
+  }
+  if (data.startsWith('restore_confirm:')) {
+    const filename = data.slice('restore_confirm:'.length);
+    await cmdRestore(filename, 'KONFIRMASI');
+    return;
+  }
+
+  if (data === 'broadcast:confirm') {
+    const state = await getState(chatId);
+    await clearState(chatId);
+    if (state && state.action === 'confirm_broadcast' && state.text) {
+      await cmdBroadcast(state.text);
+    } else {
+      await tgSend('Gak ada pesan yang lagi nunggu dikirim. Mulai lagi lewat /menu.');
+    }
+    return;
+  }
+  if (data === 'broadcast:cancel') {
+    await clearState(chatId);
+    await tgSend('Broadcast dibatalin.');
+    return;
+  }
+
+  if (data.startsWith('delpending_confirm:')) {
+    const id = data.slice('delpending_confirm:'.length);
+    await cmdDelPending(id);
+    return;
+  }
+  if (data.startsWith('delpending:')) {
+    const id = data.slice('delpending:'.length);
+    return tgSendOrEdit(
+      chatId, messageId, `Hapus entri pending <code>${id}</code>?`,
+      { inline_keyboard: [[{ text: '✅ Ya, hapus', callback_data: `delpending_confirm:${id}` }, { text: '❌ Batal', callback_data: 'menu:pending' }]] }
+    );
+  }
+
+  if (data.startsWith('delsurvey_confirm:')) {
+    const id = data.slice('delsurvey_confirm:'.length);
+    await cmdDelSurvey(id);
+    return;
+  }
+  if (data.startsWith('delsurvey:')) {
+    const id = data.slice('delsurvey:'.length);
+    return tgSendOrEdit(
+      chatId, messageId, `Hapus survey <code>${id}</code>?`,
+      { inline_keyboard: [[{ text: '✅ Ya, hapus', callback_data: `delsurvey_confirm:${id}` }, { text: '❌ Batal', callback_data: 'menu:surveys' }]] }
+    );
+  }
+
+  await tgSend('Tombol gak dikenal (mungkin basi). Coba /menu lagi.');
+}
+
+// ================= ROUTER UTAMA =================
 
 async function processUpdate(update) {
+  if (update && update.callback_query) {
+    await processCallback(update.callback_query);
+    return;
+  }
+
   const message = update && update.message;
   if (!message) return;
 
   // Cuma layani chat admin yang sama seperti TELEGRAM_CHAT_ID
   if (String(message.chat.id) !== String(CHAT_ID)) return;
+  const chatId = message.chat.id;
 
-  // Kasus: foto dikirim dengan caption /setthumb
+  // Kasus lama: foto dikirim langsung dengan caption /setthumb (tetap didukung,
+  // jalan independen dari sistem state, biar kebiasaan lama tetap bisa dipakai).
   if (message.photo && message.caption && message.caption.trim().toLowerCase().startsWith('/setthumb')) {
+    await clearState(chatId);
     const largest = message.photo[message.photo.length - 1];
     await cmdSetThumbFromPhoto(largest.file_id);
     return;
   }
 
-  const text = (message.text || '').trim();
-  if (!text.startsWith('/')) return;
+  const rawText = (message.text || '').trim();
+  const isCommand = rawText.startsWith('/');
 
-  const [cmdRaw, ...args] = text.split(/\s+/);
+  // ---- Kalau BUKAN command, cek dulu apa lagi ada state percakapan aktif ----
+  if (!isCommand) {
+    const state = await getState(chatId);
+    if (state) {
+      if (message.photo && state.action === 'awaiting_thumb_photo') {
+        await clearState(chatId);
+        const largest = message.photo[message.photo.length - 1];
+        if (state.target === 'main') await cmdSetThumbFromPhoto(largest.file_id);
+        return;
+      }
+      await handleStateReply(chatId, message, state);
+      return;
+    }
+    // gak ada state aktif dan bukan command -> gak ada yang perlu dilakukan
+    if (message.photo) {
+      await tgSend('Foto diterima, tapi bot lagi gak nunggu upload apapun. Ketik /menu buat mulai.');
+    }
+    return;
+  }
+
+  // ---- Command (diketik manual) ----
+  const [cmdRaw, ...args] = rawText.split(/\s+/);
   const cmd = cmdRaw.toLowerCase().replace(/@.*$/, ''); // buang @botname kalau ada
 
   switch (cmd) {
     case '/start':
     case '/help':
       await cmdHelp();
+      break;
+    case '/menu':
+      await clearState(chatId);
+      await cmdMenu(chatId, null);
+      break;
+    case '/batal':
+      await clearState(chatId);
+      await tgSend('Oke, dibatalin. Ketik /menu buat mulai lagi.');
       break;
     case '/status':
       await cmdStatus();
@@ -476,7 +896,7 @@ async function processUpdate(update) {
       await cmdSetSurveyThumb(args[0], args[1]);
       break;
     case '/setthumb':
-      await tgSend('Kirim FOTO-nya langsung (bukan cuma teks), dengan caption /setthumb.');
+      await tgSend('Kirim FOTO-nya langsung (bukan cuma teks), dengan caption /setthumb — atau pakai /menu → Thumbnail.');
       break;
     case '/find':
       await cmdFind(args.join(' '));
@@ -491,10 +911,10 @@ async function processUpdate(update) {
       await cmdRestore(args[0], args[1]);
       break;
     case '/broadcast':
-      await cmdBroadcast(text.slice(cmdRaw.length).trim());
+      await cmdBroadcast(rawText.slice(cmdRaw.length).trim());
       break;
     default:
-      await tgSend('Perintah gak dikenal. Ketik /help buat lihat daftar perintah.');
+      await tgSend('Perintah gak dikenal. Ketik /menu buat lihat tombol, atau /help buat daftar perintah.');
   }
 }
 
