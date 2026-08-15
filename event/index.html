@@ -487,7 +487,7 @@
   <script>
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    /* Menu laci samping sekarang ditangani oleh page-menu-drawer.js (lihat sebelum </body>) */
+    /* Menu laci samping sekarang ditangani lewat file JS terpisah, lihat penutup dokumen */
 
     let isAgreed = false;
     function toggleAgreement() {
@@ -539,5 +539,6 @@
   </script>
      <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
     <script src="/pwa-install.js" defer></script>
+    <script src="/page-menu-drawer.js" defer></script>
 </body>
 </html>

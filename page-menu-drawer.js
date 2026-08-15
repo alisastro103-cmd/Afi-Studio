@@ -17,6 +17,18 @@
     var drawer = document.getElementById('page-menu-dropdown');
     if (!btn || !drawer) return;
 
+    // PENTING: `.nav-bar` (induk laci ini di markup asli) memakai
+    // `backdrop-filter`, dan properti itu membuat elemen tersebut jadi
+    // "containing block" baru untuk anak-anaknya yang `position: fixed`.
+    // Akibatnya top/right/bottom laci dihitung relatif ke kotak navbar
+    // (tinggi ±60px), bukan ke seluruh layar — laci jadi terjepit jadi
+    // strip kecil nyaris kosong di bawah navbar alih-alih menutupi sisi
+    // kanan layar. Perbaikannya: pindahkan (portal) laci ke <body>
+    // langsung supaya posisinya benar-benar relatif ke viewport.
+    if (drawer.parentElement !== document.body) {
+      document.body.appendChild(drawer);
+    }
+
     // Bungkus isi laci yang sudah ada dengan header (judul + tombol tutup)
     // dan wrapper body, hanya sekali.
     if (!drawer.querySelector('.page-menu-drawer-header')) {

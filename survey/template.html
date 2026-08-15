@@ -280,6 +280,7 @@
   <link rel="stylesheet" href="/css/theme-tokens.css">
   <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
   <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="/css/page-menu-drawer.css">
 </head>
 <body>
   <nav class="nav-bar">
@@ -324,17 +325,7 @@
   </nav>
   <script>
     if (typeof lucide !== 'undefined') lucide.createIcons();
-    (function () {
-      const menuBtn = document.getElementById('page-menu-btn');
-      const menuDropdown = document.getElementById('page-menu-dropdown');
-      menuBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        menuDropdown.classList.toggle('open');
-      });
-      document.addEventListener('click', function () {
-        menuDropdown.classList.remove('open');
-      });
-    })();
+    /* Menu laci samping sekarang ditangani lewat file JS terpisah, lihat penutup dokumen */
   </script>
 
   <main>
@@ -657,5 +648,6 @@
 
     init();
   </script>
+    <script src="/page-menu-drawer.js" defer></script>
 </body>
 </html>
