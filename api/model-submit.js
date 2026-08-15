@@ -23,6 +23,7 @@ import fs from 'fs';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { imageSize } from 'image-size';
+import { alertRateLimitHit } from '../lib/spam-alert.js';
 
 export const config = {
   api: {
@@ -110,6 +111,7 @@ export default async function handler(req, res) {
     try {
       const { success, reset } = await ratelimit.limit(clientIp);
       if (!success) {
+        alertRateLimitHit(redis, 'model-submit', clientIp).catch(() => {}); // fire-and-forget
         const retryAfterSec = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
         res.setHeader('Retry-After', retryAfterSec);
         return res.status(429).json({

@@ -15,6 +15,7 @@
 import crypto from 'crypto';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { alertRateLimitHit } from '../lib/spam-alert.js';
 
 const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
   ? Redis.fromEnv()
@@ -81,6 +82,7 @@ export default async function handler(req, res) {
     try {
       const { success, reset } = await ratelimit.limit(clientIp);
       if (!success) {
+        alertRateLimitHit(redis, 'survey-submit', clientIp).catch(() => {}); // fire-and-forget
         const retryAfterSec = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
         res.setHeader('Retry-After', retryAfterSec);
         return res.status(429).json({ error: 'Terlalu banyak percobaan. Coba lagi nanti.' });

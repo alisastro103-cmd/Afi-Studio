@@ -13,6 +13,7 @@ import formidable from 'formidable';
 import fs from 'fs';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { alertRateLimitHit } from '../lib/spam-alert.js';
 
 export const config = {
   api: {
@@ -23,9 +24,13 @@ export const config = {
 // Rate limiter dibuat di module scope supaya instance-nya dipakai ulang
 // antar-invocation selama function masih "warm", bukan dibuat baru
 // tiap request. Sliding window: maksimal 5 request per 10 menit per IP.
-const ratelimit = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  ? Redis.fromEnv()
+  : null;
+
+const ratelimit = redis
   ? new Ratelimit({
-      redis: Redis.fromEnv(),
+      redis,
       limiter: Ratelimit.slidingWindow(5, '10 m'),
       analytics: true,
       prefix: 'afi-studio:feedback',
@@ -86,6 +91,7 @@ export default async function handler(req, res) {
     try {
       const { success, reset } = await ratelimit.limit(clientIp);
       if (!success) {
+        alertRateLimitHit(redis, 'feedback', clientIp).catch(() => {}); // fire-and-forget
         const retryAfterSec = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
         res.setHeader('Retry-After', retryAfterSec);
         return res.status(429).json({
