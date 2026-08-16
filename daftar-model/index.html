@@ -68,6 +68,7 @@
         linear-gradient(var(--grid-line) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: 32px 32px;
+      background-attachment: fixed; /* grid tetep nempel di layar, gak ikut scroll konten */
       color: var(--text);
       line-height: 1.4;
       transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
@@ -220,6 +221,75 @@
     .conditional-field.show { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
+    /* --- Kotak upload thumbnail: kosong = tombol "+", udah keisi = gambar
+       ngisi kotaknya (tinggi ngikut rasio gambar aslinya, dibatasi max-height
+       biar gak kebablasan kalau ada yang milih gambar rasio aneh sebelum
+       sempet divalidasi) + tombol ✕ buat batalin/hapus pilihan. --- */
+    .dropbox {
+      position: relative;
+      width: 100%;
+      min-height: 96px;
+      max-height: 280px;
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dropbox-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .dropbox-empty:hover, .dropbox-empty:focus-within { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+    .dropbox-plus { font-size: 32px; font-weight: 300; line-height: 1; color: var(--text-light); }
+    .dropbox-image {
+      width: 100%;
+      height: auto;
+      max-height: 280px;
+      object-fit: contain; /* kalau rasionya kebetulan bukan 16:9, tetep rata tengah, gak kepotong */
+      display: block;
+    }
+    .dropbox-remove {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .dropbox-remove:hover { background: rgba(0,0,0,0.8); }
+    .dropbox input[type="file"] {
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0; overflow: hidden; clip: rect(0,0,0,0);
+    }
+
+    /* Preview buat mode link (terpisah dari dropbox upload, tetep gaya lama) */
+    .thumb-link-preview {
+      width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+      display: block;
+      margin-top: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
     .category-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -351,7 +421,7 @@
         background: var(--accent, #6c5ce7); color: #fff;
         padding: 12px 24px; border-radius: 999px;
         font-weight: 700; font-size: 14px;
-        transition: transform 0.3s ease; z-index: 3000;
+        transition: transform 0.3s ease; z-index: 5000;
     }
     .toast-daftar.show { transform: translate(-50%, 0); }
 
@@ -474,12 +544,19 @@
         </div>
         <div class="conditional-field show" data-field="thumb-link">
           <input type="url" id="thumbLink" class="form-input" style="margin-top:12px;" placeholder="https://...">
+          <img id="thumbLinkPreview" class="thumb-link-preview" style="display:none;">
         </div>
         <div class="conditional-field" data-field="thumb-upload">
-          <input type="file" id="thumbFile" class="form-input" style="margin-top:12px;" accept="image/png, image/jpeg, image/webp">
+          <div class="dropbox" id="thumbDropbox">
+            <label class="dropbox-empty" id="thumbDropboxEmpty" for="thumbFile">
+              <span class="dropbox-plus">+</span>
+            </label>
+            <img id="thumbUploadPreview" class="dropbox-image" style="display:none;">
+            <button type="button" class="dropbox-remove" id="thumbRemoveBtn" style="display:none;" aria-label="Hapus gambar">✕</button>
+            <input type="file" id="thumbFile" accept="image/png, image/jpeg, image/webp">
+          </div>
           <p class="form-hint">Maks 3MB, rasio wajib 16:9 (contoh 800x450, resolusi bebas asal rasionya sama). Lebih dari 3MB otomatis diminta pakai link.</p>
         </div>
-        <img id="thumbPreview" style="display:none; margin-top:12px; max-width:100%; max-height:220px; border-radius:8px; border:1px solid var(--border);">
       </div>
 
       <div class="form-group">
@@ -710,37 +787,66 @@
     guardFileSize('thumbFile', 'thumb');
     guardFileSize('downloadFile', 'file');
 
-    // Preview thumbnail langsung di halaman — baik dari link maupun upload,
-    // biar user bisa mastiin gambarnya bener sebelum dikirim.
-    const thumbPreview = document.getElementById('thumbPreview');
-    function hideThumbPreview() { thumbPreview.style.display = 'none'; thumbPreview.src = ''; }
-
+    // --- Preview mode LINK: sederhana, gambar muncul di bawah input link ---
+    const thumbLinkPreview = document.getElementById('thumbLinkPreview');
     document.getElementById('thumbLink').addEventListener('input', function () {
       const val = this.value.trim();
-      if (!val) return hideThumbPreview();
-      thumbPreview.src = val;
-      thumbPreview.style.display = 'block';
+      if (!val) { thumbLinkPreview.style.display = 'none'; thumbLinkPreview.src = ''; return; }
+      thumbLinkPreview.src = val;
+      thumbLinkPreview.style.display = 'block';
     });
-    thumbPreview.addEventListener('error', hideThumbPreview);
+    thumbLinkPreview.addEventListener('error', function () {
+      thumbLinkPreview.style.display = 'none';
+      thumbLinkPreview.src = '';
+    });
 
-    document.getElementById('thumbFile').addEventListener('change', function () {
+    // --- Kotak upload thumbnail: kosong = tombol "+", keisi = gambar + ✕ ---
+    // Tombol ✕ CUMA buat batalin/hapus gambar yang dipilih (gambarnya sendiri
+    // gak bisa diketuk buat ganti — sengaja, biar gak ketuker sama niat hapus).
+    const thumbUploadPreview = document.getElementById('thumbUploadPreview');
+    const thumbDropboxEmpty = document.getElementById('thumbDropboxEmpty');
+    const thumbRemoveBtn = document.getElementById('thumbRemoveBtn');
+    const thumbFileInput = document.getElementById('thumbFile');
+
+    function showThumbUploadEmpty() {
+      thumbDropboxEmpty.style.display = 'flex';
+      thumbUploadPreview.style.display = 'none';
+      thumbUploadPreview.src = '';
+      thumbRemoveBtn.style.display = 'none';
+    }
+    function showThumbUploadFilled(src) {
+      thumbUploadPreview.src = src;
+      thumbUploadPreview.style.display = 'block';
+      thumbDropboxEmpty.style.display = 'none';
+      thumbRemoveBtn.style.display = 'flex';
+    }
+
+    thumbFileInput.addEventListener('change', function () {
       const f = this.files[0];
-      if (!f) return hideThumbPreview();
+      if (!f) return showThumbUploadEmpty();
       const reader = new FileReader();
-      reader.onload = function (e) {
-        thumbPreview.src = e.target.result;
-        thumbPreview.style.display = 'block';
-      };
+      reader.onload = e => showThumbUploadFilled(e.target.result);
       reader.readAsDataURL(f);
     });
+    thumbUploadPreview.addEventListener('error', showThumbUploadEmpty);
 
-    // Kalau pindah mode (link/upload), preview ikut disembunyikan dulu
-    // biar gak nampilin gambar dari mode sebelumnya.
+    thumbRemoveBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation(); // jangan sampai ke-treat kayak ngeklik kotak dropbox
+      thumbFileInput.value = '';
+      showThumbUploadEmpty();
+    });
+
+    // Kalau pindah mode (link/upload), preview masing-masing ikut direset
+    // biar gak nampilin sisa dari mode sebelumnya.
     document.querySelector('[data-toggle-group="thumb"]').addEventListener('click', function (e) {
       const opt = e.target.closest('.toggle-option');
       if (!opt) return;
-      if (opt.dataset.value === 'upload' && !document.getElementById('thumbFile').files[0]) hideThumbPreview();
-      if (opt.dataset.value === 'link' && !document.getElementById('thumbLink').value.trim()) hideThumbPreview();
+      if (opt.dataset.value === 'upload' && !thumbFileInput.files[0]) showThumbUploadEmpty();
+      if (opt.dataset.value === 'link' && !document.getElementById('thumbLink').value.trim()) {
+        thumbLinkPreview.style.display = 'none';
+        thumbLinkPreview.src = '';
+      }
     });
 
     function showMessage(msg, type) {

@@ -87,6 +87,7 @@
                 linear-gradient(var(--grid-line) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
             background-size: 32px 32px;
+            background-attachment: fixed; /* grid tetep nempel di layar, gak ikut scroll konten */
             pointer-events: none;
             z-index: -1;
         }
@@ -396,7 +397,7 @@
             background: var(--accent, #6c5ce7); color: #fff;
             padding: 12px 24px; border-radius: 999px;
             font-weight: 700; font-size: 14px;
-            transition: transform 0.3s ease; z-index: 3000;
+            transition: transform 0.3s ease; z-index: 5000;
         }
         .toast-daftar.show { transform: translate(-50%, 0); }
     </style>

@@ -50,6 +50,7 @@ import { Redis } from '@upstash/redis';
 import dns from 'dns/promises';
 import net from 'net';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import sharp from 'sharp';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -67,7 +68,7 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const PENDING_KEY = 'afi-studio:data:pendingmodels';
 const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
-const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered';
+const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v2'; // v2 = daftar command lengkap (lihat ensureBotMenuRegistered)
 const ADMIN_LIST_KEY = 'afi-studio:data:admins'; // daftar admin TAMBAHAN (di luar owner/TELEGRAM_CHAT_ID)
 const INVITE_TTL_SEC = 900; // kode undangan admin berlaku 15 menit
 const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
@@ -217,8 +218,12 @@ async function tgGetFileUrl(fileId) {
   return `https://api.telegram.org/file/bot${BOT_TOKEN}/${meta.result.file_path}`;
 }
 
-// Daftarin command bot ke Telegram (bikin menu "/" native ada deskripsinya) — cukup
-// sekali aja, ditandain lewat flag di Redis biar gak dipanggil ulang tiap /menu.
+// Daftarin SEMUA command bot ke Telegram (biar lengkap muncul pas ketik "/"
+// sekali, dengan deskripsi singkat tiap command) — cukup sekali aja per versi
+// daftar ini, ditandain lewat flag di Redis biar gak keulang tiap /menu.
+// Kalau nambah/ubah command lagi ke depannya, BUMP versi di MENU_REGISTERED_KEY
+// (v1 -> v2 -> dst) biar Telegram nge-refresh daftarnya, karena flag lama
+// gak otomatis basi sendiri.
 async function ensureBotMenuRegistered() {
   if (!redis) return;
   try {
@@ -230,17 +235,25 @@ async function ensureBotMenuRegistered() {
       body: JSON.stringify({
         commands: [
           { command: 'menu', description: 'Buka menu utama (tombol)' },
-          { command: 'status', description: 'Ringkasan data' },
-          { command: 'pending', description: 'Pendaftaran model pending' },
+          { command: 'help', description: 'Daftar semua perintah' },
+          { command: 'status', description: 'Ringkasan jumlah data' },
+          { command: 'pending', description: 'Pendaftaran model belum diproses' },
+          { command: 'delpending', description: 'Hapus 1 pending — format: id' },
+          { command: 'clearpending', description: 'Hapus SEMUA pending' },
           { command: 'surveys', description: 'Daftar survey' },
-          { command: 'find', description: 'Cari model/survey' },
-          { command: 'backup', description: 'Backup data ke GitHub' },
-          { command: 'backups', description: 'Lihat daftar backup' },
-          { command: 'broadcast', description: 'Kirim pengumuman' },
-          { command: 'cleanup', description: 'Bersihin data lama (preview dulu)' },
+          { command: 'delsurvey', description: 'Hapus 1 survey — format: id' },
+          { command: 'setsurveythumb', description: 'Ganti thumbnail survey — format: id url' },
+          { command: 'setthumb', description: 'Ganti thumbnail situs (kirim sbg foto)' },
+          { command: 'find', description: 'Cari model/pending/survey — format: kata kunci' },
+          { command: 'backup', description: 'Simpan snapshot data ke GitHub' },
+          { command: 'backups', description: 'Lihat daftar backup tersimpan' },
+          { command: 'restore', description: 'Timpa data pakai backup — format: file KONFIRMASI' },
+          { command: 'broadcast', description: 'Kirim pengumuman ke channel/grup — format: pesan' },
+          { command: 'cleanup', description: 'Scan & bersihin data lama (preview dulu)' },
           { command: 'admins', description: 'Lihat daftar admin' },
-          { command: 'batal', description: 'Batalin proses yang lagi jalan' },
-          { command: 'help', description: 'Bantuan perintah' },
+          { command: 'addadmin', description: '[Owner] Bikin admin baru — format: nama [durasi]' },
+          { command: 'join', description: 'Daftar jadi admin — format: kode undangan' },
+          { command: 'batal', description: 'Batalin proses tanya-jawab yang lagi jalan' },
         ],
       }),
     });
@@ -541,6 +554,60 @@ async function cmdSetSurveyThumb(id, url) {
   list[idx] = { ...list[idx], thumbnail: url };
   await redis.set(SURVEYS_KEY, list);
   await tgSend(`Thumbnail survey <code>${id}</code> diganti ke:\n${url}`);
+}
+
+// --- Convert thumbnail pendaftaran model ke WebP/AVIF, on-demand ---
+// Dipicu tombol yang nempel di pesan dokumen thumbnail (dikirim apa adanya
+// oleh model-submit.js). File ASLI diambil ulang dari Telegram (bukan dari
+// hasil konversi sebelumnya — biar gak ke-lossy dua kali), dikonversi,
+// dikirim balik sebagai DOKUMEN baru (bukan foto, biar formatnya gak
+// ke-compress ulang sama Telegram).
+async function tgSendDocument(buffer, filename, caption) {
+  const ctx = requestContext.getStore();
+  const chatId = (ctx && ctx.chatId) || CHAT_ID;
+  const blob = new Blob([buffer]);
+  const fd = new FormData();
+  fd.append('chat_id', chatId);
+  fd.append('document', blob, filename);
+  if (caption) fd.append('caption', caption);
+  const resp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: fd });
+  const data = await resp.json();
+  if (!data.ok) throw new Error(data.description || 'Gagal kirim dokumen ke Telegram');
+  return data;
+}
+
+async function cmdConvertPendingThumb(pendingId, format) {
+  if (!redis) return tgSend('Redis belum dikonfigurasi di server.');
+  try {
+    const list = (await redis.get(PENDING_KEY)) || [];
+    const entry = (Array.isArray(list) ? list : []).find(p => p.id === pendingId);
+    if (!entry) return tgSend('Pendaftaran ini udah gak ada di antrian pending (mungkin udah diproses/dihapus).');
+    if (!entry.thumb || entry.thumb.type !== 'upload' || !entry.thumb.fileId) {
+      return tgSend('Entri ini gak punya file thumbnail ter-upload buat dikonversi (mungkin thumbnail-nya tipe link).');
+    }
+
+    await tgSend(`Lagi convert ke ${format.toUpperCase()}, tunggu bentar...`);
+
+    const fileUrl = await tgGetFileUrl(entry.thumb.fileId);
+    const imgResp = await fetch(fileUrl);
+    if (!imgResp.ok) throw new Error('Gagal download file asli dari Telegram.');
+    const original = Buffer.from(await imgResp.arrayBuffer());
+
+    const converted = format === 'avif'
+      ? await sharp(original).avif({ quality: 50 }).toBuffer()
+      : await sharp(original).webp({ quality: 82 }).toBuffer();
+
+    const baseName = (entry.thumb.filename || entry.name || 'thumbnail').replace(/\.[^./]+$/, '');
+    const filename = `${baseName || 'thumbnail'}.${format}`;
+
+    await tgSendDocument(
+      converted,
+      filename,
+      `Thumbnail "${entry.name || pendingId}" — udah dikonversi ke ${format.toUpperCase()}.\nTinggal download & upload ke ibb/postimg.`
+    );
+  } catch (e) {
+    await tgSend(`Gagal convert thumbnail: ${escHtml(e.message)}`);
+  }
 }
 
 async function cmdSetThumbFromPhoto(fileId) {
@@ -1234,6 +1301,15 @@ async function processCallback(cq) {
       chatId, messageId, 'Hapus admin ini dari daftar? Akses dia ke bot langsung kecabut.',
       { inline_keyboard: [[{ text: '✅ Ya, hapus', callback_data: `removeadmin_confirm:${target}` }, { text: '❌ Batal', callback_data: 'menu:admins' }]] }
     );
+  }
+
+  if (data.startsWith('convertthumb:webp:')) {
+    await cmdConvertPendingThumb(data.slice('convertthumb:webp:'.length), 'webp');
+    return;
+  }
+  if (data.startsWith('convertthumb:avif:')) {
+    await cmdConvertPendingThumb(data.slice('convertthumb:avif:'.length), 'avif');
+    return;
   }
 
   await tgSend('Tombol gak dikenal (mungkin basi). Coba /menu lagi.');

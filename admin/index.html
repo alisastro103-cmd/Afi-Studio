@@ -25,7 +25,7 @@
     --danger: #EF4444; --success: #22C55E;
   }
   .dark { --accent: #3B5578; --accent-hover: #4A6690; --bg: #1E293B; --surface: #334155; --text: #CBD5E1; --text-sub: #94A3B8; --border: #475569; --grid-line: rgba(148,163,184,0.16); }
-  body { background-color: var(--bg); background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; color: var(--text); transition: background-color .3s, color .3s; }
+  body { background-color: var(--bg); background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; background-attachment: fixed; color: var(--text); transition: background-color .3s, color .3s; }
 
   /* --- ANIMASI: buka halaman web, pindah halaman, board/popup muncul & tutup --- */
   @keyframes pageLoadIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }

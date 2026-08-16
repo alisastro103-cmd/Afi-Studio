@@ -25,7 +25,7 @@
     --success: #22C55E;
   }
   .dark { --accent: #3B5578; --accent-hover: #4A6690; --bg: #1E293B; --surface: #334155; --text: #CBD5E1; --text-sub: #94A3B8; --border: #475569; --grid-line: rgba(148,163,184,0.16); }
-  body { background-color: var(--bg); background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; color: var(--text); transition: background-color .3s, color .3s; }
+  body { background-color: var(--bg); background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 32px 32px; background-attachment: fixed; color: var(--text); transition: background-color .3s, color .3s; }
 
   /* --- ANIMASI: buka halaman web, pindah halaman, board/popup muncul & tutup --- */
   @keyframes pageLoadIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
@@ -224,12 +224,6 @@
   .ranking-card .body { padding:12px; display:flex; flex-direction:column; gap:6px; }
   .ranking-card .title { font-weight:700; font-size:13px; }
   .ranking-card .caption { font-size:11px; color:var(--text-sub); line-height:1.4; }
-  /* --- EVENT: kartu (mode kotak), gambar full-bleed seperti Ranking --- */
-  .event-card { position:relative; border-radius:10px; overflow:hidden; background:var(--surface); }
-  .event-card .photo { width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:var(--bg); }
-  .event-card .body { padding:12px; display:flex; flex-direction:column; gap:6px; }
-  .event-card .title { font-weight:700; font-size:13px; }
-  .event-card .caption { font-size:11px; color:var(--text-sub); line-height:1.4; }
   .toast { position:fixed; bottom:20px; right:20px; background:var(--success); color:#fff; padding:12px 18px; border-radius:8px; font-size:13px; font-weight:700; z-index:70; box-shadow:0 4px 14px rgba(0,0,0,.2); animation: toastIn .25s cubic-bezier(.16,1,.3,1); }
   .toast.closing { animation: toastOut .16s ease forwards; }
 
@@ -265,7 +259,6 @@
     <div class="side-item" data-view="marquee"><i data-lucide="megaphone"></i>Marquee / Info</div>
     <div class="side-item" data-view="member"><i data-lucide="users"></i>Member</div>
     <div class="side-item" data-view="ranking"><i data-lucide="trophy"></i>Ranking Render</div>
-    <div class="side-item" data-view="event"><i data-lucide="calendar"></i>Event</div>
     <div class="side-item" data-view="feedback"><i data-lucide="message-square"></i>Feedback</div>
     <div class="side-item" data-view="pendingmodels"><i data-lucide="inbox"></i>Pendaftaran<span id="pending-badge" style="display:none; margin-left:auto; background:#EF4444; color:#fff; font-size:10px; font-weight:800; padding:1px 6px; border-radius:999px;"></span></div>
     <div class="side-item" data-view="survey"><i data-lucide="clipboard-list"></i>Survey</div>
@@ -401,16 +394,6 @@
         <div class="data-grid" id="ranking-grid"></div>
       </section>
 
-      <!-- EVENT -->
-      <section class="section-view" id="view-event">
-        <div class="panel overflow-x-auto data-table-wrap">
-          <table>
-            <thead><tr><th>No</th><th>Gambar</th><th>Judul</th><th>Caption</th></tr></thead>
-            <tbody id="event-tbody"></tbody>
-          </table>
-        </div>
-        <div class="data-grid" id="event-grid"></div>
-      </section>
 
       <!-- FEEDBACK -->
       <section class="section-view" id="view-feedback">
@@ -527,8 +510,8 @@
 <script>
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
-let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], event: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [], surveys: [] };
-const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','event','settings','categories','appcategories','pendingmodels','surveys'];
+let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [], surveys: [] };
+const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','settings','categories','appcategories','pendingmodels','surveys'];
 
 /* ================= LOGIN & TOKEN ================= */
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
@@ -589,7 +572,7 @@ async function bootAdminApp(){
   toast('Memuat data...');
   await loadAllData();
   renderDashboard(); renderModels(); renderKategori(); renderKategoriApp(); renderVideos(); renderBanner();
-  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderEvent(); renderPengaturan(); renderPendingModels(); renderSurvey();
+  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderPengaturan(); renderPendingModels(); renderSurvey();
   lucide.createIcons();
 }
 
@@ -636,7 +619,7 @@ document.querySelectorAll('.side-item[data-view]').forEach(el=>{
   });
 });
 /* --- Tombol tambah (+) mengambang, mengikuti halaman yang sedang aktif --- */
-const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, event: openEventForm, survey: () => openSurveyForm(null) };
+const FAB_ACTIONS = { models: openModelForm, videos: openVideoForm, banner: openBannerForm, marquee: openMarqueeForm, ranking: openRankingForm, survey: () => openSurveyForm(null) };
 const globalFab = document.getElementById('global-fab');
 const globalFabBtn = document.getElementById('global-fab-btn');
 const globalFabDropdown = document.getElementById('global-fab-dropdown');
@@ -672,7 +655,7 @@ function updateFab(view){
   }
 }
 /* --- TOGGLE TAMPILAN: Tabel <-> Kotak (kartu database), tidak berlaku di Dashboard --- */
-const VIEWS_WITH_TABLE = ['models','kategori','videos','banner','marquee','member','ranking','event'];
+const VIEWS_WITH_TABLE = ['models','kategori','videos','banner','marquee','member','ranking'];
 const VIEWS_WITH_SEARCH = ['models','videos','member'];
 const viewToggleBtn = document.getElementById('view-toggle-btn');
 const searchToggleBtn = document.getElementById('search-toggle-btn');
@@ -906,7 +889,7 @@ document.querySelector('main').addEventListener('scroll', closeActionMenus);
 /* ================= URUTAN: tombol Naik/Turun di board opsi (tahan kartu/baris buat munculin board-nya) ================= */
 // "scope" nunjukin array asalnya: 'models','videos','banner','marquee','ranking', atau 'member:<gen>' khusus member
 // (member dipisah per generasi karena datanya memang disimpan per folder generasi, bukan satu array besar).
-const REORDER_RENDERERS = { models:()=>renderModels(), categories:()=>renderKategori(), appcategories:()=>renderKategoriApp(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember(), event:()=>renderEvent() };
+const REORDER_RENDERERS = { models:()=>renderModels(), categories:()=>renderKategori(), appcategories:()=>renderKategoriApp(), videos:()=>renderVideos(), banner:()=>renderBanner(), marquee:()=>renderMarquee(), ranking:()=>renderRanking(), member:()=>renderMember() };
 function reorderArrayRef(scope){
   if(scope && scope.startsWith('member:')) return DB.member[scope.slice(7)];
   return DB[scope];
@@ -1566,62 +1549,16 @@ async function saveRanking(idx){
   if(ok) toast('Tersimpan'); else DB.ranking = prev, renderRanking(), renderDashboard();
 }
 
-/* ================= EVENT (render/art event) ================= */
-function renderEvent(){
-  document.getElementById('event-tbody').innerHTML = DB.event.map((e,i)=>`
-    <tr data-reorder-scope="event" data-reorder-idx="${i}" data-hold-edit="openEventForm(${i})" data-hold-delete="removeItem('event',${i})">
-      <td class="row-num">${i+1}</td>
-      <td class="cell-ellipsis" style="font-size:12px; color:var(--text-sub);">${esc(fileName(e.gambar))}</td>
-      <td class="cell-ellipsis" style="font-weight:700;">${esc(e.judul)}</td>
-      <td class="desc-col">${esc(e.caption)}</td>
-    </tr>`).join('') || `<tr><td colspan="4" style="text-align:center; color:var(--text-sub); padding:24px;">Belum ada data</td></tr>`;
-  dataGrid('event-grid', DB.event.map((e,i)=>({e,i})), ({e,i})=>`
-    <div class="event-card" data-reorder-scope="event" data-reorder-idx="${i}" data-hold-edit="openEventForm(${i})" data-hold-delete="removeItem('event',${i})">
-      <img class="photo" src="${esc(e.gambar)}" onerror="this.style.opacity=0.3">
-      <div class="body">
-        <div class="title">${esc(e.judul)}</div>
-        <div class="caption">${esc(e.caption)}</div>
-      </div>
-    </div>`);
-  lucide.createIcons();
-  bindCardHold('event-grid');
-  bindCardHold('event-tbody');
-}
-function openEventForm(idx){
-  const isEdit = idx !== undefined;
-  const e = isEdit ? DB.event[idx] : { judul:'', caption:'', gambar:'' };
-  openModal(`
-    <h3 class="text-sm font-bold mb-4">${isEdit?'Edit':'Tambah'} Render Event</h3>
-    <div class="flex flex-col gap-3">
-      <div><label>Judul</label><textarea id="f-ejudul" rows="1">${esc(e.judul)}</textarea></div>
-      <div><label>Caption</label><textarea id="f-ecaption" rows="1">${esc(e.caption)}</textarea></div>
-      <div><label>URL Gambar</label><textarea id="f-egambar" rows="1">${esc(e.gambar)}</textarea></div>
-    </div>
-    <div class="flex justify-end gap-2 mt-5">
-      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
-      <button class="btn btn-accent" onclick="saveEvent(${isEdit?idx:'undefined'})">Simpan</button>
-    </div>`);
-}
-async function saveEvent(idx){
-  const data = { judul: document.getElementById('f-ejudul').value.trim(), caption: document.getElementById('f-ecaption').value.trim(), gambar: document.getElementById('f-egambar').value.trim() };
-  if(!data.judul){ toast('Judul wajib diisi'); return; }
-  if(!data.gambar){ toast('URL gambar wajib diisi'); return; }
-  const prev = DB.event.slice();
-  if(idx!==undefined) DB.event[idx]=data; else DB.event.push(data);
-  closeModal(); renderEvent(); renderDashboard();
-  const ok = await persist('event');
-  if(ok) toast('Tersimpan'); else DB.event = prev, renderEvent(), renderDashboard();
-}
 
 /* ================= GENERIC REMOVE ================= */
 async function removeItem(key, idx){
   if(!confirm('Hapus data ini?')) return;
   const prev = DB[key].slice();
   DB[key].splice(idx,1);
-  ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key]();
+  ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking})[key]();
   renderDashboard();
   const ok = await persist(key);
-  if(ok) toast('Dihapus'); else { DB[key] = prev; ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking, event:renderEvent})[key](); renderDashboard(); }
+  if(ok) toast('Dihapus'); else { DB[key] = prev; ({models:renderModels, categories:renderKategori, appcategories:renderKategoriApp, videos:renderVideos, banner:renderBanner, marquee:renderMarquee, ranking:renderRanking})[key](); renderDashboard(); }
 }
 
 /* ================= DASHBOARD ================= */
@@ -1634,7 +1571,6 @@ function renderDashboard(){
     {label:'Marquee', val:DB.marquee.length, icon:'megaphone'},
     {label:'Member', val:totalMembers, icon:'users'},
     {label:'Ranking Slot', val:DB.ranking.length, icon:'trophy'},
-    {label:'Event', val:DB.event.length, icon:'calendar'},
   ];
   document.getElementById('stat-cards').innerHTML = cards.map(c=>`
     <div class="panel p-3">
