@@ -421,32 +421,34 @@ function backupMenuKeyboard() {
 
 async function cmdHelp() {
   await tgSend(
-    '<b>Perintah Afi Studio Bot</b>\n\n' +
-    'Paling gampang: ketik /menu buat munculin tombol, gak usah ngetik manual.\n\n' +
-    '<b>Status &amp; data</b>\n' +
+    '<b>Perintah Afi Studio Bot</b>\n' +
+    'Ketik /menu buat pakai tombol — gak perlu ngetik manual.\n\n' +
+
+    '<b>Data</b>\n' +
     '/status — ringkasan jumlah data\n' +
-    '/pending — daftar pendaftaran model yang belum diproses\n' +
-    '/delpending &lt;id&gt; — hapus 1 entri pending\n' +
-    '/clearpending — hapus SEMUA entri pending\n' +
-    '/surveys — daftar survey yang ada\n' +
-    '/delsurvey &lt;id&gt; — hapus 1 survey\n' +
-    '/find &lt;kata kunci&gt; — cari model/pending/survey by nama\n\n' +
+    '/pending — pendaftaran model belum diproses\n' +
+    '/delpending id — hapus 1 pending\n' +
+    '/clearpending — hapus semua pending\n' +
+    '/surveys — daftar survey\n' +
+    '/delsurvey id — hapus 1 survey\n' +
+    '/find kata — cari model/pending/survey\n\n' +
+
     '<b>Thumbnail</b>\n' +
-    '/setsurveythumb &lt;id&gt; &lt;url&gt; — ganti thumbnail (OG) survey pakai link\n' +
-    'Kirim FOTO dengan caption <code>/setthumb</code> — ganti thumbnail utama situs\n\n' +
-    '<b>Backup &amp; restore</b> (butuh GITHUB_TOKEN &amp; GITHUB_REPO)\n' +
-    '/backup — simpan snapshot semua data ke repo GitHub\n' +
-    '/backups — lihat daftar backup yang tersimpan\n' +
-    '/restore &lt;file&gt; KONFIRMASI — timpa data live pakai isi backup\n\n' +
-    '<b>Broadcast</b> (butuh TELEGRAM_BROADCAST_CHAT_ID)\n' +
-    '/broadcast &lt;pesan&gt; — kirim pengumuman ke channel/grup Folofi\n\n' +
-    '<b>Cleanup</b>\n' +
-    '/cleanup — scan &amp; bersihin pending/survey/backup lama (preview dulu, konfirmasi sebelum hapus)\n\n' +
-    '<b>Admin</b>\n' +
-    '/admins — lihat daftar admin\n' +
-    '/addadmin &lt;nama&gt; [durasi] — (khusus owner) bikin kode undangan admin baru. Durasi contoh: 7d / 24h, kosongin = permanent\n' +
-    '/join &lt;kode&gt; — daftar jadi admin pakai kode undangan\n\n' +
-    '/batal — batalin proses tanya-jawab yang lagi jalan'
+    '/setsurveythumb id url — ganti thumbnail survey\n' +
+    'Kirim foto + caption /setthumb — ganti thumbnail situs\n\n' +
+
+    '<b>Backup</b>\n' +
+    '/backup — simpan data ke GitHub\n' +
+    '/backups — lihat daftar backup\n' +
+    '/restore file KONFIRMASI — timpa data pakai backup\n\n' +
+
+    '<b>Lainnya</b>\n' +
+    '/broadcast pesan — kirim ke channel Folofi\n' +
+    '/cleanup — bersihin data lama\n' +
+    '/admins — daftar admin\n' +
+    '/addadmin nama [durasi] — bikin admin baru (khusus owner)\n' +
+    '/join kode — daftar jadi admin\n' +
+    '/batal — batalin proses yang lagi jalan'
   );
 }
 
