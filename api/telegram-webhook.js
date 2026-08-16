@@ -47,6 +47,8 @@
 // "membangunkan" proses lama. JANGAN dibalik lagi.
 
 import { Redis } from '@upstash/redis';
+import dns from 'dns/promises';
+import net from 'net';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -66,6 +68,11 @@ const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
 const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered';
 const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
+
+// Ambang batas fitur /cleanup — data lebih tua dari ini dianggap kandidat basi.
+const CLEANUP_PENDING_STALE_DAYS = 30; // pendaftaran pending yang nganggur >30 hari
+const CLEANUP_SURVEY_STALE_DAYS = 60; // survey yang kadaluarsa >60 hari lalu
+const CLEANUP_BACKUP_KEEP = 10; // backup di luar 10 terbaru dianggap kandidat basi
 
 // Semua koleksi data yang ikut di-backup/restore. Nama di kiri dipakai sebagai
 // nama field di file backup JSON-nya; harus sinkron sama api/data/[type].js.
@@ -102,6 +109,16 @@ async function setState(chatId, state) {
 async function clearState(chatId) {
   if (!redis) return;
   try { await redis.del(stateKey(chatId)); } catch {}
+}
+
+// Escape karakter spesial HTML dari data DINAMIS (nama model, judul survey,
+// kata kunci pencarian, pesan error dari API luar, dst) sebelum ditempel ke
+// pesan yang dikirim pakai parse_mode HTML. Tanpa ini, kalau ada data yang
+// kebetulan mengandung &, <, atau > (contoh nama model "Meja & Kursi"),
+// Telegram bakal nolak parse pesannya ("can't parse entities") dan
+// notifikasinya GAGAL terkirim total — bukan cuma salah tampil.
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // ================= HELPER: TELEGRAM =================
@@ -184,6 +201,7 @@ async function ensureBotMenuRegistered() {
           { command: 'backup', description: 'Backup data ke GitHub' },
           { command: 'backups', description: 'Lihat daftar backup' },
           { command: 'broadcast', description: 'Kirim pengumuman' },
+          { command: 'cleanup', description: 'Bersihin data lama (preview dulu)' },
           { command: 'batal', description: 'Batalin proses yang lagi jalan' },
           { command: 'help', description: 'Bantuan perintah' },
         ],
@@ -251,6 +269,76 @@ async function githubPutFile(path, base64Content, message) {
   return resp.json();
 }
 
+// ================= HELPER: CEGAH SSRF =================
+// Dipakai sebelum server nge-fetch URL yang DIKETIK USER (bukan link dari
+// Telegram sendiri) — misal pas ganti thumbnail lewat link. Tanpa ini, orang
+// (atau akun admin yang kebobolan) bisa nyuruh server nge-fetch alamat
+// internal (169.254.169.254 buat metadata cloud, 127.0.0.1, IP LAN, dst).
+// Catatan: ini best-effort (cek IP hasil resolve DNS saat ini), bukan proteksi
+// 100% terhadap DNS-rebinding tingkat lanjut — tapi cukup buat nutup celah
+// paling umum, dan fitur ini cuma bisa dipicu admin yang udah lolos validasi
+// chat_id + webhook secret, jadi risikonya udah rendah dari awal.
+function isPrivateOrReservedIp(ip) {
+  if (net.isIPv6(ip)) {
+    return ip === '::1' || ip.startsWith('fc') || ip.startsWith('fd') || ip.startsWith('fe80');
+  }
+  const parts = ip.split('.').map(Number);
+  if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return true; // format aneh -> tolak aja
+  const [a, b] = parts;
+  if (a === 127) return true; // loopback
+  if (a === 10) return true; // private
+  if (a === 172 && b >= 16 && b <= 31) return true; // private
+  if (a === 192 && b === 168) return true; // private
+  if (a === 169 && b === 254) return true; // link-local, termasuk metadata cloud
+  if (a === 0) return true;
+  return false;
+}
+
+async function assertSafeExternalUrl(urlString) {
+  let parsed;
+  try {
+    parsed = new URL(urlString);
+  } catch {
+    throw new Error('URL gak valid.');
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    throw new Error('URL harus http:// atau https://');
+  }
+  const hostname = parsed.hostname;
+  if (hostname === 'localhost') throw new Error('URL nunjuk ke localhost, gak diizinkan.');
+
+  let addresses;
+  try {
+    addresses = await dns.lookup(hostname, { all: true });
+  } catch {
+    throw new Error('Gagal resolve domain dari URL itu.');
+  }
+  if (!addresses.length || addresses.some(a => isPrivateOrReservedIp(a.address))) {
+    throw new Error('URL nunjuk ke alamat internal/private, gak diizinkan.');
+  }
+}
+
+async function githubDeleteFile(path, message) {
+  const meta = await githubGetFileMeta(path); // butuh sha buat hapus
+  const resp = await fetch(
+    `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodeURIComponent(path)}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message, sha: meta.sha, branch: GITHUB_BRANCH }),
+    }
+  );
+  if (!resp.ok) {
+    const errBody = await resp.text();
+    throw new Error(`Gagal hapus ${path} dari GitHub (status ${resp.status}): ${errBody.slice(0, 200)}`);
+  }
+  return resp.json();
+}
+
 function requireGithub() {
   if (!GITHUB_TOKEN || !GITHUB_REPO) {
     throw new Error('Fitur ini butuh GITHUB_TOKEN dan GITHUB_REPO di-set dulu di Environment Variables Vercel.');
@@ -265,7 +353,7 @@ function mainMenuKeyboard() {
       [{ text: '📊 Status', callback_data: 'menu:status' }, { text: '🔍 Cari', callback_data: 'menu:find' }],
       [{ text: '⏳ Pending Model', callback_data: 'menu:pending' }, { text: '📋 Survey', callback_data: 'menu:surveys' }],
       [{ text: '🖼️ Thumbnail', callback_data: 'menu:thumb' }, { text: '💾 Backup', callback_data: 'menu:backup' }],
-      [{ text: '📢 Broadcast', callback_data: 'menu:broadcast' }],
+      [{ text: '📢 Broadcast', callback_data: 'menu:broadcast' }, { text: '🧹 Cleanup', callback_data: 'cleanup:scan' }],
     ],
   };
 }
@@ -314,6 +402,8 @@ async function cmdHelp() {
     '/restore &lt;file&gt; KONFIRMASI — timpa data live pakai isi backup\n\n' +
     '<b>Broadcast</b> (butuh TELEGRAM_BROADCAST_CHAT_ID)\n' +
     '/broadcast &lt;pesan&gt; — kirim pengumuman ke channel/grup Folofi\n\n' +
+    '<b>Cleanup</b>\n' +
+    '/cleanup — scan &amp; bersihin pending/survey/backup lama (preview dulu, konfirmasi sebelum hapus)\n\n' +
     '/batal — batalin proses tanya-jawab yang lagi jalan'
   );
 }
@@ -349,7 +439,7 @@ async function cmdPending() {
   const top = list.slice(-10).reverse();
   let text = `<b>Pendaftaran Pending</b> (${list.length} total, 10 terbaru)\n\n`;
   for (const item of top) {
-    text += `• <code>${item.id}</code> — ${item.name || '-'} (${item.role || '-'})\n  ${new Date(item.submittedAt).toLocaleString('id-ID')}\n`;
+    text += `• <code>${escHtml(item.id)}</code> — ${escHtml(item.name || '-')} (${escHtml(item.role || '-')})\n  ${new Date(item.submittedAt).toLocaleString('id-ID')}\n`;
   }
   text += '\nHapus: <code>/delpending id</code> (atau pakai /menu)';
   await tgSend(text);
@@ -361,9 +451,9 @@ async function cmdDelPending(id) {
   const list = (await redis.get(PENDING_KEY)) || [];
   if (!Array.isArray(list)) return tgSend('Data pending kosong/rusak.');
   const filtered = list.filter(item => item.id !== id);
-  if (filtered.length === list.length) return tgSend(`Gak ketemu entri dengan id "${id}".`);
+  if (filtered.length === list.length) return tgSend(`Gak ketemu entri dengan id "${escHtml(id)}".`);
   await redis.set(PENDING_KEY, filtered);
-  await tgSend(`Terhapus: <code>${id}</code>. Sisa pending: ${filtered.length}.`);
+  await tgSend(`Terhapus: <code>${escHtml(id)}</code>. Sisa pending: ${filtered.length}.`);
 }
 
 async function cmdClearPending() {
@@ -379,7 +469,7 @@ async function cmdSurveys() {
   let text = `<b>Daftar Survey</b> (${list.length})\n\n`;
   for (const s of list) {
     const expired = s.expiresAt && new Date(s.expiresAt) < new Date();
-    text += `• <code>${s.id}</code> — ${s.title || '(tanpa judul)'} ${expired ? '(kadaluarsa)' : ''}\n`;
+    text += `• <code>${escHtml(s.id)}</code> — ${escHtml(s.title || '(tanpa judul)')} ${expired ? '(kadaluarsa)' : ''}\n`;
   }
   text += '\nHapus: <code>/delsurvey id</code>\nGanti thumbnail: <code>/setsurveythumb id url</code> (atau pakai /menu)';
   await tgSend(text);
@@ -391,9 +481,9 @@ async function cmdDelSurvey(id) {
   const list = (await redis.get(SURVEYS_KEY)) || [];
   if (!Array.isArray(list)) return tgSend('Data survey kosong/rusak.');
   const filtered = list.filter(s => s.id !== id);
-  if (filtered.length === list.length) return tgSend(`Gak ketemu survey dengan id "${id}".`);
+  if (filtered.length === list.length) return tgSend(`Gak ketemu survey dengan id "${escHtml(id)}".`);
   await redis.set(SURVEYS_KEY, filtered);
-  await tgSend(`Survey <code>${id}</code> terhapus. Sisa: ${filtered.length}.`);
+  await tgSend(`Survey <code>${escHtml(id)}</code> terhapus. Sisa: ${filtered.length}.`);
 }
 
 async function cmdSetSurveyThumb(id, url) {
@@ -403,7 +493,7 @@ async function cmdSetSurveyThumb(id, url) {
   const list = (await redis.get(SURVEYS_KEY)) || [];
   if (!Array.isArray(list)) return tgSend('Data survey kosong/rusak.');
   const idx = list.findIndex(s => s.id === id);
-  if (idx === -1) return tgSend(`Gak ketemu survey dengan id "${id}".`);
+  if (idx === -1) return tgSend(`Gak ketemu survey dengan id "${escHtml(id)}".`);
   list[idx] = { ...list[idx], thumbnail: url };
   await redis.set(SURVEYS_KEY, list);
   await tgSend(`Thumbnail survey <code>${id}</code> diganti ke:\n${url}`);
@@ -425,13 +515,14 @@ async function cmdSetThumbFromPhoto(fileId) {
       '(mungkin perlu di-refresh cache preview-nya).'
     );
   } catch (e) {
-    await tgSend(`Gagal ganti thumbnail: ${e.message}`);
+    await tgSend(`Gagal ganti thumbnail: ${escHtml(e.message)}`);
   }
 }
 
 async function cmdSetThumbFromUrl(url) {
   try {
     requireGithub();
+    await assertSafeExternalUrl(url);
     await tgSend('Lagi proses... ambil gambar dari link & commit ke repo.');
     const imgResp = await fetch(url);
     if (!imgResp.ok) throw new Error('Gagal download gambar dari link itu.');
@@ -443,7 +534,7 @@ async function cmdSetThumbFromUrl(url) {
       'Vercel bakal auto-redeploy — cek lagi dalam ~1-2 menit di link preview WhatsApp/Discord.'
     );
   } catch (e) {
-    await tgSend(`Gagal ganti thumbnail: ${e.message}`);
+    await tgSend(`Gagal ganti thumbnail: ${escHtml(e.message)}`);
   }
 }
 
@@ -462,18 +553,18 @@ async function cmdFind(keyword) {
 
   const results = [];
   (Array.isArray(models) ? models : []).forEach(m => {
-    if ((m.name || '').toLowerCase().includes(q)) results.push(`📦 Model: ${m.name}`);
+    if ((m.name || '').toLowerCase().includes(q)) results.push(`📦 Model: ${escHtml(m.name)}`);
   });
   (Array.isArray(pending) ? pending : []).forEach(p => {
-    if ((p.name || '').toLowerCase().includes(q)) results.push(`⏳ Pending: ${p.name} (<code>${p.id}</code>)`);
+    if ((p.name || '').toLowerCase().includes(q)) results.push(`⏳ Pending: ${escHtml(p.name)} (<code>${escHtml(p.id)}</code>)`);
   });
   (Array.isArray(surveys) ? surveys : []).forEach(s => {
-    if ((s.title || '').toLowerCase().includes(q)) results.push(`📊 Survey: ${s.title} (<code>${s.id}</code>)`);
+    if ((s.title || '').toLowerCase().includes(q)) results.push(`📊 Survey: ${escHtml(s.title)} (<code>${escHtml(s.id)}</code>)`);
   });
 
-  if (!results.length) return tgSend(`Gak ada hasil buat "${keyword}".`);
+  if (!results.length) return tgSend(`Gak ada hasil buat "${escHtml(keyword)}".`);
   const shown = results.slice(0, 20);
-  const text = `<b>Hasil pencarian "${keyword}"</b> (${results.length}${results.length > 20 ? ', ditampilin 20' : ''})\n\n${shown.join('\n')}`;
+  const text = `<b>Hasil pencarian "${escHtml(keyword)}"</b> (${results.length}${results.length > 20 ? ', ditampilin 20' : ''})\n\n${shown.join('\n')}`;
   await tgSend(text);
 }
 
@@ -503,7 +594,7 @@ async function cmdBackup() {
       `Buat restore nanti kalau perlu:\n<code>/restore ${filename} KONFIRMASI</code>\n(atau lewat /menu → Backup → Restore)`
     );
   } catch (e) {
-    await tgSend(`Gagal backup: ${e.message}`);
+    await tgSend(`Gagal backup: ${escHtml(e.message)}`);
   }
 }
 
@@ -525,7 +616,7 @@ async function cmdBackups() {
     text += '\nRestore: <code>/restore nama_file.json KONFIRMASI</code>';
     await tgSend(text);
   } catch (e) {
-    await tgSend(`Gagal ambil daftar backup: ${e.message}`);
+    await tgSend(`Gagal ambil daftar backup: ${escHtml(e.message)}`);
   }
 }
 
@@ -561,7 +652,7 @@ async function cmdRestore(filename, confirmWord) {
       `${restored} koleksi data ditimpa ke kondisi backup itu.`
     );
   } catch (e) {
-    await tgSend(`Gagal restore: ${e.message}`);
+    await tgSend(`Gagal restore: ${escHtml(e.message)}`);
   }
 }
 
@@ -576,11 +667,157 @@ async function cmdBroadcast(text) {
     );
   }
   try {
-    await tgSendTo(BROADCAST_CHAT_ID, text);
+    // Dikirim TANPA parse_mode (plain text) sengaja — pesan broadcast itu
+    // free-form (bisa aja isinya wajar ada tanda &, <, dst), dan kita gak
+    // mau format sekecil apapun bikin pengiriman gagal gara-gara Telegram
+    // nolak parse HTML-nya.
+    await tgSendTo(BROADCAST_CHAT_ID, text, { parse_mode: undefined });
     await tgSend('Terkirim ke channel/grup broadcast. ✅');
   } catch (e) {
-    await tgSend(`Gagal broadcast: ${e.message}`);
+    await tgSend(`Gagal broadcast: ${escHtml(e.message)}`);
   }
+}
+
+// --- Cleanup data basi ---
+// Alur SELALU dua tahap: scan (preview, gak ubah data apapun) -> baru eksekusi
+// kalau ditekan konfirmasi. Hasil scan disimpan di state (bukan di-scan ulang
+// pas konfirmasi) supaya yang kehapus PERSIS yang ditampilin di preview,
+// gak ada data baru yang "ikut kehapus" gara-gara nyangkut kondisi berubah
+// di antara waktu scan dan waktu konfirmasi.
+
+async function cmdCleanupScan(chatId, messageId) {
+  if (!redis) return tgSendOrEdit(chatId, messageId, 'Redis belum dikonfigurasi di server.', mainMenuKeyboard());
+
+  await tgSendOrEdit(chatId, messageId, 'Lagi scan data lama, tunggu bentar...');
+
+  const now = Date.now();
+
+  const pending = (await redis.get(PENDING_KEY).catch(() => [])) || [];
+  const stalePending = (Array.isArray(pending) ? pending : []).filter(p => {
+    const t = new Date(p.submittedAt).getTime();
+    return !Number.isNaN(t) && (now - t) > CLEANUP_PENDING_STALE_DAYS * 86400000;
+  });
+
+  const surveys = (await redis.get(SURVEYS_KEY).catch(() => [])) || [];
+  const staleSurveys = (Array.isArray(surveys) ? surveys : []).filter(s => {
+    if (!s.expiresAt) return false;
+    const t = new Date(s.expiresAt).getTime();
+    return !Number.isNaN(t) && (now - t) > CLEANUP_SURVEY_STALE_DAYS * 86400000;
+  });
+
+  let extraBackups = [];
+  if (GITHUB_TOKEN && GITHUB_REPO) {
+    try {
+      const all = await githubListDir('backups');
+      const sorted = all
+        .filter(f => f.type === 'file' && f.name.endsWith('.json'))
+        .sort((a, b) => b.name.localeCompare(a.name)); // terbaru duluan
+      extraBackups = sorted.slice(CLEANUP_BACKUP_KEEP); // sisanya di luar N terbaru = kandidat basi
+    } catch {
+      // GitHub gak bisa diakses -> skip bagian backup, jangan gagalin scan yang lain
+    }
+  }
+
+  const totalFound = stalePending.length + staleSurveys.length + extraBackups.length;
+  if (!totalFound) {
+    return tgSendOrEdit(chatId, messageId, '✅ Gak ada data basi yang perlu dibersihin sekarang. Semuanya masih relevan.', mainMenuKeyboard());
+  }
+
+  // Simpan HASIL scan ini ke state, biar tombol konfirmasi eksekusi persis
+  // data yang ditampilin, bukan scan ulang.
+  await setState(chatId, {
+    action: 'confirm_cleanup',
+    pendingIds: stalePending.map(p => p.id),
+    surveyIds: staleSurveys.map(s => s.id),
+    backupFiles: extraBackups.map(f => f.name),
+  });
+
+  let text = `<b>Hasil Scan Cleanup</b>\n\n`;
+  if (stalePending.length) {
+    text += `⏳ <b>${stalePending.length} pendaftaran pending</b> (nganggur &gt;${CLEANUP_PENDING_STALE_DAYS} hari):\n`;
+    text += stalePending.slice(0, 5).map(p => `  • ${escHtml(p.name || p.id)}`).join('\n');
+    if (stalePending.length > 5) text += `\n  ...dan ${stalePending.length - 5} lagi`;
+    text += '\n\n';
+  }
+  if (staleSurveys.length) {
+    text += `📋 <b>${staleSurveys.length} survey</b> (kadaluarsa &gt;${CLEANUP_SURVEY_STALE_DAYS} hari):\n`;
+    text += staleSurveys.slice(0, 5).map(s => `  • ${escHtml(s.title || s.id)}`).join('\n');
+    if (staleSurveys.length > 5) text += `\n  ...dan ${staleSurveys.length - 5} lagi`;
+    text += '\n\n';
+  }
+  if (extraBackups.length) {
+    text += `💾 <b>${extraBackups.length} backup lama</b> (di luar ${CLEANUP_BACKUP_KEEP} terbaru):\n`;
+    text += extraBackups.slice(0, 5).map(f => `  • ${f.name}`).join('\n');
+    if (extraBackups.length > 5) text += `\n  ...dan ${extraBackups.length - 5} lagi`;
+    text += '\n\n';
+  }
+  text += `Total <b>${totalFound}</b> item bakal dihapus permanen. Lanjut?`;
+
+  await tgSendOrEdit(chatId, messageId, text, {
+    inline_keyboard: [
+      [{ text: '✅ Ya, hapus semua ini', callback_data: 'cleanup:confirm' }, { text: '❌ Batal', callback_data: 'cleanup:cancel' }],
+      [{ text: '⬅️ Kembali', callback_data: 'menu:main' }],
+    ],
+  });
+}
+
+async function cmdCleanupExecute(chatId) {
+  const state = await getState(chatId);
+  await clearState(chatId);
+
+  if (!state || state.action !== 'confirm_cleanup') {
+    await tgSend('Gak ada hasil scan yang lagi nunggu konfirmasi (mungkin udah basi/10 menit lewat). Coba /cleanup lagi.');
+    return;
+  }
+
+  let removedPending = 0;
+  let removedSurveys = 0;
+  let removedBackups = 0;
+  const errors = [];
+
+  if (redis && state.pendingIds && state.pendingIds.length) {
+    try {
+      const list = (await redis.get(PENDING_KEY)) || [];
+      const arr = Array.isArray(list) ? list : [];
+      const filtered = arr.filter(p => !state.pendingIds.includes(p.id));
+      removedPending = arr.length - filtered.length;
+      await redis.set(PENDING_KEY, filtered);
+    } catch (e) {
+      errors.push(`pending: ${escHtml(e.message)}`);
+    }
+  }
+
+  if (redis && state.surveyIds && state.surveyIds.length) {
+    try {
+      const list = (await redis.get(SURVEYS_KEY)) || [];
+      const arr = Array.isArray(list) ? list : [];
+      const filtered = arr.filter(s => !state.surveyIds.includes(s.id));
+      removedSurveys = arr.length - filtered.length;
+      await redis.set(SURVEYS_KEY, filtered);
+    } catch (e) {
+      errors.push(`survey: ${escHtml(e.message)}`);
+    }
+  }
+
+  if (state.backupFiles && state.backupFiles.length) {
+    for (const filename of state.backupFiles) {
+      try {
+        await githubDeleteFile(`backups/${filename}`, `chore: cleanup backup lama via Telegram bot (${filename})`);
+        removedBackups++;
+      } catch (e) {
+        errors.push(`backup ${escHtml(filename)}: ${escHtml(e.message)}`);
+      }
+    }
+  }
+
+  let text = `<b>Cleanup selesai</b> 🧹\n\n`;
+  text += `⏳ Pending dihapus: ${removedPending}\n`;
+  text += `📋 Survey dihapus: ${removedSurveys}\n`;
+  text += `💾 Backup dihapus: ${removedBackups}\n`;
+  if (errors.length) {
+    text += `\n⚠️ Ada yang gagal:\n${errors.slice(0, 5).map(e => `• ${e}`).join('\n')}`;
+  }
+  await tgSend(text);
 }
 
 // ================= MENU: LIST DENGAN TOMBOL HAPUS =================
@@ -622,7 +859,7 @@ async function sendBackupPickList(chatId, messageId, forRestore) {
       await tgSendOrEdit(chatId, messageId, text, backupMenuKeyboard());
     }
   } catch (e) {
-    await tgSendOrEdit(chatId, messageId, `Gagal ambil daftar backup: ${e.message}`, backupMenuKeyboard());
+    await tgSendOrEdit(chatId, messageId, `Gagal ambil daftar backup: ${escHtml(e.message)}`, backupMenuKeyboard());
   }
 }
 
@@ -664,7 +901,7 @@ async function handleStateReply(chatId, message, state) {
     await setState(chatId, { action: 'confirm_broadcast', text });
     await tgSend(
       `Preview pesan broadcast:\n\n${text}\n\nKirim ke channel/grup Folofi?`,
-      { reply_markup: { inline_keyboard: [[{ text: '✅ Kirim', callback_data: 'broadcast:confirm' }, { text: '❌ Batal', callback_data: 'broadcast:cancel' }]] } }
+      { parse_mode: undefined, reply_markup: { inline_keyboard: [[{ text: '✅ Kirim', callback_data: 'broadcast:confirm' }, { text: '❌ Batal', callback_data: 'broadcast:cancel' }]] } }
     );
     return;
   }
@@ -807,6 +1044,13 @@ async function processCallback(cq) {
     );
   }
 
+  if (data === 'cleanup:scan') return cmdCleanupScan(chatId, messageId);
+  if (data === 'cleanup:confirm') { await cmdCleanupExecute(chatId); return; }
+  if (data === 'cleanup:cancel') {
+    await clearState(chatId);
+    return tgSendOrEdit(chatId, messageId, 'Cleanup dibatalin, gak ada yang dihapus.', mainMenuKeyboard());
+  }
+
   await tgSend('Tombol gak dikenal (mungkin basi). Coba /menu lagi.');
 }
 
@@ -913,6 +1157,10 @@ async function processUpdate(update) {
     case '/broadcast':
       await cmdBroadcast(rawText.slice(cmdRaw.length).trim());
       break;
+    case '/cleanup':
+      await clearState(chatId);
+      await cmdCleanupScan(chatId, null);
+      break;
     default:
       await tgSend('Perintah gak dikenal. Ketik /menu buat lihat tombol, atau /help buat daftar perintah.');
   }
@@ -938,7 +1186,7 @@ export default async function handler(req, res) {
     await processUpdate(req.body);
   } catch (e) {
     console.error('Webhook error:', e);
-    try { await tgSend(`Error: ${e.message}`); } catch {}
+    try { await tgSend(`Error: ${escHtml(e.message)}`); } catch {}
   }
 
   return res.status(200).json({ ok: true });

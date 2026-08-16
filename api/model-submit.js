@@ -23,6 +23,7 @@ import fs from 'fs';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { imageSize } from 'image-size';
+import sharp from 'sharp';
 import { alertRateLimitHit } from '../lib/spam-alert.js';
 
 export const config = {
@@ -197,6 +198,14 @@ export default async function handler(req, res) {
     }
 
     // === 2c. VALIDASI RASIO THUMBNAIL (wajib 16:9, resolusi bebas) ===
+    // Sekalian di sini: kalau thumbnail-nya di-UPLOAD (bukan link), langsung
+    // dikonversi ke WebP sebelum dipakai lebih lanjut (dikirim ke Telegram &
+    // dicatet ukurannya buat panel admin) — biar lebih kecil & format-nya
+    // konsisten. Kalau konversi gagal karena sebab apapun (format aneh, dll),
+    // fallback ke buffer asli aja, jangan sampai gagalin pendaftarannya cuma
+    // gara-gara optimasi ini.
+    let thumbWebpBuffer = null; // hasil konversi, cuma keisi kalau thumbMode === 'upload'
+    let thumbWebpFilename = null;
     try {
       let thumbBuffer;
       if (thumbMode === 'upload') {
@@ -212,6 +221,18 @@ export default async function handler(req, res) {
         if (thumbFile) fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
         if (downloadFile) fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
         return res.status(400).json({ error: `Rasio thumbnail harus 16:9 (contoh 800x450). Gambar kamu ${dims.width}x${dims.height} (rasio ${ratio.toFixed(2)}, harus ~${TARGET_RATIO.toFixed(2)}).` });
+      }
+
+      if (thumbMode === 'upload') {
+        try {
+          thumbWebpBuffer = await sharp(thumbBuffer).webp({ quality: 82 }).toBuffer();
+          const baseName = (thumbFile.originalFilename || 'thumbnail').replace(/\.[^./]+$/, '');
+          thumbWebpFilename = `${baseName || 'thumbnail'}.webp`;
+        } catch (convErr) {
+          console.error('Konversi WebP gagal, pakai file asli:', convErr.message);
+          thumbWebpBuffer = null;
+          thumbWebpFilename = null;
+        }
       }
     } catch (e) {
       if (thumbFile) fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
@@ -260,13 +281,16 @@ export default async function handler(req, res) {
       const msgResult = await msgResp.json();
       if (!msgResult.ok) throw new Error(msgResult.description || 'Gagal mengirim ke Telegram');
 
-      // Kirim thumbnail asli kalau diupload
+      // Kirim thumbnail kalau diupload — pakai versi WebP hasil konversi
+      // kalau berhasil, fallback ke file asli kalau konversi gagal.
       if (thumbFile) {
-        const buf = fs.readFileSync(thumbFile.filepath || thumbFile.path);
-        const blob = new Blob([buf], { type: thumbFile.mimetype || 'image/jpeg' });
+        const buf = thumbWebpBuffer || fs.readFileSync(thumbFile.filepath || thumbFile.path);
+        const filename = thumbWebpFilename || thumbFile.originalFilename || 'thumbnail.jpg';
+        const mimeType = thumbWebpBuffer ? 'image/webp' : (thumbFile.mimetype || 'image/jpeg');
+        const blob = new Blob([buf], { type: mimeType });
         const tf = new FormData();
         tf.append('chat_id', CHAT_ID);
-        tf.append('photo', blob, thumbFile.originalFilename || 'thumbnail.jpg');
+        tf.append('photo', blob, filename);
         tf.append('caption', `Thumbnail untuk: ${name}`);
         const tfResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: tf });
         const tfResult = await tfResp.json();
@@ -306,7 +330,13 @@ export default async function handler(req, res) {
       appTarget: appTarget || '',
       thumb: thumbMode === 'link'
         ? { type: 'link', value: thumbLink }
-        : { type: 'upload', filename: thumbFile.originalFilename || '', sizeKb: Math.round((thumbFile.size || 0) / 1024), fileId: thumbFileId },
+        : {
+            type: 'upload',
+            filename: thumbWebpFilename || thumbFile.originalFilename || '',
+            sizeKb: Math.round((thumbWebpBuffer ? thumbWebpBuffer.length : (thumbFile.size || 0)) / 1024),
+            fileId: thumbFileId,
+            converted: !!thumbWebpBuffer, // true kalau berhasil dikonversi ke WebP
+          },
       download: downloadMode === 'link'
         ? { type: 'link', value: downloadLink }
         : { type: 'upload', filename: downloadFile.originalFilename || '', sizeKb: Math.round((downloadFile.size || 0) / 1024) },
