@@ -1,0 +1,841 @@
+{
+  "createdAt": "2026-08-16T05:24:20.359Z",
+  "data": {
+    "models": [
+      {
+        "name": "Rig Mob Minecraft",
+        "caption": "Rig Mob Minecraft not full it's free.",
+        "creator": "",
+        "converter": "alisastro123",
+        "category": [
+          "Mob",
+          "Minecraft",
+          "Rig"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/9kfSzwfF/mob-minecraft.webp",
+        "link": "https://www.mediafire.com/file/ynm849b3g243pnc/Mob_Minecraft_Full.zip/file"
+      },
+      {
+        "name": "Hospital Furniture",
+        "caption": "Content hospital pack models",
+        "creator": "",
+        "converter": "IanAdhi",
+        "category": [
+          "Furniture",
+          "Minecraft"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/3yqF1bYK/hospital-furniture.webp",
+        "link": "https://www.mediafire.com/file/xblgnyiy5hnsnk1/Hospital_Furniture_.zip/file"
+      },
+      {
+        "name": "Classroom Map",
+        "caption": "Classroom contains classroom",
+        "creator": "IanAdhi & RidwanMC",
+        "converter": "",
+        "category": [
+          "Cosmetic",
+          "Map",
+          "Minecraft"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/NdcJM6fd/classroom-map.webp",
+        "link": "https://www.mediafire.com/file/ou1x7ukjqwbfqwz/Classroom_Map_%252B_Furniture.zip/file"
+      },
+      {
+        "name": "Classroom Pack",
+        "caption": "Containts Classroom Pack Models",
+        "creator": "IanAdhi",
+        "converter": "",
+        "category": [
+          "Furniture",
+          "Minecraft",
+          "ModelsPack"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/5XdCf7K1/classroom-pack.webp",
+        "link": "https://www.mediafire.com/file/2jyagccxhuqx9j6/Classroom_Pack.zip/file"
+      },
+      {
+        "name": "Sofa Royal Furniture",
+        "caption": "Containts sofa Royal models",
+        "creator": "",
+        "converter": "IanAdhi",
+        "category": [
+          "Furniture",
+          "ModelsPack"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/xt4jpZzZ/sofa-royal-furniture.webp",
+        "link": "https://www.mediafire.com/file/vwdirybg8l2fxjl/Sofa_Royal_Furniture.zip/file"
+      },
+      {
+        "name": "Valentine Packs",
+        "caption": "Containts Valentine Pack Models",
+        "creator": "",
+        "converter": "IanAdhi",
+        "category": [
+          "Cosmetic",
+          "Furniture",
+          "Items"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/wFqqx71k/valentine-packs.webp",
+        "link": "https://www.mediafire.com/file/vou12hl26d3l0n1/Valentine_Pack.zip/file"
+      },
+      {
+        "name": "Rig Afi V2",
+        "caption": "Containts Valentine Pack Models",
+        "creator": "IanAdhi",
+        "converter": "",
+        "category": [
+          "Minecraft",
+          "Rig"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/k2n9rB1X/afi-rig-v2.webp",
+        "link": "https://youtu.be/8G6r_OuBpUw?si=ymUXbGYA0t_Hl9nO"
+      },
+      {
+        "name": "Props and Stuff",
+        "caption": "Contains props and stuff models",
+        "creator": "",
+        "converter": "AbayMC",
+        "category": [
+          "Furniture",
+          "Items"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/CKWBdNML/props-and-stuff.webp",
+        "link": "https://www.mediafire.com/file/5gu6n8xw6dg4nce/%255Bprops__and_stuff%255D.zip/file"
+      },
+      {
+        "name": "Gitar Kayu",
+        "caption": "Contains Gitar models",
+        "creator": "IanAdhi",
+        "converter": "",
+        "category": [
+          "Items"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/XrFP6ztL/gitar-kayu.webp",
+        "link": "https://www.mediafire.com/file/x05li8vrkj9fsyd/Gitar_Kayu.zip/file"
+      },
+      {
+        "name": "Kichen Pack",
+        "caption": "Contains Kichen Map + models",
+        "creator": "Zean",
+        "converter": "",
+        "category": [
+          "Furniture",
+          "Map"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/DDfMzWpm/kitchen-room.webp",
+        "link": "https://www.mediafire.com/file/rjxc3tij4o74b8f/Kitchen_Pack_Map.zip/file"
+      },
+      {
+        "name": "Repper Pack",
+        "caption": "Contains Repper Pack models",
+        "creator": "IanAdhi",
+        "converter": "",
+        "category": [
+          "Cosmetic",
+          "Items"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/HLy150yC/repper-pack.webp",
+        "link": "https://www.mediafire.com/file/z6z2t924bzjm01t/Repper_Pack.zip/file"
+      },
+      {
+        "name": "Camera",
+        "caption": "Contains Camera models",
+        "creator": "Najwa",
+        "converter": "",
+        "category": [
+          "Items"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/JwWG18Lf/camera-rig.webp",
+        "link": "https://www.mediafire.com/file/7koja1z57qks3ns/Camera_-Najwa-.zip/file"
+      },
+      {
+        "name": "House Furniture",
+        "caption": "Contains House Furniture models",
+        "creator": "IanAfi",
+        "converter": "",
+        "category": [
+          "Furniture",
+          "tools"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/60kCyfW1/house-furniture.webp",
+        "link": "https://www.mediafire.com/file/268hckv3r5buo4k/House_Furniture_Afi.zip/file"
+      },
+      {
+        "name": "Craft Boad",
+        "caption": "Contains Boad models",
+        "creator": "IanAdhi",
+        "converter": "",
+        "category": [
+          "Vehicle"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co.com/S4w1Snp0/craft-board.webp",
+        "link": "https://www.mediafire.com/file/lhx2i35x2lttssv/Craft_Boat.zip/file"
+      },
+      {
+        "name": "Meja dan Kursi",
+        "caption": "Hanya meja dan kursi yang terinspirasi dari bangku kayu sekolah",
+        "creator": "Excel",
+        "converter": "",
+        "category": [
+          "Furniture"
+        ],
+        "app_target": "Prisma3D",
+        "thumb": "https://i.ibb.co/n86CmGqw/IMG-20260812-155947-033.avif",
+        "link": "https://www.mediafire.com/file/ltsucg18rmgs365/mejadankursi.zip/file"
+      }
+    ],
+    "videos": [
+      {
+        "id": "tutorial-1",
+        "title": "AnimaRIG - Prisma3D",
+        "url": "https://youtu.be/h0UMKAFzXAM?si=_NYGWzwrje4Lbd-x",
+        "added": "2026-08-01"
+      },
+      {
+        "id": "tutorial-3",
+        "title": "Tutorial 3",
+        "url": "https://youtu.be/1pWd0g7VsfI?si=pDW7Mgp_Fhnwbfed",
+        "added": "2025-12-01"
+      },
+      {
+        "id": "tutorial-2",
+        "title": "How to make rig humanoid/player - with Blockbench and Prism3D",
+        "url": "https://youtu.be/ApLkt_ykTV8?si=jjtksGyU13jp6R3b",
+        "added": "2025-11-15"
+      },
+      {
+        "id": "tutorial-4",
+        "title": "Cuma 10 Menit! Tutorial Run Cycle di Prisma3D ft. Galonim - Zefan Animations",
+        "url": "https://youtu.be/yf4lvgFP4_o?si=iFhyvMYhFlNkmNPr",
+        "added": "2025-12-10"
+      },
+      {
+        "id": "zn-rig-v2-by-zipixe-prisma3d",
+        "title": "ZN Rig v2 -  by Zipixe, Prisma3D",
+        "url": "https://youtu.be/zdfKQt_enjc?si=0ENLPrOvo0mdu7TP",
+        "added": "2026-08-08"
+      },
+      {
+        "id": "how-to-make-a-face-and-finger-rig-with-blockbench-prisma3d",
+        "title": "how to make a face and finger rig With - Blockbench & Prisma3D",
+        "url": "https://youtu.be/auV8JFtnxC0?si=vQI8iLri2zZ30F91",
+        "added": "2026-08-08"
+      },
+      {
+        "id": "bz-cartoon-style-minecraft-rig-for-prisma3d",
+        "title": "【BZ】cartoon style - Minecraft Rig for Prisma3D",
+        "url": "https://youtu.be/UBt_XDmgSx8?si=0z4TJf3RPGwAVp4d",
+        "added": "2026-08-08"
+      }
+    ],
+    "banner": [
+      {
+        "img": "https://i.ibb.co.com/1JspQvjn/Tak-berjudul404-20260801111426.webp",
+        "url": "https://drive.google.com/drive/folders/1Vx700Ca8g4b8nibQIrxG_fiY03gSWMoW"
+      },
+      {
+        "img": "https://i.ibb.co.com/rK8bxngD/Tak-berjudul404-20260812225318.avif",
+        "url": "#"
+      },
+      {
+        "img": "https://i.ibb.co.com/bf1snQ2/IMG-20260808-172153.webp",
+        "url": "https://afi-studio.vercel.app/ranking/"
+      },
+      {
+        "img": "https://i.ibb.co.com/TBxLCKxM/IMG-20260808-172141.webp",
+        "url": "/event/index.html"
+      },
+      {
+        "img": "https://i.ibb.co.com/FkQxyLvY/Tak-berjudul205-20260617090845.avif",
+        "url": "https://youtu.be/zdfKQt_enjc?si=MOWKnFsvVmYuDkUS"
+      },
+      {
+        "img": "https://i.ibb.co.com/t7DGhGQ/Banner1.webp",
+        "url": "#"
+      },
+      {
+        "img": "https://i.ibb.co.com/1t46sknb/Banner2.webp",
+        "url": "https://chat.whatsapp.com/LSC5Ij7KzT01VEfPS9Spm2?mode=ems_copy_c"
+      }
+    ],
+    "marquee": [
+      "Pamerkan Rendermu di \"Render Event\"",
+      "Render Event tidak ada hadiah atau , hanya untuk hiburan",
+      "Gabung digrup WhatsApp!!",
+      "Join \"Saluran WhatsApp\" kami!!",
+      "Lihat karya-karya di channel WhatsApp dan YouTube kami",
+      "Daftarkan model, rig, dan map kamu disini"
+    ],
+    "member": {
+      "gen-1": [
+        {
+          "nama": "IanAfi",
+          "foto": "https://i.ibb.co.com/fzxTnT7c/Ian-Adhi.webp",
+          "identitas": "🍁",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Animator, Modeller, Render, dan designer",
+          "socials": {
+            "yt": "https://youtube.com/@ianafii?si=iQzheWQtm4_hTYWD",
+            "ig": "https://www.instagram.com/ianafii_?igsh=Y3kyeXI1MW5mdWZi",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@ian_akihiko?_r=1&_t=ZS-95XAhU7op1T",
+            "wa": "https://whatsapp.com/channel/0029VbB6Gm6Lo4hl15PcOv1R",
+            "dc": "https://discord.gg/AUE5YDHQ"
+          }
+        },
+        {
+          "nama": "Yui Aizawa",
+          "foto": "https://i.ibb.co.com/rKrBtTy4/yui.webp",
+          "identitas": "🌸",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Healer",
+          "socials": {
+            "yt": "https://youtube.com/@yuiaizawaa?si=LC1aBi112kqY_aVn",
+            "ig": "",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@yui.aizawa?_r=1&_t=ZS-95ojHTGmKfs",
+            "wa": "",
+            "dc": "https://discord.com/users/yuiaizawaa"
+          }
+        },
+        {
+          "nama": "LanaMC",
+          "foto": "https://i.ibb.co.com/k2ZKWz0W/lana.webp",
+          "identitas": "💤",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Designing, Editor, dan Rendering",
+          "socials": {
+            "yt": "https://www.youtube.com/@Lana%E5%B1%B1%E6%9C%ACMC",
+            "ig": "https://www.instagram.com/atlana_yamamoto?igsh=N2s0d3B5NDFtdzhs",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@lana.nih1?_r=1&_t=ZS-95pj4iVoI5t",
+            "wa": "https://whatsapp.com/channel/0029Vb08dymBKfi2YAxMJD42",
+            "dc": "https://discord.gg/rVGmNG6b"
+          }
+        },
+        {
+          "nama": "Akira Xeyni",
+          "foto": "https://i.ibb.co.com/dsmnDQNy/yenxi.webp",
+          "identitas": "🍒",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Animation dan PVP",
+          "socials": {
+            "yt": "https://youtube.com/@akairi_xeinii?si=DkSPztNT2929sgMU",
+            "ig": "",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@akairi_xeinii?_r=1&_t=ZS-95piEdLeI0T",
+            "wa": "https://whatsapp.com/channel/0029VbCDdZbJuyABRLkeax1s",
+            "dc": "https://discord.gg/Mcy8sV8X5"
+          }
+        },
+        {
+          "nama": "Alynatha",
+          "foto": "https://i.ibb.co.com/pBc6S2jY/alynatha.webp",
+          "identitas": "💠",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Animator, Render, Modeling, dan artist",
+          "socials": {
+            "yt": "https://youtube.com/@linatha.studio?si=JZthfrOpHMRbf3b5",
+            "ig": "https://www.instagram.com/linathastudio.presents?igsh=MWhydnVmMGFwMjVtaw==",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@lyn.itshere",
+            "wa": "https://whatsapp.com/channel/0029VbBZXBEFMqrf87ajgc42",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "MichiYuzuru",
+          "foto": "https://i.ibb.co.com/tG14XG3/Michi.webp",
+          "identitas": "🍩",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Rendering",
+          "socials": {
+            "yt": "https://www.youtube.com/@michii_354",
+            "ig": "",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@michii_354?_r=1&_t=ZS-95pjDHOEDPY",
+            "wa": "",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "Nezhai",
+          "foto": "https://i.ibb.co.com/VWPzFvmp/zhai.webp",
+          "identitas": "🎐",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Animator, Artist, dan Render",
+          "socials": {
+            "yt": "https://www.youtube.com/@Its_Nezh",
+            "ig": "https://www.instagram.com/zay_pop.es?igsh=bXBoY3F0NmxhZzQ0",
+            "fb": "",
+            "tk": "https://tiktok.com/@ne.zxh_21",
+            "wa": "https://whatsapp.com/channel/0029Vb5vypEChq6USkdt7Y0i",
+            "dc": "https://discord.gg/BSc4AJDp"
+          }
+        },
+        {
+          "nama": "Rena Astoria",
+          "foto": "https://i.ibb.co.com/xqgjQpk6/rena.webp",
+          "identitas": "🐉",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Animation dan Render",
+          "socials": {
+            "yt": "https://www.youtube.com/@RenaSiAstor",
+            "ig": "",
+            "fb": "",
+            "tk": "",
+            "wa": "https://whatsapp.com/channel/0029Vb65dgP42DcdqiHVoC1D",
+            "dc": "https://discord.gg/m2Z525a2"
+          }
+        },
+        {
+          "nama": "Puspa",
+          "foto": "https://i.ibb.co.com/bMDRMdg6/puspa.webp",
+          "identitas": "♠️",
+          "Info-1": "Generasi ke-1",
+          "Info-2": "Render",
+          "socials": {
+            "yt": "https://www.youtube.com/@Pus79N.X",
+            "ig": "",
+            "fb": "https://www.facebook.com/share/1GU5G1gdvq/",
+            "tk": "https://vm.tiktok.com/ZSHT5bQtUTFT6-Qg9Vs/",
+            "wa": "https://whatsapp.com/channel/0029Vb6WnPe8F2p8iHbuir0t",
+            "dc": ""
+          }
+        }
+      ],
+      "gen-2": [
+        {
+          "nama": "kenzuu",
+          "foto": "https://i.ibb.co.com/rRmwStQx/kenzuu.webp",
+          "identitas": "🦈",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "Artist, Animator, dan Render",
+          "socials": {
+            "yt": "https://youtube.com/@ikenjuk?si=DqqQaChmE1ZD7iZ5",
+            "ig": "",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@kenjuuk?_r=1&_t=ZS-95VGWPigg0P",
+            "wa": "https://whatsapp.com/channel/0029VbB2PvsCBtxAJaIXRi3L",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "Najwa_no.6",
+          "foto": "https://i.ibb.co.com/gMb6VNcw/najwa.webp",
+          "identitas": "🧃",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "animate, convert add-on, render, dan artist",
+          "socials": {
+            "yt": "https://youtube.com/@nafinar_2917?si=xNW2WFJJFPZrXK6q",
+            "ig": "https://www.instagram.com/nafinar_2917?igsh=MTk1MzRpMWd4NTdpcA==",
+            "fb": "https://www.facebook.com/share/1DsbQssLR7/",
+            "tk": "https://www.tiktok.com/@najwa_nor.6?_t=ZS-907a3avJi8w&_r=1",
+            "wa": "https://whatsapp.com/channel/0029Vb6i3jx7tkj7nnMzNA1K",
+            "dc": "https://discord.gg/AmKvnBUU"
+          }
+        },
+        {
+          "nama": "YavitsDesu",
+          "foto": "https://i.ibb.co.com/MkbZxStv/yavis.webp",
+          "identitas": "🌊",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "Animasi dan dubbing",
+          "socials": {
+            "yt": "https://youtube.com/@yavitsdesu?si=gx3cz9qstwgJoCLc",
+            "ig": "https://www.instagram.com/yavits_plenger?igsh=MWg5M21kbzRlcmc2Ng==",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@yavitsdesu?_r=1&_t=ZS-95ph1EUQSxz",
+            "wa": "https://whatsapp.com/channel/0029Vb7iXojK5cDFTSLfCt1X",
+            "dc": "https://discord.gg/3UQ4KwHd"
+          }
+        },
+        {
+          "nama": "Raffenokio",
+          "foto": "https://i.ibb.co.com/6RKj8jfR/rafe.webp",
+          "identitas": "🍅",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "Animation, dan modeling",
+          "socials": {
+            "yt": "https://youtube.com/@raffenokio9662?si=_Fo33HQDVZlqShYm",
+            "ig": "",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@enomon966?_r=1&_t=ZS-951ktJOkRLY",
+            "wa": "https://whatsapp.com/channel/0029Vb3VAH8CnA7oZXr7gB26",
+            "dc": "https://discord.com/users/1237999241000124416"
+          }
+        },
+        {
+          "nama": "Varelion <kaishiro>",
+          "foto": "https://i.ibb.co.com/qLjd1vjq/kaishiro.webp",
+          "identitas": "📈",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "VA, Render, Design Graphics",
+          "socials": {
+            "yt": "https://youtube.com/@varelion.greyrat",
+            "ig": "https://www.instagram.com/rel.banana",
+            "fb": "",
+            "tk": "",
+            "wa": "https://whatsapp.com/channel/0029VacNvlJG3R3aHkt9m82d",
+            "dc": "https://discord.com/users/varelion.zip"
+          }
+        },
+        {
+          "nama": "Sichi",
+          "foto": "https://i.ibb.co.com/gLv7KvYY/sichi.webp",
+          "identitas": "🍚",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "Render, Modelling, dan Skin Maker",
+          "socials": {
+            "yt": "",
+            "ig": "https://www.instagram.com/sichi0836?igsh=MTlja3JmeWs5MGwwcw==",
+            "fb": "",
+            "tk": "",
+            "wa": "",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "Brentt",
+          "foto": "https://i.ibb.co.com/fVqxf7JF/breent.webp",
+          "identitas": "🚀",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "Animation, 3D Modeling, Music Producer, Editing, dan render maker",
+          "socials": {
+            "yt": "https://youtube.com/@brentnaoki",
+            "ig": "https://www.instagram.com/brentnaoki",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@brentnaoki",
+            "wa": "https://whatsapp.com/channel/0029Vb7SnQLHAdNMcQSzvG0N",
+            "dc": "https://discord.com/users/947990324251328564"
+          }
+        },
+        {
+          "nama": "ASTR-0123",
+          "foto": "https://i.ibb.co.com/Q3HMxN1k/ali.webp",
+          "identitas": "📷",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "Programmer, Designer Graphics, modeller",
+          "Info-3": "Sipaling fokus",
+          "socials": {
+            "yt": "https://www.youtube.com/@Alisastro123",
+            "ig": "https://www.instagram.com/alisastro123?igsh=MTZoZmR0ZGJkeWM3NA==",
+            "fb": "https://www.facebook.com/profile.php?id=61585596517467&mibextid=ZbWKwL",
+            "tk": "https://tiktok.com/@alisastro123",
+            "wa": "https://whatsapp.com/channel/0029Vb6ytmg8F2pIMwr2ZH1i",
+            "dc": "https://discord.com/users/alisastro123"
+          }
+        },
+        {
+          "nama": "Excha",
+          "foto": "https://i.ibb.co.com/5hvvxdrR/excha.webp",
+          "identitas": "🍺",
+          "Info-1": "Generasi ke-2",
+          "Info-2": "Animation, Art digital, dubbing, sing, Voice actor, dan panjat pohon",
+          "socials": {
+            "yt": "https://www.youtube.com/@Exchaakatsy",
+            "ig": "",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@exchaardefa?_r=1&_t=ZS-95XB9jSJX0y",
+            "wa": "https://whatsapp.com/channel/0029VbBDQXQKAwEsj0FPgE2R",
+            "dc": "https://discord.com/users/947990324251328564"
+          }
+        }
+      ],
+      "gen-3": [
+        {
+          "nama": "NUKE51",
+          "foto": "https://i.ibb.co.com/1GS0LQ7Z/nuke51.webp",
+          "identitas": "🚦",
+          "Info-1": "Generasi ke-3",
+          "Info-2": "Animasi dan Rendering",
+          "socials": {
+            "yt": "https://youtube.com/@nukeganteng",
+            "ig": "https://www.instagram.com/kawista_51",
+            "fb": "https://facebook.com/nuke",
+            "tk": "https://www.tiktok.com/@nukedyz",
+            "wa": "https://wa.me/628895457589",
+            "dc": "https://discordapp.com/users/780727070610554880"
+          }
+        },
+        {
+          "nama": "Zipixe",
+          "foto": "https://i.ibb.co.com/pjYgFWc2/zin.webp",
+          "identitas": "🪼",
+          "Info-1": "Generasi ke-3",
+          "Info-2": "Rendering, animasi, dan Tidur💤",
+          "socials": {
+            "yt": "https://youtube.com/@zipixe?si=VrOShMenvHfAYK87",
+            "ig": "https://www.instagram.com/zipixe_?igsh=aWx5MjR2aTV6bGRo",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@zipixe_",
+            "wa": "https://whatsapp.com/channel/0029VbAZF6l8vd1OVho3nX1b",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "Afree",
+          "foto": "https://i.ibb.co.com/fhCZz37/afree.webp",
+          "identitas": "🍪",
+          "Info-1": "Generasi ke-3",
+          "Info-2": "Ceria Kepedean cukurukuk, tampil depan publik, si sepuhh",
+          "socials": {
+            "yt": "https://youtube.com/@afrimcgames",
+            "ig": "https://www.instagram.com/just.freeday_?igsh=OXZtYnpsM3hyeTh2",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@afrimctiktok_",
+            "wa": "https://whatsapp.com/channel/0029Vb5hEaS90x31HCpXCH0j",
+            "dc": "https://discord.com/users/760376556110610482"
+          }
+        },
+        {
+          "nama": "Carana",
+          "foto": "https://i.ibb.co.com/yn7TgnJK/carana.webp",
+          "identitas": "🐦‍🔥",
+          "Info-1": "Generasi ke-3",
+          "Info-2": "Animation",
+          "socials": {
+            "yt": "https://youtube.com/@carana_anim?si=LUCz1huD9gtm5JDc",
+            "ig": "",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@carana_anim?_r=1&_t=ZS-95phisX5huT",
+            "wa": "https://whatsapp.com/channel/0029Vb6cmQOKQuJIFZHe062q",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "Nicko",
+          "foto": "https://i.ibb.co.com/PpqGHTb/nicko.webp",
+          "identitas": "🐋",
+          "Info-1": "Generasi ke-3",
+          "Info-2": "Render, Convert, dan modelling",
+          "socials": {
+            "yt": "https://youtube.com/@nickomc62?si=EuFPS25itx3ARq5S",
+            "ig": "",
+            "fb": "",
+            "tk": "",
+            "wa": "https://wa.me/qr/NIV2DV4O5WI2I1",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "Hikari",
+          "foto": "https://i.ibb.co.com/Y7CJpkwr/hikari.webp",
+          "identitas": "🍥",
+          "Info-1": "Generasi ke-3",
+          "Info-2": "Art, Skin, Render, dan Modelling",
+          "socials": {
+            "yt": "https://youtube.com/@kaily_rhetbun?si=mlDMjelxUMwPhZ4K",
+            "ig": "",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@rhetbu?_r=1&_t=ZS-95uSxDj4VBR",
+            "wa": "https://wa.me/62856-0473-9311",
+            "dc": "https://discord.com/users/laily_sy"
+          }
+        },
+        {
+          "nama": "Zena",
+          "foto": "https://i.ibb.co.com/WWxfGnYC/zena.webp",
+          "identitas": "🌑",
+          "Info-1": "Generasi ke-3",
+          "Info-2": "Rendering dan animasi",
+          "socials": {
+            "yt": "https://youtube.com/@vihori_chin?si=nrebvHHJKxN7WXKh",
+            "ig": "https://www.instagram.com/zena.aja._?igsh=MWp0ZzBqa3RzNHIzdQ==",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@zena_aja1?_r=1&_t=ZS-95UhZ9dzpIt",
+            "wa": "https://whatsapp.com/channel/0029VbCcPHHLCoX5BDcYlo3A",
+            "dc": "https://discord.gg/PUhGCyzy"
+          }
+        },
+        {
+          "nama": "Emcas (MCAZ)",
+          "foto": "https://i.ibb.co.com/Ps6L817g/azid.webp",
+          "identitas": "🎬",
+          "Info-1": "Generasi ke-3",
+          "Info-2": "Editor, Animator, dan Modeler",
+          "socials": {
+            "yt": "https://www.youtube.com/@mcaz_096",
+            "ig": "https://www.instagram.com/mcaz096?igsh=aTNuaDA0Ym1xYmE=",
+            "fb": "",
+            "tk": "https://tiktok.com/@mcaz_096",
+            "wa": "https://whatsapp.com/channel/0029VbAzxOE4tRrnoIzQlw0D",
+            "dc": ""
+          }
+        }
+      ],
+      "orang-random": [
+        {
+          "nama": "RPC.Dina",
+          "foto": "https://i.ibb.co.com/BKQN8sFK/dina.webp",
+          "identitas": "🦖",
+          "Info-1": "Penyuka Mie Ayam 🤤",
+          "Info-2": "Rendering",
+          "socials": {
+            "yt": "https://youtube.com/@dina_ganteng?si=7SpHDaCnVBpLRlow",
+            "ig": "https://www.instagram.com/dina_ganteng1?igsh=cW8yYzZnbjZlcm93",
+            "fb": "https://www.facebook.com/share/1BKqhs2ENB/",
+            "tk": "https://tiktok.com/@rpc.dina7",
+            "wa": "https://whatsapp.com/channel/0029VbBP03J4CrfoKdu7CF2k",
+            "dc": "https://discord.gg/pt3zKCDU"
+          }
+        },
+        {
+          "nama": "Bedrocky",
+          "foto": "https://i.ibb.co.com/HTmLN1jb/gara.webp",
+          "identitas": "🛌",
+          "Info-1": "Sisepuhh prismatridi",
+          "Info-2": "Modelling dan Render",
+          "socials": {
+            "yt": "https://youtube.com/@garaokii?si=05DL2XlKwbFB32-I",
+            "ig": "https://www.instagram.com/bedrok.oki?igsh=cHR4Mm10a3hzcHkx",
+            "fb": "https://www.facebook.com/share/1Ha48U3ki7/",
+            "tk": "https://www.tiktok.com/@bedrocky.mc?_r=1&_t=ZS-95aYa8qBNv3",
+            "wa": "",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "Lusvia",
+          "foto": "https://i.ibb.co.com/wrcP2DQK/lusvia.webp",
+          "identitas": "🧡",
+          "Info-1": "The Princess belongs to the Knight🧡🖤✨",
+          "Info-2": "Render, dan Art",
+          "socials": {
+            "yt": "https://youtube.com/@lusvia_4?si=KDAJFwGzYVTvUb5P",
+            "ig": "https://www.instagram.com/lusvia_4?igsh=cmV0MThrb3RjeWdr",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@lusvia_0g?_r=1&_t=ZS-9617T0lW1gr",
+            "wa": "https://whatsapp.com/channel/0029VbCRwYJ7IUYRGQel8g3T",
+            "dc": "https://discord.com/users/wr1ter_0g"
+          }
+        },
+        {
+          "nama": "Amethio",
+          "foto": "https://i.ibb.co.com/S46QymMs/theo.webp",
+          "identitas": "🫟",
+          "Info-1": "Randy's Brother",
+          "Info-2": "Render dan Modeling",
+          "socials": {
+            "yt": "https://www.youtube.com/@Amethio009",
+            "ig": "",
+            "fb": "",
+            "tk": "",
+            "wa": "https://whatsapp.com/channel/0029VbCSPxmLSmbZZlLI7s0C",
+            "dc": ""
+          }
+        },
+        {
+          "nama": "Ell",
+          "foto": "https://i.ibb.co.com/HpBRMZLy/zai.webp",
+          "identitas": "🗿",
+          "Info-1": "Randy's brother",
+          "Info-2": "Animasi, Render, Modeling, dan skin maker",
+          "socials": {
+            "yt": "https://youtube.com/@lapar-t4i?si=PA8PWYn5R2XNwiJa",
+            "ig": "https://www.instagram.com/el_lapar8?igsh=N2Flc25tdTBwdXFo",
+            "fb": "",
+            "tk": "https://www.tiktok.com/@ell_lanang?_r=1&_d=eb2ld59bdd1ikb&sec_uid=MS4wLjABAAAACtY7R_lysRL75TdlpOJoEJHq9iMxZ7nWW-7Cr1mRZvZxHbMfP3nAlPqVXsotQIAf&share_author_id=7526117966753989650&sharer_language=id&source=h5_t&u_code=el9jlk1839g6ml&timestamp=1777474281&user_id=7526117966753989650&sec_user_id=MS4wLjABAAAACtY7R_lysRL75TdlpOJoEJHq9iMxZ7nWW-7Cr1mRZvZxHbMfP3nAlPqVXsotQIAf&item_author_type=1&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7629605726251632405&share_link_id=7dfb8169-90dc-4bba-ba4c-8827dcf8c6e4&share_app_id=1180&ugbiz_name=ACCOUNT&ug_btm=b8727%2Cb7360&social_share_type=5&enable_checksum=1",
+            "wa": "https://whatsapp.com/channel/0029Vb7APNf5a245CYazTi1q",
+            "dc": ""
+          }
+        }
+      ]
+    },
+    "ranking": [
+      {
+        "juara": "1st",
+        "nama": "Rico Studios",
+        "caption": "Gokil mass, pertahankan posisi juaranya, tactical kek gitu kece bngt kayak cinematic gitu🥇🔥",
+        "gambar": "https://i.ibb.co.com/F4GDgtCM/1st-1914-1918-riko-studios-ig.webp"
+      },
+      {
+        "juara": "2nd",
+        "nama": "Blazimation & Faizalye",
+        "caption": "Keren bang, Grafiknya kayak vibes 2016, semangat ya, ditingkatkan lagi  kualitasnya ❤️✨",
+        "gambar": "https://i.ibb.co.com/wZXKJSMG/2nd-4-Brother-s-Blazimation-Faizalye.webp"
+      },
+      {
+        "juara": "3rd",
+        "nama": "OceonMC",
+        "caption": "Mirip Cyberpunk, tapi Unik banget aku lihat. Semangat yaaa, skill lu gak sia-sia 🔥💪",
+        "gambar": "https://i.ibb.co.com/PsLgpd3q/3rd-oceonmc.webp"
+      },
+      {
+        "juara": "4th",
+        "nama": "DzakiyRL",
+        "caption": "Gak Burik dan gak jelek, cakep banget Rendernya, tingkat kan lagi yaa skill nyaa🔥✨",
+        "gambar": "https://i.ibb.co.com/JFczzc8s/4th-Dzakiy-RL.webp"
+      },
+      {
+        "juara": "5th",
+        "nama": "Akanekunz",
+        "caption": "Sweet bngt kalian berdua, semangat yaa render ya, tingkatkan lagi skill rendernya 🔥🔥",
+        "gambar": "https://i.ibb.co.com/YFSfTRDJ/5th-Render-by-akanekunz.webp"
+      },
+      {
+        "juara": "6th",
+        "nama": "clamyzlemon",
+        "caption": "Thats simple, natural dan Simple, keren bngt lhoo potret kayak ini👍🔥",
+        "gambar": "https://i.ibb.co.com/PZFvJx1k/6th-cyzz-clamyzlemon.webp"
+      },
+      {
+        "juara": "7th",
+        "nama": "Terse",
+        "caption": "Gak buruk, tapi gw suka senjata glow gitu, tingkatkan lagi skills rendernya 🔥💪",
+        "gambar": "https://i.ibb.co.com/5W247brS/7th-Terse.webp"
+      },
+      {
+        "juara": "8th",
+        "nama": "Nairen",
+        "caption": "Kece uyy, aku suka pose OC nya dan gak kaku, semangat yaa rendernyaa, moga kedepan lebih bagus dari sebelumnya ❤️🔥",
+        "gambar": "https://i.ibb.co.com/hJTcqYMg/8th-Event-render-By-Nairen.webp"
+      },
+      {
+        "juara": "9th",
+        "nama": "Voxel Wolf",
+        "caption": "OC nya lucu weee, saran ku sedikit yaa : \"OC nya tolong di atur biar lebih nyatu gitu dengan  backgroundnya, biar kelihatan rapi dan jelas\" semangat bang🔥🔥",
+        "gambar": "https://i.ibb.co.com/tMFPH7cQ/9th-Render-by-VOXEL-WOLF.webp"
+      },
+      {
+        "juara": "10th",
+        "nama": "Axel",
+        "caption": "Semangat axel, masuk sepuluh besar itu pencapaian terbaik, tinggal diperbaiki dan asah skill mu, sampai titik ini, kamu udah usaha yang terbaik buat lu🔥🔥👍",
+        "gambar": "https://i.ibb.co.com/KjXcsMpv/10th-Axel.webp"
+      }
+    ],
+    "categories": [
+      "Cosmetic",
+      "Furniture",
+      "Items",
+      "Map",
+      "Mob",
+      "Minecraft",
+      "ModelsPack",
+      "Rig",
+      "Vehicle",
+      "tools"
+    ],
+    "appcategories": null,
+    "settings": {
+      "isDaftarModelOpen": true,
+      "isDaftarMemberOpen": false
+    },
+    "pendingmodels": [],
+    "surveys": []
+  }
+}
