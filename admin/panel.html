@@ -263,6 +263,7 @@
     <div class="side-item" data-view="pendingmodels"><i data-lucide="inbox"></i>Pendaftaran<span id="pending-badge" style="display:none; margin-left:auto; background:#EF4444; color:#fff; font-size:10px; font-weight:800; padding:1px 6px; border-radius:999px;"></span></div>
     <div class="side-item" data-view="survey"><i data-lucide="clipboard-list"></i>Survey</div>
     <div class="side-item" data-view="pengaturan"><i data-lucide="settings"></i>Pengaturan</div>
+    <div class="side-item owner-only-nav" data-view="kelolaadmin" style="display:none;"><i data-lucide="shield-check"></i>Kelola Admin</div>
     <div class="mt-auto pt-3" style="border-top:1px solid var(--border);">
       <div class="side-item" id="theme-toggle-btn"><i data-lucide="moon-star"></i>Ganti Tema</div>
       <a href="https://afi-studio.vercel.app/" target="_blank" rel="noopener" class="side-item" style="text-decoration:none;"><i data-lucide="external-link"></i><span style="text-decoration:underline;">Buka Website</span></a>
@@ -486,6 +487,61 @@
         </div>
       </section>
 
+      <!-- KELOLA ADMIN (Multi-Admin Website — cuma nongol buat owner, lihat toggleOwnerOnlyNav()) -->
+      <section class="section-view" id="view-kelolaadmin">
+        <div class="panel p-4 mb-3">
+          <h3 class="text-sm font-bold mb-1">Undang Admin Baru</h3>
+          <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6; margin-bottom:14px;">
+            Bikin kode/link undangan buat admin tambahan. Kode cuma bisa dipakai <b>1 KALI</b> di <b>1 PERANGKAT</b> —
+            begitu dipakai, sesi admin itu dikunci ke perangkat itu (cookie + fingerprint) dan otomatis logout
+            sendiri begitu durasinya habis.
+          </p>
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+            <div class="setting-row-title">Nama/Label Admin (opsional)</div>
+            <input type="text" id="invite-label-input" placeholder="Misal: Randy">
+          </div>
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px; border-bottom:none;">
+            <div class="setting-row-title">Durasi Berlaku</div>
+            <select id="invite-duration-select">
+              <option value="1800000">30 menit</option>
+              <option value="3600000">1 jam</option>
+              <option value="21600000">6 jam</option>
+              <option value="86400000" selected>1 hari</option>
+              <option value="259200000">3 hari</option>
+              <option value="604800000">7 hari</option>
+              <option value="2592000000">30 hari</option>
+            </select>
+          </div>
+          <button class="btn btn-accent" style="margin-top:12px;" onclick="createAdminInvite()">
+            <i data-lucide="user-plus" style="width:14px; height:14px; display:inline-block; vertical-align:-2px; margin-right:4px;"></i>
+            Buat Kode Undangan
+          </button>
+          <div id="invite-created-box" style="display:none; margin-top:14px; padding:12px; background:var(--bg); border-radius:8px;">
+            <div style="font-size:11.5px; font-weight:700; color:var(--text-sub); text-transform:uppercase; margin-bottom:4px;">Link Undangan</div>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="invite-created-url" readonly style="font-size:12px;">
+              <button class="btn btn-outline" onclick="copyInviteLink()">Salin</button>
+            </div>
+            <div id="invite-created-note" style="font-size:11.5px; color:var(--text-sub); margin-top:6px;"></div>
+          </div>
+        </div>
+
+        <div class="panel p-4 mb-3">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <h3 class="text-sm font-bold">Sesi Admin Aktif</h3>
+            <button class="btn btn-outline" style="padding:6px 10px;" onclick="loadAdminInvitesAndSessions()" aria-label="Refresh"><i data-lucide="refresh-cw" style="width:14px; height:14px;"></i></button>
+          </div>
+          <div id="admin-sessions-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+          <div id="admin-sessions-empty" style="display:none; text-align:center; color:var(--text-sub); font-size:13px; padding:16px 0;">Belum ada admin undangan yang aktif.</div>
+        </div>
+
+        <div class="panel p-4">
+          <h3 class="text-sm font-bold mb-2">Riwayat Undangan</h3>
+          <div id="admin-invites-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+          <div id="admin-invites-empty" style="display:none; text-align:center; color:var(--text-sub); font-size:13px; padding:16px 0;">Belum pernah bikin undangan.</div>
+        </div>
+      </section>
+
     </main>
   </div>
 </div>
@@ -513,13 +569,50 @@
 let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [], surveys: [] };
 const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','settings','categories','appcategories','pendingmodels','surveys'];
 
-/* ================= LOGIN & TOKEN ================= */
-// Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
-// "logout" begitu tab/browser ditutup, bukan tersimpan permanen di HP.
+/* ================= LOGIN & SESI ================= */
+// Token owner disimpan di sessionStorage (bukan localStorage) supaya otomatis
+// "logout" begitu tab/browser ditutup, bukan tersimpan permanen di HP. Admin
+// undangan gak punya token sama sekali — sesinya murni cookie HttpOnly yang
+// di-set server (gak bisa/gak perlu dibaca dari JS di sini).
 function getToken(){ return sessionStorage.getItem('afi-admin-token') || ''; }
 function clearToken(){ sessionStorage.removeItem('afi-admin-token'); }
+let IS_OWNER_SESSION = true; // ditentukan ulang di initAuth(); dipakai buat nyembunyiin "Kelola Admin" dari admin undangan
 
-function logout(){
+// Sidik jari device yang SAMA harus dipakai konsisten sepanjang sesi supaya
+// dicocokkan sama yang direkam server pas redeem undangan (lihat penjelasan
+// lengkap di admin/index.html & lib/admin-auth.js).
+async function deviceFingerprint(){
+  let fp = sessionStorage.getItem('afi-device-fp');
+  if (fp) return fp;
+  try{
+    const raw = [
+      navigator.userAgent, navigator.language,
+      screen.width + 'x' + screen.height, screen.colorDepth,
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ].join('|');
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+    fp = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }catch(e){
+    fp = 'fp-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+  sessionStorage.setItem('afi-device-fp', fp);
+  return fp;
+}
+
+// Header standar buat SEMUA panggilan API yang butuh admin: token owner
+// (kalau ada) + fingerprint device (dipakai server buat validasi sesi
+// undangan — lihat requireAdmin() di lib/admin-auth.js). credentials:'include'
+// SENGAJA dipasang eksplisit di tiap fetch admin biar cookie sesi undangan
+// ikut kekirim walau browser/embed tertentu default-nya beda-beda.
+async function adminHeaders(extra){
+  const fp = await deviceFingerprint();
+  return Object.assign({ 'x-admin-token': getToken(), 'x-device-fp': fp }, extra || {});
+}
+
+async function logout(){
+  try{
+    await fetch('/api/admin/logout', { method:'POST', credentials:'include' });
+  }catch(e){ /* tetep lanjut logout di client walau request gagal */ }
   clearToken();
   window.location.href = 'index.html';
 }
@@ -551,7 +644,8 @@ async function persist(type){
   try{
     const res = await fetch(`/api/data/${type}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': getToken() },
+      headers: await adminHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'include',
       body: JSON.stringify(DB[type])
     });
     const data = await res.json().catch(()=>({}));
@@ -567,6 +661,11 @@ async function persist(type){
   }
 }
 
+function toggleOwnerOnlyNav(isOwner){
+  IS_OWNER_SESSION = isOwner;
+  document.querySelectorAll('.owner-only-nav').forEach(el => { el.style.display = isOwner ? 'flex' : 'none'; });
+}
+
 async function bootAdminApp(){
   document.getElementById('app-root').style.display = 'flex';
   toast('Memuat data...');
@@ -574,26 +673,177 @@ async function bootAdminApp(){
   renderDashboard(); renderModels(); renderKategori(); renderKategoriApp(); renderVideos(); renderBanner();
   renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderPengaturan(); renderPendingModels(); renderSurvey();
   lucide.createIcons();
+  startSessionWatcher();
 }
 
-// Halaman ini WAJIB punya token yang valid. Kalau belum login atau tokennya
-// salah/kadaluarsa, langsung diarahkan balik ke halaman login (index.html) —
-// isi panel gak akan pernah nongol tanpa lewat situ dulu, walau URL panel.html
-// diketik/dibuka langsung.
+// Halaman ini WAJIB punya sesi valid (token owner ATAU sesi undangan yang
+// masih aktif). Kalau belum login atau sesinya salah/kadaluarsa, langsung
+// diarahkan balik ke halaman login (index.html) — isi panel gak akan pernah
+// nongol tanpa lewat situ dulu, walau URL panel.html diketik/dibuka langsung.
+async function checkSession(){
+  try{
+    const res = await fetch('/api/admin/session-check', {
+      method: 'GET',
+      headers: await adminHeaders(),
+      credentials: 'include',
+    });
+    return await res.json();
+  }catch(e){
+    return { ok: null }; // null = gak bisa dicek (offline), beda dari ok:false (jelas invalid)
+  }
+}
+
 (async function initAuth(){
   const t = getToken();
-  if(!t){ window.location.href = 'index.html'; return; }
-  try{
-    const res = await fetch('/api/admin/verify', { method:'POST', headers:{ 'x-admin-token': t } });
-    const data = await res.json();
-    if(res.ok && data.ok){ await bootAdminApp(); }
-    else { clearToken(); window.location.href = 'index.html'; }
-  }catch(e){
-    // Lagi offline & gak bisa diverifikasi ke server — tetep coba buka
-    // panelnya (bukan nge-redirect loop) karena token sempat valid sebelumnya.
+  const data = await checkSession();
+  if (data.ok === true) {
+    toggleOwnerOnlyNav(!!data.isOwner);
     await bootAdminApp();
+  } else if (data.ok === false) {
+    clearToken();
+    window.location.href = 'index.html';
+  } else if (t) {
+    // Offline & gak bisa diverifikasi ke server, tapi token owner sempat ada
+    // — tetep coba buka panelnya (bukan nge-redirect loop). Admin undangan
+    // (gak punya token buat fallback ini) tetap diarahkan ke login kalau
+    // session-check gak bisa dihubungi sama sekali.
+    toggleOwnerOnlyNav(true);
+    await bootAdminApp();
+  } else {
+    window.location.href = 'index.html';
   }
 })();
+
+// Sesi admin undangan punya masa berlaku (beda dari token owner yang gak
+// pernah expire) — dipoll berkala biar begitu masa berlakunya habis atau
+// owner nge-revoke dari "Kelola Admin", admin yang lagi kerja OTOMATIS
+// ke-logout, bukan nunggu dia coba nyimpen sesuatu baru ketauan sesinya mati.
+function startSessionWatcher(){
+  setInterval(async () => {
+    const data = await checkSession();
+    if (data.ok === false) {
+      toast('Sesi kamu sudah habis masa berlakunya.');
+      setTimeout(logout, 1200);
+    }
+  }, 45000);
+}
+
+/* ================= KELOLA ADMIN (Multi-Admin Website) ================= */
+async function createAdminInvite(){
+  const label = document.getElementById('invite-label-input').value.trim();
+  const durationMs = Number(document.getElementById('invite-duration-select').value);
+  try{
+    const res = await fetch('/api/admin/invite-create', {
+      method: 'POST',
+      headers: await adminHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'include',
+      body: JSON.stringify({ label, durationMs }),
+    });
+    const data = await res.json();
+    if(!res.ok || !data.success){ toast(data.error || 'Gagal bikin undangan.'); return; }
+    document.getElementById('invite-created-box').style.display = 'block';
+    document.getElementById('invite-created-url').value = data.invite.url;
+    document.getElementById('invite-created-note').textContent =
+      `Kode: ${data.invite.code} — berlaku sampai ${new Date(data.invite.expiresAt).toLocaleString('id-ID')}. Sekali pakai, 1 perangkat.`;
+    document.getElementById('invite-label-input').value = '';
+    toast('Kode undangan dibuat.');
+    loadAdminInvitesAndSessions();
+  }catch(e){
+    toast('Gagal menghubungi server.');
+  }
+}
+
+function copyInviteLink(){
+  const input = document.getElementById('invite-created-url');
+  input.select();
+  navigator.clipboard?.writeText(input.value).then(()=>toast('Link disalin.')).catch(()=>{
+    document.execCommand('copy'); toast('Link disalin.');
+  });
+}
+
+async function loadAdminInvitesAndSessions(){
+  if (!IS_OWNER_SESSION) return;
+  try{
+    const res = await fetch('/api/admin/invite-list', { headers: await adminHeaders(), credentials:'include' });
+    const data = await res.json();
+    if(!res.ok){ toast(data.error || 'Gagal memuat daftar admin.'); return; }
+    renderAdminSessions(data.sessions || []);
+    renderAdminInvites(data.invites || []);
+  }catch(e){
+    toast('Gagal memuat daftar admin.');
+  }
+}
+
+function renderAdminSessions(sessions){
+  const active = sessions.filter(s => s.active);
+  const wrap = document.getElementById('admin-sessions-list');
+  const empty = document.getElementById('admin-sessions-empty');
+  empty.style.display = active.length ? 'none' : 'block';
+  wrap.innerHTML = active.map(s => `
+    <div class="setting-row" style="border-bottom:1px solid color-mix(in srgb, var(--text-sub) 12%, transparent);">
+      <div>
+        <div class="setting-row-title">${escapeHtmlAdmin(s.label || 'Admin')}</div>
+        <div class="setting-row-desc">Aktif sampai ${new Date(s.expiresAt).toLocaleString('id-ID')} — IP: ${escapeHtmlAdmin(s.ip || '-')}</div>
+      </div>
+      <button class="btn" style="padding:6px 10px; font-size:12px; background:var(--danger); color:#fff;" onclick="revokeAdminSession('${s.id}')">Tendang</button>
+    </div>`).join('');
+  lucide.createIcons();
+}
+
+function renderAdminInvites(invites){
+  const wrap = document.getElementById('admin-invites-list');
+  const empty = document.getElementById('admin-invites-empty');
+  empty.style.display = invites.length ? 'none' : 'block';
+  const statusLabel = { pending: '⏳ Belum dipakai', used: '✅ Sudah dipakai', revoked: '🚫 Dicabut', expired: '⌛ Kadaluarsa' };
+  wrap.innerHTML = invites.slice(0, 30).map(i => `
+    <div class="setting-row" style="border-bottom:1px solid color-mix(in srgb, var(--text-sub) 12%, transparent);">
+      <div>
+        <div class="setting-row-title">${escapeHtmlAdmin(i.label || 'Admin')} <span style="font-weight:400; color:var(--text-sub);">(${i.code})</span></div>
+        <div class="setting-row-desc">${statusLabel[i.status] || i.status} — dibuat ${new Date(i.createdAt).toLocaleString('id-ID')}</div>
+      </div>
+      ${i.status === 'pending' ? `<button class="btn btn-outline" style="padding:6px 10px; font-size:12px;" onclick="revokeInviteCode('${i.code}')">Cabut</button>` : ''}
+    </div>`).join('');
+}
+
+async function revokeInviteCode(code){
+  try{
+    const res = await fetch('/api/admin/invite-revoke', {
+      method: 'POST',
+      headers: await adminHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'include',
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+    if(!res.ok){ toast(data.error || 'Gagal mencabut undangan.'); return; }
+    toast('Undangan dicabut.');
+    loadAdminInvitesAndSessions();
+  }catch(e){ toast('Gagal menghubungi server.'); }
+}
+
+async function revokeAdminSession(sessionId){
+  try{
+    const res = await fetch('/api/admin/session-revoke', {
+      method: 'POST',
+      headers: await adminHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'include',
+      body: JSON.stringify({ sessionId }),
+    });
+    const data = await res.json();
+    if(!res.ok){ toast(data.error || 'Gagal mencabut akses admin.'); return; }
+    toast('Akses admin dicabut.');
+    loadAdminInvitesAndSessions();
+  }catch(e){ toast('Gagal menghubungi server.'); }
+}
+
+function escapeHtmlAdmin(str){
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Muat daftar undangan/sesi pas pertama kali user buka tab "Kelola Admin".
+document.addEventListener('DOMContentLoaded', () => {
+  const navItem = document.querySelector('.side-item[data-view="kelolaadmin"]');
+  if (navItem) navItem.addEventListener('click', loadAdminInvitesAndSessions);
+});
 
 /* ================= NAV ================= */
 const sidebarEl = document.querySelector('.sidebar');
@@ -1690,7 +1940,8 @@ function renderPendingModels(){
     const fileId = img.dataset.tgFileId;
     try {
       const res = await fetch(`/api/admin/telegram-file?fileId=${encodeURIComponent(fileId)}`, {
-        headers: { 'x-admin-token': getToken() },
+        headers: await adminHeaders(),
+        credentials: 'include',
       });
       if(!res.ok) throw new Error('gagal muat');
       const blob = await res.blob();
@@ -1997,7 +2248,7 @@ function copySurveyLink(id){
 async function openSurveyResults(id){
   openModal(`<h3 class="text-sm font-bold mb-3">Hasil Survey</h3><div style="font-size:13px; color:var(--text-sub);">Memuat hasil...</div>`);
   try{
-    const res = await fetch(`/api/survey-results?id=${encodeURIComponent(id)}`, { headers:{ 'x-admin-token': getToken() } });
+    const res = await fetch(`/api/survey-results?id=${encodeURIComponent(id)}`, { headers: await adminHeaders(), credentials: 'include' });
     const data = await res.json();
     if(!res.ok){ toast(data.error || 'Gagal memuat hasil'); closeModal(); return; }
     renderSurveyResultsModal(data);

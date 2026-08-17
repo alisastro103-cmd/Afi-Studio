@@ -65,9 +65,7 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const PENDING_KEY = 'afi-studio:data:pendingmodels';
 const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
-const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v3'; // v3 = broadcast dihapus + registrasi jalan tiap update (lihat ensureBotMenuRegistered)
-const ADMIN_LIST_KEY = 'afi-studio:data:admins'; // daftar admin TAMBAHAN (di luar owner/TELEGRAM_CHAT_ID)
-const INVITE_TTL_SEC = 900; // kode undangan admin berlaku 15 menit
+const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v4'; // v4 = multi-admin Telegram (/addadmin & /join) dicabut total, pindah ke sistem undangan Admin Web (lihat lib/admin-auth.js)
 const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
 
 // Ambang batas fitur /cleanup — data lebih tua dari ini dianggap kandidat basi.
@@ -91,35 +89,20 @@ const BACKUP_KEYS = {
   surveys: SURVEYS_KEY,
 };
 
-// ================= HELPER: KONTEKS PER-REQUEST (buat multi-admin) =================
-// Dulu (1 admin doang) semua balasan bot aman di-hardcode ke CHAT_ID (owner),
-// karena yang bisa chat cuma dia. Sekarang ada admin tambahan (via undangan),
-// balasan HARUS nyampe ke chat yang lagi ngobrol, bukan selalu ke owner.
-//
-// Dipakai AsyncLocalStorage (bukan variabel module-level biasa) SENGAJA —
-// kalau pakai variabel biasa dan Vercel kebetulan lagi eksekusi 2 invocation
-// bersamaan di container yang sama (mode "fluid compute"), variabel itu bisa
-// ketimpa request lain di tengah proses async, balasan bisa nyasar ke chat
-// yang salah. AsyncLocalStorage didesain khusus buat nyimpen konteks per
-// request yang aman dipakai bareng kode async, jadi gak ada risiko ketuker.
+// ================= HELPER: KONTEKS PER-REQUEST =================
+// Bot ini SEKARANG owner-only (chat_id harus persis TELEGRAM_CHAT_ID — lihat
+// isOwner() di bawah; multi-admin Telegram/addadmin/join sudah dicabut total,
+// pindah ke sistem undangan Admin Web di lib/admin-auth.js). Tetap dipertahankan
+// pakai AsyncLocalStorage (bukan variabel module-level biasa) SENGAJA — kalau
+// Vercel kebetulan lagi eksekusi 2 invocation bersamaan di container yang sama
+// (mode "fluid compute"), variabel biasa bisa ketimpa request lain di tengah
+// proses async. AsyncLocalStorage didesain khusus buat nyimpen konteks per
+// request yang aman dipakai bareng kode async, jadi gak ada risiko balasan
+// nyasar walau owner kirim beberapa pesan hampir bersamaan.
 const requestContext = new AsyncLocalStorage();
 
 function isOwner(chatId) {
   return String(chatId) === String(CHAT_ID);
-}
-
-async function isAuthorizedAdmin(chatId) {
-  if (isOwner(chatId)) return true;
-  if (!redis) return false;
-  try {
-    const list = (await redis.get(ADMIN_LIST_KEY)) || [];
-    const entry = (Array.isArray(list) ? list : []).find(a => String(a.chatId) === String(chatId));
-    if (!entry) return false;
-    if (entry.expiresAt && new Date(entry.expiresAt).getTime() < Date.now()) return false; // masa aktif abis
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 
@@ -246,9 +229,6 @@ async function ensureBotMenuRegistered() {
           { command: 'backups', description: 'Lihat daftar backup tersimpan' },
           { command: 'restore', description: 'Timpa data pakai backup — format: file KONFIRMASI' },
           { command: 'cleanup', description: 'Scan & bersihin data lama (preview dulu)' },
-          { command: 'admins', description: 'Lihat daftar admin' },
-          { command: 'addadmin', description: '[Owner] Bikin admin baru — format: nama [durasi]' },
-          { command: 'join', description: 'Daftar jadi admin — format: kode undangan' },
           { command: 'batal', description: 'Batalin proses tanya-jawab yang lagi jalan' },
         ],
       }),
@@ -400,7 +380,6 @@ function mainMenuKeyboard() {
       [{ text: '⏳ Pending Model', callback_data: 'menu:pending' }, { text: '📋 Survey', callback_data: 'menu:surveys' }],
       [{ text: '🖼️ Thumbnail', callback_data: 'menu:thumb' }, { text: '💾 Backup', callback_data: 'menu:backup' }],
       [{ text: '🧹 Cleanup', callback_data: 'cleanup:scan' }],
-      [{ text: '👑 Admin', callback_data: 'menu:admins' }],
     ],
   };
 }
@@ -453,9 +432,6 @@ async function cmdHelp() {
 
     '<b>Lainnya</b>\n' +
     '/cleanup — bersihin data lama\n' +
-    '/admins — daftar admin\n' +
-    '/addadmin nama [durasi] — bikin admin baru (khusus owner)\n' +
-    '/join kode — daftar jadi admin\n' +
     '/batal — batalin proses yang lagi jalan'
   );
 }
@@ -905,131 +881,6 @@ async function cmdCleanupExecute(chatId) {
   await tgSend(text);
 }
 
-// --- Multi-admin: undangan berkode + masa aktif (expired otomatis) ---
-// Cuma OWNER (chat_id di TELEGRAM_CHAT_ID) yang bisa bikin/hapus admin.
-// Admin tambahan bisa permanent atau punya masa aktif; begitu lewat
-// expiresAt, otomatis kehilang akses (dicek tiap kali dia pakai command),
-// TANPA perlu owner hapus manual — tapi datanya tetap ada di daftar sampai
-// dihapus manual (atau nanti ketangkep /cleanup di update berikutnya).
-
-function generateInviteCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // tanpa karakter ambigu (I,O,0,1)
-  let code = '';
-  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
-
-// Parse format durasi simpel: "7d" (hari) atau "24h" (jam).
-// return: undefined = format salah, null = permanent (gak ada input), string ISO = expiresAt
-function parseDurationToExpiry(str) {
-  if (!str) return null;
-  const m = /^(\d+)(d|h)$/i.exec(str.trim());
-  if (!m) return undefined;
-  const num = parseInt(m[1], 10);
-  const ms = m[2].toLowerCase() === 'd' ? num * 86400000 : num * 3600000;
-  return new Date(Date.now() + ms).toISOString();
-}
-
-async function cmdAddAdmin(name, durationStr) {
-  if (!redis) return tgSend('Redis belum dikonfigurasi di server.');
-  if (!name) return tgSend('Format: /addadmin nama_admin [durasi]\nContoh: <code>/addadmin Rian 7d</code> (7 hari) atau <code>/addadmin Rian 24h</code> (24 jam).\nTanpa durasi = permanent.');
-
-  const expiresAt = parseDurationToExpiry(durationStr);
-  if (expiresAt === undefined) {
-    return tgSend('Format durasi salah. Contoh valid: <code>7d</code> (7 hari) atau <code>24h</code> (24 jam). Kosongin kalau mau permanent.');
-  }
-
-  const code = generateInviteCode();
-  try {
-    await redis.set(`afi-studio:admininvite:${code}`, { name, expiresAt, createdAt: new Date().toISOString() }, { ex: INVITE_TTL_SEC });
-  } catch (e) {
-    return tgSend(`Gagal bikin kode undangan: ${escHtml(e.message)}`);
-  }
-
-  await tgSend(
-    `Kode undangan buat <b>${escHtml(name)}</b>: <code>${code}</code>\n` +
-    `Berlaku 15 menit sebelum hangus.\n` +
-    `${expiresAt ? `Akses admin-nya expired otomatis: ${new Date(expiresAt).toLocaleString('id-ID')}.` : 'Akses admin-nya permanent (gak ada batas waktu).'}\n\n` +
-    `Suruh dia buka bot ini, terus kirim:\n<code>/join ${code}</code>`
-  );
-}
-
-async function cmdJoin(chatId, codeRaw) {
-  if (!codeRaw) return tgSend('Format: /join KODE_UNDANGAN\n(minta kode undangannya ke admin Afi Studio dulu)');
-  if (!redis) return tgSend('Server belum siap, coba lagi nanti.');
-
-  const already = await isAuthorizedAdmin(chatId);
-  if (already) return tgSend('Kamu udah jadi admin di sini. Ketik /menu buat mulai.');
-
-  const code = codeRaw.trim().toUpperCase();
-  const inviteKey = `afi-studio:admininvite:${code}`;
-  let invite;
-  try {
-    invite = await redis.get(inviteKey);
-  } catch {
-    return tgSend('Gagal cek kode undangan, coba lagi.');
-  }
-  if (!invite) return tgSend('Kode undangan gak valid atau udah kadaluarsa (berlaku 15 menit). Minta kode baru.');
-
-  try { await redis.del(inviteKey); } catch {} // sekali pakai
-
-  try {
-    const list = (await redis.get(ADMIN_LIST_KEY)) || [];
-    const arr = Array.isArray(list) ? list : [];
-    arr.push({
-      chatId: String(chatId),
-      name: invite.name || 'Admin',
-      addedAt: new Date().toISOString(),
-      expiresAt: invite.expiresAt || null,
-    });
-    await redis.set(ADMIN_LIST_KEY, arr);
-  } catch (e) {
-    return tgSend(`Kode valid, tapi gagal simpen ke daftar admin: ${escHtml(e.message)}. Coba lagi.`);
-  }
-
-  await tgSend(`Selamat datang, <b>${escHtml(invite.name || 'Admin')}</b>! Kamu sekarang admin Afi Studio bot. Ketik /menu buat mulai.`);
-
-  const expiryNote = invite.expiresAt ? `expired ${new Date(invite.expiresAt).toLocaleString('id-ID')}` : 'permanent';
-  try {
-    await tgSendTo(CHAT_ID, `✅ Admin baru bergabung: <b>${escHtml(invite.name || 'Admin')}</b> (${expiryNote})`);
-  } catch {}
-}
-
-async function cmdRemoveAdmin(targetChatId) {
-  if (!redis) return tgSend('Redis belum dikonfigurasi di server.');
-  const list = (await redis.get(ADMIN_LIST_KEY).catch(() => [])) || [];
-  const arr = Array.isArray(list) ? list : [];
-  const filtered = arr.filter(a => String(a.chatId) !== String(targetChatId));
-  if (filtered.length === arr.length) return tgSend('Admin itu udah gak ada di daftar (mungkin baru aja dihapus).');
-  await redis.set(ADMIN_LIST_KEY, filtered);
-  await tgSend('Admin berhasil dihapus dari daftar. Akses dia ke bot langsung kecabut.');
-}
-
-async function cmdAdminsMenu(chatId, messageId) {
-  if (!redis) return tgSendOrEdit(chatId, messageId, 'Redis belum dikonfigurasi di server.', mainMenuKeyboard());
-  const list = (await redis.get(ADMIN_LIST_KEY).catch(() => [])) || [];
-  const arr = Array.isArray(list) ? list : [];
-  const now = Date.now();
-
-  let text = `<b>Daftar Admin</b>\n\n👑 Owner — permanent\n`;
-  for (const a of arr) {
-    const expired = a.expiresAt && new Date(a.expiresAt).getTime() < now;
-    const status = !a.expiresAt ? 'permanent' : expired ? '⛔ expired' : `aktif sampai ${new Date(a.expiresAt).toLocaleDateString('id-ID')}`;
-    text += `• ${escHtml(a.name || a.chatId)} — ${status}\n`;
-  }
-  if (!arr.length) text += '\n(belum ada admin tambahan)';
-
-  const rows = [];
-  if (isOwner(chatId)) {
-    text += `\n\nTambah admin baru:\n<code>/addadmin nama [7d]</code>`;
-    for (const a of arr) {
-      rows.push([{ text: `🗑 ${(a.name || a.chatId).slice(0, 40)}`, callback_data: `removeadmin:${a.chatId}` }]);
-    }
-  }
-  rows.push([{ text: '⬅️ Kembali', callback_data: 'menu:main' }]);
-  await tgSendOrEdit(chatId, messageId, text, { inline_keyboard: rows });
-}
-
 // ================= MENU: LIST DENGAN TOMBOL HAPUS =================
 
 async function sendPendingMenu(chatId, messageId) {
@@ -1124,7 +975,7 @@ async function processCallback(cq) {
   const messageId = cq.message && cq.message.message_id;
   const data = cq.data || '';
 
-  if (!chatId || !(await isAuthorizedAdmin(chatId))) {
+  if (!chatId || !isOwner(chatId)) {
     await tgAnswerCallback(cq.id, 'Bukan buat kamu.');
     return;
   }
@@ -1228,22 +1079,6 @@ async function processCallback(cq) {
     return tgSendOrEdit(chatId, messageId, 'Cleanup dibatalin, gak ada yang dihapus.', mainMenuKeyboard());
   }
 
-  if (data === 'menu:admins') return cmdAdminsMenu(chatId, messageId);
-  if (data.startsWith('removeadmin_confirm:')) {
-    if (!isOwner(chatId)) { await tgSend('Cuma owner yang bisa hapus admin.'); return; }
-    const target = data.slice('removeadmin_confirm:'.length);
-    await cmdRemoveAdmin(target);
-    return;
-  }
-  if (data.startsWith('removeadmin:')) {
-    if (!isOwner(chatId)) { await tgSend('Cuma owner yang bisa hapus admin.'); return; }
-    const target = data.slice('removeadmin:'.length);
-    return tgSendOrEdit(
-      chatId, messageId, 'Hapus admin ini dari daftar? Akses dia ke bot langsung kecabut.',
-      { inline_keyboard: [[{ text: '✅ Ya, hapus', callback_data: `removeadmin_confirm:${target}` }, { text: '❌ Batal', callback_data: 'menu:admins' }]] }
-    );
-  }
-
   if (data.startsWith('convertthumb:webp:')) {
     await cmdConvertPendingThumb(data.slice('convertthumb:webp:'.length), 'webp');
     return;
@@ -1281,18 +1116,10 @@ async function processUpdate(update) {
       return;
     }
 
-    // /join HARUS bisa dipanggil orang yang BELUM jadi admin (itu tujuannya),
-    // jadi dicek duluan, sebelum gerbang otorisasi di bawah.
-    const rawTextEarly = (message.text || '').trim();
-    if (/^\/join(\s|$)/i.test(rawTextEarly)) {
-      const codeArg = rawTextEarly.split(/\s+/)[1];
-      await cmdJoin(chatId, codeArg);
-      return;
-    }
-
-    // Cuma layani admin yang udah terdaftar (owner ATAU admin undangan yang
-    // masih aktif). Orang lain diabaikan diam-diam, sama kayak sebelumnya.
-    if (!(await isAuthorizedAdmin(chatId))) return;
+    // Cuma layani owner (chat_id di TELEGRAM_CHAT_ID). Admin tambahan sekarang
+    // diurus lewat sistem undangan Admin Web (lihat lib/admin-auth.js), BUKAN
+    // lagi lewat bot ini — orang lain yang chat/pencet tombol diabaikan diam-diam.
+    if (!isOwner(chatId)) return;
 
     // Kasus lama: foto dikirim langsung dengan caption /setthumb (tetap didukung,
     // jalan independen dari sistem state, biar kebiasaan lama tetap bisa dipakai).
@@ -1303,7 +1130,7 @@ async function processUpdate(update) {
       return;
     }
 
-    const rawText = rawTextEarly;
+    const rawText = (message.text || '').trim();
     const isCommand = rawText.startsWith('/');
 
     // ---- Kalau BUKAN command, cek dulu apa lagi ada state percakapan aktif ----
@@ -1382,21 +1209,6 @@ async function processUpdate(update) {
       case '/cleanup':
         await clearState(chatId);
         await cmdCleanupScan(chatId, null);
-        break;
-      case '/addadmin':
-        if (!isOwner(chatId)) {
-          await tgSend('Cuma owner yang bisa nambahin admin.');
-          break;
-        }
-        await cmdAddAdmin(args[0], args[1]);
-        break;
-      case '/admins':
-        await cmdAdminsMenu(chatId, null);
-        break;
-      case '/join':
-        // Jarang kesampaian sini (udah ditangkep duluan di atas), tapi tetep
-        // ditangani biar konsisten kalau admin yang UDAH terdaftar iseng /join lagi.
-        await cmdJoin(chatId, args[0]);
         break;
       default:
         await tgSend('Perintah gak dikenal. Ketik /menu buat lihat tombol, atau /help buat daftar perintah.');

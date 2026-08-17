@@ -5,6 +5,7 @@
 // GET /api/survey-results?id=xxx
 
 import { Redis } from '@upstash/redis';
+import { requireAdmin } from '../lib/admin-auth.js';
 
 const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
   ? Redis.fromEnv()
@@ -18,9 +19,9 @@ export default async function handler(req, res) {
   if (!process.env.ADMIN_TOKEN) {
     return res.status(500).json({ error: 'Server belum dikonfigurasi: ADMIN_TOKEN kosong.' });
   }
-  const token = req.headers['x-admin-token'];
-  if (!token || token !== process.env.ADMIN_TOKEN) {
-    return res.status(401).json({ error: 'Token admin salah atau belum login.' });
+  const auth = await requireAdmin(req, res);
+  if (!auth.ok) {
+    return res.status(auth.status || 401).json({ error: auth.error });
   }
   if (!redis) {
     return res.status(500).json({ error: 'Server belum dikonfigurasi: database kosong.' });
