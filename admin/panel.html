@@ -497,12 +497,22 @@
           </div>
           <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px; border-bottom:none;">
             <div class="setting-row-title">Durasi Akses</div>
-            <select id="invite-duration-select">
-              <option value="1">1 Hari</option>
-              <option value="7" selected>7 Hari</option>
-              <option value="30">30 Hari</option>
+            <select id="invite-duration-select" onchange="toggleCustomDuration()">
+              <option value="1440">1 Hari</option>
+              <option value="4320">3 Hari</option>
+              <option value="10080" selected>7 Hari</option>
+              <option value="43200">30 Hari</option>
               <option value="0">Permanent (gak ada batas waktu)</option>
+              <option value="custom">Custom...</option>
             </select>
+            <div id="invite-custom-duration-row" style="display:none; gap:8px; margin-top:4px;">
+              <input type="number" id="invite-custom-value" min="1" value="1" style="flex:1;">
+              <select id="invite-custom-unit" style="flex:1;">
+                <option value="1">Menit</option>
+                <option value="60" selected>Jam</option>
+                <option value="1440">Hari</option>
+              </select>
+            </div>
           </div>
           <button class="btn btn-accent" style="width:100%; margin-top:14px;" onclick="generateInvite()">Generate Kode Undangan</button>
           <div id="invite-result-box" style="display:none; margin-top:14px; padding:12px; border-radius:10px; background:var(--bg); border:1px solid var(--border);">
@@ -621,14 +631,28 @@ async function bootAdminApp(){
 }
 
 /* ================= KELOLA ADMIN (undangan admin panel) ================= */
+function toggleCustomDuration(){
+  const isCustom = document.getElementById('invite-duration-select').value === 'custom';
+  document.getElementById('invite-custom-duration-row').style.display = isCustom ? 'flex' : 'none';
+}
+
 async function generateInvite(){
   const label = document.getElementById('invite-label-input').value.trim() || 'Admin';
-  const durationDays = Number(document.getElementById('invite-duration-select').value) || 0;
+  const durationSelect = document.getElementById('invite-duration-select').value;
+  let durationMinutes;
+  if(durationSelect === 'custom'){
+    const val = Number(document.getElementById('invite-custom-value').value);
+    const unit = Number(document.getElementById('invite-custom-unit').value);
+    if(!val || val <= 0){ toast('Isi durasi custom yang valid dulu.'); return; }
+    durationMinutes = Math.round(val * unit);
+  } else {
+    durationMinutes = Number(durationSelect) || 0;
+  }
   try{
     const res = await fetch('/api/admin/auth?action=invite-create', {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'x-admin-token': getToken() },
-      body: JSON.stringify({ label, durationDays })
+      body: JSON.stringify({ label, durationMinutes })
     });
     const data = await res.json();
     if(!res.ok || !data.ok){ toast(data.error || 'Gagal bikin kode.'); return; }

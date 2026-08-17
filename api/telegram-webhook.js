@@ -48,6 +48,7 @@ import { Redis } from '@upstash/redis';
 import dns from 'dns/promises';
 import net from 'net';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { SESSION_PREFIX as ADMIN_SESSION_PREFIX } from '../lib/admin-auth.js';
 import sharp from 'sharp';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -65,7 +66,7 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const PENDING_KEY = 'afi-studio:data:pendingmodels';
 const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
-const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v3'; // v3 = broadcast dihapus + registrasi jalan tiap update (lihat ensureBotMenuRegistered)
+const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v5'; // v5 = tambah /webadmin (lihat admin panel website aktif)
 const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
 
 // Ambang batas fitur /cleanup — data lebih tua dari ini dianggap kandidat basi.
@@ -225,6 +226,7 @@ async function ensureBotMenuRegistered() {
           { command: 'menu', description: 'Buka menu utama (tombol)' },
           { command: 'help', description: 'Daftar semua perintah' },
           { command: 'status', description: 'Ringkasan jumlah data' },
+          { command: 'webadmin', description: 'Lihat admin panel website yang aktif' },
           { command: 'pending', description: 'Pendaftaran model belum diproses' },
           { command: 'delpending', description: 'Hapus 1 pending — format: id' },
           { command: 'clearpending', description: 'Hapus SEMUA pending' },
@@ -387,7 +389,7 @@ function mainMenuKeyboard() {
       [{ text: '📊 Status', callback_data: 'menu:status' }, { text: '🔍 Cari', callback_data: 'menu:find' }],
       [{ text: '⏳ Pending Model', callback_data: 'menu:pending' }, { text: '📋 Survey', callback_data: 'menu:surveys' }],
       [{ text: '🖼️ Thumbnail', callback_data: 'menu:thumb' }, { text: '💾 Backup', callback_data: 'menu:backup' }],
-      [{ text: '🧹 Cleanup', callback_data: 'cleanup:scan' }],
+      [{ text: '🧹 Cleanup', callback_data: 'cleanup:scan' }, { text: '👥 Web Admin', callback_data: 'menu:webadmin' }],
     ],
   };
 }
@@ -422,6 +424,7 @@ async function cmdHelp() {
 
     '<b>Data</b>\n' +
     '/status — ringkasan jumlah data\n' +
+    '/webadmin — lihat admin panel website yang aktif\n' +
     '/pending — pendaftaran model belum diproses\n' +
     '/delpending id — hapus 1 pending\n' +
     '/clearpending — hapus semua pending\n' +
@@ -469,10 +472,43 @@ async function cmdStatus() {
   );
 }
 
+async function cmdWebAdmin() {
+  if (!redis) return tgSend('Redis belum dikonfigurasi di server.');
+  try {
+    const sessions = [];
+    let cursor = '0';
+    do {
+      const [nextCursor, keys] = await redis.scan(cursor, { match: `${ADMIN_SESSION_PREFIX}*`, count: 100 });
+      cursor = nextCursor;
+      if (keys.length) {
+        const values = await Promise.all(keys.map((k) => redis.get(k)));
+        keys.forEach((k, i) => { if (values[i]) sessions.push(values[i]); });
+      }
+    } while (cursor !== '0');
+
+    if (!sessions.length) {
+      return tgSend('<b>Admin Panel Website</b>\n\nGak ada admin undangan yang aktif saat ini. Cuma owner (kamu) yang punya akses.');
+    }
+
+    sessions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    let text = `<b>Admin Panel Website</b>\n\nAdmin undangan aktif: <b>${sessions.length}</b>\n\n`;
+    sessions.forEach((s, i) => {
+      const expiry = s.expiresAt ? `sampai ${new Date(s.expiresAt).toLocaleString('id-ID')}` : 'permanent';
+      text += `${i + 1}. <b>${escHtml(s.label)}</b> — ${expiry}\n`;
+    });
+    text += '\nBuat cabut akses, buka menu "Kelola Admin" di Admin Panel Website.';
+    await tgSend(text);
+  } catch (e) {
+    await tgSend(`Gagal ambil daftar admin: ${escHtml(e.message)}`);
+  }
+}
+
+
 async function cmdPending() {
   if (!redis) return tgSend('Redis belum dikonfigurasi di server.');
   const list = (await redis.get(PENDING_KEY)) || [];
   if (!Array.isArray(list) || list.length === 0) return tgSend('Gak ada pendaftaran model yang pending. 🎉');
+
   const top = list.slice(-10).reverse();
   let text = `<b>Pendaftaran Pending</b> (${list.length} total, 10 terbaru)\n\n`;
   for (const item of top) {
@@ -994,6 +1030,7 @@ async function processCallback(cq) {
 
   if (data === 'menu:main') { await clearState(chatId); return cmdMenu(chatId, messageId); }
   if (data === 'menu:status') return cmdStatus();
+  if (data === 'menu:webadmin') return cmdWebAdmin();
   if (data === 'menu:find') {
     await setState(chatId, { action: 'awaiting_find_keyword' });
     return tgSendOrEdit(chatId, messageId, 'Ketik kata kunci yang mau dicari:');
@@ -1181,6 +1218,9 @@ async function processUpdate(update) {
         break;
       case '/status':
         await cmdStatus();
+        break;
+      case '/webadmin':
+        await cmdWebAdmin();
         break;
       case '/pending':
         await cmdPending();

@@ -71,18 +71,18 @@ async function actionInviteCreate(req, res) {
 
   const body = await parseJsonBody(req);
   const label = String(body.label || '').trim().slice(0, 60) || 'Admin';
-  let durationDays = Number(body.durationDays);
-  if (!Number.isFinite(durationDays) || durationDays <= 0) durationDays = null; // permanent
+  let durationMinutes = Number(body.durationMinutes);
+  if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) durationMinutes = null; // permanent
 
   const code = generateInviteCode();
-  const invite = { label, durationDays, createdAt: new Date().toISOString() };
+  const invite = { label, durationMinutes, createdAt: new Date().toISOString() };
 
   try {
     await redis.set(INVITE_PREFIX + code, invite, { ex: INVITE_REDEEM_WINDOW_SEC });
   } catch (e) {
     return res.status(500).json({ error: `Gagal bikin kode undangan: ${e.message}` });
   }
-  return res.status(200).json({ ok: true, code, label, durationDays, redeemWindowHours: INVITE_REDEEM_WINDOW_SEC / 3600 });
+  return res.status(200).json({ ok: true, code, label, durationMinutes, redeemWindowHours: INVITE_REDEEM_WINDOW_SEC / 3600 });
 }
 
 /* ---------------- action: invite-redeem (publik) ---------------- */
@@ -112,7 +112,7 @@ async function actionInviteRedeem(req, res) {
   if (!invite) return res.status(400).json({ error: 'Kode gak valid, udah kepakai, atau udah kadaluarsa (berlaku 24 jam).' });
 
   const sessionId = crypto.randomBytes(32).toString('hex');
-  const durationSec = invite.durationDays ? invite.durationDays * 86400 : null; // null = permanent
+  const durationSec = invite.durationMinutes ? invite.durationMinutes * 60 : null; // null = permanent
   const expiresAt = durationSec ? new Date(Date.now() + durationSec * 1000).toISOString() : null;
   const session = {
     label: invite.label || 'Admin',

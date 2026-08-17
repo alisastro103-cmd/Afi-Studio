@@ -1,66 +1,47 @@
 # Cara pakai
 
-Ini perbaikan buat error "Build Failed — No more than 12 Serverless Functions"
-yang muncul di Vercel kamu. **File yang harus DIHAPUS dulu**, baru ditimpa.
-
-## 1. Hapus 6 file ini (udah digabung jadi 1 file `api/admin/auth.js`)
+Extract lalu TIMPA (bukan file baru, 3 file yang udah ada):
 ```
-api/admin/verify.js
-api/admin/invite-create.js
-api/admin/invite-redeem.js
-api/admin/whoami.js
-api/admin/session-list.js
-api/admin/session-revoke.js
-```
-
-## 2. Extract & timpa 3 file ini ke folder yang sama
-```
-api/admin/auth.js       (BARU)
 admin/panel.html
-admin/index.html
+api/admin/auth.js
+api/telegram-webhook.js
 ```
 
-`api/admin/telegram-file.js` **JANGAN dihapus** — itu tetap file terpisah, gak
-ikut digabung (beda fungsinya, buat proxy gambar dari Telegram).
+## 1. Admin undangan gak lihat "Kelola Admin" ✅
+Ini sebenernya udah jalan dari awal, sempet aku cek ulang abis proses
+gabung-endpoint kemarin — masih aman. Menu "Kelola Admin" di sidebar cuma
+muncul kalau yang login itu OWNER (token asli), admin yang masuk lewat kode
+undangan gak bakal lihat menu itu sama sekali.
 
-## Kenapa ini kejadian
+## 2. Durasi custom (menit/jam/hari) ✅
+Dropdown durasi sekarang ada pilihan **1 Hari / 3 Hari / 7 Hari / 30 Hari /
+Permanent / Custom...** — pilih "Custom..." bakal muncul 2 kolom baru:
+angka + satuan (Menit/Jam/Hari), bisa diisi bebas (misal "45 Menit" atau
+"12 Jam").
 
-Plan Vercel Hobby cuma boleh maksimal **12 serverless function** per
-deployment — tiap file `.js` di dalam folder `api/` (termasuk yang di
-subfolder `api/admin/`) itu dihitung 1 function. Fitur invite-admin
-kemarin nambahin 6 file kecil sekaligus, total jadi 16 function — 4
-lewat dari batas, makanya Vercel nolak deploy sama sekali (Build Failed,
-bukan cuma warning).
+Di balik layar, durasinya sekarang disimpan dalam MENIT (bukan hari kayak
+sebelumnya) biar presisi ke satuan sekecil apapun.
 
-## Yang diubah
+## 3. Lihat admin aktif dari bot Telegram ✅
+Command baru: **`/webadmin`** — nampilin daftar admin panel website yang
+lagi aktif (nama/label + kapan expired-nya), plus jumlah totalnya. Juga
+ditambahin ke `/menu` (tombol "👥 Web Admin") dan `/help`.
 
-7 endpoint kecil (`verify`, `invite-create`, `invite-redeem`, `whoami`,
-`session-list`, `session-revoke`, `logout`) digabung jadi **1 file**
-`api/admin/auth.js`, dibedain lewat parameter `?action=...` di URL-nya.
-Contoh: yang tadinya `POST /api/admin/invite-create` sekarang jadi
-`POST /api/admin/auth?action=invite-create`.
+Ini VIEW-ONLY dari bot (buat cabut akses, tetep lewat "Kelola Admin" di
+Admin Panel Website — biar semua aksi cabut-mencabut tetep di satu tempat,
+gak kecampur 2 sumber kontrol).
 
-Logic di dalamnya PERSIS SAMA kayak sebelumnya (gak ada behavior yang
-berubah), cuma dipindah jadi 1 file biar hemat jatah function. Frontend
-(`admin/panel.html` & `admin/index.html`) udah disesuaikan manggil URL
-barunya.
-
-Total function sekarang: **10** (dari 16), sisa jatah 2 buat kalau nanti
-mau nambah fitur lagi.
+Bot bacanya dari data Redis yang SAMA persis dipakai web (gak ada
+duplikasi/nyimpen 2x), jadi datanya selalu sinkron — kalau ada yang login
+dari web, langsung kelihatan di bot juga.
 
 ## Setelah upload
-
 ```bash
-git rm api/admin/verify.js api/admin/invite-create.js api/admin/invite-redeem.js api/admin/whoami.js api/admin/session-list.js api/admin/session-revoke.js
+git add . && git commit -m "Custom durasi invite + lihat admin aktif dari bot Telegram" && git push
 ```
-Terus extract 3 file baru ke folder yang sama, lalu:
-```bash
-git add -A
-git commit -m "Gabungin endpoint admin-auth jadi 1 file (fix limit 12 function Vercel Hobby)"
-git pull --rebase origin main
-git push
-```
+(kalau ditolak: `git pull --rebase origin main` dulu, baru push lagi)
 
-Tunggu deploy Vercel, cek statusnya harus "Ready" (bukan "Error" lagi).
-Test ulang alur login owner & redeem kode undangan, harusnya jalan
-persis kayak sebelumnya.
+Tunggu deploy, terus:
+- Cek dropdown durasi di "Kelola Admin" — pilih "Custom...", pastiin muncul kolom angka+satuan
+- Generate 1 kode pakai durasi custom (misal 2 jam), redeem di tab lain, cek waktu expired-nya bener
+- Ketik `/webadmin` ke bot, pastiin daftar admin yang muncul cocok sama yang di web
