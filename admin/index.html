@@ -215,8 +215,7 @@
 <!-- ===== LOGIN GATE ===== -->
 <!-- Halaman ini isinya cuma form login. Panel admin yang sebenarnya ada di
      panel.html dan file itu akan nolak nampilin apa pun kalau belum ada
-     sesi valid (token owner ATAU sesi undangan), jadi walau URL panel.html
-     diketik langsung tetap balik ke sini. -->
+     token valid, jadi walau URL panel.html diketik langsung tetap balik ke sini. -->
 <div id="login-screen" style="position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; background:var(--bg); padding:20px;">
   <div style="width:100%; max-width:340px;">
     <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
@@ -224,25 +223,21 @@
       <div style="font-family:'Outfit',sans-serif; font-weight:800; font-size:15px;">Afi Studio Admin</div>
     </div>
 
-    <div style="display:flex; gap:6px; margin-bottom:16px; background:var(--surface); padding:4px; border-radius:8px;">
-      <button id="tab-owner-btn" class="btn" style="flex:1; background:var(--accent); color:#fff;" onclick="switchLoginTab('owner')">Owner</button>
-      <button id="tab-invite-btn" class="btn" style="flex:1; background:transparent; color:var(--text-sub);" onclick="switchLoginTab('invite')">Kode Undangan</button>
-    </div>
-
-    <div id="tab-owner">
+    <div id="login-owner-box">
       <label style="font-size:12px; font-weight:700; color:var(--text-sub);">Token Admin</label>
       <input id="login-token-input" type="password" placeholder="Masukkan token admin" style="width:100%; margin-top:6px; margin-bottom:10px;" onkeydown="if(event.key==='Enter') doLogin()">
       <button class="btn btn-accent" style="width:100%;" onclick="doLogin()">Masuk</button>
+      <div id="login-error" style="color:var(--danger); font-size:12px; font-weight:600; margin-top:10px; display:none;"></div>
+      <button type="button" onclick="toggleInviteBox(true)" style="width:100%; margin-top:14px; background:none; border:none; color:var(--text-sub); font-size:12px; font-weight:600; text-decoration:underline; cursor:pointer;">Punya Kode Undangan?</button>
     </div>
 
-    <div id="tab-invite" style="display:none;">
+    <div id="login-invite-box" style="display:none;">
       <label style="font-size:12px; font-weight:700; color:var(--text-sub);">Kode Undangan</label>
-      <input id="login-invite-input" type="text" placeholder="Contoh: A3F7K2QX" style="width:100%; margin-top:6px; margin-bottom:6px; text-transform:uppercase;" onkeydown="if(event.key==='Enter') doRedeemInvite()">
-      <div style="font-size:11px; color:var(--text-sub); margin-bottom:10px;">Kode ini cuma bisa dipakai SEKALI, di perangkat ini. Minta ke owner Afi Studio kalau belum punya.</div>
-      <button class="btn btn-accent" style="width:100%;" onclick="doRedeemInvite()">Masuk Pakai Undangan</button>
+      <input id="login-invite-input" type="text" placeholder="Contoh: A7XK9P2Q" style="width:100%; margin-top:6px; margin-bottom:10px; text-transform:uppercase; letter-spacing:2px;" onkeydown="if(event.key==='Enter') doRedeemInvite()">
+      <button class="btn btn-accent" style="width:100%;" onclick="doRedeemInvite()">Masuk Pakai Kode</button>
+      <div id="login-invite-error" style="color:var(--danger); font-size:12px; font-weight:600; margin-top:10px; display:none;"></div>
+      <button type="button" onclick="toggleInviteBox(false)" style="width:100%; margin-top:14px; background:none; border:none; color:var(--text-sub); font-size:12px; font-weight:600; text-decoration:underline; cursor:pointer;">Login pakai Token Owner</button>
     </div>
-
-    <div id="login-error" style="color:var(--danger); font-size:12px; font-weight:600; margin-top:10px; display:none;"></div>
   </div>
 </div>
 
@@ -251,38 +246,10 @@ function getToken(){ return sessionStorage.getItem('afi-admin-token') || ''; }
 function setToken(t){ sessionStorage.setItem('afi-admin-token', t); }
 function clearToken(){ sessionStorage.removeItem('afi-admin-token'); }
 
-// Fingerprint sederhana dari karakteristik browser/device (bukan token rahasia,
-// cuma "sidik jari" buat ngunci sesi undangan ke perangkat ini — lihat
-// lib/admin-auth.js di server buat penjelasan lengkap kenapa ini dianggap
-// cukup buat "device lock" digabung sama cookie HttpOnly). Disimpan di
-// sessionStorage biar konsisten dipakai ulang di panel.html tanpa dihitung ulang.
-async function deviceFingerprint(){
-  let fp = sessionStorage.getItem('afi-device-fp');
-  if (fp) return fp;
-  try{
-    const raw = [
-      navigator.userAgent, navigator.language,
-      screen.width + 'x' + screen.height, screen.colorDepth,
-      Intl.DateTimeFormat().resolvedOptions().timeZone,
-    ].join('|');
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
-    fp = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }catch(e){
-    fp = 'fp-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-  }
-  sessionStorage.setItem('afi-device-fp', fp);
-  return fp;
-}
-
-function switchLoginTab(tab){
-  const isOwner = tab === 'owner';
-  document.getElementById('tab-owner').style.display = isOwner ? 'block' : 'none';
-  document.getElementById('tab-invite').style.display = isOwner ? 'none' : 'block';
-  document.getElementById('tab-owner-btn').style.background = isOwner ? 'var(--accent)' : 'transparent';
-  document.getElementById('tab-owner-btn').style.color = isOwner ? '#fff' : 'var(--text-sub)';
-  document.getElementById('tab-invite-btn').style.background = isOwner ? 'transparent' : 'var(--accent)';
-  document.getElementById('tab-invite-btn').style.color = isOwner ? 'var(--text-sub)' : '#fff';
-  document.getElementById('login-error').style.display = 'none';
+function toggleInviteBox(showInvite){
+  document.getElementById('login-owner-box').style.display = showInvite ? 'none' : 'block';
+  document.getElementById('login-invite-box').style.display = showInvite ? 'block' : 'none';
+  if(showInvite) document.getElementById('login-invite-input').focus();
 }
 
 async function doLogin(){
@@ -307,25 +274,26 @@ async function doLogin(){
   }
 }
 
-async function doRedeemInvite(codeOverride){
+async function doRedeemInvite(){
   const input = document.getElementById('login-invite-input');
-  const errEl = document.getElementById('login-error');
-  const code = (codeOverride || input.value || '').trim().toUpperCase();
+  const errEl = document.getElementById('login-invite-error');
+  const code = input.value.trim().toUpperCase();
   errEl.style.display = 'none';
   if(!code){ errEl.textContent = 'Kode undangan wajib diisi.'; errEl.style.display = 'block'; return; }
   try{
-    const fp = await deviceFingerprint();
     const res = await fetch('/api/admin/invite-redeem', {
       method:'POST',
-      headers:{ 'Content-Type':'application/json', 'x-device-fp': fp },
-      credentials: 'include',
-      body: JSON.stringify({ code, fingerprint: fp }),
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ code })
     });
     const data = await res.json();
-    if(res.ok && data.success){
+    if(res.ok && data.ok){
+      // Gak ada apapun yang perlu disimpen di sessionStorage — otorisasinya
+      // udah ada di cookie HTTP-Only yang di-set server, browser yang
+      // otomatis nyertain di request-request berikutnya.
       window.location.href = '/admin/panel.html';
     } else {
-      errEl.textContent = data.error || 'Kode undangan gak valid.';
+      errEl.textContent = data.error || 'Kode salah atau sudah kadaluarsa.';
       errEl.style.display = 'block';
     }
   }catch(e){
@@ -334,35 +302,24 @@ async function doRedeemInvite(codeOverride){
   }
 }
 
-// Kalau sesi token masih ada & valid (misal balik lagi dari panel), langsung
-// lempar ke panel.html tanpa perlu ngetik ulang token. Kalau ada cookie sesi
-// undangan yang masih valid, juga langsung lempar (session-check ngecek
-// keduanya sekaligus, lihat api/admin/session-check.js).
+// Kalau sesi (token ATAU cookie undangan) masih ada & valid, langsung lempar
+// ke panel.html tanpa perlu login ulang.
 (async function initAuth(){
-  // Link undangan (?invite=KODE) -> langsung isi & coba redeem otomatis.
-  const params = new URLSearchParams(window.location.search);
-  const inviteFromUrl = params.get('invite');
-  if (inviteFromUrl) {
-    switchLoginTab('invite');
-    document.getElementById('login-invite-input').value = inviteFromUrl.toUpperCase();
-    await doRedeemInvite(inviteFromUrl);
-    // Kalau gagal (kode udah kepake/expired), biarin di layar biar user bisa lihat pesan errornya.
-  }
-
   const t = getToken();
+  if(t){
+    try{
+      const res = await fetch('/api/admin/verify', { method:'POST', headers:{ 'x-admin-token': t } });
+      const data = await res.json();
+      if(res.ok && data.ok){ window.location.href = '/admin/panel.html'; return; }
+      clearToken();
+    }catch(e){ return; /* biarin di layar login kalau offline */ }
+  }
   try{
-    const fp = await deviceFingerprint();
-    const res = await fetch('/api/admin/session-check', {
-      method:'GET',
-      headers: t ? { 'x-admin-token': t, 'x-device-fp': fp } : { 'x-device-fp': fp },
-      credentials: 'include',
-    });
+    const res = await fetch('/api/admin/whoami');
     const data = await res.json();
     if(res.ok && data.ok){ window.location.href = '/admin/panel.html'; }
-    else if (t) { clearToken(); }
-  }catch(e){ /* biarin di layar login kalau offline */ }
+  }catch(e){ /* biarin di layar login */ }
 })();
 </script>
 </body>
 </html>
-

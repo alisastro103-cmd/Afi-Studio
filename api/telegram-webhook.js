@@ -65,7 +65,7 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const PENDING_KEY = 'afi-studio:data:pendingmodels';
 const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
-const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v4'; // v4 = multi-admin Telegram (/addadmin & /join) dicabut total, pindah ke sistem undangan Admin Web (lihat lib/admin-auth.js)
+const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v3'; // v3 = broadcast dihapus + registrasi jalan tiap update (lihat ensureBotMenuRegistered)
 const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
 
 // Ambang batas fitur /cleanup — data lebih tua dari ini dianggap kandidat basi.
@@ -89,23 +89,31 @@ const BACKUP_KEYS = {
   surveys: SURVEYS_KEY,
 };
 
-// ================= HELPER: KONTEKS PER-REQUEST =================
-// Bot ini SEKARANG owner-only (chat_id harus persis TELEGRAM_CHAT_ID — lihat
-// isOwner() di bawah; multi-admin Telegram/addadmin/join sudah dicabut total,
-// pindah ke sistem undangan Admin Web di lib/admin-auth.js). Tetap dipertahankan
-// pakai AsyncLocalStorage (bukan variabel module-level biasa) SENGAJA — kalau
-// Vercel kebetulan lagi eksekusi 2 invocation bersamaan di container yang sama
-// (mode "fluid compute"), variabel biasa bisa ketimpa request lain di tengah
-// proses async. AsyncLocalStorage didesain khusus buat nyimpen konteks per
-// request yang aman dipakai bareng kode async, jadi gak ada risiko balasan
-// nyasar walau owner kirim beberapa pesan hampir bersamaan.
+// ================= HELPER: KONTEKS PER-REQUEST (buat multi-admin) =================
+// Dulu (1 admin doang) semua balasan bot aman di-hardcode ke CHAT_ID (owner),
+// karena yang bisa chat cuma dia. Sekarang ada admin tambahan (via undangan),
+// balasan HARUS nyampe ke chat yang lagi ngobrol, bukan selalu ke owner.
+//
+// Dipakai AsyncLocalStorage (bukan variabel module-level biasa) SENGAJA —
+// kalau pakai variabel biasa dan Vercel kebetulan lagi eksekusi 2 invocation
+// bersamaan di container yang sama (mode "fluid compute"), variabel itu bisa
+// ketimpa request lain di tengah proses async, balasan bisa nyasar ke chat
+// yang salah. AsyncLocalStorage didesain khusus buat nyimpen konteks per
+// request yang aman dipakai bareng kode async, jadi gak ada risiko ketuker.
 const requestContext = new AsyncLocalStorage();
 
 function isOwner(chatId) {
   return String(chatId) === String(CHAT_ID);
 }
 
-
+// Bot Telegram ini sekarang cuma buat OWNER (single admin) — konsep
+// "multi-admin lewat Telegram" (kode undangan /addadmin + /join) dicabut.
+// Yang sebenernya dibutuhin itu multi-admin buat AKSES ADMIN PANEL WEBSITE,
+// bukan buat siapa aja yang bisa ngirim command ke bot ini — itu udah
+// dipindah jadi fitur sendiri (lihat api/admin/invite-*.js).
+async function isAuthorizedAdmin(chatId) {
+  return isOwner(chatId);
+}
 
 function stateKey(chatId) {
   return `afi-studio:botstate:${chatId}`;
@@ -432,6 +440,7 @@ async function cmdHelp() {
 
     '<b>Lainnya</b>\n' +
     '/cleanup — bersihin data lama\n' +
+    '/admins — daftar admin\n' +
     '/batal — batalin proses yang lagi jalan'
   );
 }
@@ -881,6 +890,7 @@ async function cmdCleanupExecute(chatId) {
   await tgSend(text);
 }
 
+
 // ================= MENU: LIST DENGAN TOMBOL HAPUS =================
 
 async function sendPendingMenu(chatId, messageId) {
@@ -975,7 +985,7 @@ async function processCallback(cq) {
   const messageId = cq.message && cq.message.message_id;
   const data = cq.data || '';
 
-  if (!chatId || !isOwner(chatId)) {
+  if (!chatId || !(await isAuthorizedAdmin(chatId))) {
     await tgAnswerCallback(cq.id, 'Bukan buat kamu.');
     return;
   }
@@ -1116,10 +1126,9 @@ async function processUpdate(update) {
       return;
     }
 
-    // Cuma layani owner (chat_id di TELEGRAM_CHAT_ID). Admin tambahan sekarang
-    // diurus lewat sistem undangan Admin Web (lihat lib/admin-auth.js), BUKAN
-    // lagi lewat bot ini — orang lain yang chat/pencet tombol diabaikan diam-diam.
-    if (!isOwner(chatId)) return;
+    // Cuma layani owner (single admin). Orang lain diabaikan diam-diam,
+    // sama kayak sebelumnya.
+    if (!(await isAuthorizedAdmin(chatId))) return;
 
     // Kasus lama: foto dikirim langsung dengan caption /setthumb (tetap didukung,
     // jalan independen dari sistem state, biar kebiasaan lama tetap bisa dipakai).

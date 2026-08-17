@@ -12,7 +12,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Redis } from '@upstash/redis';
-import { requireAdmin } from '../../lib/admin-auth.js';
+import { checkAdminAuth } from '../../lib/admin-auth.js';
 
 // Daftar koleksi yang valid. Tambah baris baru di sini kalau nanti ada section baru.
 const TYPES = {
@@ -86,12 +86,9 @@ export default async function handler(req, res) {
 
   // ============== POST (khusus admin panel) ==============
   if (req.method === 'POST') {
-    if (!process.env.ADMIN_TOKEN) {
-      return res.status(500).json({ error: 'Server belum dikonfigurasi: ADMIN_TOKEN kosong.' });
-    }
-    const auth = await requireAdmin(req, res);
+    const auth = await checkAdminAuth(req);
     if (!auth.ok) {
-      return res.status(auth.status || 401).json({ error: auth.error });
+      return res.status(401).json({ error: 'Token admin salah atau belum login.' });
     }
     if (!redis) {
       return res.status(500).json({ error: 'Server belum dikonfigurasi: UPSTASH_REDIS_REST_URL/TOKEN kosong.' });

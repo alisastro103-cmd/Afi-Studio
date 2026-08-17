@@ -1,35 +1,36 @@
 // api/admin/session-revoke.js
-// Owner "tendang" 1 admin undangan yang lagi aktif (misal HP-nya hilang, atau
-// dia udah gak perlu akses lagi sebelum masa berlakunya abis sendiri).
-// POST body: { sessionId: string }
+// Owner cabut akses 1 admin undangan kapan aja — begitu di-revoke, request
+// berikutnya dari admin itu langsung ke-401 (sesi udah gak ada di Redis),
+// mereka otomatis kelempar balik ke layar login pas panel-nya reload/fetch.
 
-import { isOwnerToken, revokeSession } from '../../lib/admin-auth.js';
+import { redis, SESSION_PREFIX, checkAdminAuth } from '../../lib/admin-auth.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Method tidak diizinkan.' });
   }
-  if (!process.env.ADMIN_TOKEN) {
-    return res.status(500).json({ error: 'Server belum dikonfigurasi: ADMIN_TOKEN kosong.' });
+  if (!redis) {
+    return res.status(500).json({ error: 'Server belum dikonfigurasi: database belum tersambung.' });
   }
-  if (!isOwnerToken(req)) {
-    return res.status(401).json({ error: 'Cuma owner yang bisa mencabut akses admin.' });
+
+  const auth = await checkAdminAuth(req);
+  if (!auth.ok || !auth.isOwner) {
+    return res.status(401).json({ error: 'Cuma owner yang bisa cabut akses admin.' });
   }
 
   let body = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch { body = {}; }
   }
-  const sessionId = String((body && body.sessionId) || '').trim();
+  const sessionId = String((body || {}).sessionId || '').trim();
   if (!sessionId) return res.status(400).json({ error: 'sessionId wajib diisi.' });
 
   try {
-    const ok = await revokeSession(sessionId);
-    if (!ok) return res.status(404).json({ error: 'Sesi tidak ditemukan.' });
-    return res.status(200).json({ success: true });
+    await redis.del(SESSION_PREFIX + sessionId);
   } catch (e) {
-    console.error('Gagal cabut sesi admin:', e.message);
-    return res.status(500).json({ error: 'Gagal mencabut akses admin.' });
+    return res.status(500).json({ error: `Gagal cabut akses: ${e.message}` });
   }
+
+  return res.status(200).json({ ok: true });
 }

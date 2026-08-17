@@ -5,6 +5,15 @@
     },
     "api/survey-page.js": {
       "includeFiles": "survey/template.html"
+    },
+    "api/model-submit.js": {
+      "maxDuration": 30
+    },
+    "api/feedback.js": {
+      "maxDuration": 30
+    },
+    "api/survey-submit.js": {
+      "maxDuration": 30
     }
   },
   "rewrites": [

@@ -77,7 +77,7 @@ async function verifyRecaptcha(token, remoteIp) {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params,
-    signal: AbortSignal.timeout(6000),
+    signal: AbortSignal.timeout(8000),
   });
   const data = await resp.json();
   return { ok: !!data.success, reason: data['error-codes'] };
@@ -126,35 +126,12 @@ export default async function handler(req, res) {
 
   const form = formidable({
     maxFileSize: MAX_FILE_SIZE,
-    maxTotalFileSize: MAX_COMBINED_UPLOAD,
     multiples: false,
   });
 
   form.parse(req, async (err, fields, files) => {
-    // PENJAGA TERAKHIR: apapun yang meleset gak sengaja di bawah sini (bug,
-    // exception yang gak ketangkep try/catch lokal, dst) TETAP harus berakhir
-    // dengan response JSON, bukan koneksi yang nge-hang/keputus di tengah —
-    // itu yang bikin browser nampilin "Failed to fetch" alih-alih pesan error
-    // yang jelas. Kalau res.headersSent (jarang, tapi jaga-jaga), gak perlu
-    // kirim lagi karena bakal bikin runtime error baru.
-    try {
-      await handleParsedForm(BOT_TOKEN, CHAT_ID, clientIp, req, res, err, fields, files);
-    } catch (e) {
-      console.error('Error tak terduga di model-submit:', e);
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Terjadi kesalahan tak terduga di server. Coba lagi nanti.' });
-      }
-    }
-  });
-}
-
-async function handleParsedForm(BOT_TOKEN, CHAT_ID, clientIp, req, res, err, fields, files) {
-  {
     if (err) {
-      // Pesan lama nyebut "10MB" padahal limit sebenarnya MAX_FILE_SIZE (3MB
-      // per file) — nyesatin user pas error muncul. Disamain ke angka asli.
-      const maxMb = Math.round(MAX_FILE_SIZE / (1024 * 1024));
-      return res.status(400).json({ error: `Gagal memproses form atau ada file yang lebih dari ${maxMb}MB. Pakai link kalau file kamu di atas itu.` });
+      return res.status(400).json({ error: 'Gagal memproses form atau ada file yang lebih dari 10MB. Pakai link kalau file kamu di atas itu.' });
     }
 
     const name = field(fields, 'name');
@@ -220,40 +197,32 @@ async function handleParsedForm(BOT_TOKEN, CHAT_ID, clientIp, req, res, err, fie
       return res.status(400).json({ error: 'Thumbnail + file model kalau diupload bersamaan totalnya harus di bawah ~3.8MB. Pakai link buat salah satunya.' });
     }
 
-    // === 2c. VALIDASI RASIO THUMBNAIL (wajib 16:9, resolusi bebas) — KHUSUS UPLOAD ===
+    // === 2c. VALIDASI RASIO THUMBNAIL (wajib 16:9, resolusi bebas) ===
     // Konversi ke WebP/AVIF SENGAJA gak dilakukan di sini lagi — sekarang
     // ditunda sampai admin milih formatnya sendiri lewat tombol di Telegram
     // (lihat kirim dokumen thumbnail di bawah + handler convertthumb di
     // telegram-webhook.js). File asli dikirim apa adanya biar kualitasnya
     // gak dua kali ke-lossy (upload asli -> convert -> nanti convert lagi).
-    //
-    // PENTING: validasi ini CUMA jalan buat mode UPLOAD (baca buffer file yang
-    // udah ada di disk, lokal, cepat, gak ada panggilan jaringan). Buat mode
-    // LINK, kita SENGAJA gak lagi fetch+decode gambarnya di sini — dulu ini
-    // bikin 2 masalah: (1) link ke HALAMAN PREVIEW/PENAMPILAN (misal halaman
-    // ibb.co/postimg.cc, bukan link gambar mentahnya) selalu gagal karena
-    // yang di-fetch itu HTML, bukan gambar, jadi decode-nya error terus; dan
-    // (2) fetch eksternal + timeout 6 detik ini nambah durasi eksekusi
-    // function, kadang sampai bikin totalnya lewat batas waktu Vercel dan
-    // requestnya keputus di tengah jalan (muncul sebagai "Failed to fetch" di
-    // browser, BUKAN pesan error dari server). Rasio thumbnail link tetap
-    // gak divalidasi otomatis — itu trade-off yang disengaja, admin yang
-    // verifikasi visual pas review submission via Telegram/Admin Panel.
-    if (thumbMode === 'upload') {
-      try {
-        const thumbBuffer = fs.readFileSync(thumbFile.filepath || thumbFile.path);
-        const dims = imageSize(thumbBuffer);
-        const ratio = dims.width / dims.height;
-        if (Math.abs(ratio - TARGET_RATIO) > RATIO_TOLERANCE) {
-          if (thumbFile) fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
-          if (downloadFile) fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
-          return res.status(400).json({ error: `Rasio thumbnail harus 16:9 (contoh 800x450). Gambar kamu ${dims.width}x${dims.height} (rasio ${ratio.toFixed(2)}, harus ~${TARGET_RATIO.toFixed(2)}).` });
-        }
-      } catch (e) {
+    try {
+      let thumbBuffer;
+      if (thumbMode === 'upload') {
+        thumbBuffer = fs.readFileSync(thumbFile.filepath || thumbFile.path);
+      } else {
+        const imgResp = await fetch(thumbLink, { signal: AbortSignal.timeout(6000) });
+        if (!imgResp.ok) throw new Error('unreachable');
+        thumbBuffer = Buffer.from(await imgResp.arrayBuffer());
+      }
+      const dims = imageSize(thumbBuffer);
+      const ratio = dims.width / dims.height;
+      if (Math.abs(ratio - TARGET_RATIO) > RATIO_TOLERANCE) {
         if (thumbFile) fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
         if (downloadFile) fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
-        return res.status(400).json({ error: 'Gagal membaca gambar thumbnail yang diupload. Pastikan file-nya gambar valid (JPG/PNG/WebP).' });
+        return res.status(400).json({ error: `Rasio thumbnail harus 16:9 (contoh 800x450). Gambar kamu ${dims.width}x${dims.height} (rasio ${ratio.toFixed(2)}, harus ~${TARGET_RATIO.toFixed(2)}).` });
       }
+    } catch (e) {
+      if (thumbFile) fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
+      if (downloadFile) fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
+      return res.status(400).json({ error: 'Gagal membaca gambar thumbnail. Kalau pakai link, pastikan link-nya ngarah LANGSUNG ke file gambar (bukan halaman preview).' });
     }
 
     // === 3. VERIFIKASI reCAPTCHA ===
@@ -291,114 +260,89 @@ async function handleParsedForm(BOT_TOKEN, CHAT_ID, clientIp, req, res, err, fie
     const pendingId = 'pm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
     let thumbFileId = null;
-    let thumbUploadFailed = false;
 
-    // Thumbnail dikirim sebagai DOKUMEN (bukan foto) — sengaja, karena
-    // sendPhoto bikin Telegram nge-compress ulang gambarnya jadi JPEG buat
-    // preview, jadi kalau nanti di-download formatnya BUKAN lagi yang
-    // aslinya. sendDocument nyimpen bytes-nya persis apa adanya. Tombol di
-    // bawah caption biar admin bisa minta versi WebP/AVIF-nya kapan aja
-    // lewat bot, gak langsung dikonversi di sini.
-    async function sendThumbDocument() {
-      const buf = fs.readFileSync(thumbFile.filepath || thumbFile.path);
-      const filename = thumbFile.originalFilename || 'thumbnail.jpg';
-      const blob = new Blob([buf], { type: thumbFile.mimetype || 'image/jpeg' });
-      const tf = new FormData();
-      tf.append('chat_id', CHAT_ID);
-      tf.append('document', blob, filename);
-      tf.append('caption', `Thumbnail untuk: ${name}\n(file asli, belum dikonversi)`);
-      tf.append('reply_markup', JSON.stringify({
-        inline_keyboard: [[
-          { text: '🔄 Convert ke WebP', callback_data: `convertthumb:webp:${pendingId}` },
-          { text: '🔄 Convert ke AVIF', callback_data: `convertthumb:avif:${pendingId}` },
-        ]],
-      }));
-      const tfResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: tf });
-      const tfResult = await tfResp.json();
-      if (!tfResult.ok) throw new Error(tfResult.description || 'sendDocument gagal');
-      return tfResult.result.document ? tfResult.result.document.file_id : null;
-    }
-
-    async function sendDownloadDocument() {
-      const buf = fs.readFileSync(downloadFile.filepath || downloadFile.path);
-      const blob = new Blob([buf], { type: downloadFile.mimetype || 'application/octet-stream' });
-      const df = new FormData();
-      df.append('chat_id', CHAT_ID);
-      df.append('document', blob, downloadFile.originalFilename || 'model-file');
-      df.append('caption', `File model untuk: ${name}`);
-      const dfResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: df });
-      const dfResult = await dfResp.json();
-      if (!dfResult.ok) throw new Error(dfResult.description || 'sendDocument gagal');
-    }
-
-    // Ketiga pengiriman ini SALING LEPAS satu sama lain (gak ada yang butuh
-    // hasil yang lain), jadi dijalanin BARENGAN (Promise.allSettled), bukan
-    // berurutan. Ini penting buat latensi: kalau dijalanin satu-satu, total
-    // waktunya numpuk (teks + dokumen thumbnail + dokumen file model), dan
-    // pada koneksi lambat gampang lewat batas waktu eksekusi function di
-    // Vercel — request keputus di tengah jalan sebelum sempat balas apa-apa
-    // ke browser, muncul sebagai "Failed to fetch" walau prosesnya sendiri
-    // sebenarnya berhasil kirim ke Telegram. Dijalanin paralel, totalnya
-    // cuma sekitar durasi yang PALING LAMA dari ketiganya, bukan jumlahnya.
-    const tasks = [
-      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    try {
+      // Kirim teks lengkap dulu (selalu ada, apapun kombinasi link/upload-nya)
+      // Timeout 8 detik: kalau gak dikasih batas, dan Telegram lagi lambat/
+      // gak kejangkau, function bisa nyangkut sampai Vercel yang motong
+      // paksa (function mati tanpa respons jelas -> browser cuma dapet
+      // "Failed to fetch"). Dengan timeout, minimal errornya jelas ("Gagal
+      // mengirim ke Telegram") dan client dapet respons yang proper.
+      const msgResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'Markdown' }),
-      }).then(async r => {
-        const result = await r.json();
-        if (!result.ok) throw new Error(result.description || 'sendMessage gagal');
-      }),
-    ];
-    if (thumbFile) tasks.push(sendThumbDocument().then(fileId => { thumbFileId = fileId; }));
-    if (downloadFile) tasks.push(sendDownloadDocument());
+        signal: AbortSignal.timeout(8000),
+      });
+      const msgResult = await msgResp.json();
+      if (!msgResult.ok) throw new Error(msgResult.description || 'Gagal mengirim ke Telegram');
 
-    const settled = await Promise.allSettled(tasks);
-    const msgOutcome = settled[0];
+      // Thumbnail dikirim sebagai DOKUMEN (bukan foto) — sengaja, karena
+      // sendPhoto bikin Telegram nge-compress ulang gambarnya jadi JPEG
+      // buat preview, jadi kalau nanti di-download formatnya BUKAN lagi
+      // yang aslinya. sendDocument nyimpen bytes-nya persis apa adanya.
+      // Tombol di bawah caption biar admin bisa minta versi WebP/AVIF-nya
+      // kapan aja lewat bot, gak langsung dikonversi di sini.
+      //
+      // Thumbnail & file model dikirim BARENGAN (Promise.all), bukan
+      // gantian nunggu satu-satu — dua-duanya gak saling butuh, jadi gak
+      // ada alasan buat nunggu berurutan. Ini motong waktu total kira-kira
+      // separuhnya dibanding sebelumnya, ngurangin risiko function keburu
+      // ke-timeout duluan sama Vercel.
+      const sendJobs = [];
 
-    if (thumbFile) fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
-    if (downloadFile) fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
+      if (thumbFile) {
+        sendJobs.push((async () => {
+          const buf = fs.readFileSync(thumbFile.filepath || thumbFile.path);
+          const filename = thumbFile.originalFilename || 'thumbnail.jpg';
+          const blob = new Blob([buf], { type: thumbFile.mimetype || 'image/jpeg' });
+          const tf = new FormData();
+          tf.append('chat_id', CHAT_ID);
+          tf.append('document', blob, filename);
+          tf.append('caption', `Thumbnail untuk: ${name}\n(file asli, belum dikonversi)`);
+          tf.append('reply_markup', JSON.stringify({
+            inline_keyboard: [[
+              { text: '🔄 Convert ke WebP', callback_data: `convertthumb:webp:${pendingId}` },
+              { text: '🔄 Convert ke AVIF', callback_data: `convertthumb:avif:${pendingId}` },
+            ]],
+          }));
+          const tfResp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: tf, signal: AbortSignal.timeout(12000) });
+          const tfResult = await tfResp.json();
+          if (tfResult.ok) {
+            thumbFileId = tfResult.result.document ? tfResult.result.document.file_id : null;
+          }
+          fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
+        })());
+      }
 
-    // Pesan teks utama (index 0) itu WAJIB berhasil — kalau ini gagal, admin
-    // gak bakal tau ada pendaftaran baru sama sekali, jadi submission-nya
-    // dianggap gagal total ke user.
-    if (msgOutcome.status === 'rejected') {
-      console.error('Gagal kirim pesan pendaftaran ke Telegram:', msgOutcome.reason?.message);
+      // Kirim file model asli kalau diupload
+      if (downloadFile) {
+        sendJobs.push((async () => {
+          const buf = fs.readFileSync(downloadFile.filepath || downloadFile.path);
+          const blob = new Blob([buf], { type: downloadFile.mimetype || 'application/octet-stream' });
+          const df = new FormData();
+          df.append('chat_id', CHAT_ID);
+          df.append('document', blob, downloadFile.originalFilename || 'model-file');
+          df.append('caption', `File model untuk: ${name}`);
+          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: df, signal: AbortSignal.timeout(12000) });
+          fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
+        })());
+      }
+
+      // allSettled (bukan all) sengaja — kalau salah satu gagal (misal
+      // thumbnail doc gagal kekirim), file model yang satunya tetep coba
+      // kekirim, gak langsung dibatalin semua gara-gara satu gagal.
+      const results = await Promise.allSettled(sendJobs);
+      const failedJob = results.find(r => r.status === 'rejected');
+      if (failedJob) {
+        console.error('Salah satu lampiran gagal kekirim ke Telegram:', failedJob.reason?.message);
+        // Tetep lanjut — pesan teks utama udah sukses kekirim di atas,
+        // jadi submission tetep dianggap berhasil buat user. Admin masih
+        // bisa minta file ulang manual kalau ternyata lampirannya kosong.
+      }
+    } catch (e) {
+      console.error('Gagal kirim ke Telegram:', e.message);
       return res.status(500).json({ error: 'Gagal mengirim pendaftaran. Coba lagi nanti.' });
-    }
-
-    // Thumbnail/file model dokumen boleh gagal TANPA gagalin submission-nya
-    // (teks lengkap sudah nyampe, admin masih bisa proses manual) — tapi
-    // BEDA dari sebelumnya, sekarang kegagalannya SELALU dikasih tau eksplisit
-    // ke admin (dulu: gagal diam-diam, fileId ke-null, baru ketauan pas
-    // admin nekan tombol Convert dan dapet pesan "gak punya file ter-upload"
-    // tanpa tau kenapa).
-    const thumbTaskIndex = thumbFile ? 1 : -1;
-    if (thumbFile && thumbTaskIndex !== -1 && settled[thumbTaskIndex] && settled[thumbTaskIndex].status === 'rejected') {
-      thumbUploadFailed = true;
-      console.error('Gagal upload dokumen thumbnail ke Telegram:', settled[thumbTaskIndex].reason?.message);
-      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: CHAT_ID,
-          text: `⚠️ Thumbnail untuk pendaftaran "${escapeMarkdown(name)}" GAGAL keupload ke Telegram (${escapeMarkdown(settled[thumbTaskIndex].reason?.message || 'error tidak diketahui')}). Tombol Convert WebP/AVIF gak akan bisa dipakai untuk entri ini — cek ulang manual kalau perlu.`,
-          parse_mode: 'Markdown',
-        }),
-      }).catch(() => {});
-    }
-    const downloadTaskIndex = downloadFile ? (thumbFile ? 2 : 1) : -1;
-    if (downloadFile && downloadTaskIndex !== -1 && settled[downloadTaskIndex] && settled[downloadTaskIndex].status === 'rejected') {
-      console.error('Gagal upload dokumen file model ke Telegram:', settled[downloadTaskIndex].reason?.message);
-      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: CHAT_ID,
-          text: `⚠️ File model untuk pendaftaran "${escapeMarkdown(name)}" GAGAL keupload ke Telegram. Minta user kirim ulang filenya manual kalau approve.`,
-          parse_mode: 'Markdown',
-        }),
-      }).catch(() => {});
     }
 
     // === 5. SIMPAN METADATA (TANPA FILE) KE ANTRIAN "pendingmodels" ===
@@ -414,7 +358,7 @@ async function handleParsedForm(BOT_TOKEN, CHAT_ID, clientIp, req, res, err, fie
       appTarget: appTarget || '',
       thumb: thumbMode === 'link'
         ? { type: 'link', value: thumbLink }
-        : { type: 'upload', filename: thumbFile.originalFilename || '', sizeKb: Math.round((thumbFile.size || 0) / 1024), fileId: thumbFileId, uploadFailed: thumbUploadFailed || undefined },
+        : { type: 'upload', filename: thumbFile.originalFilename || '', sizeKb: Math.round((thumbFile.size || 0) / 1024), fileId: thumbFileId },
       download: downloadMode === 'link'
         ? { type: 'link', value: downloadLink }
         : { type: 'upload', filename: downloadFile.originalFilename || '', sizeKb: Math.round((downloadFile.size || 0) / 1024) },

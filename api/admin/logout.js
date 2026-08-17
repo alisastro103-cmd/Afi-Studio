@@ -1,11 +1,11 @@
 // api/admin/logout.js
-// Dipanggil tombol "Keluar" di panel. Buat admin undangan: sesi di Redis
-// ditandain revoked (jadi cookie lama gak bisa dipakai lagi walau ke-copy)
-// dan cookie-nya dihapus di browser. Buat owner (token doang, gak ada cookie)
-// ini praktis no-op di server — logout owner cukup hapus token di sessionStorage
-// sisi client, tapi tetap aman dipanggil.
+// Buat admin undangan: hapus sesi dari Redis + kosongin cookie di browser.
+// Buat owner (yang login pakai token, disimpen di sessionStorage bukan
+// cookie): gak ada cookie yang perlu dihapus, panel.html tinggal
+// sessionStorage.removeItem() sendiri di sisi client — endpoint ini tetap
+// aman dipanggil (no-op kalau gak ada cookie sesi).
 
-import { parseCookies, SESSION_COOKIE_NAME, revokeSession, clearSessionCookie, redis } from '../../lib/admin-auth.js';
+import { redis, SESSION_PREFIX, SESSION_COOKIE_NAME, buildClearSessionCookie, parseCookies } from '../../lib/admin-auth.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -16,8 +16,9 @@ export default async function handler(req, res) {
   const cookies = parseCookies(req);
   const sessionId = cookies[SESSION_COOKIE_NAME];
   if (sessionId && redis) {
-    try { await revokeSession(sessionId); } catch (e) { console.error('Gagal revoke sesi saat logout:', e.message); }
+    try { await redis.del(SESSION_PREFIX + sessionId); } catch {}
   }
-  clearSessionCookie(res);
-  return res.status(200).json({ success: true });
+
+  res.setHeader('Set-Cookie', buildClearSessionCookie());
+  return res.status(200).json({ ok: true });
 }

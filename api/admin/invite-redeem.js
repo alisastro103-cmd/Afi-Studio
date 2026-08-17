@@ -1,20 +1,18 @@
 // api/admin/invite-redeem.js
-// Dipanggil dari halaman login admin (index.html) waktu orang yang diundang
-// nempelin kode/buka link undangan. Endpoint ini publik (belum login), makanya
-// WAJIB di-rate-limit biar gak dipakai buat nebak-nebak kode secara brute force.
-//
-// POST body: { code: string, fingerprint: string }
-// Sukses -> set-cookie httpOnly sesi admin, dikunci ke fingerprint device ini.
+// Publik (gak butuh token) — kode undangan itu sendiri YANG jadi otorisasi.
+// Sengaja pakai GETDEL (bukan GET lalu DEL terpisah) biar atomik: kalau ada
+// 2 request masuk bersamaan pakai kode yang sama, cuma SATU yang berhasil
+// dapet datanya, request kedua bakal dapet null → "kode gak valid" — beneran
+// sekali pakai, gak ada celah race condition.
 
+import crypto from 'crypto';
+import { redis, INVITE_PREFIX, SESSION_PREFIX, buildSessionCookie } from '../../lib/admin-auth.js';
 import { Ratelimit } from '@upstash/ratelimit';
-import {
-  redis, redeemInvite, setSessionCookie, getClientIp, getFingerprint,
-} from '../../lib/admin-auth.js';
 
 const ratelimit = redis
   ? new Ratelimit({
       redis,
-      limiter: Ratelimit.slidingWindow(10, '10 m'),
+      limiter: Ratelimit.slidingWindow(8, '10 m'),
       analytics: true,
       prefix: 'afi-studio:inviteredeem',
     })
@@ -26,22 +24,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method tidak diizinkan.' });
   }
   if (!redis) {
-    return res.status(500).json({ error: 'Server belum dikonfigurasi: database kosong.' });
+    return res.status(500).json({ error: 'Server belum dikonfigurasi: database belum tersambung.' });
   }
 
-  const clientIp = getClientIp(req) || '127.0.0.1';
-
+  // Rate limit per IP — kode 8 karakter itu ruang kemungkinannya gede, tapi
+  // tetep dibatasin biar gak ada yang nyoba brute-force nebak kode.
+  const clientIp = req.headers['x-forwarded-for'] || '127.0.0.1';
   if (ratelimit) {
     try {
-      const { success, reset } = await ratelimit.limit(clientIp);
-      if (!success) {
-        const retryAfterSec = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
-        res.setHeader('Retry-After', retryAfterSec);
-        return res.status(429).json({ error: 'Terlalu banyak percobaan. Coba lagi nanti.' });
-      }
-    } catch (e) {
-      console.error('Rate limit check gagal, request tetap dilanjutkan:', e.message);
-    }
+      const { success } = await ratelimit.limit(clientIp);
+      if (!success) return res.status(429).json({ error: 'Terlalu banyak percobaan. Coba lagi nanti.' });
+    } catch {}
   }
 
   let body = req.body;
@@ -50,21 +43,37 @@ export default async function handler(req, res) {
   }
   body = body || {};
 
-  const fingerprint = String(body.fingerprint || getFingerprint(req) || '').slice(0, 128) || null;
+  const codeRaw = String(body.code || '').trim().toUpperCase();
+  if (!codeRaw) return res.status(400).json({ error: 'Kode undangan wajib diisi.' });
+
+  let invite;
+  try {
+    invite = await redis.getdel(INVITE_PREFIX + codeRaw);
+  } catch (e) {
+    return res.status(500).json({ error: `Gagal cek kode: ${e.message}` });
+  }
+  if (!invite) {
+    return res.status(400).json({ error: 'Kode gak valid, udah kepakai, atau udah kadaluarsa (berlaku 24 jam).' });
+  }
+
+  const sessionId = crypto.randomBytes(32).toString('hex');
+  const durationSec = invite.durationDays ? invite.durationDays * 86400 : null; // null = permanent
+  const expiresAt = durationSec ? new Date(Date.now() + durationSec * 1000).toISOString() : null;
+
+  const session = {
+    label: invite.label || 'Admin',
+    createdAt: new Date().toISOString(),
+    expiresAt,
+    userAgent: (req.headers['user-agent'] || '').slice(0, 200),
+  };
 
   try {
-    const result = await redeemInvite({ code: body.code, ip: clientIp, fingerprint });
-    if (!result.ok) {
-      return res.status(400).json({ error: result.error });
-    }
-    setSessionCookie(res, result.session.id, result.session.expiresAt);
-    return res.status(200).json({
-      success: true,
-      label: result.session.label,
-      expiresAt: result.session.expiresAt,
-    });
+    const setOpts = durationSec ? { ex: durationSec } : {};
+    await redis.set(SESSION_PREFIX + sessionId, session, setOpts);
   } catch (e) {
-    console.error('Gagal redeem undangan admin:', e.message);
-    return res.status(500).json({ error: 'Gagal memproses kode undangan.' });
+    return res.status(500).json({ error: `Gagal bikin sesi: ${e.message}` });
   }
+
+  res.setHeader('Set-Cookie', buildSessionCookie(sessionId, durationSec));
+  return res.status(200).json({ ok: true, label: session.label, expiresAt });
 }

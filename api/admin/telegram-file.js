@@ -4,11 +4,10 @@
 // yang fetch filenya dari Telegram, lalu diteruskan (proxy) ke browser
 // admin. Gambar TIDAK disimpan permanen di mana pun, cuma lewat doang.
 //
-// Dilindungi requireAdmin() (owner via x-admin-token ATAU admin undangan via
-// cookie sesi — sama seperti api/data/[type].js POST), jadi hanya admin yang
-// login yang bisa akses.
+// Dilindungi checkAdminAuth (token owner ATAU sesi admin undangan), jadi
+// hanya admin yang login yang bisa akses.
 
-import { requireAdmin } from '../../lib/admin-auth.js';
+import { checkAdminAuth } from '../../lib/admin-auth.js';
 
 const MIME_MAP = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
@@ -21,13 +20,13 @@ export default async function handler(req, res) {
   }
 
   const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-  if (!BOT_TOKEN || !process.env.ADMIN_TOKEN) {
+  if (!BOT_TOKEN) {
     return res.status(500).json({ error: 'Server belum dikonfigurasi.' });
   }
 
-  const auth = await requireAdmin(req, res);
+  const auth = await checkAdminAuth(req);
   if (!auth.ok) {
-    return res.status(auth.status || 401).json({ error: auth.error });
+    return res.status(401).json({ error: 'Token admin salah atau belum login.' });
   }
 
   const { fileId } = req.query;
