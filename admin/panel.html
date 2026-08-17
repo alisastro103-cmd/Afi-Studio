@@ -562,7 +562,7 @@ let isOwnerSession = true; // default aman: nav "Kelola Admin" disembunyiin samp
 
 async function logout(){
   clearToken();
-  try{ await fetch('/api/admin/logout', { method:'POST' }); }catch(e){ /* tetep lanjut redirect walau gagal */ }
+  try{ await fetch('/api/admin/auth?action=logout', { method:'POST' }); }catch(e){ /* tetep lanjut redirect walau gagal */ }
   window.location.href = 'index.html';
 }
 
@@ -625,7 +625,7 @@ async function generateInvite(){
   const label = document.getElementById('invite-label-input').value.trim() || 'Admin';
   const durationDays = Number(document.getElementById('invite-duration-select').value) || 0;
   try{
-    const res = await fetch('/api/admin/invite-create', {
+    const res = await fetch('/api/admin/auth?action=invite-create', {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'x-admin-token': getToken() },
       body: JSON.stringify({ label, durationDays })
@@ -646,7 +646,7 @@ function copyInviteCode(){
 async function loadAdminSessions(){
   const box = document.getElementById('admin-session-list');
   try{
-    const res = await fetch('/api/admin/session-list', { headers:{ 'x-admin-token': getToken() } });
+    const res = await fetch('/api/admin/auth?action=session-list', { headers:{ 'x-admin-token': getToken() } });
     const data = await res.json();
     if(!res.ok || !data.ok){ box.innerHTML = `<p style="font-size:12.5px; color:var(--danger);">${data.error || 'Gagal memuat daftar admin.'}</p>`; return; }
     if(!data.sessions.length){ box.innerHTML = '<p style="font-size:12.5px; color:var(--text-sub);">Belum ada admin undangan yang aktif.</p>'; return; }
@@ -665,7 +665,7 @@ async function loadAdminSessions(){
 async function revokeAdminSession(sessionId){
   if(!confirm('Cabut akses admin ini sekarang?')) return;
   try{
-    const res = await fetch('/api/admin/session-revoke', {
+    const res = await fetch('/api/admin/auth?action=session-revoke', {
       method:'POST',
       headers:{ 'Content-Type':'application/json', 'x-admin-token': getToken() },
       body: JSON.stringify({ sessionId })
@@ -688,7 +688,7 @@ async function revokeAdminSession(sessionId){
   if(t){
     // Jalur owner: masih ada token di sessionStorage, verifikasi kayak biasa.
     try{
-      const res = await fetch('/api/admin/verify', { method:'POST', headers:{ 'x-admin-token': t } });
+      const res = await fetch('/api/admin/auth?action=verify', { method:'POST', headers:{ 'x-admin-token': t } });
       const data = await res.json();
       if(res.ok && data.ok){ isOwnerSession = true; await bootAdminApp(); return; }
       clearToken();
@@ -702,7 +702,7 @@ async function revokeAdminSession(sessionId){
   // Gak ada token owner (atau baru aja ke-clear karena invalid) — cek apa
   // ada cookie sesi admin undangan yang masih aktif.
   try{
-    const res = await fetch('/api/admin/whoami');
+    const res = await fetch('/api/admin/auth?action=whoami');
     const data = await res.json();
     if(res.ok && data.ok){
       isOwnerSession = !!data.isOwner;

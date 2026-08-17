@@ -259,7 +259,7 @@ async function doLogin(){
   errEl.style.display = 'none';
   if(!token){ errEl.textContent = 'Token wajib diisi.'; errEl.style.display = 'block'; return; }
   try{
-    const res = await fetch('/api/admin/verify', { method:'POST', headers:{ 'x-admin-token': token } });
+    const res = await fetch('/api/admin/auth?action=verify', { method:'POST', headers:{ 'x-admin-token': token } });
     const data = await res.json();
     if(res.ok && data.ok){
       setToken(token);
@@ -281,7 +281,7 @@ async function doRedeemInvite(){
   errEl.style.display = 'none';
   if(!code){ errEl.textContent = 'Kode undangan wajib diisi.'; errEl.style.display = 'block'; return; }
   try{
-    const res = await fetch('/api/admin/invite-redeem', {
+    const res = await fetch('/api/admin/auth?action=invite-redeem', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ code })
@@ -308,14 +308,14 @@ async function doRedeemInvite(){
   const t = getToken();
   if(t){
     try{
-      const res = await fetch('/api/admin/verify', { method:'POST', headers:{ 'x-admin-token': t } });
+      const res = await fetch('/api/admin/auth?action=verify', { method:'POST', headers:{ 'x-admin-token': t } });
       const data = await res.json();
       if(res.ok && data.ok){ window.location.href = '/admin/panel.html'; return; }
       clearToken();
     }catch(e){ return; /* biarin di layar login kalau offline */ }
   }
   try{
-    const res = await fetch('/api/admin/whoami');
+    const res = await fetch('/api/admin/auth?action=whoami');
     const data = await res.json();
     if(res.ok && data.ok){ window.location.href = '/admin/panel.html'; }
   }catch(e){ /* biarin di layar login */ }
