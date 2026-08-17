@@ -11,8 +11,6 @@
 //      GITHUB_TOKEN               -> Personal Access Token GitHub (scope: repo / contents:write)
 //      GITHUB_REPO                -> "username/Afi-Studio" (punya kamu)
 //      GITHUB_BRANCH               -> "main" (atau branch default kamu)
-//      TELEGRAM_BROADCAST_CHAT_ID -> (opsional) chat_id channel/grup Folofi buat /broadcast.
-//                                     Bot HARUS jadi admin di channel/grup itu dulu.
 //    (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, UPSTASH_*, ADMIN_TOKEN udah ada, dipakai ulang.)
 //
 // 2. Daftarin webhook ke Telegram (jalankan sekali aja lewat browser/curl, ganti placeholder):
@@ -55,7 +53,6 @@ import sharp from 'sharp';
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
-const BROADCAST_CHAT_ID = process.env.TELEGRAM_BROADCAST_CHAT_ID;
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_REPO = process.env.GITHUB_REPO; // "username/repo"
@@ -68,7 +65,7 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const PENDING_KEY = 'afi-studio:data:pendingmodels';
 const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
-const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v2'; // v2 = daftar command lengkap (lihat ensureBotMenuRegistered)
+const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v3'; // v3 = broadcast dihapus + registrasi jalan tiap update (lihat ensureBotMenuRegistered)
 const ADMIN_LIST_KEY = 'afi-studio:data:admins'; // daftar admin TAMBAHAN (di luar owner/TELEGRAM_CHAT_ID)
 const INVITE_TTL_SEC = 900; // kode undangan admin berlaku 15 menit
 const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
@@ -248,7 +245,6 @@ async function ensureBotMenuRegistered() {
           { command: 'backup', description: 'Simpan snapshot data ke GitHub' },
           { command: 'backups', description: 'Lihat daftar backup tersimpan' },
           { command: 'restore', description: 'Timpa data pakai backup — format: file KONFIRMASI' },
-          { command: 'broadcast', description: 'Kirim pengumuman ke channel/grup — format: pesan' },
           { command: 'cleanup', description: 'Scan & bersihin data lama (preview dulu)' },
           { command: 'admins', description: 'Lihat daftar admin' },
           { command: 'addadmin', description: '[Owner] Bikin admin baru — format: nama [durasi]' },
@@ -403,7 +399,7 @@ function mainMenuKeyboard() {
       [{ text: '📊 Status', callback_data: 'menu:status' }, { text: '🔍 Cari', callback_data: 'menu:find' }],
       [{ text: '⏳ Pending Model', callback_data: 'menu:pending' }, { text: '📋 Survey', callback_data: 'menu:surveys' }],
       [{ text: '🖼️ Thumbnail', callback_data: 'menu:thumb' }, { text: '💾 Backup', callback_data: 'menu:backup' }],
-      [{ text: '📢 Broadcast', callback_data: 'menu:broadcast' }, { text: '🧹 Cleanup', callback_data: 'cleanup:scan' }],
+      [{ text: '🧹 Cleanup', callback_data: 'cleanup:scan' }],
       [{ text: '👑 Admin', callback_data: 'menu:admins' }],
     ],
   };
@@ -456,7 +452,6 @@ async function cmdHelp() {
     '/restore file KONFIRMASI — timpa data pakai backup\n\n' +
 
     '<b>Lainnya</b>\n' +
-    '/broadcast pesan — kirim ke channel Folofi\n' +
     '/cleanup — bersihin data lama\n' +
     '/admins — daftar admin\n' +
     '/addadmin nama [durasi] — bikin admin baru (khusus owner)\n' +
@@ -767,27 +762,6 @@ async function cmdRestore(filename, confirmWord) {
   }
 }
 
-// --- Broadcast ---
-
-async function cmdBroadcast(text) {
-  if (!text) return tgSend('Format: /broadcast pesan_kamu');
-  if (!BROADCAST_CHAT_ID) {
-    return tgSend(
-      'Belum ada tujuan broadcast. Set env var TELEGRAM_BROADCAST_CHAT_ID di Vercel ' +
-      '(chat_id channel/grup Folofi — bot harus jadi admin di sana dulu), redeploy, baru coba lagi.'
-    );
-  }
-  try {
-    // Dikirim TANPA parse_mode (plain text) sengaja — pesan broadcast itu
-    // free-form (bisa aja isinya wajar ada tanda &, <, dst), dan kita gak
-    // mau format sekecil apapun bikin pengiriman gagal gara-gara Telegram
-    // nolak parse HTML-nya.
-    await tgSendTo(BROADCAST_CHAT_ID, text, { parse_mode: undefined });
-    await tgSend('Terkirim ke channel/grup broadcast. ✅');
-  } catch (e) {
-    await tgSend(`Gagal broadcast: ${escHtml(e.message)}`);
-  }
-}
 
 // --- Cleanup data basi ---
 // Alur SELALU dua tahap: scan (preview, gak ubah data apapun) -> baru eksekusi
@@ -1129,19 +1103,6 @@ async function handleStateReply(chatId, message, state) {
     return; // state tetap aktif
   }
 
-  if (state.action === 'awaiting_broadcast_text') {
-    if (!text) {
-      await tgSend('Pesannya kosong. Ketik pesan yang mau di-broadcast, atau /batal buat berhenti.');
-      return;
-    }
-    await setState(chatId, { action: 'confirm_broadcast', text });
-    await tgSend(
-      `Preview pesan broadcast:\n\n${text}\n\nKirim ke channel/grup Folofi?`,
-      { parse_mode: undefined, reply_markup: { inline_keyboard: [[{ text: '✅ Kirim', callback_data: 'broadcast:confirm' }, { text: '❌ Batal', callback_data: 'broadcast:cancel' }]] } }
-    );
-    return;
-  }
-
   if (state.action === 'awaiting_find_keyword') {
     if (!text) {
       await tgSend('Kata kuncinya kosong, coba ketik lagi, atau /batal buat berhenti.');
@@ -1180,10 +1141,6 @@ async function processCallback(cq) {
   if (data === 'menu:surveys') return sendSurveysMenu(chatId, messageId);
   if (data === 'menu:thumb') return tgSendOrEdit(chatId, messageId, 'Mau ganti thumbnail yang mana?', thumbMenuKeyboard());
   if (data === 'menu:backup') return tgSendOrEdit(chatId, messageId, 'Menu backup &amp; restore:', backupMenuKeyboard());
-  if (data === 'menu:broadcast') {
-    await setState(chatId, { action: 'awaiting_broadcast_text' });
-    return tgSendOrEdit(chatId, messageId, 'Ketik pesan yang mau di-broadcast ke channel/grup Folofi:');
-  }
 
   if (data === 'thumb:main') {
     try {
@@ -1235,22 +1192,6 @@ async function processCallback(cq) {
   if (data.startsWith('restore_confirm:')) {
     const filename = data.slice('restore_confirm:'.length);
     await cmdRestore(filename, 'KONFIRMASI');
-    return;
-  }
-
-  if (data === 'broadcast:confirm') {
-    const state = await getState(chatId);
-    await clearState(chatId);
-    if (state && state.action === 'confirm_broadcast' && state.text) {
-      await cmdBroadcast(state.text);
-    } else {
-      await tgSend('Gak ada pesan yang lagi nunggu dikirim. Mulai lagi lewat /menu.');
-    }
-    return;
-  }
-  if (data === 'broadcast:cancel') {
-    await clearState(chatId);
-    await tgSend('Broadcast dibatalin.');
     return;
   }
 
@@ -1323,6 +1264,14 @@ async function processUpdate(update) {
 
   const chatId = cq ? (cq.message && cq.message.chat && cq.message.chat.id) : (message && message.chat && message.chat.id);
   if (!chatId) return;
+
+  // Dulu daftar command cuma ke-register pas user ketik /menu — kalau orang
+  // pertama kali coba bot pakai command lain duluan (misal /help), daftar
+  // command "/" di Telegram gak lengkap sampai dia sempet /menu. Sekarang
+  // dicek di SETIAP update (murah kok, cuma baca 1 flag di Redis kalau udah
+  // pernah kedaftar — panggilan ke Telegram API cuma kejadian sekali seumur
+  // hidup per versi daftar command).
+  await ensureBotMenuRegistered();
 
   // Semua penanganan di bawah ini dijalanin di dalam "konteks" chat ini, biar
   // tgSend() otomatis balas ke chat yang bener (lihat catatan di requestContext).
@@ -1429,9 +1378,6 @@ async function processUpdate(update) {
         break;
       case '/restore':
         await cmdRestore(args[0], args[1]);
-        break;
-      case '/broadcast':
-        await cmdBroadcast(rawText.slice(cmdRaw.length).trim());
         break;
       case '/cleanup':
         await clearState(chatId);

@@ -148,6 +148,61 @@
       resize: vertical;
       min-height: 120px;
     }
+
+    /* --- Kotak upload lampiran gambar: "+" kalau kosong, gambar ngisi kotak
+       (tinggi ngikut rasio aslinya) + tombol ✕ buat hapus kalau udah keisi. --- */
+    .dropbox {
+      position: relative;
+      width: 100%;
+      min-height: 96px;
+      max-height: 280px;
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dropbox-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .dropbox-empty:hover, .dropbox-empty:focus-within { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+    .dropbox-plus { font-size: 32px; font-weight: 300; line-height: 1; color: var(--text-light); }
+    .dropbox-image {
+      width: 100%;
+      height: auto;
+      max-height: 280px;
+      object-fit: contain;
+      display: block;
+    }
+    .dropbox-remove {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .dropbox-remove:hover { background: rgba(0,0,0,0.8); }
+    .dropbox input[type="file"] {
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0; overflow: hidden; clip: rect(0,0,0,0);
+    }
  
     .btn {
       width: 100%;
@@ -375,7 +430,14 @@
         <div class="label-wrapper">
           <label class="form-label" for="imageFile">Lampirkan Gambar (Opsional, Maks 1MB)</label>
         </div>
-        <input type="file" id="imageFile" class="form-input" accept="image/png, image/jpeg, image/jpg">
+        <div class="dropbox" id="imageFileBox">
+          <label class="dropbox-empty" id="imageFileEmpty" for="imageFile">
+            <span class="dropbox-plus">+</span>
+          </label>
+          <img id="imageFilePreview" class="dropbox-image" style="display:none;">
+          <button type="button" class="dropbox-remove" id="imageFileRemoveBtn" style="display:none;" aria-label="Hapus gambar">✕</button>
+          <input type="file" id="imageFile" accept="image/png, image/jpeg, image/jpg">
+        </div>
       </div>
 
       <div class="captcha-wrapper">
@@ -406,6 +468,47 @@
       const countSpan = document.getElementById(countId);
       countSpan.innerText = `${input.value.length} / ${maxLimit}`;
     }
+
+    // --- Kotak upload lampiran gambar: "+" kalau kosong, gambar + ✕ kalau keisi ---
+    (function () {
+      const input = document.getElementById('imageFile');
+      const empty = document.getElementById('imageFileEmpty');
+      const preview = document.getElementById('imageFilePreview');
+      const removeBtn = document.getElementById('imageFileRemoveBtn');
+
+      function showEmpty() {
+        empty.style.display = 'flex';
+        preview.style.display = 'none';
+        preview.src = '';
+        removeBtn.style.display = 'none';
+      }
+      function showFilled(src) {
+        preview.src = src;
+        preview.style.display = 'block';
+        empty.style.display = 'none';
+        removeBtn.style.display = 'flex';
+      }
+
+      input.addEventListener('change', function () {
+        const f = this.files[0];
+        if (!f) return showEmpty();
+        if (f.size > 1048576) {
+          alert(`Gambar "${f.name}" ukurannya lebih dari 1MB, pilih gambar lain ya.`);
+          input.value = '';
+          return showEmpty();
+        }
+        const reader = new FileReader();
+        reader.onload = e => showFilled(e.target.result);
+        reader.readAsDataURL(f);
+      });
+      preview.addEventListener('error', showEmpty);
+      removeBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        input.value = '';
+        showEmpty();
+      });
+    })();
 
     async function sendFeedback(event) {
       event.preventDefault();

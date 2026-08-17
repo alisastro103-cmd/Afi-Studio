@@ -290,6 +290,65 @@
       background: var(--surface);
     }
 
+    /* --- Kotak upload file (non-gambar, misal file model 3D): sama pola-nya
+       kayak .dropbox, tapi begitu keisi nampilin ikon berkas + nama file,
+       bukan preview gambar. --- */
+    .filebox {
+      position: relative;
+      width: 100%;
+      min-height: 96px;
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .filebox-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .filebox-empty:hover, .filebox-empty:focus-within { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+    .filebox-plus { font-size: 32px; font-weight: 300; line-height: 1; color: var(--text-light); }
+    .filebox-filled {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px;
+      text-align: center;
+      max-width: 100%;
+    }
+    .filebox-filled.show { display: flex; }
+    .filebox-icon { width: 30px; height: 30px; color: var(--accent); flex-shrink: 0; }
+    .filebox-name { font-size: 12px; color: var(--text); word-break: break-all; max-width: 100%; }
+    .filebox-remove {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      font-size: 15px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+    .filebox-remove:hover { background: rgba(0,0,0,0.8); }
+    .filebox input[type="file"] {
+      position: absolute;
+      width: 1px; height: 1px;
+      opacity: 0; overflow: hidden; clip: rect(0,0,0,0);
+    }
+
     .category-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -576,7 +635,17 @@
           <input type="url" id="downloadLink" class="form-input" style="margin-top:12px;" placeholder="Link Mediafire / Google Drive / dll">
         </div>
         <div class="conditional-field" data-field="file-upload">
-          <input type="file" id="downloadFile" class="form-input" style="margin-top:12px;">
+          <div class="filebox" id="downloadFileBox">
+            <label class="filebox-empty" id="downloadFileEmpty" for="downloadFile">
+              <span class="filebox-plus">+</span>
+            </label>
+            <div class="filebox-filled" id="downloadFileFilled">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="filebox-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span class="filebox-name" id="downloadFileName"></span>
+            </div>
+            <button type="button" class="filebox-remove" id="downloadFileRemoveBtn" style="display:none;" aria-label="Hapus file">✕</button>
+            <input type="file" id="downloadFile">
+          </div>
           <p class="form-hint">Maks 3MB (batas teknis server). Lebih dari itu, wajib pakai link. Kalau upload thumbnail & file bersamaan, totalnya jangan lebih dari ~3.8MB.</p>
         </div>
       </div>
@@ -786,6 +855,43 @@
     }
     guardFileSize('thumbFile', 'thumb');
     guardFileSize('downloadFile', 'file');
+
+    // --- Kotak upload file model (bukan gambar) — pola sama kayak dropbox
+    // thumbnail, tapi nampilin ikon berkas + nama file, bukan preview gambar.
+    const downloadFileInput = document.getElementById('downloadFile');
+    const downloadFileEmpty = document.getElementById('downloadFileEmpty');
+    const downloadFileFilled = document.getElementById('downloadFileFilled');
+    const downloadFileName = document.getElementById('downloadFileName');
+    const downloadFileRemoveBtn = document.getElementById('downloadFileRemoveBtn');
+
+    function showDownloadFileEmpty() {
+      downloadFileEmpty.style.display = 'flex';
+      downloadFileFilled.classList.remove('show');
+      downloadFileRemoveBtn.style.display = 'none';
+    }
+    function showDownloadFileFilled(name) {
+      downloadFileName.textContent = name;
+      downloadFileFilled.classList.add('show');
+      downloadFileEmpty.style.display = 'none';
+      downloadFileRemoveBtn.style.display = 'flex';
+    }
+    downloadFileInput.addEventListener('change', function () {
+      const f = this.files[0];
+      if (!f) return showDownloadFileEmpty();
+      showDownloadFileFilled(f.name);
+    });
+    downloadFileRemoveBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      downloadFileInput.value = '';
+      showDownloadFileEmpty();
+    });
+    // Reset tampilan kalau pindah balik ke tab link tanpa file terpilih
+    document.querySelector('[data-toggle-group="file"]').addEventListener('click', function (e) {
+      const opt = e.target.closest('.toggle-option');
+      if (!opt) return;
+      if (opt.dataset.value === 'upload' && !downloadFileInput.files[0]) showDownloadFileEmpty();
+    });
 
     // --- Preview mode LINK: sederhana, gambar muncul di bawah input link ---
     const thumbLinkPreview = document.getElementById('thumbLinkPreview');
