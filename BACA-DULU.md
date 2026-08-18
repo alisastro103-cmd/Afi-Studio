@@ -1,47 +1,51 @@
 # Cara pakai
 
-Extract lalu TIMPA (bukan file baru, 3 file yang udah ada):
+## 1. HAPUS 2 item ini dulu
 ```
-admin/panel.html
-api/admin/auth.js
-api/telegram-webhook.js
+admin/fonts/                (seluruh folder)
+admin/coming_soon.webp
+```
+```bash
+git rm -r admin/fonts
+git rm admin/coming_soon.webp
 ```
 
-## 1. Admin undangan gak lihat "Kelola Admin" ✅
-Ini sebenernya udah jalan dari awal, sempet aku cek ulang abis proses
-gabung-endpoint kemarin — masih aman. Menu "Kelola Admin" di sidebar cuma
-muncul kalau yang login itu OWNER (token asli), admin yang masuk lewat kode
-undangan gak bakal lihat menu itu sama sekali.
+## 2. Extract & timpa/tambah file dari zip ini
+```
+admin/index.html            (timpa — link font diarahin ke /fonts/ punya root)
+admin/panel.html            (timpa — sama, link font diarahin ke /fonts/)
+admin/tailwind.config.js    (timpa — sekarang scan panel.html juga, sebelumnya kelewat)
+admin/src/input.css         (BARU — source Tailwind admin, ikutin konvensi yang sama kayak root)
+admin/dist/output.css       (timpa — hasil build ulang dari config yang udah dibenerin)
+README.md                   (timpa — dokumentasinya disesuaikan sama perubahan ini)
+```
 
-## 2. Durasi custom (menit/jam/hari) ✅
-Dropdown durasi sekarang ada pilihan **1 Hari / 3 Hari / 7 Hari / 30 Hari /
-Permanent / Custom...** — pilih "Custom..." bakal muncul 2 kolom baru:
-angka + satuan (Menit/Jam/Hari), bisa diisi bebas (misal "45 Menit" atau
-"12 Jam").
+## Ringkasan yang diubah
 
-Di balik layar, durasinya sekarang disimpan dalam MENIT (bukan hari kayak
-sebelumnya) biar presisi ke satuan sekecil apapun.
+1. **`admin/fonts/` dihapus** — itu duplikat 100% identik sama `fonts/` di root (208KB
+   kembar). Sekarang `admin/index.html` & `admin/panel.html` sama-sama pakai
+   `/fonts/fonts.css` yang di root, gak ada lagi 2 salinan.
 
-## 3. Lihat admin aktif dari bot Telegram ✅
-Command baru: **`/webadmin`** — nampilin daftar admin panel website yang
-lagi aktif (nama/label + kapan expired-nya), plus jumlah totalnya. Juga
-ditambahin ke `/menu` (tombol "👥 Web Admin") dan `/help`.
+2. **`admin/coming_soon.webp` dihapus** — sama persis kayak `ranking/coming_soon.webp`,
+   tapi gak dipakai di mana pun dalam kode admin. Orphan murni.
 
-Ini VIEW-ONLY dari bot (buat cabut akses, tetep lewat "Kelola Admin" di
-Admin Panel Website — biar semua aksi cabut-mencabut tetep di satu tempat,
-gak kecampur 2 sumber kontrol).
+3. **Bug ke-temu & dibenerin**: `admin/tailwind.config.js` sebelumnya cuma nyuruh Tailwind
+   scan `admin/index.html` doang — `admin/panel.html` (file terbesar di seluruh repo)
+   gak pernah ke-scan. CSS-nya udah aku build ulang dari config yang bener, jadi kalau
+   nanti ada yang nambah class Tailwind baru di panel.html dan build ulang, class-nya
+   gak bakal ilang/ke-purge lagi.
 
-Bot bacanya dari data Redis yang SAMA persis dipakai web (gak ada
-duplikasi/nyimpen 2x), jadi datanya selalu sinkron — kalau ada yang login
-dari web, langsung kelihatan di bot juga.
+**Dampak ke tampilan: NOL** — ini murni beres-beres file, gak ada perubahan visual atau
+fungsional sama sekali. Cuma ngirit ~208KB dari repo + benerin bug config yang bisa
+jadi masalah di masa depan.
 
 ## Setelah upload
 ```bash
-git add . && git commit -m "Custom durasi invite + lihat admin aktif dari bot Telegram" && git push
+git add -A
+git commit -m "Beres-beres: hapus font & gambar duplikat, fix config Tailwind admin"
+git pull --rebase origin main
+git push
 ```
-(kalau ditolak: `git pull --rebase origin main` dulu, baru push lagi)
 
-Tunggu deploy, terus:
-- Cek dropdown durasi di "Kelola Admin" — pilih "Custom...", pastiin muncul kolom angka+satuan
-- Generate 1 kode pakai durasi custom (misal 2 jam), redeem di tab lain, cek waktu expired-nya bener
-- Ketik `/webadmin` ke bot, pastiin daftar admin yang muncul cocok sama yang di web
+Tunggu deploy, terus cek admin panel-nya masih tampil normal (font, ikon, style semua
+harusnya sama persis kayak sebelumnya — kalau ada yang keliatan aneh, kabarin).
