@@ -127,7 +127,13 @@
     /* Balon info bergaya chat bubble, mengambang di atas tombol "i"
        dengan panah pendek menunjuk ke bawah ke arah tombolnya. */
     .info-tooltip {
-      position: fixed;
+      /* absolute (bukan fixed) SENGAJA — di WebView mobile (browser HP,
+         browser dalam Telegram, dll) posisi elemen "fixed" sering meleset
+         jauh dari yang diitung getBoundingClientRect() kalau ada keyboard
+         yang lagi nutup/animasi resize viewport. "absolute" + koordinat
+         yang udah ditambah scrollX/scrollY jauh lebih stabil di situasi
+         itu karena dia ngikut posisi dokumen, bukan posisi layar. */
+      position: absolute;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -591,7 +597,7 @@
       <div class="form-group">
         <div class="form-label-row">
           <label class="form-label">Thumbnail</label>
-          <button type="button" class="info-btn" onclick="showInfo(this, 'Thumbnail', 'Gambar preview yang mewakili aset kamu, bakal muncul di kartu model. Wajib rasio 16:9 (contoh 800x450, resolusi bebas asal rasionya sama). Bisa pakai link gambar yang udah di-hosting, atau upload langsung.')">i</button>
+          <button type="button" class="info-btn" onclick="showInfo(this, 'Thumbnail', 'Gambar preview yang mewakili aset kamu, bakal muncul di kartu model. Disarankan rasio 16:9 (contoh 800x450, resolusi bebas asal rasionya sama) biar rapi, tapi bukan wajib. Bisa pakai link gambar yang udah di-hosting, atau upload langsung.')">i</button>
         </div>
         <div class="toggle-row" data-toggle-group="thumb">
           <label class="toggle-option active" data-value="link">
@@ -614,7 +620,7 @@
             <button type="button" class="dropbox-remove" id="thumbRemoveBtn" style="display:none;" aria-label="Hapus gambar">✕</button>
             <input type="file" id="thumbFile" accept="image/png, image/jpeg, image/webp">
           </div>
-          <p class="form-hint">Maks 3MB, rasio wajib 16:9 (contoh 800x450, resolusi bebas asal rasionya sama). Lebih dari 3MB otomatis diminta pakai link.</p>
+          <p class="form-hint">Maks 3MB. Rasio disarankan 16:9 (contoh 800x450, resolusi bebas asal rasionya sama) biar rapi di kartu model, tapi bukan wajib — tetap bisa dikirim walau rasionya beda. Lebih dari 3MB otomatis diminta pakai link.</p>
         </div>
       </div>
 
@@ -759,8 +765,12 @@
           arrowAtTop = true;
         }
 
-        tooltip.style.left = left + 'px';
-        tooltip.style.top = top + 'px';
+        // rect dari getBoundingClientRect() itu relatif ke VIEWPORT, tapi
+        // tooltip-nya position:absolute (relatif ke DOKUMEN) — makanya
+        // koordinatnya wajib ditambah posisi scroll saat ini, atau balonnya
+        // bakal nongol salah tempat begitu halaman di-scroll dikit aja.
+        tooltip.style.left = (left + window.scrollX) + 'px';
+        tooltip.style.top = (top + window.scrollY) + 'px';
         tooltip.classList.toggle('arrow-top', arrowAtTop);
 
         const btnCenter = rect.left + rect.width / 2;
@@ -768,10 +778,23 @@
         tooltip.style.setProperty('--arrow-left', arrowLeft + 'px');
       }
 
+      function scheduleReposition(btn) {
+        requestAnimationFrame(function () {
+          if (activeBtn === btn) positionTooltip(btn);
+        });
+      }
+
       window.showInfo = function (btn, title, text) {
         if (activeBtn === btn && tooltip.classList.contains('show')) {
           window.closeInfo();
           return;
+        }
+        // Kalau ada input lain yang lagi fokus (keyboard HP masih kebuka),
+        // blur dulu SEBELUM ngukur posisi. Kalau nggak, rect tombolnya
+        // keitung pas layout masih geser gara-gara keyboard baru mulai
+        // ketutup, jadi balonnya nongol jauh dari tombol "i"-nya.
+        if (document.activeElement && document.activeElement !== btn && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
         }
         tooltipTitle.textContent = title;
         tooltipText.innerHTML = text.replace(/\n/g, '<br>');
@@ -779,8 +802,13 @@
         tooltip.style.top = '-9999px';
         tooltip.classList.add('show');
         activeBtn = btn;
-        // offsetWidth/Height butuh render dulu, makanya diposisiin di frame berikutnya
-        requestAnimationFrame(function () { positionTooltip(btn); });
+        // offsetWidth/Height butuh render dulu, makanya diposisiin di frame
+        // berikutnya. Diulang beberapa kali di ~150ms & ~320ms karena animasi
+        // keyboard ketutup di HP butuh waktu ~250-300ms — sekali ukur di
+        // frame pertama aja seringnya masih ketinggalan posisi finalnya.
+        scheduleReposition(btn);
+        setTimeout(function () { scheduleReposition(btn); }, 150);
+        setTimeout(function () { scheduleReposition(btn); }, 320);
       };
 
       window.closeInfo = function () {
@@ -798,6 +826,16 @@
       window.addEventListener('resize', function () {
         if (activeBtn) positionTooltip(activeBtn);
       });
+      window.addEventListener('scroll', function () {
+        if (activeBtn) positionTooltip(activeBtn);
+      }, true);
+      // visualViewport nangkep resize akibat keyboard HP jauh lebih akurat
+      // & lebih cepat daripada event 'resize' biasa di window.
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', function () {
+          if (activeBtn) positionTooltip(activeBtn);
+        });
+      }
       window.addEventListener('scroll', function () {
         if (activeBtn) window.closeInfo();
       }, true);
@@ -943,6 +981,17 @@
       showThumbUploadEmpty();
     });
 
+    // Reset SEMUA preview (thumbnail link, thumbnail upload, file model
+    // upload) sekaligus — dipanggil setelah submission sukses, karena
+    // form.reset() cuma ngosongin value input, gak ngosongin tampilan
+    // custom (gambar preview, nama file, dll) yang kita render manual.
+    function resetAllPreviews() {
+      showThumbUploadEmpty();
+      thumbLinkPreview.style.display = 'none';
+      thumbLinkPreview.src = '';
+      showDownloadFileEmpty();
+    }
+
     // Kalau pindah mode (link/upload), preview masing-masing ikut direset
     // biar gak nampilin sisa dari mode sebelumnya.
     document.querySelector('[data-toggle-group="thumb"]').addEventListener('click', function (e) {
@@ -1028,20 +1077,33 @@
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Gagal mengirim pendaftaran.');
 
+        // Submission ke server sudah SUKSES di titik ini. Tampilkan pesan
+        // sukses DULUAN, sebelum beres-beres tampilan form di bawah — biar
+        // kalau salah satu langkah beres-beres di bawah ini error (bug JS
+        // apapun), errornya gak ketangkep sama catch di bawah dan nge-timpa
+        // pesan sukses jadi keliatan seolah-olah pendaftarannya gagal
+        // (padahal udah kekirim). Ini pernah kejadian gara-gara pemanggilan
+        // fungsi yang gak ada.
         showMessage('Pendaftaran berhasil dikirim! Tim admin akan meninjau sebelum dipublikasikan.', 'success');
-        document.getElementById('daftarModelForm').reset();
-        hideThumbPreview();
-        document.querySelectorAll('[data-toggle-group]').forEach(function (group) {
-          group.querySelectorAll('.toggle-option').forEach((o, i) => o.classList.toggle('active', i === 0));
-        });
-        document.querySelector('[data-field="thumb-link"]').classList.add('show');
-        document.querySelector('[data-field="thumb-upload"]').classList.remove('show');
-        document.querySelector('[data-field="file-link"]').classList.add('show');
-        document.querySelector('[data-field="file-upload"]').classList.remove('show');
-        document.querySelector('[data-field="role-source"]').classList.remove('show');
-        if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
-        updateCount('modelName', 'nameCount', 60);
-        updateCount('modelCaption', 'captionCount', 600);
+        try {
+          document.getElementById('daftarModelForm').reset();
+          resetAllPreviews();
+          document.querySelectorAll('[data-toggle-group]').forEach(function (group) {
+            group.querySelectorAll('.toggle-option').forEach((o, i) => o.classList.toggle('active', i === 0));
+          });
+          document.querySelector('[data-field="thumb-link"]').classList.add('show');
+          document.querySelector('[data-field="thumb-upload"]').classList.remove('show');
+          document.querySelector('[data-field="file-link"]').classList.add('show');
+          document.querySelector('[data-field="file-upload"]').classList.remove('show');
+          document.querySelector('[data-field="role-source"]').classList.remove('show');
+          if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
+          updateCount('modelName', 'nameCount', 60);
+          updateCount('modelCaption', 'captionCount', 600);
+        } catch (uiErr) {
+          // Submission-nya tetep sukses, cuma beres-beres tampilannya yang
+          // gagal — jangan sampai user ngira pendaftarannya gagal gara-gara ini.
+          console.error('Gagal reset tampilan form setelah submit sukses:', uiErr);
+        }
       } catch (err) {
         showMessage(err.message || 'Gagal mengirim pendaftaran. Coba lagi nanti.', 'error');
         if (typeof grecaptcha !== 'undefined') grecaptcha.reset();

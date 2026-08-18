@@ -197,12 +197,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Thumbnail + file model kalau diupload bersamaan totalnya harus di bawah ~3.8MB. Pakai link buat salah satunya.' });
     }
 
-    // === 2c. VALIDASI RASIO THUMBNAIL (wajib 16:9, resolusi bebas) ===
-    // Konversi ke WebP/AVIF SENGAJA gak dilakukan di sini lagi — sekarang
-    // ditunda sampai admin milih formatnya sendiri lewat tombol di Telegram
-    // (lihat kirim dokumen thumbnail di bawah + handler convertthumb di
-    // telegram-webhook.js). File asli dikirim apa adanya biar kualitasnya
-    // gak dua kali ke-lossy (upload asli -> convert -> nanti convert lagi).
+    // === 2c. CEK RASIO THUMBNAIL (disarankan 16:9, TIDAK WAJIB) ===
+    // Dulu ini blocking: submission ditolak (400) kalau rasio meleset atau
+    // gambarnya gagal diambil. Di praktiknya itu bikin banyak submission
+    // gagal padahal gak seharusnya — terutama mode link, karena fetch ke
+    // hosting gambar orang lain gampang timeout / keblokir hotlink-protection
+    // meskipun link-nya valid dan gambarnya beneran ada. Sekarang cek ini
+    // cuma buat KASIH SARAN ke admin di pesan Telegram (lewat noteForAdmin),
+    // bukan buat nolak. Rasio/resolusi tetap disaranin ke user lewat teks
+    // hint di form (lihat data-field="thumb-link"/"thumb-upload").
+    let thumbRatioNote = '';
     try {
       let thumbBuffer;
       if (thumbMode === 'upload') {
@@ -215,14 +219,12 @@ export default async function handler(req, res) {
       const dims = imageSize(thumbBuffer);
       const ratio = dims.width / dims.height;
       if (Math.abs(ratio - TARGET_RATIO) > RATIO_TOLERANCE) {
-        if (thumbFile) fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
-        if (downloadFile) fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
-        return res.status(400).json({ error: `Rasio thumbnail harus 16:9 (contoh 800x450). Gambar kamu ${dims.width}x${dims.height} (rasio ${ratio.toFixed(2)}, harus ~${TARGET_RATIO.toFixed(2)}).` });
+        thumbRatioNote = `⚠️ Rasio thumbnail ${dims.width}x${dims.height} (~${ratio.toFixed(2)}), disarankan 16:9 (~${TARGET_RATIO.toFixed(2)}). Tetap diterima, admin bisa crop manual kalau perlu.`;
       }
     } catch (e) {
-      if (thumbFile) fs.unlink(thumbFile.filepath || thumbFile.path, () => {});
-      if (downloadFile) fs.unlink(downloadFile.filepath || downloadFile.path, () => {});
-      return res.status(400).json({ error: 'Gagal membaca gambar thumbnail. Kalau pakai link, pastikan link-nya ngarah LANGSUNG ke file gambar (bukan halaman preview).' });
+      // Gagal diambil/dibaca (timeout, hotlink-protection, dll) — jangan
+      // gagalin submission-nya, cuma kasih tau admin biar bisa dicek manual.
+      thumbRatioNote = 'ℹ️ Rasio/dimensi thumbnail gak bisa dicek otomatis (gagal diambil atau bukan format gambar yang dikenali). Cek manual pas review.';
     }
 
     // === 3. VERIFIKASI reCAPTCHA ===
@@ -253,6 +255,7 @@ export default async function handler(req, res) {
     text += `Aplikasi Tujuan: ${safe.appTarget}\n`;
     text += `Thumbnail: ${thumbMode === 'link' ? thumbLink : `Upload (lihat lampiran, ${thumbFile ? Math.round(thumbFile.size / 1024) : '?'} KB)`}\n`;
     text += `File Model: ${downloadMode === 'link' ? downloadLink : `Upload (lihat lampiran, ${downloadFile ? Math.round(downloadFile.size / 1024) : '?'} KB)`}`;
+    if (thumbRatioNote) text += `\n\n${escapeMarkdown(thumbRatioNote)}`;
 
     // ID dibikin di sini (bukan di bawah pas nyimpen ke Redis) karena perlu
     // ditempel ke callback_data tombol Telegram DULUAN, sebelum entry-nya
@@ -356,6 +359,7 @@ export default async function handler(req, res) {
       source: role === 'converter' ? source : '',
       category: categories,
       appTarget: appTarget || '',
+      thumbRatioNote: thumbRatioNote || '',
       thumb: thumbMode === 'link'
         ? { type: 'link', value: thumbLink }
         : { type: 'upload', filename: thumbFile.originalFilename || '', sizeKb: Math.round((thumbFile.size || 0) / 1024), fileId: thumbFileId },
