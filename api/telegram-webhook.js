@@ -66,7 +66,7 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const PENDING_KEY = 'afi-studio:data:pendingmodels';
 const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
-const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v5'; // v5 = tambah /webadmin (lihat admin panel website aktif)
+const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v6'; // v6 = tambah /convertimg (convert gambar ke WebP/AVIF)
 const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
 
 // Ambang batas fitur /cleanup — data lebih tua dari ini dianggap kandidat basi.
@@ -234,6 +234,7 @@ async function ensureBotMenuRegistered() {
           { command: 'delsurvey', description: 'Hapus 1 survey — format: id' },
           { command: 'setsurveythumb', description: 'Ganti thumbnail survey — format: id url' },
           { command: 'setthumb', description: 'Ganti thumbnail situs (kirim sbg foto)' },
+          { command: 'convertimg', description: 'Convert gambar ke WebP/AVIF' },
           { command: 'find', description: 'Cari model/pending/survey — format: kata kunci' },
           { command: 'backup', description: 'Simpan snapshot data ke GitHub' },
           { command: 'backups', description: 'Lihat daftar backup tersimpan' },
@@ -390,6 +391,7 @@ function mainMenuKeyboard() {
       [{ text: '⏳ Pending Model', callback_data: 'menu:pending' }, { text: '📋 Survey', callback_data: 'menu:surveys' }],
       [{ text: '🖼️ Thumbnail', callback_data: 'menu:thumb' }, { text: '💾 Backup', callback_data: 'menu:backup' }],
       [{ text: '🧹 Cleanup', callback_data: 'cleanup:scan' }, { text: '👥 Web Admin', callback_data: 'menu:webadmin' }],
+      [{ text: '🎨 Convert Gambar', callback_data: 'menu:convertimg' }],
     ],
   };
 }
@@ -435,6 +437,9 @@ async function cmdHelp() {
     '<b>Thumbnail</b>\n' +
     '/setsurveythumb id url — ganti thumbnail survey\n' +
     'Kirim foto + caption /setthumb — ganti thumbnail situs\n\n' +
+
+    '<b>Convert Gambar</b>\n' +
+    '/convertimg — convert gambar ke WebP/AVIF (kirim sebagai Dokumen/File biar kualitasnya gak turun)\n\n' +
 
     '<b>Backup</b>\n' +
     '/backup — simpan data ke GitHub\n' +
@@ -623,6 +628,65 @@ async function cmdConvertPendingThumb(pendingId, format) {
     );
   } catch (e) {
     await tgSend(`Gagal convert thumbnail: ${escHtml(e.message)}`);
+  }
+}
+
+// --- Convert gambar bebas (bukan cuma thumbnail pending) ke WebP/AVIF ---
+// Dipicu command /convertimg. Dua alur dipdukung:
+//   1. Ketik /convertimg dulu -> bot nunggu gambar dikirim -> lanjut nanya format.
+//   2. Kirim gambar sekali jalan dengan caption /convertimg -> langsung nanya format.
+// PENTING soal kualitas: kalau gambarnya dikirim sebagai FOTO (bukan dokumen),
+// Telegram UDAH resize + kompres file itu duluan di server mereka SEBELUM bot
+// ini sempat nerima apapun — jadi hasil convert-nya gak akan pernah sebagus
+// aslinya, apapun kualitas yang dipake sharp() di sini. Makanya bot ngingetin
+// buat kirim sebagai Dokumen/File kalau mau kualitas ke-jaga. Hasil convert-nya
+// juga SELALU dikirim balik sebagai dokumen (bukan foto), biar gak ke-kompres
+// ulang sama Telegram pas dikirim balik.
+async function cmdConvertImgAskFormat(chatId, fileId, isDocument, filename) {
+  await setState(chatId, { action: 'awaiting_convertimg_format', fileId, isDocument, filename: filename || null });
+  const warning = isDocument
+    ? ''
+    : '\n\n⚠️ Ini dikirim sebagai <b>foto</b>, bukan dokumen — Telegram udah otomatis ngompres/resize gambarnya duluan sebelum nyampe ke bot. Hasil convert-nya gak bakal seoptimal kalau kamu kirim sebagai <b>Dokumen/File</b> (di Telegram: lampiran → File, bukan Galeri/Foto).';
+  await tgSend(`Oke, gambarnya udah diterima.${warning}\n\nMau dikonversi ke format apa?`, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '🟦 WebP', callback_data: 'convertimg:webp' }, { text: '🟪 AVIF', callback_data: 'convertimg:avif' }],
+        [{ text: '❌ Batal', callback_data: 'convertimg:cancel' }],
+      ],
+    },
+  });
+}
+
+async function cmdConvertImgRun(chatId, format) {
+  const state = await getState(chatId);
+  if (!state || state.action !== 'awaiting_convertimg_format' || !state.fileId) {
+    await tgSend('Sesi convert ini udah gak berlaku (mungkin kelamaan/kepake command lain). Ketik /convertimg buat mulai lagi.');
+    return;
+  }
+  await clearState(chatId);
+  try {
+    await tgSend(`Lagi convert ke ${format.toUpperCase()}, tunggu bentar...`);
+    const fileUrl = await tgGetFileUrl(state.fileId);
+    const imgResp = await fetch(fileUrl);
+    if (!imgResp.ok) throw new Error('Gagal download gambar dari Telegram (mungkin sesinya udah basi, coba kirim ulang).');
+    const original = Buffer.from(await imgResp.arrayBuffer());
+
+    const converted = format === 'avif'
+      ? await sharp(original).avif({ quality: 50 }).toBuffer()
+      : await sharp(original).webp({ quality: 82 }).toBuffer();
+
+    const baseName = (state.filename || 'gambar').replace(/\.[^./]+$/, '');
+    const filename = `${baseName || 'gambar'}.${format}`;
+    const sizeBefore = (original.length / 1024).toFixed(0);
+    const sizeAfter = (converted.length / 1024).toFixed(0);
+
+    await tgSendDocument(
+      converted,
+      filename,
+      `Selesai — ${format.toUpperCase()}, ${sizeBefore}KB → ${sizeAfter}KB.`
+    );
+  } catch (e) {
+    await tgSend(`Gagal convert gambar: ${escHtml(e.message)}`);
   }
 }
 
@@ -1000,6 +1064,13 @@ async function handleStateReply(chatId, message, state) {
     return; // state tetap aktif
   }
 
+  if (state.action === 'awaiting_convertimg_image') {
+    // Sama: kalau nyampe sini berarti bukan foto/dokumen (itu udah ditangani
+    // terpisah sebelum fungsi ini dipanggil).
+    await tgSend('Itu bukan gambar ya. Kirim gambarnya (disaranin sebagai Dokumen/File biar kualitasnya gak turun), atau ketik /batal buat berhenti.');
+    return; // state tetap aktif
+  }
+
   if (state.action === 'awaiting_find_keyword') {
     if (!text) {
       await tgSend('Kata kuncinya kosong, coba ketik lagi, atau /batal buat berhenti.');
@@ -1039,6 +1110,13 @@ async function processCallback(cq) {
   if (data === 'menu:surveys') return sendSurveysMenu(chatId, messageId);
   if (data === 'menu:thumb') return tgSendOrEdit(chatId, messageId, 'Mau ganti thumbnail yang mana?', thumbMenuKeyboard());
   if (data === 'menu:backup') return tgSendOrEdit(chatId, messageId, 'Menu backup &amp; restore:', backupMenuKeyboard());
+  if (data === 'menu:convertimg') {
+    await setState(chatId, { action: 'awaiting_convertimg_image' });
+    return tgSendOrEdit(
+      chatId, messageId,
+      'Kirim gambar yang mau dikonversi.\n\nDisaranin kirim sebagai <b>Dokumen/File</b> (bukan Foto/Galeri), soalnya kalau dikirim sebagai foto, Telegram udah otomatis ngompres/resize gambarnya duluan sebelum nyampe ke bot — hasil convert-nya jadi gak seoptimal itu.'
+    );
+  }
 
   if (data === 'thumb:main') {
     try {
@@ -1134,6 +1212,13 @@ async function processCallback(cq) {
     await cmdConvertPendingThumb(data.slice('convertthumb:avif:'.length), 'avif');
     return;
   }
+  if (data === 'convertimg:webp') { await cmdConvertImgRun(chatId, 'webp'); return; }
+  if (data === 'convertimg:avif') { await cmdConvertImgRun(chatId, 'avif'); return; }
+  if (data === 'convertimg:cancel') {
+    await clearState(chatId);
+    await tgSendOrEdit(chatId, messageId, 'Oke, dibatalin. Ketik /convertimg buat mulai lagi.', mainMenuKeyboard());
+    return;
+  }
 
   await tgSend('Tombol gak dikenal (mungkin basi). Coba /menu lagi.');
 }
@@ -1176,6 +1261,21 @@ async function processUpdate(update) {
       return;
     }
 
+    // Sama kayak /setthumb di atas: gambar dikirim sekali jalan dengan caption
+    // /convertimg -> langsung diproses, gak perlu nunggu command duluan. Dukung
+    // baik dikirim sebagai foto MAUPUN dokumen (dokumen lebih disaranin, lihat
+    // catatan kualitas di cmdConvertImgAskFormat).
+    if ((message.photo || message.document) && message.caption && message.caption.trim().toLowerCase().startsWith('/convertimg')) {
+      await clearState(chatId);
+      if (message.document) {
+        await cmdConvertImgAskFormat(chatId, message.document.file_id, true, message.document.file_name);
+      } else {
+        const largest = message.photo[message.photo.length - 1];
+        await cmdConvertImgAskFormat(chatId, largest.file_id, false, null);
+      }
+      return;
+    }
+
     const rawText = (message.text || '').trim();
     const isCommand = rawText.startsWith('/');
 
@@ -1187,6 +1287,16 @@ async function processUpdate(update) {
           await clearState(chatId);
           const largest = message.photo[message.photo.length - 1];
           if (state.target === 'main') await cmdSetThumbFromPhoto(largest.file_id);
+          return;
+        }
+        if ((message.photo || message.document) && state.action === 'awaiting_convertimg_image') {
+          await clearState(chatId);
+          if (message.document) {
+            await cmdConvertImgAskFormat(chatId, message.document.file_id, true, message.document.file_name);
+          } else {
+            const largest = message.photo[message.photo.length - 1];
+            await cmdConvertImgAskFormat(chatId, largest.file_id, false, null);
+          }
           return;
         }
         await handleStateReply(chatId, message, state);
@@ -1242,6 +1352,12 @@ async function processUpdate(update) {
         break;
       case '/setthumb':
         await tgSend('Kirim FOTO-nya langsung (bukan cuma teks), dengan caption /setthumb — atau pakai /menu → Thumbnail.');
+        break;
+      case '/convertimg':
+        await setState(chatId, { action: 'awaiting_convertimg_image' });
+        await tgSend(
+          'Kirim gambar yang mau dikonversi.\n\nDisaranin kirim sebagai <b>Dokumen/File</b> (bukan Foto/Galeri), soalnya kalau dikirim sebagai foto, Telegram udah otomatis ngompres/resize gambarnya duluan sebelum nyampe ke bot — hasil convert-nya jadi gak seoptimal itu.'
+        );
         break;
       case '/find':
         await cmdFind(args.join(' '));
