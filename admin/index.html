@@ -206,9 +206,9 @@
   [data-hold-edit].card-pressed { transform: scale(0.96); opacity: 0.7; }
   tr[data-hold-edit].card-pressed { transform:none; opacity:1; background: color-mix(in srgb, var(--accent) 22%, transparent); }
 </style>
-    <link rel="stylesheet" href="/css/theme-tokens.css">
-    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
-    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <!-- theme-tokens.css / layout-mobile.css / layout-desktop.css sengaja tidak dipakai di
+         halaman admin — lihat catatan di panel.html. Kalau tetap di-load, warna --accent/--bg
+         di :root akan diam-diam menimpa tema halaman login ini. -->
 </head>
 <body class="h-full">
 

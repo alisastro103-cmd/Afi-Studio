@@ -234,10 +234,52 @@
 
   /* --- Ubah urutan: lewat tombol Naik/Turun di board opsi (tahan kartu/baris buat munculin board-nya) --- */
   .action-dropdown button.reorder-btn i { color: var(--text-sub); }
+
+  /* =======================================================================
+     PATCH: utility Tailwind yang hilang dari /admin/dist/output.css
+     -------------------------------------------------------------------------
+     File output.css hasil build lama tidak menyertakan sejumlah class
+     Tailwind yang dipakai di panel.html ini (kemungkinan besar karena
+     dibuild sebelum bagian2 tsb ditambahkan, lalu tidak pernah dibuild
+     ulang). Akibatnya banyak elemen kehilangan padding/ukuran/alignment-nya
+     -> ini penyebab utama tampilan "berantakan/bertabrakan" di admin panel,
+     termasuk logo sidebar yang menimpa konten (w-8/h-8 tidak kebaca hingga
+     ukurannya ikut lebar sidebar penuh). Ditambahkan manual di sini persis
+     sama seperti definisi asli Tailwind, supaya tidak perlu proses build
+     ulang (butuh akses npm registry yang mungkin tidak selalu tersedia).
+     Kalau suatu saat output.css dibuild ulang dan sudah lengkap, blok ini
+     aman dihapus (class yang sudah ada di output.css tidak akan dobel-load
+     masalah, karena definisinya identik).
+     ========================================================================= */
+  .w-8 { width: 2rem; }
+  .h-8 { height: 2rem; }
+  .flex-1 { flex: 1 1 0%; }
+  .items-start { align-items: flex-start; }
+  .justify-end { justify-content: flex-end; }
+  .overflow-hidden { overflow: hidden; }
+  .overflow-y-auto { overflow-y: auto; }
+  .p-3 { padding: 0.75rem; }
+  .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .pt-3 { padding-top: 0.75rem; }
+  .pb-5 { padding-bottom: 1.25rem; }
+  .mb-3 { margin-bottom: 0.75rem; }
+  .mt-4 { margin-top: 1rem; }
+  .mt-auto { margin-top: auto; }
+  @media (min-width: 640px) {
+    .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .lg\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  }
 </style>
-    <link rel="stylesheet" href="/css/theme-tokens.css">
-    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
-    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <!-- Catatan: /css/theme-tokens.css, layout-mobile.css & layout-desktop.css sengaja TIDAK
+         dipakai di sini. Ketiganya untuk halaman website utama (selector seperti .nav-bar,
+         #content-grid, .site-footer-inner — tidak ada satupun dipakai di admin panel), tapi
+         theme-tokens.css tetap mendefinisikan ulang variabel warna --accent/--bg/dst di :root,
+         jadi kalau tetap di-load ia diam-diam menimpa tema admin panel sendiri (warna jadi
+         tidak konsisten / "bertabrakan"). Admin panel sudah punya tema lengkapnya sendiri di
+         <style> di atas. -->
 </head>
 <body class="h-full">
 
@@ -753,7 +795,13 @@ document.querySelectorAll('.side-item[data-view]').forEach(el=>{
     el.classList.add('active');
     document.querySelectorAll('.section-view').forEach(v=>v.classList.remove('active'));
     document.getElementById('view-'+el.dataset.view).classList.add('active');
-    document.getElementById('view-title').textContent = el.textContent.trim();
+    // Ambil teks label-nya saja (bukan pakai textContent langsung), karena beberapa
+    // item sidebar (mis. "Pendaftaran") punya <span id="pending-badge"> angka notifikasi
+    // di dalamnya — kalau dipakai apa adanya, judul halaman jadi ikut nempel angkanya
+    // (contoh: "Pendaftaran1" alih-alih "Pendaftaran").
+    const labelClone = el.cloneNode(true);
+    labelClone.querySelectorAll('svg, i, #pending-badge').forEach(n => n.remove());
+    document.getElementById('view-title').textContent = labelClone.textContent.trim();
     closeGlobalSearch(prevView);
     updateTopbarTools(el.dataset.view);
     updateFab(el.dataset.view);
