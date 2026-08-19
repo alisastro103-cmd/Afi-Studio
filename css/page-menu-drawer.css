@@ -148,6 +148,17 @@ body.page-menu-locked { overflow: hidden; }
   #page-menu-btn.page-menu-btn { display: none !important; }
   #page-menu-overlay { display: none !important; }
 
+  /* BUG YANG DIPERBAIKI: laci ini `position: fixed`, jadi dia gak ikut alur
+     normal halaman dan gak otomatis "ngedorong" konten lain. Sebelum baris
+     margin-right ini ada, laci cuma numpuk MELAYANG di atas konten (nav-bar,
+     banner, grid item, dll) di sisi kanan layar — bikin konten yang ada di
+     situ ketutup/kepotong sama panel menu. `margin-right` di <body> (bukan di
+     lacinya sendiri, karena elemen `position: fixed` gak kepengaruh
+     margin/padding ancestor apapun) yang "menyisakan ruang" selebar laci,
+     jadi seluruh isi halaman otomatis mepet ke kiri dan gak ada lagi yang
+     ketiban laci. */
+  body { margin-right: 260px; }
+
   #page-menu-dropdown.page-menu-dropdown {
     position: fixed;
     top: var(--nav-h, 60px);
