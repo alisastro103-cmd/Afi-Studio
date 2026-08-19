@@ -50,6 +50,7 @@ import net from 'net';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { SESSION_PREFIX as ADMIN_SESSION_PREFIX } from '../lib/admin-auth.js';
 import sharp from 'sharp';
+import AdmZip from 'adm-zip';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -66,7 +67,7 @@ const redis = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_R
 const PENDING_KEY = 'afi-studio:data:pendingmodels';
 const SURVEYS_KEY = 'afi-studio:data:surveys';
 const MODELS_KEY = 'afi-studio:data:models';
-const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v6'; // v6 = tambah /convertimg (convert gambar ke WebP/AVIF)
+const MENU_REGISTERED_KEY = 'afi-studio:botmenu:registered:v7'; // v7 = tambah /statsbot, /resizeimg, /convertzip
 const STATE_TTL_SEC = 600; // state percakapan basi otomatis abis 10 menit
 
 // Ambang batas fitur /cleanup — data lebih tua dari ini dianggap kandidat basi.
@@ -235,6 +236,9 @@ async function ensureBotMenuRegistered() {
           { command: 'setsurveythumb', description: 'Ganti thumbnail survey — format: id url' },
           { command: 'setthumb', description: 'Ganti thumbnail situs (kirim sbg foto)' },
           { command: 'convertimg', description: 'Convert gambar ke WebP/AVIF' },
+          { command: 'resizeimg', description: 'Resize gambar ke target ukuran file' },
+          { command: 'convertzip', description: 'Convert semua gambar dalam ZIP ke WebP/AVIF' },
+          { command: 'statsbot', description: 'Statistik lengkap Afi Studio' },
           { command: 'find', description: 'Cari model/pending/survey — format: kata kunci' },
           { command: 'backup', description: 'Simpan snapshot data ke GitHub' },
           { command: 'backups', description: 'Lihat daftar backup tersimpan' },
@@ -391,7 +395,8 @@ function mainMenuKeyboard() {
       [{ text: '⏳ Pending Model', callback_data: 'menu:pending' }, { text: '📋 Survey', callback_data: 'menu:surveys' }],
       [{ text: '🖼️ Thumbnail', callback_data: 'menu:thumb' }, { text: '💾 Backup', callback_data: 'menu:backup' }],
       [{ text: '🧹 Cleanup', callback_data: 'cleanup:scan' }, { text: '👥 Web Admin', callback_data: 'menu:webadmin' }],
-      [{ text: '🎨 Convert Gambar', callback_data: 'menu:convertimg' }],
+      [{ text: '🎨 Convert Gambar', callback_data: 'menu:convertimg' }, { text: '📉 Resize Gambar', callback_data: 'menu:resizeimg' }],
+      [{ text: '🗂️ Convert ZIP', callback_data: 'menu:convertzip' }, { text: '📈 Statistik', callback_data: 'menu:statsbot' }],
     ],
   };
 }
@@ -439,7 +444,13 @@ async function cmdHelp() {
     'Kirim foto + caption /setthumb — ganti thumbnail situs\n\n' +
 
     '<b>Convert Gambar</b>\n' +
-    '/convertimg — convert gambar ke WebP/AVIF (kirim sebagai Dokumen/File biar kualitasnya gak turun)\n\n' +
+    '/convertimg — convert gambar ke WebP/AVIF (kirim sebagai Dokumen/File biar kualitasnya gak turun)\n' +
+    '/resizeimg — resize gambar ke target ukuran file (KB)\n' +
+    '/convertzip — convert semua gambar di dalam ZIP sekaligus (maks ' + MAX_ZIP_IMAGES + ' gambar)\n\n' +
+
+    '<b>Statistik</b>\n' +
+    '/status — ringkasan cepat\n' +
+    '/statsbot — statistik lengkap (kategori, aplikasi tujuan, dll)\n\n' +
 
     '<b>Backup</b>\n' +
     '/backup — simpan data ke GitHub\n' +
@@ -475,6 +486,65 @@ async function cmdStatus() {
     `Pendaftaran model pending: <b>${pendingCount}</b>\n` +
     `Survey total: <b>${surveyList.length}</b> (aktif: ${activeSurveys})`
   );
+}
+
+// /statsbot: versi lebih dalam dari /status — breakdown kategori, aplikasi
+// tujuan, creator-vs-converter, dan umur pending tertua. /status tetap
+// dipertahankan buat ringkasan cepat.
+async function cmdStatsBot() {
+  if (!redis) return tgSend('Redis belum dikonfigurasi di server.');
+  const [modelsRaw, pendingRaw] = await Promise.all([
+    redis.get(MODELS_KEY).catch(() => null),
+    redis.get(PENDING_KEY).catch(() => null),
+  ]);
+  const models = Array.isArray(modelsRaw) ? modelsRaw : [];
+  const pending = Array.isArray(pendingRaw) ? pendingRaw : [];
+
+  const categoryCount = {};
+  for (const m of models) {
+    const cats = Array.isArray(m.category) ? m.category : (Array.isArray(m.kategori) ? m.kategori : []);
+    for (const c of cats) categoryCount[c] = (categoryCount[c] || 0) + 1;
+  }
+  const topCategories = Object.entries(categoryCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  const appCount = {};
+  for (const m of models) {
+    const app = m.appTarget || m.aplikasiTujuan || 'Lainnya';
+    appCount[app] = (appCount[app] || 0) + 1;
+  }
+  const topApps = Object.entries(appCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  const roleCount = { creator: 0, converter: 0 };
+  for (const p of pending) {
+    const r = (p.role || '').toLowerCase();
+    if (r === 'converter') roleCount.converter++; else roleCount.creator++;
+  }
+
+  let oldestDays = null;
+  if (pending.length) {
+    const withDate = pending.filter(p => p.submittedAt);
+    if (withDate.length) {
+      const oldest = withDate.reduce((a, b) => (new Date(a.submittedAt) < new Date(b.submittedAt) ? a : b));
+      oldestDays = Math.floor((Date.now() - new Date(oldest.submittedAt).getTime()) / 86400000);
+    }
+  }
+
+  let text = `<b>Statistik Afi Studio</b>\n\n`;
+  text += `Total model live: <b>${models.length}</b>\n`;
+  text += `Pending review: <b>${pending.length}</b>`;
+  text += (oldestDays !== null) ? ` (tertua: ${oldestDays} hari)\n` : '\n';
+  if (pending.length) {
+    text += `  ↳ Creator: ${roleCount.creator} · Converter: ${roleCount.converter}\n`;
+  }
+  if (topCategories.length) {
+    text += `\n<b>Kategori terbanyak</b>\n`;
+    topCategories.forEach(([c, n], i) => { text += `${i + 1}. ${escHtml(c)} — ${n}\n`; });
+  }
+  if (topApps.length) {
+    text += `\n<b>Aplikasi tujuan terbanyak</b>\n`;
+    topApps.forEach(([a, n], i) => { text += `${i + 1}. ${escHtml(a)} — ${n}\n`; });
+  }
+  await tgSend(text);
 }
 
 async function cmdWebAdmin() {
@@ -694,6 +764,176 @@ async function cmdConvertImgRun(chatId, format) {
     );
   } catch (e) {
     await tgSend(`Gagal convert gambar: ${escHtml(e.message)}`);
+  }
+}
+
+// --- Resize gambar ke target ukuran file (bukan convert format bebas kualitas) ---
+// Beda sama /convertimg: di sini USER yang nentuin target ukurannya (KB), bot
+// yang nyari kombinasi kualitas WebP + (kalau perlu) perkecil dimensi biar
+// pas di bawah target itu. Dipakai buat kasus kayak "butuh di bawah 3MB biar
+// bisa upload di form Daftar Model", dll.
+async function cmdResizeAskTarget(chatId, fileId, isDocument, filename) {
+  await setState(chatId, { action: 'awaiting_resize_target', fileId, isDocument, filename: filename || null });
+  const warning = isDocument
+    ? ''
+    : '\n\n⚠️ Ini dikirim sebagai <b>foto</b>, bukan dokumen — Telegram udah otomatis ngompres/resize gambarnya duluan. Hasilnya gak akan seoptimal kalau kirim sebagai <b>Dokumen/File</b>.';
+  await tgSend(
+    `Oke, gambarnya diterima.${warning}\n\nMau ditarget ke ukuran berapa? Pilih salah satu, atau ketik angka manual dalam KB (misal: 350).`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '100 KB', callback_data: 'resizeimg:100' }, { text: '200 KB', callback_data: 'resizeimg:200' }],
+          [{ text: '500 KB', callback_data: 'resizeimg:500' }, { text: '1 MB', callback_data: 'resizeimg:1024' }],
+          [{ text: '❌ Batal', callback_data: 'resizeimg:cancel' }],
+        ],
+      },
+    }
+  );
+}
+
+// Cari kualitas WebP setinggi mungkin yang hasilnya masih <= targetBytes
+// (binary search kualitas 1-95). Kalau kualitas terendah (1) MASIH kegedean,
+// baru dimensinya diperkecil bertahap (x0.75 tiap putaran) dan diulang lagi.
+async function compressToTargetSize(inputBuffer, targetBytes) {
+  const meta = await sharp(inputBuffer).metadata();
+  let scale = 1;
+  for (let round = 0; round < 6; round++) {
+    let lo = 1, hi = 95, best = null, bestQ = null;
+    for (let i = 0; i < 7; i++) {
+      const q = Math.round((lo + hi) / 2);
+      let pipeline = sharp(inputBuffer);
+      if (scale < 1 && meta.width) pipeline = pipeline.resize({ width: Math.max(1, Math.round(meta.width * scale)) });
+      const buf = await pipeline.webp({ quality: q }).toBuffer();
+      if (buf.length <= targetBytes) { best = buf; bestQ = q; lo = q + 1; } else { hi = q - 1; }
+      if (lo > hi) break;
+    }
+    if (best) return { buffer: best, quality: bestQ, scale, scaled: scale < 1 };
+    scale *= 0.75; // kualitas 1 masih kegedean -> perkecil dimensi, ulangi
+    if (scale < 0.1) break;
+  }
+  // Fallback paling akhir: kualitas & dimensi paling minim yang kita coba.
+  let pipeline = sharp(inputBuffer);
+  const finalScale = Math.max(scale, 0.1);
+  if (meta.width) pipeline = pipeline.resize({ width: Math.max(1, Math.round(meta.width * finalScale)) });
+  const buf = await pipeline.webp({ quality: 1 }).toBuffer();
+  return { buffer: buf, quality: 1, scale: finalScale, scaled: true };
+}
+
+async function cmdResizeRun(chatId, targetKb) {
+  const state = await getState(chatId);
+  if (!state || state.action !== 'awaiting_resize_target' || !state.fileId) {
+    await tgSend('Sesi resize ini udah gak berlaku. Ketik /resizeimg buat mulai lagi.');
+    return;
+  }
+  if (!Number.isFinite(targetKb) || targetKb < 5) {
+    await tgSend('Ukuran targetnya kurang masuk akal (minimal 5 KB). Ketik angka lain, atau /batal buat berhenti.');
+    return; // state tetap aktif, biar bisa dicoba lagi
+  }
+  await clearState(chatId);
+  const targetBytes = Math.round(targetKb) * 1024;
+  try {
+    await tgSend(`Lagi resize ke target ~${targetKb}KB, tunggu bentar...`);
+    const fileUrl = await tgGetFileUrl(state.fileId);
+    const imgResp = await fetch(fileUrl);
+    if (!imgResp.ok) throw new Error('Gagal download gambar dari Telegram (mungkin sesinya udah basi, coba kirim ulang).');
+    const original = Buffer.from(await imgResp.arrayBuffer());
+    const baseName = (state.filename || 'gambar').replace(/\.[^./]+$/, '') || 'gambar';
+
+    if (original.length <= targetBytes) {
+      const origExt = (state.filename || '').split('.').pop() || 'jpg';
+      await tgSendDocument(
+        original,
+        `${baseName}.${origExt}`,
+        `Gambar aslinya udah ${(original.length / 1024).toFixed(0)}KB, di bawah target — dikirim apa adanya, gak perlu dikompres lagi.`
+      );
+      return;
+    }
+
+    const result = await compressToTargetSize(original, targetBytes);
+    const filename = `${baseName}.webp`;
+    const note = result.scaled ? `, ukuran diperkecil ke ~${Math.round(result.scale * 100)}% dari aslinya` : '';
+    await tgSendDocument(
+      result.buffer,
+      filename,
+      `Selesai — target ~${targetKb}KB, hasil ${(result.buffer.length / 1024).toFixed(0)}KB (kualitas WebP ${result.quality}%${note}).`
+    );
+  } catch (e) {
+    await tgSend(`Gagal resize gambar: ${escHtml(e.message)}`);
+  }
+}
+
+// --- Convert semua gambar di dalam 1 file ZIP sekaligus ---
+const MAX_ZIP_IMAGES = 25; // dibatasi biar gak nabrak batas waktu eksekusi function di Vercel
+const ZIP_IMAGE_EXT_RE = /\.(jpe?g|png|webp|gif|bmp|tiff?)$/i;
+
+async function cmdConvertZipAskFormat(chatId, fileId, filename) {
+  await setState(chatId, { action: 'awaiting_convertzip_format', fileId, filename: filename || 'gambar.zip' });
+  await tgSend('ZIP diterima. Semua gambar di dalamnya mau dikonversi ke format apa?', {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: '🟦 WebP', callback_data: 'convertzip:webp' }, { text: '🟪 AVIF', callback_data: 'convertzip:avif' }],
+        [{ text: '❌ Batal', callback_data: 'convertzip:cancel' }],
+      ],
+    },
+  });
+}
+
+async function cmdConvertZipRun(chatId, format) {
+  const state = await getState(chatId);
+  if (!state || state.action !== 'awaiting_convertzip_format' || !state.fileId) {
+    await tgSend('Sesi convert ZIP ini udah gak berlaku. Ketik /convertzip buat mulai lagi.');
+    return;
+  }
+  await clearState(chatId);
+  try {
+    await tgSend(`Lagi buka & convert ZIP ke ${format.toUpperCase()}, tunggu bentar (bisa agak lama kalau isinya banyak)...`);
+    const fileUrl = await tgGetFileUrl(state.fileId);
+    const zipResp = await fetch(fileUrl);
+    if (!zipResp.ok) throw new Error('Gagal download ZIP dari Telegram (mungkin sesinya udah basi, coba kirim ulang).');
+    const zipBuffer = Buffer.from(await zipResp.arrayBuffer());
+
+    const zip = new AdmZip(zipBuffer);
+    const entries = zip.getEntries().filter(e => !e.isDirectory && ZIP_IMAGE_EXT_RE.test(e.entryName));
+
+    if (!entries.length) {
+      await tgSend('Gak nemu file gambar di dalam ZIP itu (yang dikenali: jpg/jpeg/png/webp/gif/bmp/tiff).');
+      return;
+    }
+    if (entries.length > MAX_ZIP_IMAGES) {
+      await tgSend(`ZIP-nya isinya ${entries.length} gambar, kebanyakan buat sekali proses (maks ${MAX_ZIP_IMAGES} biar gak timeout). Pisah jadi beberapa ZIP kecil ya.`);
+      return;
+    }
+
+    const outZip = new AdmZip();
+    let okCount = 0, failCount = 0;
+    for (const entry of entries) {
+      try {
+        const original = entry.getData();
+        const converted = format === 'avif'
+          ? await sharp(original).avif({ quality: 50 }).toBuffer()
+          : await sharp(original).webp({ quality: 82 }).toBuffer();
+        const newName = entry.entryName.replace(ZIP_IMAGE_EXT_RE, `.${format}`);
+        outZip.addFile(newName, converted);
+        okCount++;
+      } catch (e) {
+        failCount++; // satu file corrupt/bukan gambar valid gak boleh gagalin semuanya
+      }
+    }
+
+    if (!okCount) {
+      await tgSend('Semua file di ZIP gagal dikonversi (mungkin bukan gambar yang valid). Dibatalin.');
+      return;
+    }
+
+    const outBuffer = outZip.toBuffer();
+    const baseName = (state.filename || 'gambar.zip').replace(/\.zip$/i, '') || 'gambar';
+    await tgSendDocument(
+      outBuffer,
+      `${baseName}-${format}.zip`,
+      `Selesai — ${okCount} gambar dikonversi ke ${format.toUpperCase()}${failCount ? `, ${failCount} dilewatin karena gagal` : ''}.`
+    );
+  } catch (e) {
+    await tgSend(`Gagal convert ZIP: ${escHtml(e.message)}`);
   }
 }
 
@@ -1078,6 +1318,29 @@ async function handleStateReply(chatId, message, state) {
     return; // state tetap aktif
   }
 
+  if (state.action === 'awaiting_resize_image') {
+    await tgSend('Itu bukan gambar ya. Kirim gambarnya (disaranin sebagai Dokumen/File biar kualitasnya gak turun), atau ketik /batal buat berhenti.');
+    return; // state tetap aktif
+  }
+
+  if (state.action === 'awaiting_resize_target') {
+    // Di sini SATU-SATUNYA jawaban valid berupa: angka KB (teks), atau tombol
+    // preset (ditangani lewat callback, bukan lewat sini). Kalau yang masuk
+    // teks tapi bukan angka, minta ulang.
+    const n = parseFloat((message.text || '').replace(',', '.').trim());
+    if (Number.isFinite(n)) {
+      await cmdResizeRun(chatId, n);
+      return;
+    }
+    await tgSend('Ketik angka target ukurannya dalam KB (misal: 350), atau pencet salah satu tombol di atas, atau /batal buat berhenti.');
+    return; // state tetap aktif
+  }
+
+  if (state.action === 'awaiting_convertzip_file') {
+    await tgSend('Kirim file ZIP-nya sebagai Dokumen ya (bukan teks/foto), atau /batal buat berhenti.');
+    return; // state tetap aktif
+  }
+
   if (state.action === 'awaiting_find_keyword') {
     if (!text) {
       await tgSend('Kata kuncinya kosong, coba ketik lagi, atau /batal buat berhenti.');
@@ -1124,6 +1387,18 @@ async function processCallback(cq) {
       'Kirim gambar yang mau dikonversi.\n\nDisaranin kirim sebagai <b>Dokumen/File</b> (bukan Foto/Galeri), soalnya kalau dikirim sebagai foto, Telegram udah otomatis ngompres/resize gambarnya duluan sebelum nyampe ke bot — hasil convert-nya jadi gak seoptimal itu.'
     );
   }
+  if (data === 'menu:resizeimg') {
+    await setState(chatId, { action: 'awaiting_resize_image' });
+    return tgSendOrEdit(
+      chatId, messageId,
+      'Kirim gambar yang mau di-resize ke target ukuran tertentu.\n\nDisaranin kirim sebagai <b>Dokumen/File</b> (bukan Foto/Galeri) biar kualitas awalnya gak keburu turun.'
+    );
+  }
+  if (data === 'menu:convertzip') {
+    await setState(chatId, { action: 'awaiting_convertzip_file' });
+    return tgSendOrEdit(chatId, messageId, `Kirim file ZIP berisi gambar-gambar yang mau dikonversi (sebagai Dokumen). Maks ${MAX_ZIP_IMAGES} gambar per ZIP biar gak timeout.`);
+  }
+  if (data === 'menu:statsbot') return cmdStatsBot();
 
   if (data === 'thumb:main') {
     try {
@@ -1226,6 +1501,24 @@ async function processCallback(cq) {
     await tgSendOrEdit(chatId, messageId, 'Oke, dibatalin. Ketik /convertimg buat mulai lagi.', mainMenuKeyboard());
     return;
   }
+  if (data.startsWith('resizeimg:')) {
+    const val = data.slice('resizeimg:'.length);
+    if (val === 'cancel') {
+      await clearState(chatId);
+      await tgSendOrEdit(chatId, messageId, 'Oke, dibatalin. Ketik /resizeimg buat mulai lagi.', mainMenuKeyboard());
+      return;
+    }
+    const kb = parseInt(val, 10);
+    await cmdResizeRun(chatId, kb);
+    return;
+  }
+  if (data === 'convertzip:webp') { await cmdConvertZipRun(chatId, 'webp'); return; }
+  if (data === 'convertzip:avif') { await cmdConvertZipRun(chatId, 'avif'); return; }
+  if (data === 'convertzip:cancel') {
+    await clearState(chatId);
+    await tgSendOrEdit(chatId, messageId, 'Oke, dibatalin. Ketik /convertzip buat mulai lagi.', mainMenuKeyboard());
+    return;
+  }
 
   await tgSend('Tombol gak dikenal (mungkin basi). Coba /menu lagi.');
 }
@@ -1283,6 +1576,25 @@ async function processUpdate(update) {
       return;
     }
 
+    // Pola yang sama lagi buat /resizeimg.
+    if ((message.photo || message.document) && message.caption && message.caption.trim().toLowerCase().startsWith('/resizeimg')) {
+      await clearState(chatId);
+      if (message.document) {
+        await cmdResizeAskTarget(chatId, message.document.file_id, true, message.document.file_name);
+      } else {
+        const largest = message.photo[message.photo.length - 1];
+        await cmdResizeAskTarget(chatId, largest.file_id, false, null);
+      }
+      return;
+    }
+
+    // /convertzip cuma masuk akal buat dokumen (ZIP gak bisa dikirim sebagai "foto").
+    if (message.document && message.caption && message.caption.trim().toLowerCase().startsWith('/convertzip')) {
+      await clearState(chatId);
+      await cmdConvertZipAskFormat(chatId, message.document.file_id, message.document.file_name);
+      return;
+    }
+
     const rawText = (message.text || '').trim();
     const isCommand = rawText.startsWith('/');
 
@@ -1304,6 +1616,21 @@ async function processUpdate(update) {
             const largest = message.photo[message.photo.length - 1];
             await cmdConvertImgAskFormat(chatId, largest.file_id, false, null);
           }
+          return;
+        }
+        if ((message.photo || message.document) && state.action === 'awaiting_resize_image') {
+          await clearState(chatId);
+          if (message.document) {
+            await cmdResizeAskTarget(chatId, message.document.file_id, true, message.document.file_name);
+          } else {
+            const largest = message.photo[message.photo.length - 1];
+            await cmdResizeAskTarget(chatId, largest.file_id, false, null);
+          }
+          return;
+        }
+        if (message.document && state.action === 'awaiting_convertzip_file') {
+          await clearState(chatId);
+          await cmdConvertZipAskFormat(chatId, message.document.file_id, message.document.file_name);
           return;
         }
         await handleStateReply(chatId, message, state);
@@ -1365,6 +1692,19 @@ async function processUpdate(update) {
         await tgSend(
           'Kirim gambar yang mau dikonversi.\n\nDisaranin kirim sebagai <b>Dokumen/File</b> (bukan Foto/Galeri), soalnya kalau dikirim sebagai foto, Telegram udah otomatis ngompres/resize gambarnya duluan sebelum nyampe ke bot — hasil convert-nya jadi gak seoptimal itu.'
         );
+        break;
+      case '/resizeimg':
+        await setState(chatId, { action: 'awaiting_resize_image' });
+        await tgSend(
+          'Kirim gambar yang mau di-resize ke target ukuran tertentu.\n\nDisaranin kirim sebagai <b>Dokumen/File</b> (bukan Foto/Galeri) biar kualitas awalnya gak keburu turun.'
+        );
+        break;
+      case '/convertzip':
+        await setState(chatId, { action: 'awaiting_convertzip_file' });
+        await tgSend(`Kirim file ZIP berisi gambar-gambar yang mau dikonversi (sebagai Dokumen). Maks ${MAX_ZIP_IMAGES} gambar per ZIP biar gak timeout.`);
+        break;
+      case '/statsbot':
+        await cmdStatsBot();
         break;
       case '/find':
         await cmdFind(args.join(' '));

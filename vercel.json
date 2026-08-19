@@ -14,8 +14,17 @@
     },
     "api/survey-submit.js": {
       "maxDuration": 30
+    },
+    "api/telegram-webhook.js": {
+      "maxDuration": 60
+    },
+    "api/cron/pending-reminder.js": {
+      "maxDuration": 15
     }
   },
+  "crons": [
+    { "path": "/api/cron/pending-reminder", "schedule": "0 9 * * *" }
+  ],
   "rewrites": [
     { "source": "/survey", "destination": "/api/survey-page" },
     { "source": "/survey/", "destination": "/api/survey-page" }
