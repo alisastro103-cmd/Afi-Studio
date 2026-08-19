@@ -591,6 +591,13 @@ async function tgSendDocument(buffer, filename, caption) {
   fd.append('chat_id', chatId);
   fd.append('document', blob, filename);
   if (caption) fd.append('caption', caption);
+  // Tanpa ini, Telegram OTOMATIS nampilin dokumen yang isinya gambar sebagai
+  // preview foto biasa di chat bubble (meski dikirim lewat sendDocument,
+  // bukan sendPhoto) — bikin bingung soalnya keliatan kayak dikompres ulang
+  // padahal filenya sendiri utuh gak berubah. Set true biar Telegram
+  // nampilinnya sebagai file biasa (ada nama + ukuran), lebih jelas kalau
+  // ini emang dokumen asli, bukan foto.
+  fd.append('disable_content_type_detection', 'true');
   const resp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`, { method: 'POST', body: fd });
   const data = await resp.json();
   if (!data.ok) throw new Error(data.description || 'Gagal kirim dokumen ke Telegram');
