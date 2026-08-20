@@ -175,8 +175,13 @@ body.page-menu-locked { overflow: hidden; }
 
   #page-menu-dropdown.page-menu-dropdown {
     position: fixed;
-    top: var(--nav-h, 60px);
-    height: calc(100dvh - var(--nav-h, 60px));
+    /* top:0 + height:100dvh (bukan cuma mulai dari bawah nav-bar) SENGAJA —
+       kolom kanan selebar 260px ini udah gak dipakai sama isi apapun dari
+       nav-bar (nav-bar ikut nyempit gara-gara margin-right di body di atas),
+       jadi laci ini aman "naik" sampe paling atas layar tanpa numpuk apa-apa,
+       ngilangin celah kosong yang sempat ada di atasnya. */
+    top: 0;
+    height: 100dvh;
     width: 260px;
     max-width: 260px;
     visibility: visible !important;
