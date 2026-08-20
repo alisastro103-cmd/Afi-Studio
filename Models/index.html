@@ -167,6 +167,12 @@
             z-index: 2;
         }
         .card-image { aspect-ratio: 16/9; object-fit: cover; width: 100%; }
+
+        /* Sama kayak fix CLS di Beranda (index.html) — lihat komentar di
+           sana buat penjelasan lengkap kenapa ruang ini perlu dicadangkan. */
+        #category-filter { min-height: 40px; }
+        #content-grid { min-height: 380px; }
+        @media (min-width: 1024px) { #content-grid { min-height: 480px; } }
         .card-content { padding: 12px; }
         .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
         .card-caption { font-size: 12px; color: var(--text-sub); line-height: 1.4; }
@@ -309,7 +315,7 @@
                     </div>
      
                     <div class="flex items-center gap-4"> 
-                        <button id="search-toggle-btn" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                        <button id="search-toggle-btn" aria-label="Cari model" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
                             <i data-lucide="search" style="width: 20px;"></i>
                         </button>
 

@@ -159,6 +159,20 @@
             border-color: var(--accent-hover);
         }
         .card-image { aspect-ratio: 16/9; object-fit: cover; width: 100%; }
+
+        /* PERBAIKAN CLS (layout shift): #category-filter dan #content-grid
+           kosong total di HTML awal, baru diisi lewat JS setelah data model
+           selesai di-fetch dari API. Tanpa ruang yang dicadangkan lebih dulu,
+           area ini 0px tingginya di render pertama, terus tiba-tiba melonjak
+           setinggi beberapa baris kartu begitu datanya sampai — bikin tombol
+           "Lihat Model lainnya" dan footer di bawahnya kedorong turun
+           mendadak (ini kemungkinan besar biang utama skor CLS 0.5 yang
+           "Gagal" di PageSpeed Insights). min-height di sini gak mengubah
+           tampilan SETELAH kontennya kemuat — cuma nyadangin ruang selagi
+           nunggu, biar gak ada lompatan mendadak. */
+        #category-filter { min-height: 40px; }
+        #content-grid { min-height: 380px; }
+        @media (min-width: 1024px) { #content-grid { min-height: 480px; } }
         .card-content { padding: 12px; }
         .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
         .card-caption { font-size: 12px; color: var(--text-sub); line-height: 1.4; }
@@ -589,7 +603,7 @@
                     </nav>
 
                     <div class="flex items-center gap-4"> 
-                    <button id="search-toggle-btn" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
+                    <button id="search-toggle-btn" aria-label="Cari model" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
                         <i data-lucide="search" style="width: 20px;"></i>
                     </button>
 
@@ -734,7 +748,7 @@
     <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
         <div class="modal-box" onclick="event.stopPropagation()">
             <button id="model-fav-btn" class="modal-fav-btn" onclick="toggleCurrentModelFavorite()" aria-label="Tandai favorit"></button>
-            <img id="modal-thumb" src="" class="w-full aspect-video object-cover" loading="lazy" decoding="async">
+            <img id="modal-thumb" src="" class="w-full aspect-video object-cover" loading="lazy" decoding="async" alt="">
             <div class="p-5">
                 <h2 id="modal-title" class="text-xl font-bold mb-2"></h2>
                 <p id="modal-caption" class="text-xs mb-4 opacity-70"></p>
@@ -815,7 +829,7 @@
                 
                 grid.innerHTML = selected.map(model => `
                     <article class="model-card" onclick="openModal(${MODELS.indexOf(model)})">
-                        <img src="${model.thumb}" class="card-image" loading="lazy">
+                        <img src="${model.thumb}" class="card-image" loading="lazy" alt="${(model.name || "Thumbnail model").replace(/"/g, "&quot;")}">
                         <div class="card-content">
                             <div class="card-title">${model.name}</div>
                             <div class="card-caption">${model.caption}</div>
@@ -865,7 +879,18 @@
                 imgTag.src = item.img;
                 imgTag.className = 'banner-slide';
                 imgTag.alt = 'Banner Ads';
-                imgTag.loading = 'lazy';
+                // Slide PERTAMA sengaja TIDAK lazy — dia langsung kelihatan
+                // begitu halaman dibuka (ini elemen LCP/Largest Contentful
+                // Paint di halaman ini), jadi lazy-load malah nunda-nunda
+                // render-nya dan bikin skor LCP di PageSpeed Insights jelek.
+                // Slide ke-2 dst tetap lazy karena baru kelihatan kalau user
+                // geser slider-nya.
+                if (index === 0) {
+                    imgTag.loading = 'eager';
+                    imgTag.fetchPriority = 'high';
+                } else {
+                    imgTag.loading = 'lazy';
+                }
                 imgTag.decoding = 'async';
                 linkTag.appendChild(imgTag);
                 slider.appendChild(linkTag);

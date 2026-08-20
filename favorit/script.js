@@ -89,7 +89,7 @@ function closeVideoModal() {
 function modelCardHtml(model, index) {
     return `
         <article class="model-card" onclick="openModal(${index})">
-            <img src="${model.thumb}" class="card-image" loading="lazy">
+            <img src="${model.thumb}" class="card-image" loading="lazy" alt="${(model.name || "Thumbnail model").replace(/"/g, "&quot;")}">
             ${model.app_target ? `<span class="app-badge">${model.app_target}</span>` : ''}
             <div class="card-content">
                 <div class="card-title">${model.name}</div>

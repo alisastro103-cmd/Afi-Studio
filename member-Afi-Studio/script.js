@@ -57,7 +57,7 @@ function renderMembers() {
         members.forEach((member, index) => {
             container.innerHTML += `
                 <div class="id-card" style="animation-delay: ${index * 0.05}s;" onclick="openModal('${genId}', ${index})">
-                    <img src="${member.foto}" class="profile-img" loading="lazy" decoding="async">
+                    <img src="${member.foto}" class="profile-img" loading="lazy" decoding="async" alt="${(member.nama || "Foto member").replace(/"/g, "&quot;")}">
                     <div class="member-name-box"><span class="member-name">${member.nama}</span></div>
                 </div>`;
         });
@@ -90,7 +90,7 @@ function openModal(gen, index) {
 
     document.getElementById('modalBody').innerHTML = `
         <div class="modal-banner">
-            <img src="${m.foto}" loading="lazy" decoding="async">
+            <img src="${m.foto}" loading="lazy" decoding="async" alt="${(m.nama || "Foto member").replace(/"/g, "&quot;")}">
         </div>
         <div class="modal-details">
             <div class="status-icon">${m.identitas}</div>
