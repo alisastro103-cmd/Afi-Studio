@@ -1,6 +1,14 @@
 // Data video dimuat dari videos.json (lihat loadVideos di bawah)
 let VIDEOS = [];
 
+// Skeleton loading buat grid utama — tampil segera, diganti konten asli
+// begitu loadVideos() kelar (lihat renderVideos di bawah).
+(function showInitialVideoSkeleton() {
+  const grid = document.getElementById('content-grid');
+  if (!grid || typeof skeletonVideoCardsHtml !== 'function') return;
+  grid.innerHTML = skeletonVideoCardsHtml(countGridColumns(grid, 2) * 2, 'tutorial');
+})();
+
 // --- Badge "Baru" ---
 // Video dianggap "Baru" kalau field `added` di videos.json masih dalam
 // rentang NEW_BADGE_DAYS hari terakhir dari hari ini. Ganti angka ini

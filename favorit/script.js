@@ -5,6 +5,17 @@ let MODELS = [];
 let currentVideo = null;
 let currentModel = null;
 
+// Skeleton loading buat kedua grid favorit — tampil segera saat halaman
+// dibuka, diganti konten asli (atau pesan "belum ada") begitu
+// loadFavoritesData() kelar di bawah.
+(function showInitialFavoriteSkeletons() {
+  if (typeof skeletonModelCardsHtml !== 'function' || typeof skeletonVideoCardsHtml !== 'function') return;
+  const videoGrid = document.getElementById('video-fav-grid');
+  if (videoGrid) videoGrid.innerHTML = skeletonVideoCardsHtml(countGridColumns(videoGrid, 2) * 2, 'tutorial');
+  const modelGrid = document.getElementById('model-fav-grid');
+  if (modelGrid) modelGrid.innerHTML = skeletonModelCardsHtml(countGridColumns(modelGrid, 2) * 2);
+})();
+
 function extractYouTubeId(url) {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
     return match ? match[1] : null;

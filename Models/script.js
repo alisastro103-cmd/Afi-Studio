@@ -7,6 +7,19 @@ let bannerData = [];
 // Data model sekarang dimuat dari Models/models.json (lihat loadModels di bawah)
 let MODELS = [];
 
+// Tampilkan skeleton loading (efek mengkilap) SEGERA begitu script ini
+// jalan — sebelum fetch data model selesai — biar user gak lihat area
+// kosong pas nunggu. Jumlahnya otomatis nyesuain jumlah kolom grid yang
+// lagi aktif (2 di HP, 3-4 di tablet/desktop, ngikutin lebar layar/zoom
+// browser saat itu). Diganti konten asli begitu loadModels() kelar
+// (lihat renderModels & renderCategoryButtons di bawah).
+(function showInitialModelSkeleton() {
+  const grid = document.getElementById('content-grid');
+  if (!grid || typeof skeletonModelCardsHtml !== 'function') return;
+  const cols = countGridColumns(grid, 2);
+  grid.innerHTML = skeletonModelCardsHtml(cols * 2);
+})();
+
 let currentModel = null;
 
 let CATEGORIES = ["Semua"];

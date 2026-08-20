@@ -580,6 +580,7 @@
     <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
     <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
     <link rel="stylesheet" href="/css/page-menu-drawer.css">
+    <link rel="stylesheet" href="/css/skeleton-shimmer.css">
 </head>
  
 <body class="h-full">
@@ -779,6 +780,7 @@
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--accent)] text-white px-6 py-3 rounded-full font-bold text-sm translate-y-20 transition-transform shadow-lg" style="z-index: 200;">Link Disalin!</div>
  
     <script src="/favorites.js"></script>
+    <script src="/skeleton-loading.js"></script>
     <script src="Models/script.js"></script>
     <script src="/theme-toggle.js" defer></script>
 
@@ -1031,6 +1033,18 @@
  
         // --- VIDEO & TUTORIAL (dimuat dari videos.json) ---
         let VIDEOS = [];
+
+        // Skeleton loading buat baris video horizontal — tampil segera,
+        // diganti konten asli begitu loadVideos() kelar (lihat renderVideos
+        // di bawah). #video-section defaultnya display:none, jadi perlu
+        // ditampilin dulu di sini biar skeleton-nya kelihatan.
+        (function showInitialVideoSkeleton() {
+            const section = document.getElementById('video-section');
+            const wrap = document.getElementById('video-scroll');
+            if (!section || !wrap || typeof skeletonVideoCardsHtml !== 'function') return;
+            wrap.innerHTML = skeletonVideoCardsHtml(4, 'video');
+            section.style.display = '';
+        })();
 
         // Sama persis dengan tutorial/script.js — dipertahankan sinkron di 2 tempat
         // (bukan modul bersama) karena halaman ini masih pakai <script> inline.

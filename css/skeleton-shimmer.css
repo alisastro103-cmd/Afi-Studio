@@ -1,0 +1,54 @@
+/* =========================================================================
+   Afi Studio — Skeleton Loading (efek "mengkilap" ala YouTube/IG/TikTok/Discord)
+   -------------------------------------------------------------------------
+   Dipakai buat nampilin kotak-kotak placeholder yang bentuknya SAMA PERSIS
+   kayak kartu Model / Video asli (numpang class layout yang udah ada:
+   .card-image, .video-thumb, .tutorial-thumb, dst — supaya ukuran/aspect-
+   ratio-nya otomatis konsisten tanpa perlu didefinisikan ulang di sini),
+   selagi data aslinya masih di-fetch dari API. Begitu data datang, skeleton
+   ini diganti sama konten asli lewat JS (lihat skeleton-loading.js).
+
+   File ini sengaja dipisah & di-load lewat <link> di halaman yang
+   menampilkan Model dan/atau Video (Beranda, Models, Favorit, Tutorial).
+   ========================================================================= */
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--border);
+}
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Garis cahaya yang nyapu dari kiri ke kanan berulang-ulang */
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text) 14%, transparent),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1.6s ease-in-out infinite;
+}
+@keyframes skeleton-sweep {
+  100% { transform: translateX(100%); }
+}
+
+/* Garis-garis pendek buat placeholder teks (judul/caption) */
+.skeleton-line {
+  border-radius: 4px;
+  height: 12px;
+}
+.skeleton-line-title { width: 75%; height: 15px; margin-top: 10px; }
+.skeleton-line-caption { width: 92%; height: 11px; margin-top: 8px; }
+
+/* Kartu skeleton gak boleh bisa diklik/dipilih teksnya, dan disembunyikan
+   dari pembaca layar (bukan konten sungguhan, cuma placeholder visual) */
+.skeleton-card { pointer-events: none; user-select: none; }
+
+/* Kalau user mengaktifkan "reduce motion" di HP-nya, matiin animasinya —
+   tetap kelihatan sebagai kotak abu-abu placeholder, cuma gak nyapu-nyapu. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after { animation: none; }
+}
