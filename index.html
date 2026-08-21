@@ -1146,8 +1146,15 @@
         }
 
         async function loadVideos() {
+            // minDelay: skeleton loading dipaksa kelihatan minimal ~350ms
+            // walau datanya beres lebih cepat dari itu. Videos.json/API
+            // kadang beres SANGAT cepat (apalagi kalau di-cache), jadi
+            // skeleton-nya bisa aja cuma "berkedip" sepersekian detik dan
+            // gak sempat kelihatan sama mata — ini jaga-jaga biar animasi
+            // shimmer-nya selalu sempat kelihatan barang sebentar.
+            const minDelay = new Promise(resolve => setTimeout(resolve, 350));
             try {
-                const res = await fetch('/api/data/videos');
+                const [res] = await Promise.all([fetch('/api/data/videos'), minDelay]);
                 VIDEOS = await res.json();
             } catch (e) {
                 VIDEOS = [];

@@ -82,15 +82,6 @@
 
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 
-        .back-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text);
-            padding: 5px;
-            margin-right: 10px;
-        }
-
         .category-header {
             display: inline-flex;
             align-items: center;
@@ -109,14 +100,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes cardRevealUp {
-            from { opacity: 0; transform: translateY(24px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fav-grid .tutorial-card,
-        .fav-grid .model-card {
-            animation: cardRevealUp 0.45s ease-out both;
-        }
+        .nav-brand { margin-left: 6px; }
 
         /* Grid favorit: 2-4 kolom, wrap ke bawah, ada jarak di setiap sisi kartu */
         .fav-grid {
@@ -245,10 +229,7 @@
             <nav class="nav-bar">
                 <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
                     <div class="flex items-center">
-                        <a href="../index.html" class="back-btn">
-                            <i data-lucide="arrow-left" style="width: 24px;"></i>
-                        </a>
-                        <div class="cursor-pointer flex items-center gap-1">
+                        <div class="cursor-pointer flex items-center gap-1 nav-brand">
                             <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
                             <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
                                 Afi-Studio

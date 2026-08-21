@@ -152,11 +152,6 @@ function renderVideos(filter = '') {
         grid.innerHTML = filtered.map(v => videoCardHtml(v, VIDEOS.indexOf(v))).join('');
     }
     if (typeof lucide !== 'undefined') lucide.createIcons();
-
-    const cards = grid.querySelectorAll('.tutorial-card');
-    cards.forEach((card, i) => {
-        card.style.animationDelay = `${Math.min(i * 40, 400)}ms`;
-    });
 }
 
 // Merender section "Baru saja dinonton" (riwayat nonton beneran, urut dari
@@ -241,8 +236,12 @@ if (searchInputEl) {
 }
 
 async function loadVideos() {
+    // Lihat catatan yang sama di index.html loadVideos() — skeleton dipaksa
+    // kelihatan minimal ~350ms biar gak "berkedip" doang kalau datanya beres
+    // kelewat cepat.
+    const minDelay = new Promise(resolve => setTimeout(resolve, 350));
     try {
-        const res = await fetch('/api/data/videos');
+        const [res] = await Promise.all([fetch('/api/data/videos'), minDelay]);
         VIDEOS = await res.json();
     } catch (err) {
         console.error('Gagal memuat videos.json:', err);
