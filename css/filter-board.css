@@ -127,11 +127,15 @@
 .filter-dropdown-btn.open svg {
   transform: rotate(180deg);
 }
+/* Sengaja TIDAK diberi warna aksen (biru) waktu ada kategori aktif —
+   biar label dropdown selalu konsisten warnanya (sama kayak "Semua"),
+   baik lagi default maupun lagi milih kategori tertentu. */
 .filter-dropdown-btn.has-active {
-  color: var(--accent);
+  color: var(--text);
 }
 .filter-dropdown-btn.has-active svg {
-  color: var(--accent);
+  color: var(--text);
+  opacity: 0.75;
 }
 
 /* --- Laci (drawer) kategori: TAMPIL SEBAGAI POPUP KECIL MELAYANG di
