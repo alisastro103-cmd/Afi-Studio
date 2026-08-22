@@ -173,7 +173,7 @@
     .error-msg.show { display: block; }
 
     /* Tombol "Keluar dari Survey" - nempel di atas progress bar, cuma tampil pas lagi ngisi survey */
-    .exit-survey-row { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+    .exit-survey-row { display: flex; justify-content: center; margin-top: 14px; }
     .exit-survey-btn {
       display: inline-flex; align-items: center; gap: 6px;
       background: none; border: none; cursor: pointer;
@@ -384,12 +384,6 @@
     </div>
 
     <div id="survey-wrap" class="hidden">
-      <div class="exit-survey-row">
-        <button type="button" class="exit-survey-btn" id="exit-survey-btn" onclick="attemptNavigate('/survey/')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
-          Keluar dari Survey
-        </button>
-      </div>
       <div class="progress-wrap">
         <div class="progress-label">
           <span>Progres</span>
@@ -406,6 +400,13 @@
       <form id="survey-form"></form>
       <button type="button" class="submit-btn" id="submit-btn">Kirim Jawaban</button>
       <div class="error-msg" id="submit-error"></div>
+
+      <div class="exit-survey-row">
+        <button type="button" class="exit-survey-btn" id="exit-survey-btn" onclick="attemptNavigate('/survey/')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+          Keluar dari Survey
+        </button>
+      </div>
     </div>
 
     <div id="thankyou-state" class="state-box hidden">
@@ -448,9 +449,13 @@
     // ====== Konfirmasi "Keluar dari Survey" ======
     // Nanya konfirmasi kalau: (a) ada pertanyaan wajib yang belum dijawab, atau
     // (b) surveynya gak punya pertanyaan wajib sama sekali tapi belum ada satupun yang dijawab.
+    // Cuma nanya SEKALI: begitu user konfirmasi lewat modal kita, dialog bawaan
+    // browser (beforeunload) sengaja dimatikan dulu (lihat allowUnload) biar gak nanya dobel.
     let pendingNavUrl = null;
+    let allowUnload = false;
 
     function hasUnfinishedAnswers() {
+      if (allowUnload) return false;
       const wrap = el('survey-wrap');
       if (!wrap || wrap.classList.contains('hidden')) return false;
       const cards = Array.from(document.querySelectorAll('.question-card'));
@@ -472,6 +477,7 @@
     function closeExitModal() { el('exit-confirm-overlay').classList.remove('open'); pendingNavUrl = null; }
     function confirmExit() {
       const url = pendingNavUrl || '/survey/';
+      allowUnload = true; // sudah konfirmasi lewat modal kita, jangan biarin beforeunload nanya lagi
       closeExitModal();
       location.href = url;
     }
@@ -488,7 +494,8 @@
       attemptNavigate(link.href);
     }, true);
 
-    // Cegat nutup tab / refresh / tombol back browser.
+    // Cegat nutup tab / refresh / tombol back browser (cuma jalan kalau belum
+    // dikonfirmasi lewat modal kita di atas, lihat allowUnload).
     window.addEventListener('beforeunload', function (e) {
       if (hasUnfinishedAnswers()) {
         e.preventDefault();
