@@ -92,12 +92,20 @@
             align-items: center;
             gap: 10px;
             font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0;
+            color: var(--text);
+            margin-left: 10px;
+        }
+        @media (min-width: 640px) {
+            .category-header { font-size: 28px; margin-left: 16px; }
         }
         .category-header-icon {
             width: 22px;
             height: 22px;
             flex-shrink: 0;
-            color: #fff;
+            color: var(--text);
         }
 
         /* Transisi masuk konten halaman, senada dengan halaman lain (member-Afi-Studio, Models) */
@@ -414,7 +422,7 @@
 
                 <div id="popular-section" class="mb-8" style="display: none;">
                     <div class="mt-2 mb-4">
-                        <h2 class="category-header text-xl sm:text-2xl font-extrabold">
+                        <h2 class="category-header">
                             <svg class="category-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
                             Baru saja dinonton
                         </h2>
@@ -423,7 +431,7 @@
                 </div>
 
                 <div class="mt-2 mb-4">
-                    <h2 class="category-header text-xl sm:text-2xl font-extrabold">
+                    <h2 class="category-header">
                         <svg class="category-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="15" height="13" rx="2"></rect><path d="M17 10.5 22 7v11l-5-3.5"></path></svg>
                         Semua Video &amp; Tutorial
                     </h2>
