@@ -123,7 +123,7 @@
     .submit-btn {
       width: 100%;
       background: var(--accent-hover);
-      color: #0F172A;
+      color: #fff;
       font-weight: 700;
       font-family: 'Outfit', sans-serif;
       padding: 14px;
@@ -160,7 +160,7 @@
     .survey-list-meta { font-size: 11px; color: var(--text-light); margin-bottom: 12px; }
     .survey-list-actions { display: flex; gap: 8px; }
     .survey-list-actions .fill-btn {
-      flex: 1; text-align: center; background: var(--accent-hover); color: #0F172A; font-weight: 700;
+      flex: 1; text-align: center; background: var(--accent-hover); color: #fff; font-weight: 700;
       font-family: 'Outfit', sans-serif; padding: 10px; border: none; border-radius: 8px; font-size: 13px;
       cursor: pointer; text-decoration: none; display: block;
     }
@@ -173,6 +173,45 @@
     .hidden { display: none !important; }
     .error-msg { font-size: 12px; color: #EF4444; margin-top: 8px; display: none; }
     .error-msg.show { display: block; }
+
+    /* Tombol "Keluar dari Survey" - nempel di atas progress bar, cuma tampil pas lagi ngisi survey */
+    .exit-survey-row { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+    .exit-survey-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: none; cursor: pointer;
+      font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 700;
+      color: #EF4444; padding: 4px 2px;
+    }
+    .exit-survey-btn svg { width: 15px; height: 15px; }
+    .exit-survey-btn:active { opacity: 0.7; }
+
+    /* Modal konfirmasi keluar survey */
+    .exit-confirm-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(15,23,42,0.55);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .exit-confirm-overlay.open { opacity: 1; pointer-events: all; }
+    .exit-confirm-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 24px 20px; max-width: 340px; width: 100%; text-align: center;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.28);
+      transform: scale(0.94); transition: transform 0.2s ease;
+    }
+    .exit-confirm-overlay.open .exit-confirm-box { transform: scale(1); }
+    .exit-confirm-box svg { width: 38px; height: 38px; color: #F59E0B; margin: 0 auto 12px; display: block; }
+    .exit-confirm-title { font-size: 16px; font-weight: 800; font-family: 'Outfit', sans-serif; margin-bottom: 6px; }
+    .exit-confirm-sub { font-size: 13px; color: var(--text-light); margin-bottom: 20px; line-height: 1.5; }
+    .exit-confirm-actions { display: flex; gap: 10px; }
+    .exit-confirm-actions button {
+      flex: 1; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700;
+      font-family: 'Outfit', sans-serif; cursor: pointer; border: none;
+    }
+    .exit-confirm-stay { background: var(--accent-hover); color: #fff; }
+    .exit-confirm-stay:active { opacity: 0.85; }
+    .exit-confirm-leave { background: #EF4444; color: #fff; }
+    .exit-confirm-leave:active { opacity: 0.85; }
 
     @keyframes afiStateIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -280,7 +319,7 @@
   <nav class="nav-bar">
     <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
       <div class="flex items-center">
-        <div class="cursor-pointer flex items-center gap-1 nav-brand" onclick="location.href='/'">
+        <div class="cursor-pointer flex items-center gap-1 nav-brand" onclick="attemptNavigate('/')">
           <img src="/icon.png" alt="Logo" class="w-10 h-10 object-contain">
           <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">Afi-Studio</div>
         </div>
@@ -347,6 +386,12 @@
     </div>
 
     <div id="survey-wrap" class="hidden">
+      <div class="exit-survey-row">
+        <button type="button" class="exit-survey-btn" id="exit-survey-btn" onclick="attemptNavigate('/survey/')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+          Keluar dari Survey
+        </button>
+      </div>
       <div class="progress-wrap">
         <div class="progress-label">
           <span>Progres</span>
@@ -374,6 +419,18 @@
     </div>
   </main>
 
+  <div class="exit-confirm-overlay" id="exit-confirm-overlay">
+    <div class="exit-confirm-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      <div class="exit-confirm-title">Yakin ingin keluar dari survey?</div>
+      <div class="exit-confirm-sub">Masih ada pertanyaan wajib yang belum kamu jawab. Kalau keluar sekarang, jawaban yang sudah diisi tidak akan tersimpan.</div>
+      <div class="exit-confirm-actions">
+        <button type="button" class="exit-confirm-stay" onclick="closeExitModal()">Tetap di Survey</button>
+        <button type="button" class="exit-confirm-leave" onclick="confirmExit()">Ya, Keluar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const params = new URLSearchParams(location.search);
     const surveyId = params.get('id');
@@ -390,6 +447,58 @@
       el('error-sub').textContent = sub;
       showState('error-state');
     }
+
+    // ====== Konfirmasi "Keluar dari Survey" ======
+    // Nanya konfirmasi kalau: (a) ada pertanyaan wajib yang belum dijawab, atau
+    // (b) surveynya gak punya pertanyaan wajib sama sekali tapi belum ada satupun yang dijawab.
+    let pendingNavUrl = null;
+
+    function hasUnfinishedAnswers() {
+      const wrap = el('survey-wrap');
+      if (!wrap || wrap.classList.contains('hidden')) return false;
+      const cards = Array.from(document.querySelectorAll('.question-card'));
+      if (!cards.length) return false;
+      const requiredCards = cards.filter(c => c.dataset.required === '1');
+      if (requiredCards.length) return requiredCards.some(c => !isQuestionAnswered(c));
+      return !cards.some(isQuestionAnswered);
+    }
+
+    function attemptNavigate(url) {
+      if (hasUnfinishedAnswers()) {
+        pendingNavUrl = url;
+        openExitModal();
+      } else {
+        location.href = url;
+      }
+    }
+    function openExitModal() { el('exit-confirm-overlay').classList.add('open'); }
+    function closeExitModal() { el('exit-confirm-overlay').classList.remove('open'); pendingNavUrl = null; }
+    function confirmExit() {
+      const url = pendingNavUrl || '/survey/';
+      closeExitModal();
+      location.href = url;
+    }
+
+    // Cegat klik di semua link internal/eksternal (nav, menu halaman, dll) selama masih
+    // ngisi survey dan ada jawaban wajib yang bolong.
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest('a[href]');
+      if (!link || link.closest('.exit-confirm-box')) return;
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+      if (!hasUnfinishedAnswers()) return;
+      e.preventDefault();
+      attemptNavigate(link.href);
+    }, true);
+
+    // Cegat nutup tab / refresh / tombol back browser.
+    window.addEventListener('beforeunload', function (e) {
+      if (hasUnfinishedAnswers()) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
 
     // Cookie ringan buat nyegah orang isi survey yang sama 2x dari device/browser yang sama.
     // Ini cuma lapisan UX (biar gak nampilin form lagi ke orang yang jelas2 udah isi) —
