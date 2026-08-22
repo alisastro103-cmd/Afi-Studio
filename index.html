@@ -51,6 +51,7 @@
  
     <link rel="stylesheet" href="/dist/output.css">
     <script src="/icons/lucide-local.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function () { if (window.lucide) window.lucide.createIcons(); });</script>
     <link rel="stylesheet" href="/fonts/fonts.css">
  
     <style>
@@ -335,15 +336,16 @@
         .category-header {
             display: block;
             font-family: 'Outfit', sans-serif;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 800;
             letter-spacing: 0;
             text-transform: none;
             opacity: 1;
             color: var(--text);
+            margin-left: 10px;
         }
         @media (min-width: 640px) {
-            .category-header { font-size: 24px; }
+            .category-header { font-size: 28px; margin-left: 16px; }
         }
  
         .site-footer {
