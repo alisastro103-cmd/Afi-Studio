@@ -123,8 +123,8 @@
            tampilan SETELAH kontennya kemuat — cuma nyadangin ruang selagi
            nunggu, biar gak ada lompatan mendadak. */
         #category-filter { min-height: 40px; }
-        #content-grid { min-height: 380px; }
-        @media (min-width: 1024px) { #content-grid { min-height: 480px; } }
+        #content-grid.grid-loading { min-height: 380px; }
+        @media (min-width: 1024px) { #content-grid.grid-loading { min-height: 480px; } }
         .card-content { padding: 12px; }
         .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
         .card-caption { font-size: 12px; color: var(--text-sub); line-height: 1.4; }
@@ -333,12 +333,17 @@
         }
  
         .category-header {
-            display: inline-flex;
-            align-items: center;
+            display: block;
             font-family: 'Outfit', sans-serif;
-            background: var(--surface);
-            padding: 8px 14px;
-            border-radius: 3px;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: none;
+            opacity: 1;
+            color: var(--text);
+        }
+        @media (min-width: 640px) {
+            .category-header { font-size: 24px; }
         }
  
         .site-footer {
@@ -639,10 +644,10 @@
             </div>
 
             <div class="mt-1 mb-2">
-                <h2 id="category-title" class="category-header text-xs font-bold uppercase tracking-widest opacity-60">SEMUA ITEM</h2>
+                <h2 id="category-title" class="category-header">SEMUA ITEM</h2>
             </div>
 
-            <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" id="content-grid"></section>
+            <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 grid-loading" id="content-grid"></section>
  
             <div class="mt-8 flex justify-center">
                 <a href="Models/index.html" class="px-8 py-3 rounded-xl font-bold bg-[var(--accent)] text-white text-sm transition-transform hover:scale-105 active:scale-95 shadow-lg">
@@ -651,7 +656,7 @@
             </div>
  
             <div class="mt-8" id="video-section" style="display:none;">
-                <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Video &amp; Tutorial</h2>
+                <h2 class="category-header mb-4">Video &amp; Tutorial</h2>
                 <div class="flex gap-1 overflow-x-auto pb-2 no-scrollbar video-scroll" id="video-scroll"></div>
             </div>
 
@@ -808,6 +813,9 @@
                         </div>
                     </article>
                 `).join('');
+                // Konten asli sudah terpasang -> lepas reservasi tinggi anti-CLS,
+                // biar board tidak nyisain ruang kosong panjang di bawah kartu.
+                grid.classList.remove('grid-loading');
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             } else {
                 originalRenderModels(filter);

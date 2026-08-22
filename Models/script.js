@@ -272,6 +272,11 @@ function renderModels(filter = '') {
             </article>
         `).join('');
     }
+    // Konten asli sudah terpasang -> lepas reservasi tinggi anti-CLS
+    // (lihat #content-grid.grid-loading di CSS), supaya board tidak lagi
+    // menyisakan ruang kosong panjang di bawah kartu kalau kartunya sedikit.
+    grid.classList.remove('grid-loading');
+
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 

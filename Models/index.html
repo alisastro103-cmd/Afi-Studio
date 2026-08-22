@@ -106,8 +106,8 @@
         /* Sama kayak fix CLS di Beranda (index.html) — lihat komentar di
            sana buat penjelasan lengkap kenapa ruang ini perlu dicadangkan. */
         #category-filter { min-height: 40px; }
-        #content-grid { min-height: 380px; }
-        @media (min-width: 1024px) { #content-grid { min-height: 480px; } }
+        #content-grid.grid-loading { min-height: 380px; }
+        @media (min-width: 1024px) { #content-grid.grid-loading { min-height: 480px; } }
         .card-content { padding: 12px; }
         .card-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
         .card-caption { font-size: 12px; color: var(--text-sub); line-height: 1.4; }
@@ -142,12 +142,17 @@
         .modal-fav-btn.is-favorited { color: #FBBF24; }
  
         .category-header {
-            display: inline-flex;
-            align-items: center;
+            display: block;
             font-family: 'Outfit', sans-serif;
-            background: var(--surface);
-            padding: 8px 14px;
-            border-radius: 3px;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: none;
+            opacity: 1;
+            color: var(--text);
+        }
+        @media (min-width: 640px) {
+            .category-header { font-size: 24px; }
         }
 
         .footer-text {
@@ -321,11 +326,10 @@
                 </div>
 
                 <div class="mt-1 mb-2">
-                    <h2 id="category-title" class="category-header text-xs font-bold uppercase tracking-widest opacity-60">SEMUA ITEM</h2>
+                    <h2 id="category-title" class="category-header">SEMUA ITEM</h2>
                 </div>
 
-                <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" id="content-grid">
-                    </section>
+                <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 grid-loading" id="content-grid"></section>
             </main>
         </div>
 
