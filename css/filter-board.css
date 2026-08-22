@@ -2,11 +2,11 @@
    Afi Studio — Filter Board (pencarian + kategori digabung satu papan)
    -------------------------------------------------------------------------
    Dipakai di 3 halaman: Beranda (index.html), Models, dan Video & Tutorial.
-   File SHARED, jadi tampilannya otomatis SAMA PERSIS di mobile & desktop —
-   tidak ada lagi perbedaan bentuk tombol kategori antar breakpoint kayak
-   sebelumnya (dulu kotak nyaris siku-siku di satu ukuran layar, bulat penuh
-   di ukuran lain). Semua tombol di sini pakai radius bulat penuh, di semua
-   ukuran layar, titik.
+   File SHARED, jadi tampilannya otomatis SAMA PERSIS di mobile & desktop.
+
+   Klik tombol "Kategori" (atau "Aplikasi") -> muncul POPUP KECIL melayang
+   di bawah pojok kanan board, isinya daftar kategori satu baris per item
+   (bukan lagi laci lebar isi chip yang nge-wrap sampai 2 baris).
 
    Struktur HTML yang dipasangi style ini (lihat index.html / Models/index.html
    / tutorial/index.html):
@@ -133,63 +133,74 @@
   color: var(--accent);
 }
 
-/* --- Laci (drawer) yang turun ke bawah menampilkan chip kategori --- */
+/* --- Laci (drawer) kategori: TAMPIL SEBAGAI POPUP KECIL MELAYANG di
+   bawah tombol dropdown-nya (bukan lagi laci lebar isi chip yang
+   nge-wrap 2 baris penuh kayak sebelumnya). Diposisikan absolute nempel
+   ke pojok kanan board, isinya list vertikal satu kategori per baris —
+   mirip menu dropdown biasa. --- */
 .filter-drawer {
-  max-height: 0;
-  overflow: hidden;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 45;
+  width: max-content;
+  min-width: 148px;
+  max-width: calc(100vw - 32px);
   opacity: 0;
-  margin-top: 0;
-  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease,
-    margin-top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(-6px) scale(0.98);
+  visibility: hidden;
+  pointer-events: none;
+  transform-origin: top right;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
 }
 .filter-drawer.open {
-  max-height: 280px;
   opacity: 1;
-  margin-top: 10px;
-  overflow-y: auto;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+  pointer-events: auto;
 }
 .filter-drawer-panel {
-  background: color-mix(in srgb, var(--surface) 98%, transparent);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 12px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+  max-height: min(320px, 60vh);
+  overflow-y: auto;
 }
 .filter-drawer-chips {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-height: 36px;
+  flex-direction: column;
+  gap: 1px;
 }
 
-/* --- Tombol chip kategori di dalam laci: BULAT PENUH, konsisten di
-   semua ukuran layar (mobile & desktop pakai style yang sama persis). --- */
+/* --- Setiap kategori = satu baris menu (bukan chip bulat lagi). --- */
 .filter-chip-btn {
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  font-size: 12.5px;
+  width: 100%;
+  text-align: left;
+  padding: 9px 14px;
+  border-radius: 9px;
+  background: transparent;
+  border: none;
+  font-size: 13px;
   font-weight: 600;
   font-family: 'DM Sans', sans-serif;
   white-space: nowrap;
   color: var(--text);
-  opacity: 0.75;
+  opacity: 0.8;
   cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease,
-    color 0.2s ease, transform 0.15s ease;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 .filter-chip-btn:hover {
   opacity: 1;
-  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 .filter-chip-btn:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
 }
 .filter-chip-btn.active {
   background: var(--accent);
   color: #fff;
-  border-color: var(--accent);
   opacity: 1;
 }
 
