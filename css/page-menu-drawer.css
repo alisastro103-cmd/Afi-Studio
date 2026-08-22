@@ -173,6 +173,24 @@ body.page-menu-locked { overflow: hidden; }
      ketiban laci. */
   body { margin-right: 260px; }
 
+  /* SCROLLBAR BAWAAN BROWSER DIHILANGKAN (khusus desktop) — bukan cuma
+     kosmetik, ini beneran bikin bug. Browser tetap nyisain ruang buat
+     scrollbar-nya sendiri (~15-17px) DI LUAR margin-right di atas, jadi ada
+     celah sempit ekstra pas di batas antara konten (termasuk nav-bar) dan
+     laci menu — keliatan kayak garis/scrollbar aneh nyempil di situ, dan
+     nav-bar jadi kayak "kepotong" dikit sebelum nyampe ke laci. Scroll-nya
+     TETAP jalan normal (mouse wheel/trackpad/keyboard, atau scroll di
+     sidebar-nya sendiri) — cuma tampilan track/thumb-nya aja yang
+     disembunyikan, dan halaman otomatis "melebar" ngisi ruang yang tadinya
+     kepakai scrollbar itu, jadi nav-bar & konten nempel pas ke laci. */
+  html, body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Edge lama */
+  }
+  html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge baru */
+  }
+
   #page-menu-dropdown.page-menu-dropdown {
     position: fixed;
     /* top:0 + height:100dvh (bukan cuma mulai dari bawah nav-bar) SENGAJA —
