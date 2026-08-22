@@ -404,8 +404,9 @@
             gap: 16px;
         }
         @media (max-width: 640px) {
-            .site-footer-inner { grid-template-columns: 1fr; gap: 20px; }
-            .footer-col { grid-column: 1 / -1; }
+            .site-footer-inner { grid-template-columns: 1fr 1fr; gap: 24px 16px; padding: 20px 20px 4px; }
+            .footer-col-title { margin-bottom: 10px; }
+            .footer-col a { margin-bottom: 8px; }
         }
         .footer-brand { grid-column: span 1; }
         @media (max-width: 640px) { .footer-brand { grid-column: 1 / -1; } }
