@@ -81,28 +81,49 @@ function recomputeAppFilters() {
     APP_CATEGORIES = ["Semua", ...APP_CATEGORY_MASTER];
 }
 
-// Merender tombol filter kategori
+// Merender tombol filter kategori (tampil di dalam laci/drawer board pencarian)
 function renderCategoryButtons() {
     const container = document.getElementById('category-filter');
     if (!container) return;
     container.innerHTML = CATEGORIES.map(cat => `
-        <button class="filter-btn ${activeCategory === cat ? 'active' : ''}" 
+        <button class="filter-chip-btn ${activeCategory === cat ? 'active' : ''}" 
                 onclick="filterByCategory('${cat}')">
             ${cat}
         </button>
     `).join('');
+    updateCategoryDropdownLabel();
 }
 
-// Merender tombol filter kategori Target Aplikasi (baris terpisah)
+// Merender tombol filter kategori Target Aplikasi (laci terpisah)
 function renderAppCategoryButtons() {
     const container = document.getElementById('app-category-filter');
     if (!container) return;
     container.innerHTML = APP_CATEGORIES.map(cat => `
-        <button class="filter-btn ${activeAppCategory === cat ? 'active' : ''}" 
+        <button class="filter-chip-btn ${activeAppCategory === cat ? 'active' : ''}" 
                 onclick="filterByAppCategory('${cat}')">
             ${cat}
         </button>
     `).join('');
+    updateAppCategoryDropdownLabel();
+}
+
+// Label tombol dropdown "Kategori" mengikuti kategori yang lagi aktif,
+// dan dikasih warna aksen (class has-active) kalau bukan "Semua".
+function updateCategoryDropdownLabel() {
+    const label = document.getElementById('category-dropdown-label');
+    const btn = label ? label.closest('.filter-dropdown-btn') : null;
+    if (!label) return;
+    label.textContent = activeCategory === 'Semua' ? 'Kategori' : activeCategory;
+    if (btn) btn.classList.toggle('has-active', activeCategory !== 'Semua');
+}
+
+// Sama seperti di atas, tapi buat dropdown "Aplikasi" (Target Aplikasi)
+function updateAppCategoryDropdownLabel() {
+    const label = document.getElementById('app-category-dropdown-label');
+    const btn = label ? label.closest('.filter-dropdown-btn') : null;
+    if (!label) return;
+    label.textContent = activeAppCategory === 'Semua' ? 'Aplikasi' : activeAppCategory;
+    if (btn) btn.classList.toggle('has-active', activeAppCategory !== 'Semua');
 }
 
 // Fungsi filter berdasarkan kategori
@@ -116,6 +137,7 @@ function filterByCategory(cat) {
     const searchInput = document.getElementById('search-input');
     const searchTerm = searchInput ? searchInput.value : '';
     renderModels(searchTerm);
+    if (typeof window.closeFilterDrawers === 'function') window.closeFilterDrawers();
 }
 
 // Fungsi filter berdasarkan kategori Target Aplikasi (independen dari kategori model biasa)
@@ -125,6 +147,7 @@ function filterByAppCategory(cat) {
     const searchInput = document.getElementById('search-input');
     const searchTerm = searchInput ? searchInput.value : '';
     renderModels(searchTerm);
+    if (typeof window.closeFilterDrawers === 'function') window.closeFilterDrawers();
 }
 
 // Ambil data teks marquee dari marquee.json, baru render begitu siap

@@ -1,0 +1,207 @@
+/* =========================================================================
+   Afi Studio — Filter Board (pencarian + kategori digabung satu papan)
+   -------------------------------------------------------------------------
+   Dipakai di 3 halaman: Beranda (index.html), Models, dan Video & Tutorial.
+   File SHARED, jadi tampilannya otomatis SAMA PERSIS di mobile & desktop —
+   tidak ada lagi perbedaan bentuk tombol kategori antar breakpoint kayak
+   sebelumnya (dulu kotak nyaris siku-siku di satu ukuran layar, bulat penuh
+   di ukuran lain). Semua tombol di sini pakai radius bulat penuh, di semua
+   ukuran layar, titik.
+
+   Struktur HTML yang dipasangi style ini (lihat index.html / Models/index.html
+   / tutorial/index.html):
+
+     <div class="filter-board">
+       <div class="filter-board-panel">
+         <div class="filter-search"> ...input pencarian... </div>
+         <div class="filter-board-divider"></div>
+         <button class="filter-dropdown-btn" data-drawer-target="category-drawer"> ...label + chevron... </button>
+         <div class="filter-board-divider"></div>            <!-- opsional, kalau ada 2 dropdown -->
+         <button class="filter-dropdown-btn" data-drawer-target="app-category-drawer"> ... </button>
+       </div>
+       <div class="filter-drawer" id="category-drawer">
+         <div class="filter-drawer-panel"><div class="filter-drawer-chips" id="category-filter"></div></div>
+       </div>
+       <div class="filter-drawer" id="app-category-drawer">        <!-- kalau ada -->
+         <div class="filter-drawer-panel"><div class="filter-drawer-chips" id="app-category-filter"></div></div>
+       </div>
+     </div>
+   ========================================================================= */
+
+.filter-board {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  margin: 0 0 18px;
+}
+
+.filter-board-panel {
+  display: flex;
+  align-items: stretch;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+
+/* --- Kolom pencarian --- */
+.filter-search {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+.filter-search svg {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 17px;
+  height: 17px;
+  color: var(--text-sub);
+  pointer-events: none;
+}
+.filter-search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 13px 12px 13px 42px;
+  font-family: 'DM Sans', sans-serif;
+}
+.filter-search-input::placeholder {
+  color: var(--text-sub);
+  opacity: 0.85;
+}
+
+/* --- Pemisah vertikal tipis antar kolom, kayak di board referensi --- */
+.filter-board-divider {
+  width: 1px;
+  align-self: center;
+  height: 22px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* --- Tombol dropdown kategori (memicu laci turun ke bawah) --- */
+.filter-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  max-width: 132px;
+  padding: 13px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.filter-dropdown-btn:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.filter-dropdown-btn .filter-dropdown-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.filter-dropdown-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--text-sub);
+  transition: transform 0.25s ease;
+}
+.filter-dropdown-btn.open svg {
+  transform: rotate(180deg);
+}
+.filter-dropdown-btn.has-active {
+  color: var(--accent);
+}
+.filter-dropdown-btn.has-active svg {
+  color: var(--accent);
+}
+
+/* --- Laci (drawer) yang turun ke bawah menampilkan chip kategori --- */
+.filter-drawer {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-top: 0;
+  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease,
+    margin-top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.filter-drawer.open {
+  max-height: 280px;
+  opacity: 1;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+.filter-drawer-panel {
+  background: color-mix(in srgb, var(--surface) 98%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
+}
+.filter-drawer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 36px;
+}
+
+/* --- Tombol chip kategori di dalam laci: BULAT PENUH, konsisten di
+   semua ukuran layar (mobile & desktop pakai style yang sama persis). --- */
+.filter-chip-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+  color: var(--text);
+  opacity: 0.75;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease,
+    color 0.2s ease, transform 0.15s ease;
+}
+.filter-chip-btn:hover {
+  opacity: 1;
+  border-color: var(--accent);
+}
+.filter-chip-btn:active {
+  transform: scale(0.96);
+}
+.filter-chip-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+/* Layar sempit: label dropdown dikasih ruang lebih kecil biar search
+   tetap kebagian tempat cukup, dan board tidak meluber ke luar layar. */
+@media (max-width: 380px) {
+  .filter-dropdown-btn {
+    max-width: 92px;
+    padding: 13px 10px;
+  }
+  .filter-search-input {
+    padding-right: 6px;
+    font-size: 13px;
+  }
+}

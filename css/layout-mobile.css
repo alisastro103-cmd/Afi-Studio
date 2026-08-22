@@ -57,13 +57,6 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  /* Chip kategori membungkus, tidak ada chip yang terpotong. */
-  #category-filter,
-  #app-category-filter {
-    flex-wrap: wrap;
-    overflow-x: visible;
-  }
-
   /* Tetap scroller horizontal (khas mobile), lebar kartu disesuaikan. */
   #video-scroll .video-card {
     width: min(58vw, 460px);

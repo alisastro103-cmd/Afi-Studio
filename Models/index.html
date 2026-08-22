@@ -85,55 +85,9 @@
         
         .nav-brand { margin-left: 6px; }
  
-        /* Panel pencarian: melayang (floating) tepat di bawah navbar, TIDAK
-           mendorong elemen lain dan TIDAK ikut bergeser sedikit pun saat
-           halaman discroll — pakai position:fixed terhadap layar (bukan
-           sticky), jadi posisinya benar-benar diam, cuma nempel di bawah
-           navbar (var(--nav-h)). Layernya di atas konten, di bawah navbar
-           (39 vs 40) + efek kaca (blur + transparan) + sudut membulat. */
-        .search-container {
-            position: fixed;
-            left: 50%;
-            top: calc(var(--nav-h, 56px) + 16px);
-            width: calc(100% - 32px);
-            max-width: 640px;
-            z-index: 39;
-            transform: translate(-50%, -14px) scale(0.97);
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
-        }
-        .search-container.active {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-            transform: translate(-50%, 0) scale(1);
-        }
- 
-        .search-input { width: 100%; padding: 14px 18px 14px 48px; border-radius: 14px; background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px solid var(--border); color: var(--text); outline: none; font-size: 14px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
-        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .filter-btn { 
-            padding: 8px 16px; 
-            border-radius: 3px; 
-            background: var(--surface); 
-            font-size: 13px; 
-            font-weight: 600; 
-            white-space: nowrap; 
-            transition: all 0.3s ease; 
-            color: var(--text);
-            opacity: 0.6; 
-        }
-        .filter-btn.active { 
-            background: var(--accent); 
-            color: #fff; 
-            border-color: var(--accent); 
-            opacity: 1; 
-        }
- 
         /* Styling untuk Card Model agar konsisten */
         .model-card { 
             position: relative;
@@ -289,6 +243,7 @@
     <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
     <link rel="stylesheet" href="/css/page-menu-drawer.css">
     <link rel="stylesheet" href="/css/skeleton-shimmer.css">
+    <link rel="stylesheet" href="/css/filter-board.css">
 </head>
  
 <body class="h-full">
@@ -306,10 +261,6 @@
                     </div>
      
                     <div class="flex items-center gap-4"> 
-                        <button id="search-toggle-btn" aria-label="Cari model" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px;">
-                            <i data-lucide="search" style="width: 20px;"></i>
-                        </button>
-
                         <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
                             <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
                             <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
@@ -350,23 +301,41 @@
                 })();
             </script>
 
-            <div id="search-wrapper" class="search-container">
-                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" style="width: 20px;"></i>
-                <input type="text" id="search-input" class="search-input" placeholder="Cari Model, Kategori, Creator...">
-            </div>
-     
             <main class="max-w-6xl mx-auto px-4 pt-4 pb-6 sm:px-6">
-     
-                <div class="mt-2 mb-2">
+
+                <div class="filter-board">
+                    <div class="filter-board-panel">
+                        <div class="filter-search">
+                            <svg data-lucide="search"></svg>
+                            <input type="text" id="search-input" class="filter-search-input" placeholder="Cari Model, Kategori, Creator...">
+                        </div>
+                        <div class="filter-board-divider"></div>
+                        <button type="button" class="filter-dropdown-btn" data-drawer-target="category-drawer" aria-expanded="false">
+                            <span class="filter-dropdown-label" id="category-dropdown-label">Kategori</span>
+                            <svg data-lucide="chevron-down"></svg>
+                        </button>
+                        <div class="filter-board-divider"></div>
+                        <button type="button" class="filter-dropdown-btn" data-drawer-target="app-category-drawer" aria-expanded="false">
+                            <span class="filter-dropdown-label" id="app-category-dropdown-label">Aplikasi</span>
+                            <svg data-lucide="chevron-down"></svg>
+                        </button>
+                    </div>
+                    <div class="filter-drawer" id="category-drawer">
+                        <div class="filter-drawer-panel">
+                            <div class="filter-drawer-chips" id="category-filter"></div>
+                        </div>
+                    </div>
+                    <div class="filter-drawer" id="app-category-drawer">
+                        <div class="filter-drawer-panel">
+                            <div class="filter-drawer-chips" id="app-category-filter"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-1 mb-2">
                     <h2 id="category-title" class="category-header text-xs font-bold uppercase tracking-widest opacity-60">SEMUA ITEM</h2>
                 </div>
-     
-                <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="category-filter">
-                    </div>
 
-                <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar" id="app-category-filter">
-                    </div>
-     
                 <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" id="content-grid">
                     </section>
             </main>
@@ -399,25 +368,14 @@
     <script src="/skeleton-loading.js"></script>
     <script src="script.js"></script>
     <script src="/theme-toggle.js" defer></script>
+    <script src="/filter-board.js" defer></script>
  
     <script>
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         /* Menu laci samping sekarang ditangani lewat file JS terpisah, lihat penutup dokumen */
- 
-        // Logika Toggle Pencarian (Visual Only)
-        const searchToggleBtn = document.getElementById('search-toggle-btn');
-        const searchWrapper = document.getElementById('search-wrapper');
-        const searchInput = document.getElementById('search-input');
- 
-        if (searchToggleBtn) {
-            searchToggleBtn.addEventListener('click', () => {
-                searchWrapper.classList.toggle('active');
-                if (searchWrapper.classList.contains('active')) {
-                    setTimeout(() => searchInput.focus(), 300);
-                }
-            });
-        }
+        /* Laci kategori/aplikasi sekarang ditangani lewat /filter-board.js, dipakai bareng
+           dengan halaman lain (Beranda, Video & Tutorial) yang punya board serupa. */
     </script>
     <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
     <script src="/pwa-install.js" defer></script>

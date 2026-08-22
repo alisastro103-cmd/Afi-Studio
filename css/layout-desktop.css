@@ -179,30 +179,6 @@
     background: color-mix(in srgb, var(--surface) 88%, transparent);
   }
 
-  /* Filter kategori: membungkus rapi (tidak ada chip terpotong) + jarak lega. */
-  #category-filter,
-  #app-category-filter {
-    flex-wrap: wrap;
-    overflow-x: visible;
-    gap: 6px;
-    padding-bottom: 20px;
-  }
-
-  .filter-btn {
-    padding: 9px 18px;
-    border-radius: 999px;
-    opacity: 0.75;
-    transition: transform 0.18s ease, opacity 0.2s ease, background 0.2s ease,
-      border-color 0.2s ease;
-  }
-  .filter-btn:hover {
-    opacity: 1;
-    border-color: var(--accent);
-    transform: translateY(-1px);
-  }
-  .filter-btn.active {
-    opacity: 1;
-  }
 }
 
 /* ====================== 2. GRID KONTEN & KARTU ======================== */
