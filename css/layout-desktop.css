@@ -179,6 +179,12 @@
     background: color-mix(in srgb, var(--surface) 88%, transparent);
   }
 
+  /* Board marquee (ticker berjalan) dihilangkan khusus desktop; nav-bar
+     tetap tampil seperti biasa, hanya "papan" tickernya yang dibuang. */
+  .marquee-bar {
+    display: none;
+  }
+
 }
 
 /* ====================== 2. GRID KONTEN & KARTU ======================== */

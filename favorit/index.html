@@ -83,12 +83,18 @@
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 
         .category-header {
-            display: inline-flex;
-            align-items: center;
+            display: block;
             font-family: 'Outfit', sans-serif;
-            background: var(--surface);
-            padding: 8px 14px;
-            border-radius: 3px;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: none;
+            opacity: 1;
+            color: var(--text);
+            margin-left: 10px;
+        }
+        @media (min-width: 640px) {
+            .category-header { font-size: 28px; margin-left: 16px; }
         }
 
         main {
@@ -269,12 +275,12 @@
 
             <main class="max-w-6xl mx-auto px-4 pt-4 pb-6 sm:px-6">
                 <div class="mt-2 mb-4">
-                    <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">Video Favorit</h2>
+                    <h2 class="category-header">Video Favorit</h2>
                 </div>
                 <section class="fav-grid" id="video-fav-grid"></section>
 
                 <div class="mt-8 mb-4">
-                    <h2 class="category-header text-xs font-bold uppercase tracking-widest opacity-60">Model Favorit</h2>
+                    <h2 class="category-header">Model Favorit</h2>
                 </div>
                 <section class="fav-grid" id="model-fav-grid"></section>
             </main>

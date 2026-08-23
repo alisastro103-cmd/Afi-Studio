@@ -193,13 +193,13 @@ body.page-menu-locked { overflow: hidden; }
 
   #page-menu-dropdown.page-menu-dropdown {
     position: fixed;
-    /* top:0 + height:100dvh (bukan cuma mulai dari bawah nav-bar) SENGAJA —
-       kolom kanan selebar 260px ini udah gak dipakai sama isi apapun dari
-       nav-bar (nav-bar ikut nyempit gara-gara margin-right di body di atas),
-       jadi laci ini aman "naik" sampe paling atas layar tanpa numpuk apa-apa,
-       ngilangin celah kosong yang sempat ada di atasnya. */
-    top: 0;
-    height: 100dvh;
+    /* Laci dimulai TEPAT di bawah nav-bar (bukan dari y:0 lagi), pakai
+       --nav-h yang dihitung JS dari tinggi nav-bar asli. Ini ngasih ruang
+       ke nav-bar supaya bisa full-bleed sampai ujung layar (lihat rule
+       .nav-bar di bawah) tanpa ketiban laci, dan laci jadi sejajar persis
+       dengan bagian atas banner — gak nutupin banner sedikit pun. */
+    top: var(--nav-h, 64px);
+    height: calc(100dvh - var(--nav-h, 64px));
     width: 260px;
     max-width: 260px;
     visibility: visible !important;
@@ -210,4 +210,19 @@ body.page-menu-locked { overflow: hidden; }
   }
 
   .page-menu-drawer-close { display: none; }
+
+  /* Nav-bar dibuat full-bleed sampai ujung kanan layar (bukan berhenti di
+     batas kolom laci): box-nya dilebarkan 260px ke kanan lalu ditarik balik
+     dengan margin negatif, dan selisihnya dikembalikan sebagai padding
+     (box-sizing: border-box) supaya isi nav-bar (logo/menu) TETAP di posisi
+     yang sama persis seperti sebelumnya — hanya background/border yang
+     memanjang sampai tepi layar. Aman karena laci sekarang mulai dari
+     bawah nav-bar, jadi tidak ada tumpang tindih. */
+  .nav-bar,
+  .navbar {
+    box-sizing: border-box;
+    width: calc(100% + 260px);
+    margin-right: -260px;
+    padding-right: 260px;
+  }
 }
