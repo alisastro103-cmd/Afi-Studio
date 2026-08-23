@@ -173,6 +173,22 @@ body.page-menu-locked { overflow: hidden; }
      ketiban laci. */
   body { margin-right: 260px; }
 
+  /* BUG "GESER KE KIRI" (ruang kosong di antara navbar & laci): drawer
+     `.page-menu-dropdown` itu `position: fixed`, jadi dia SELALU nempel di
+     tepi kanan viewport ASLI, tidak peduli halaman di-scroll horizontal atau
+     tidak. Sedangkan nav-bar full-bleed di atas cuma elemen flow biasa yang
+     ikut geser bareng konten. Kalau html/body sempat punya horizontal
+     scrollbar (sekecil apapun, misal dari rounding/subpixel), begitu di-
+     scroll ke kanan (trackpad/gesture "geser kiri"), nav-bar ikut bergeser
+     tapi laci diam di tempat — jadi ada celah kosong menganga di antara
+     ujung nav-bar dan laci. `overflow-x: hidden` di sini MENGUNCI supaya
+     horizontal scroll itu sendiri tidak pernah bisa terjadi sama sekali,
+     jadi bug-nya hilang total di semua halaman (file ini dimuat di setiap
+     halaman publik), bukan cuma beranda. */
+  html, body {
+    overflow-x: hidden;
+  }
+
   /* SCROLLBAR BAWAAN BROWSER DIHILANGKAN (khusus desktop) — bukan cuma
      kosmetik, ini beneran bikin bug. Browser tetap nyisain ruang buat
      scrollbar-nya sendiri (~15-17px) DI LUAR margin-right di atas, jadi ada
