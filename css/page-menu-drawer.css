@@ -162,37 +162,29 @@ body.page-menu-locked { overflow: hidden; }
      perlu embel-embel !important segala. */
   body { zoom: 1; }
 
-  /* AKAR BUG "GESER KIRI = RUANG KOSONG" (sebelumnya): body/#app dipersempit
-     via margin-right, lalu nav-bar dicoba "dibocorin" lagi ke kanan pakai
-     width:calc(100%+260px) + #app{overflow-x:visible}. Browser TIDAK
-     mengizinkan overflow-x:visible kalau overflow-y bukan visible (di sini
-     #app overflow-y:auto) — nilainya otomatis dipaksa balik jadi
-     overflow-x:auto. Akibatnya #app diam-diam JADI bisa discroll horizontal
-     sejauh 260px; itulah yang "kepencet" saat geser kiri, memperlihatkan
-     ruang kosong di antara ujung nav-bar dan laci.
+  /* BUG YANG DIPERBAIKI: laci ini `position: fixed`, jadi dia gak ikut alur
+     normal halaman dan gak otomatis "ngedorong" konten lain. Sebelum baris
+     margin-right ini ada, laci cuma numpuk MELAYANG di atas konten (nav-bar,
+     banner, grid item, dll) di sisi kanan layar — bikin konten yang ada di
+     situ ketutup/kepotong sama panel menu. `margin-right` di <body> (bukan di
+     lacinya sendiri, karena elemen `position: fixed` gak kepengaruh
+     margin/padding ancestor apapun) yang "menyisakan ruang" selebar laci,
+     jadi seluruh isi halaman otomatis mepet ke kiri dan gak ada lagi yang
+     ketiban laci. */
+  body { margin-right: 260px; }
 
-     PERBAIKAN: jangan sentuh lebar body/#app/nav-bar sama sekali. Konten di
-     BAWAH nav-bar (banner, marquee, main, footer — semua sibling nav-bar)
-     yang digeser pakai margin-right, supaya nav-bar/#app/body tetap persis
-     selebar viewport asli dari awal (tidak pernah butuh "bocor" lagi). */
-  .nav-bar ~ *,
-  .navbar ~ * {
-    margin-right: 260px;
-  }
-
-  /* Nav-bar sendiri tidak dipersempit maupun dilebarkan — lebarnya sudah
-     100% viewport dari sananya, jadi background-nya otomatis full-bleed
-     sampai ujung layar tanpa trik apa pun. padding-right di sini cuma
-     menggeser ISI (logo/menu) menjauh dari laci; background tetap penuh
-     karena padding ikut termasuk dalam lebar 100% milik nav-bar. */
-  .nav-bar,
-  .navbar {
-    padding-right: 260px;
-    box-sizing: border-box;
-  }
-
-  /* Jaga-jaga: kunci scroll horizontal supaya tidak ada overflow lain
-     (rounding/subpixel dll) yang bisa memicu celah serupa di masa depan. */
+  /* BUG "GESER KE KIRI" (ruang kosong di antara navbar & laci): drawer
+     `.page-menu-dropdown` itu `position: fixed`, jadi dia SELALU nempel di
+     tepi kanan viewport ASLI, tidak peduli halaman di-scroll horizontal atau
+     tidak. Sedangkan nav-bar full-bleed di atas cuma elemen flow biasa yang
+     ikut geser bareng konten. Kalau html/body sempat punya horizontal
+     scrollbar (sekecil apapun, misal dari rounding/subpixel), begitu di-
+     scroll ke kanan (trackpad/gesture "geser kiri"), nav-bar ikut bergeser
+     tapi laci diam di tempat — jadi ada celah kosong menganga di antara
+     ujung nav-bar dan laci. `overflow-x: hidden` di sini MENGUNCI supaya
+     horizontal scroll itu sendiri tidak pernah bisa terjadi sama sekali,
+     jadi bug-nya hilang total di semua halaman (file ini dimuat di setiap
+     halaman publik), bukan cuma beranda. */
   html, body {
     overflow-x: hidden;
   }
@@ -240,4 +232,29 @@ body.page-menu-locked { overflow: hidden; }
   }
 
   .page-menu-drawer-close { display: none; }
+
+  /* Nav-bar dibuat full-bleed sampai ujung kanan layar (bukan berhenti di
+     batas kolom laci): box-nya dilebarkan 260px ke kanan lalu ditarik balik
+     dengan margin negatif, dan selisihnya dikembalikan sebagai padding
+     (box-sizing: border-box) supaya isi nav-bar (logo/menu) TETAP di posisi
+     yang sama persis seperti sebelumnya — hanya background/border yang
+     memanjang sampai tepi layar. Aman karena laci sekarang mulai dari
+     bawah nav-bar, jadi tidak ada tumpang tindih. */
+  .nav-bar,
+  .navbar {
+    box-sizing: border-box;
+    width: calc(100% + 260px);
+    margin-right: -260px;
+    padding-right: 260px;
+  }
+
+  /* PENTING: #app punya `overflow-auto` (clip horizontal) yang tadinya
+     "memotong" pelebaran nav-bar di atas sebelum sempat nyampe ujung layar
+     asli — nav-bar jadi keliatan berhenti pas di batas #app, bukan di
+     ujung layar. overflow-x dibuka ("visible") khusus desktop supaya
+     nav-bar boleh melebar keluar batas #app; scroll vertikal (overflow-y)
+     tetap jalan seperti biasa. */
+  #app {
+    overflow-x: visible;
+  }
 }
