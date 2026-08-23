@@ -207,6 +207,12 @@ body.page-menu-locked { overflow: hidden; }
     transform: translateX(0) !important;
     box-shadow: -6px 0 24px rgba(0, 0, 0, 0.12);
     border-left: 1px solid var(--border);
+    /* z-index diturunin (dari 4001 bawaan mobile) supaya laci ini gak lagi
+       nangkring di atas modal/lightbox (mis. lightbox foto ranking, modal
+       detail model/video, dll — semuanya pakai z-index 100-200-an). Tetap
+       lebih tinggi dari nav-bar(40)/filter-board(30) biar laci selalu di
+       atas konten biasa. */
+    z-index: 60;
   }
 
   .page-menu-drawer-close { display: none; }
@@ -224,5 +230,15 @@ body.page-menu-locked { overflow: hidden; }
     width: calc(100% + 260px);
     margin-right: -260px;
     padding-right: 260px;
+  }
+
+  /* PENTING: #app punya `overflow-auto` (clip horizontal) yang tadinya
+     "memotong" pelebaran nav-bar di atas sebelum sempat nyampe ujung layar
+     asli — nav-bar jadi keliatan berhenti pas di batas #app, bukan di
+     ujung layar. overflow-x dibuka ("visible") khusus desktop supaya
+     nav-bar boleh melebar keluar batas #app; scroll vertikal (overflow-y)
+     tetap jalan seperti biasa. */
+  #app {
+    overflow-x: visible;
   }
 }

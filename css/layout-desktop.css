@@ -171,13 +171,8 @@
   }
 
   /* ------------------------ Label seksi (signature) --------------------
-     Header seksi diberi aksen garis kiri supaya jelas menandai section,
-     konsisten di homepage, tutorial, dll. */
-  .category-header {
-    border-left: 3px solid var(--accent);
-    padding-left: 14px;
-    background: color-mix(in srgb, var(--surface) 88%, transparent);
-  }
+     Header seksi TANPA board/background — polos, cuma teks (sesuai desain
+     asli), konsisten di semua halaman yang pakai .category-header. */
 
   /* Board marquee (ticker berjalan) dihilangkan khusus desktop; nav-bar
      tetap tampil seperti biasa, hanya "papan" tickernya yang dibuang. */
