@@ -162,29 +162,28 @@ body.page-menu-locked { overflow: hidden; }
      perlu embel-embel !important segala. */
   body { zoom: 1; }
 
-  /* BUG YANG DIPERBAIKI: laci ini `position: fixed`, jadi dia gak ikut alur
-     normal halaman dan gak otomatis "ngedorong" konten lain. Sebelum baris
-     margin-right ini ada, laci cuma numpuk MELAYANG di atas konten (nav-bar,
-     banner, grid item, dll) di sisi kanan layar — bikin konten yang ada di
-     situ ketutup/kepotong sama panel menu. `margin-right` di <body> (bukan di
-     lacinya sendiri, karena elemen `position: fixed` gak kepengaruh
-     margin/padding ancestor apapun) yang "menyisakan ruang" selebar laci,
-     jadi seluruh isi halaman otomatis mepet ke kiri dan gak ada lagi yang
-     ketiban laci. */
-  body { margin-right: 260px; }
+  /* Konten (#app) diberi lebar PASTI (100vw dikurangi lebar laci), bukan
+     lewat margin di <body>. Ini sengaja dipakai ketimbang margin-right
+     supaya tidak ada elemen manapun (termasuk nav-bar di bawah) yang perlu
+     "dilebarkan lalu ditarik balik" dengan lebar/margin negatif — teknik
+     lama itu selalu berpotensi kepotong (lubang kosong) atau menciptakan
+     area overflow yang bisa "digeser" (discroll) sedikit di beberapa
+     browser/WebView mobile walau sudah dikunci overflow-x:hidden. Dengan
+     lebar tetap begini, tidak ada satupun kotak yang pernah melebihi 100vw,
+     jadi horizontal-scroll/geser jadi mustahil terjadi dari sisi manapun. */
+  #app {
+    width: calc(100vw - 260px);
+    max-width: calc(100vw - 260px);
+    /* Nav-bar di bawah sekarang position:fixed (lepas dari alur halaman),
+       jadi #app perlu jarak atas sendiri sebesar tinggi nav-bar supaya
+       konten (banner, dst) tidak ketiban/ketutup nav-bar. */
+    padding-top: var(--nav-h, 64px);
+  }
 
-  /* BUG "GESER KE KIRI" (ruang kosong di antara navbar & laci): drawer
-     `.page-menu-dropdown` itu `position: fixed`, jadi dia SELALU nempel di
-     tepi kanan viewport ASLI, tidak peduli halaman di-scroll horizontal atau
-     tidak. Sedangkan nav-bar full-bleed di atas cuma elemen flow biasa yang
-     ikut geser bareng konten. Kalau html/body sempat punya horizontal
-     scrollbar (sekecil apapun, misal dari rounding/subpixel), begitu di-
-     scroll ke kanan (trackpad/gesture "geser kiri"), nav-bar ikut bergeser
-     tapi laci diam di tempat — jadi ada celah kosong menganga di antara
-     ujung nav-bar dan laci. `overflow-x: hidden` di sini MENGUNCI supaya
-     horizontal scroll itu sendiri tidak pernah bisa terjadi sama sekali,
-     jadi bug-nya hilang total di semua halaman (file ini dimuat di setiap
-     halaman publik), bukan cuma beranda. */
+  /* Jaga-jaga tambahan: kunci scroll horizontal di html/body. Sudah tidak
+     lagi "bergantung" ke ini (tidak ada elemen yang overflow 100vw lagi
+     sejak nav-bar & #app di atas diubah), tapi tetap dipasang sebagai
+     lapis pengaman kedua. */
   html, body {
     overflow-x: hidden;
   }
@@ -233,60 +232,27 @@ body.page-menu-locked { overflow: hidden; }
 
   .page-menu-drawer-close { display: none; }
 
-  /* Nav-bar dibuat full-bleed sampai ujung kanan layar (bukan berhenti di
-     batas kolom laci): box-nya dilebarkan 260px ke kanan lalu ditarik balik
-     dengan margin negatif, dan selisihnya dikembalikan sebagai padding
-     (box-sizing: border-box) supaya isi nav-bar (logo/menu) TETAP di posisi
-     yang sama persis seperti sebelumnya — hanya background/border yang
-     memanjang sampai tepi layar. Aman karena laci sekarang mulai dari
-     bawah nav-bar, jadi tidak ada tumpang tindih. */
+  /* NAV-BAR SEKARANG SATU "LAYER" DENGAN LACI: sama-sama `position: fixed`
+     terhadap viewport asli (bukan lagi `sticky` + trik lebar-lalu-ditarik-
+     balik pakai margin negatif). Alasan diganti: teknik margin negatif
+     sebelumnya membuat kotak nav-bar SUNGGUHAN lebih lebar dari 100vw,
+     yang di beberapa browser/WebView mobile tetap bisa "kepotong" (nyisain
+     lubang kosong) atau malah menciptakan area yang bisa digeser meski
+     overflow-x sudah dikunci hidden. Dengan `position: fixed; width: 100vw`
+     di sini, nav-bar TIDAK PERNAH lebih lebar dari layar — jadi tidak ada
+     lagi yang bisa kepotong maupun digeser, sekaligus otomatis selalu
+     nutup penuh sampai ke-2 ujung layar tanpa trik tambahan apapun. Laci
+     (`#page-menu-dropdown`) tetap persis di posisi & ukuran yang sama
+     seperti sebelumnya (tidak disentuh). */
   .nav-bar,
   .navbar {
-    box-sizing: border-box;
-    width: calc(100% + 260px);
-    margin-right: -260px;
-    padding-right: 260px;
-  }
-
-  /* PENTING: #app punya `overflow-auto` (clip horizontal) yang tadinya
-     "memotong" pelebaran nav-bar di atas sebelum sempat nyampe ujung layar
-     asli — nav-bar jadi keliatan berhenti pas di batas #app, bukan di
-     ujung layar. overflow-x dibuka ("visible") khusus desktop supaya
-     nav-bar boleh melebar keluar batas #app; scroll vertikal (overflow-y)
-     tetap jalan seperti biasa. */
-  #app {
-    overflow-x: visible;
-  }
-
-  /* BUG "LUBANG KOSONG" DI ATAS LACI: trik bleed nav-bar di atas (width
-     calc(100% + 260px) + margin-right negatif) tetap KEPOTONG oleh
-     `overflow-x: hidden` yang dipasang di <body> (lihat aturan itu di atas,
-     dibutuhkan supaya halaman tidak bisa di-scroll horizontal). Body cuma
-     selebar (100vw - 260px) setelah `margin-right: 260px`-nya, jadi bagian
-     nav-bar yang coba nutup sampai ke ujung kanan asli ikut terpotong tepat
-     di batas body itu — nyisain kotak kosong selebar laci, setinggi
-     nav-bar, isinya cuma pola grid dari background <body> yang "tembus"
-     lewat kanvas viewport (body punya background-attachment: fixed yang
-     dilukis di kanvas, bukan di kotak body, jadi tidak ikut kepotong).
-     Perbaikannya: bikin lapisan tambalan `body::after` yang posisinya
-     `fixed` sendiri (bukan warisan kotak nav-bar yang sudah kepotong).
-     Elemen `fixed` tidak tunduk pada `overflow-x: hidden` milik body
-     selama body sendiri tidak punya transform/filter (terbukti dari laci
-     `#page-menu-dropdown` yang juga `fixed` & anak <body>, dan itu tidak
-     ikut kepotong) — jadi tambalan ini otomatis nempel presisi di ujung
-     kanan viewport asli, PAS menutup sisa lubang itu, tanpa mengubah kotak
-     nav-bar itu sendiri ataupun posisi laci. */
-  body::after {
-    content: "";
-    position: fixed;
+    position: fixed !important;
     top: 0;
-    right: 0;
-    width: 260px;
-    height: var(--nav-h, 64px);
-    background: color-mix(in srgb, var(--bg) 85%, transparent);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
+    left: 0;
+    box-sizing: border-box;
+    width: 100vw;
+    margin-right: 0;
+    padding-right: 260px;
     z-index: 40;
-    pointer-events: none;
   }
 }

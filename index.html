@@ -801,7 +801,26 @@
         renderModels = function(filter = '') {
             const grid = document.getElementById('content-grid');
             if (!grid) return;
- 
+
+            // PENYEBAB SKELETON GAK KELIHATAN DI BERANDA: baris `renderModels();`
+            // di bawah (dekat akhir file) kepanggil SEKALI secara sinkron saat
+            // halaman baru dimuat — jauh sebelum fetch data model (loadModels()
+            // di Models/script.js) selesai. Saat itu MODELS masih kosong ([]),
+            // jadi hasil render pertama ini SELALU kosong (0 kartu) dan langsung
+            // menghapus class `grid-loading` (baris di bawah) — akibatnya
+            // skeleton yang sudah dipasang duluan oleh showInitialModelSkeleton()
+            // (di skeleton-loading.js/Models/script.js) ikut kehapus SEBELUM
+            // sempat kelihatan, gantinya cuma area kosong sampai data asli
+            // datang (~1 detik). Halaman Models/Video tidak kena ini karena di
+            // sana renderModels() cuma pernah dipanggil SETELAH data siap.
+            // Perbaikannya: kalau MODELS masih kosong pas dipanggil untuk mode
+            // "Semua tanpa pencarian", jangan sentuh grid sama sekali — biarkan
+            // skeleton yang sudah tampil tetap di situ, nanti loadModels() akan
+            // manggil renderModels() lagi begitu data asli siap.
+            if (filter === '' && activeCategory === "Semua" && MODELS.length === 0) {
+                return;
+            }
+
             if (filter === '' && activeCategory === "Semua") {
                 const shuffled = [...MODELS].sort(() => 0.5 - Math.random());
                 const selected = shuffled.slice(0, getHomeModelCount());
