@@ -257,4 +257,36 @@ body.page-menu-locked { overflow: hidden; }
   #app {
     overflow-x: visible;
   }
+
+  /* BUG "LUBANG KOSONG" DI ATAS LACI: trik bleed nav-bar di atas (width
+     calc(100% + 260px) + margin-right negatif) tetap KEPOTONG oleh
+     `overflow-x: hidden` yang dipasang di <body> (lihat aturan itu di atas,
+     dibutuhkan supaya halaman tidak bisa di-scroll horizontal). Body cuma
+     selebar (100vw - 260px) setelah `margin-right: 260px`-nya, jadi bagian
+     nav-bar yang coba nutup sampai ke ujung kanan asli ikut terpotong tepat
+     di batas body itu — nyisain kotak kosong selebar laci, setinggi
+     nav-bar, isinya cuma pola grid dari background <body> yang "tembus"
+     lewat kanvas viewport (body punya background-attachment: fixed yang
+     dilukis di kanvas, bukan di kotak body, jadi tidak ikut kepotong).
+     Perbaikannya: bikin lapisan tambalan `body::after` yang posisinya
+     `fixed` sendiri (bukan warisan kotak nav-bar yang sudah kepotong).
+     Elemen `fixed` tidak tunduk pada `overflow-x: hidden` milik body
+     selama body sendiri tidak punya transform/filter (terbukti dari laci
+     `#page-menu-dropdown` yang juga `fixed` & anak <body>, dan itu tidak
+     ikut kepotong) — jadi tambalan ini otomatis nempel presisi di ujung
+     kanan viewport asli, PAS menutup sisa lubang itu, tanpa mengubah kotak
+     nav-bar itu sendiri ataupun posisi laci. */
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 260px;
+    height: var(--nav-h, 64px);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 40;
+    pointer-events: none;
+  }
 }
