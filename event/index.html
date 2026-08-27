@@ -165,6 +165,18 @@
       margin-bottom: 32px;
       border-radius: 4px;
     }
+
+    /* Desktop (>=1024px): lebar board mengikuti banyak teks di dalamnya
+       (secukupnya), bukan melebar penuh sampai ujung kolom konten.
+       Tetap dibatasi max-width kolom (main) supaya kalau teksnya panjang,
+       board tidak sampai keluar/overflow — akan wrap seperti biasa.
+       Mobile & tablet (<1024px) tidak disentuh, tetap lebar penuh. */
+    @media (min-width: 1024px) {
+      .agreement-section {
+        width: fit-content;
+        max-width: 100%;
+      }
+    }
  
     /* FIX 1: Menghapus highlight bawaan sistem dan menambahkan user-select agar bersih saat ditekan */
     .agreement-content {

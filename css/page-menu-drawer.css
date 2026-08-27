@@ -249,10 +249,20 @@ body.page-menu-locked { overflow: hidden; }
     position: fixed !important;
     top: 0;
     left: 0;
+    /* Lebar nav-bar TIDAK LAGI dihitung manual lewat "width:100vw +
+       padding-right:260px" (kombinasi itu yang sebelumnya gampang meleset
+       kalau ketemu sisa efek `zoom` atau pembulatan sub-pixel, sehingga
+       muncul celah kosong sebelum laci meski nilainya sudah 260px sama-sama).
+       Sekarang dipakai anchor kiri+kanan langsung: `left:0` + `right:260px`
+       membuat browser SENDIRI yang menghitung lebar = (lebar layar - 260px),
+       persis pas dengan tepi kiri laci (`#page-menu-dropdown`, yang juga
+       260px & nempel `right:0`) — tidak ada lagi rumus manual yang bisa
+       meleset. `width` & `padding-right` lama dilepas total. */
+    right: 260px;
+    width: auto;
     box-sizing: border-box;
-    width: 100vw;
     margin-right: 0;
-    padding-right: 260px;
+    padding-right: 0;
     z-index: 40;
   }
 }

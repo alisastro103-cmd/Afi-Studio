@@ -131,7 +131,7 @@
      ".nav-bar > .max-w-7xl"): isi baris DIPANJANGKAN penuh sampai ke
      ujung layar — kiri (logo) & kanan (menu/tombol, sampai tepat di
      sebelah laci "Menu Halaman" yang ruangnya sudah disisakan lewat
-     padding-right pada .nav-bar itu sendiri, lihat page-menu-drawer.css).
+     anchor `right:260px` pada .nav-bar itu sendiri, lihat page-menu-drawer.css).
      max-width dihapus (bukan lagi calc(var(--afi-max) + 80px)) karena
      itulah yang sebelumnya menyisakan celah kosong antara tombol navbar
      dan laci menu — sekarang navbar tampil edge-to-edge seperti navbar
