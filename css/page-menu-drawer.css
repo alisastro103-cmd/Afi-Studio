@@ -194,10 +194,15 @@ body.page-menu-locked { overflow: hidden; }
 
   #page-menu-dropdown.page-menu-dropdown {
     position: fixed;
-    /* Laci dimulai TEPAT di bawah nav-bar (bukan dari y:0), pakai --nav-h
-       yang dihitung JS dari tinggi nav-bar asli. */
-    top: var(--nav-h, 64px);
-    height: calc(100dvh - var(--nav-h, 64px));
+    /* Laci dinaikkan sampai y:0 (bukan mulai di bawah navbar lagi) —
+       supaya laci ini yang MENUTUP ruang kosong di pojok kanan-atas
+       (area antara ujung kanan navbar & tepi layar, sejajar tinggi
+       navbar) yang sebelumnya kosong begitu saja. Navbar box-nya sendiri
+       cuma sampai x = (lebar layar - 260px) [lihat right:260px di bawah],
+       jadi laci di sini (x mulai dari situ) bersebelahan pas dengan
+       navbar, tanpa tumpang tindih sama sekali. */
+    top: 0;
+    height: 100dvh;
     width: 260px;
     max-width: 260px;
     visibility: visible !important;

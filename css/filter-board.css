@@ -30,20 +30,34 @@
 
 .filter-board {
   display: none;
-  position: sticky;
-  /* Nempel tepat di bawah navbar (pakai --nav-h yang sama dipakai navbar/
-     laci menu), jadi board pencarian ini ikut ke mana pun navbar "diam"
-     saat discroll — bukan cuma numpang di alur konten biasa yang bisa
-     ikut ke-scroll lewat & hilang dari layar. */
-  top: var(--nav-h, 64px);
-  z-index: 25;
-  width: 100%;
-  margin: 0 0 18px;
-  padding-top: 10px;
-  background: var(--bg);
 }
 .filter-board.open {
+  /* PENTING: sebelumnya pakai position:sticky, tapi filter-board ini
+     posisinya di DALAM <main> (setelah banner & marquee) — sticky cuma
+     "nempel" begitu elemen itu sendiri sudah tergulung sampai ke titik
+     nempelnya, jadi begitu dibuka dia nongol di posisi asalnya dulu (di
+     bawah banner), bukan langsung di bawah navbar. Diganti ke
+     position:fixed, dihitung MURNI dari viewport (sama seperti navbar &
+     laci menu) — jadi begitu tombol kaca pembesar ditekan, board ini
+     SELALU muncul tepat di bawah navbar & ikut ke mana pun navbar
+     "diam" saat discroll, di halaman manapun ia berada di DOM. */
   display: block;
+  position: fixed;
+  top: var(--nav-h, 64px);
+  left: 0;
+  right: 0;
+  z-index: 45;
+  max-width: 1152px; /* selaras dengan lebar kolom konten (main.max-w-6xl) */
+  margin: 0 auto;
+  padding: 12px 16px;
+  background: var(--bg);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+}
+@media (min-width: 1024px) {
+  .filter-board.open {
+    /* Jangan sampai nutupin laci "Menu Halaman" di kanan (260px) */
+    right: 260px;
+  }
 }
 
 /* Tombol kaca pembesar di navbar (buka/tutup filter-board) */
