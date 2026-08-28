@@ -75,6 +75,14 @@
   font-weight: 500;
   padding: 13px 12px 13px 42px;
   font-family: 'DM Sans', sans-serif;
+  /* Kalau ruang sempit (mobile), teks placeholder yang panjang dipotong
+     rapi pakai satu karakter elipsis "…" bawaan browser — bukan lagi
+     literal "..." di akhir teks placeholder yang malah gampang terpotong
+     setengah/acak (misal cuma nongol "..", bukan "...") begitu ruangnya
+     kurang. */
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .filter-search-input::placeholder {
   color: var(--text-sub);
@@ -226,7 +234,13 @@
     height: 14px;
   }
   .filter-search-input {
-    padding-right: 6px;
-    font-size: 13px;
+    padding-left: 36px;
+    padding-right: 4px;
+    font-size: 12.5px;
+  }
+  .filter-search svg {
+    left: 12px;
+    width: 15px;
+    height: 15px;
   }
 }

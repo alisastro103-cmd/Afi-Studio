@@ -77,6 +77,24 @@
     var contentRow = null;
     var mainCol = null;
 
+    // PENTING (akar bug "navbar/laci turun ke bawah"): tiap halaman punya
+    // script inline terpisah yang mengukur tinggi navbar (--nav-h) SEKALI,
+    // segera setelah </nav> — momen itu laci MASIH nempel di dalam <nav>.
+    // Karena di desktop laci sekarang position:sticky (ikut alur normal,
+    // bukan fixed lagi), tingginya numpang ke navbar saat masih nempel di
+    // situ, jadi navbar "terukur" jauh lebih tinggi dari aslinya (navbar +
+    // seluruh isi laci). Angka salah itu lalu dipakai lagi sebagai jarak
+    // `top` laci itu sendiri (lihat CSS), jadi laci ketarik turun jauh.
+    // Perbaikannya: ukur ULANG tinggi navbar di sini, SETELAH laci
+    // dipastikan sudah dipindah keluar dari <nav> (baik ke #app-content-row
+    // maupun ke <body>), supaya --nav-h selalu benar.
+    function syncNavHeight() {
+      var nav = document.querySelector('.nav-bar, .navbar');
+      if (nav) {
+        document.documentElement.style.setProperty('--nav-h', nav.getBoundingClientRect().height + 'px');
+      }
+    }
+
     function ensureDesktopLayout() {
       if (!app || contentRow) return;
       var nav = app.querySelector('.nav-bar, .navbar');
@@ -108,6 +126,7 @@
       contentRow.appendChild(mainCol);
       contentRow.appendChild(drawer); // otomatis "mencabut" laci dari lokasi lamanya
       app.appendChild(contentRow);
+      syncNavHeight();
     }
 
     function teardownDesktopLayout() {
@@ -131,6 +150,7 @@
       if (drawer.parentElement !== document.body) {
         document.body.appendChild(drawer);
       }
+      syncNavHeight();
     }
 
     function syncDrawerLayout() {
