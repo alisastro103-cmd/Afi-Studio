@@ -150,110 +150,81 @@ body.page-menu-locked { overflow: hidden; }
 
   /* `zoom: 0.75` bawaan tiap halaman (dipasang tanpa media query, jadi
      harusnya cuma buat mobile) dimatikan khusus di lebar desktop supaya
-     tidak ikut mengacaukan perhitungan sticky di bawah. Aturan di sini
-     otomatis menang dari `zoom: 0.75` bawaan karena file CSS ini selalu
-     dimuat belakangan (setelah <style> inline tiap halaman). */
+     tidak ikut mengacaukan perhitungan lebar/posisi di bawah. Aturan di
+     sini otomatis menang dari `zoom: 0.75` bawaan karena file CSS ini
+     selalu dimuat belakangan (setelah <style> inline tiap halaman). */
   body { zoom: 1; }
+
+  /* Konten (#app) diberi lebar PASTI (100vw dikurangi lebar laci), bukan
+     lewat margin di <body>. CATATAN: sempat dicoba diganti ke restrukturisasi
+     DOM (laci jadi anak #app + flexbox) supaya "satu layer" dengan konten,
+     tapi itu DITARIK BALIK karena struktur tiap halaman ternyata beda-beda
+     (ada yang pakai flex-col/justify-between untuk dorong footer, ada yang
+     tidak) — jadi satu script yang sama malah merusak banyak halaman
+     (navbar/laci hilang, UI bertabrakan). Kembali ke cara ini: hanya CSS,
+     tidak menyentuh struktur HTML halaman mana pun, jadi aman & konsisten
+     di semua halaman. */
+  #app {
+    width: calc(100vw - 260px);
+    max-width: calc(100vw - 260px);
+    /* Nav-bar di bawah position:fixed (lepas dari alur halaman), jadi #app
+       perlu jarak atas sendiri sebesar tinggi nav-bar supaya konten
+       (banner, dst) tidak ketiban/ketutup nav-bar. */
+    padding-top: var(--nav-h, 64px);
+  }
 
   html, body {
     overflow-x: hidden;
   }
 
-  /* Scrollbar bawaan browser disembunyikan KHUSUS pada #app (bukan lagi
-     html/body) — karena #app (bukan html/body) yang jadi scroll container
-     sesungguhnya di halaman ini (lihat class .overflow-auto di markup).
-     Tanpa ini, scrollbar bawaan (~15-17px) memakan sedikit lebar #app,
-     jadi navbar & konten berhenti sedikit sebelum tepi kanan LAYAR
-     (bukan sebelum laci — laci sudah beres lewat flexbox di atas). Scroll
-     tetap jalan normal lewat mouse wheel/trackpad/keyboard, cuma
-     tampilan track/thumb-nya yang disembunyikan. */
-  #app {
+  /* Scrollbar bawaan browser dihilangkan (khusus desktop) — browser tetap
+     nyisain ruang buat scrollbar-nya sendiri (~15-17px) DI LUAR lebar
+     #app di atas, jadi ada celah sempit ekstra pas di batas antara konten
+     (termasuk nav-bar) dan laci menu. Scroll TETAP jalan normal (mouse
+     wheel/trackpad/keyboard) — cuma tampilan track/thumb-nya yang
+     disembunyikan, dan halaman otomatis "melebar" ngisi ruang yang tadinya
+     kepakai scrollbar itu, jadi nav-bar & konten nempel pas ke laci. */
+  html, body {
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* Edge lama */
   }
-  #app::-webkit-scrollbar {
+  html::-webkit-scrollbar, body::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Edge baru */
   }
 
-  /* PENDEKATAN BARU (ganti total dari `position: fixed`): laci
-     (#page-menu-dropdown) sekarang dipindah lewat JS (page-menu-drawer.js)
-     jadi ANAK LANGSUNG #app, disandingkan dengan sisa konten lewat
-     flexbox (#app-content-row > #app-main-col + laci). Navbar juga
-     `position: sticky`, bukan `fixed` lagi. Kenapa diganti: kombinasi
-     `position: fixed` + lebar dihitung manual (baik lewat padding-right
-     maupun anchor left/right) + `zoom` terbukti gampang meleset di
-     banyak browser/WebView, sehingga navbar tetap kelihatan berhenti
-     sebelum tepi laci meski rumusnya sudah benar di atas kertas.
-     `position: sticky` dihitung langsung dari alur layout yang sudah
-     ter-zoom (bukan dari kalkulasi lebar viewport terpisah), jadi jauh
-     lebih tahan terhadap ketidakkonsistenan itu — dan laci pun otomatis
-     "satu layer" dengan konten (sama-sama anak normal #app), bukan lagi
-     elemen fixed yang melayang sendiri. */
-  /* #app jadi flex column: navbar di baris atas (tinggi secukupnya), baris
-     konten (#app-content-row) mengisi sisa tinggi layar. Ini perlu supaya
-     trik "dorong footer ke bawah" yang dipindah ke #app-main-col (lihat
-     page-menu-drawer.js) tetap bisa mengukur tinggi penuh dengan benar.
-     Untuk halaman yang sebelumnya tidak memakai flex sama sekali di #app,
-     ini tidak mengubah tampilan (navbar tetap di atas, konten tetap di
-     bawahnya secara berurutan seperti block biasa). */
-  #app {
-    display: flex;
-    flex-direction: column;
-  }
-  #app-content-row {
-    display: flex;
-    align-items: flex-start;
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-  #app-main-col {
-    flex: 1 1 auto;
-    min-width: 0; /* jaga-jaga: cegah konten dgn lebar tetap bikin flex row overflow */
-  }
-
   #page-menu-dropdown.page-menu-dropdown {
-    position: sticky;
-    /* Nempel tepat di bawah navbar (bukan di y:0), pakai --nav-h yang
-       dihitung JS dari tinggi navbar asli — supaya laci tidak ketiban
-       navbar yang juga sticky di y:0. */
+    position: fixed;
+    /* Laci dimulai TEPAT di bawah nav-bar (bukan dari y:0), pakai --nav-h
+       yang dihitung JS dari tinggi nav-bar asli. */
     top: var(--nav-h, 64px);
-    align-self: flex-start;
-    flex: 0 0 260px;
+    height: calc(100dvh - var(--nav-h, 64px));
     width: 260px;
     max-width: 260px;
-    max-height: calc(100dvh - var(--nav-h, 64px));
-    height: auto;
-    overflow-y: auto;
     visibility: visible !important;
     pointer-events: auto !important;
     transform: translateX(0) !important;
     box-shadow: -6px 0 24px rgba(0, 0, 0, 0.12);
     border-left: 1px solid var(--border);
-    z-index: 30;
+    z-index: 60;
   }
 
   .page-menu-drawer-close { display: none; }
 
-  /* Navbar: `position: sticky` (BUKAN fixed lagi), tetap paling atas
-     dan sekarang betul-betul memanjang penuh sampai ke-2 ujung layar
-     TANPA reservasi lebar apa pun — karena laci (#page-menu-dropdown)
-     sudah tidak lagi sejajar horizontal dengan navbar (laci ada di baris
-     konten DI BAWAH navbar, lihat #app-content-row di atas), jadi navbar
-     tidak perlu berhenti lebih awal untuk memberi ruang ke laci.
-     `.navbar` (halaman Member) dipisah ke rule sendiri di bawah supaya
-     z-index bawaannya (yang lebih tinggi, dipakai buat dropdown lain di
-     halaman itu) TIDAK ikut tertimpa — hanya position yang disamakan. */
-  .nav-bar {
-    position: sticky !important;
-    top: 0;
-    width: 100%;
-    flex-shrink: 0;
-    z-index: 40;
-  }
+  /* Navbar: `position: fixed`, `left:0` + `right:260px` (BUKAN width:100vw
+     + padding-right lagi) — browser sendiri yang menghitung lebar navbar
+     = (lebar layar - 260px), persis pas ketemu tepi kiri laci yang juga
+     260px & nempel `right:0`. Ini menghindari kalkulasi lebar manual yang
+     gampang meleset kalau ketemu sisa efek `zoom`/pembulatan sub-pixel. */
+  .nav-bar,
   .navbar {
-    position: sticky !important;
+    position: fixed !important;
     top: 0;
-    width: 100%;
-    flex-shrink: 0;
+    left: 0;
+    right: 260px;
+    width: auto;
+    box-sizing: border-box;
+    margin-right: 0;
+    padding-right: 0;
+    z-index: 40;
   }
 }

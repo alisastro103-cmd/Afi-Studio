@@ -129,12 +129,12 @@
 
   /* Navbar utama (Beranda & semua halaman lain yang memakai struktur
      ".nav-bar > .max-w-7xl"): isi baris DIPANJANGKAN penuh sampai ke
-     KEDUA ujung layar — sekarang simetris kiri-kanan, karena laci "Menu
-     Halaman" sudah tidak lagi sejajar horizontal dengan navbar (laci
-     sekarang ada di baris konten DI BAWAH navbar lewat flexbox, lihat
-     #app-content-row di page-menu-drawer.css), jadi navbar tidak perlu
-     menyisakan ruang di kanan untuk laci sama sekali. max-width dihapus
-     total supaya navbar tampil edge-to-edge seperti navbar situs lain. */
+     KEDUA ujung KOTAK navbar itu sendiri (kiri & kanan simetris) — kotak
+     navbar-nya sendiri sudah pas berhenti tepat di tepi laci "Menu
+     Halaman" lewat anchor `right:260px` (lihat .nav-bar di
+     page-menu-drawer.css), jadi baris di sini tidak perlu lagi
+     menyisakan ruang tambahan apa pun. max-width dihapus total supaya
+     navbar tampil edge-to-edge seperti navbar situs lain. */
   .nav-bar > .max-w-7xl {
     max-width: none;
     width: 100%;
