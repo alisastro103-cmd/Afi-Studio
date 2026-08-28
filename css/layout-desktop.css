@@ -134,14 +134,18 @@
      Halaman" lewat anchor `right:260px` (lihat .nav-bar di
      page-menu-drawer.css), jadi baris di sini tidak perlu lagi
      menyisakan ruang tambahan apa pun. max-width dihapus total supaya
-     navbar tampil edge-to-edge seperti navbar situs lain. */
+     navbar tampil edge-to-edge seperti navbar situs lain.
+     PENTING: padding kiri/kanan navbar SENGAJA tidak pakai var(--afi-pad)
+     (itu dipakai banner/main/footer/dll, jangan ikut berubah kalau ini
+     diubah) — dipakai angka tetap kecil sendiri, supaya logo & grup ikon
+     bisa lebih dekat ke tepi kotak navbar. */
   .nav-bar > .max-w-7xl {
     max-width: none;
     width: 100%;
     margin-left: 0;
     margin-right: 0;
-    padding-left: var(--afi-pad);
-    padding-right: var(--afi-pad);
+    padding-left: 16px;
+    padding-right: 16px;
     padding-top: 10px;
     padding-bottom: 10px;
   }

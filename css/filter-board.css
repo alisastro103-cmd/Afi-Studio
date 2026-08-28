@@ -81,8 +81,11 @@
      "kaca buram"), bukan hampir solid seperti sebelumnya. */
   background: color-mix(in srgb, var(--surface) 45%, transparent);
   border: 1px solid var(--border);
-  /* Dari pil bulat penuh (999px) jadi kotak panjang bersudut tumpul. */
-  border-radius: 25%;
+  /* Kotak panjang biasa dengan sudut tumpul TIPIS (bukan 999px = pil
+     bulat, dan bukan 25% = melengkung berlebihan sampai kelihatan
+     seperti blob/oval). Angka tetap kecil (14px) = sudut membulat
+     halus khas kolom pencarian pada umumnya. */
+  border-radius: 14px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
