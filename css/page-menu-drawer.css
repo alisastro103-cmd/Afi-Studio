@@ -148,121 +148,112 @@ body.page-menu-locked { overflow: hidden; }
   #page-menu-btn.page-menu-btn { display: none !important; }
   #page-menu-overlay { display: none !important; }
 
-  /* PENYEBAB ASLI kenapa margin-right di bawah ini sempat gak ngefek dengan
-     rapi: <body> di tiap halaman punya `zoom: 0.75` yang dipasang TANPA
-     media query (jadi ikut aktif juga di desktop, bukan cuma mobile/tablet
-     kayak niat aslinya). Kombinasi `zoom` + `position: fixed` itu terkenal
-     gak konsisten di banyak browser/WebView — margin yang dihitung di atas
-     body yang udah ter-zoom gak selalu pas ketemu sama lebar laci yang
-     posisinya fixed. Solusinya: matiin zoom itu KHUSUS pas layar udah
-     selebar desktop (di lebar segini, halaman emang gak butuh disusutkan —
-     zoom 0.75 itu awalnya cuma buat mobile). Aturan di sini otomatis MENANG
-     dari `zoom: 0.75` bawaan tiap halaman karena file CSS ini selalu dimuat
-     belakangan di <head> (setelah <style> inline tiap halaman), jadi gak
-     perlu embel-embel !important segala. */
+  /* `zoom: 0.75` bawaan tiap halaman (dipasang tanpa media query, jadi
+     harusnya cuma buat mobile) dimatikan khusus di lebar desktop supaya
+     tidak ikut mengacaukan perhitungan sticky di bawah. Aturan di sini
+     otomatis menang dari `zoom: 0.75` bawaan karena file CSS ini selalu
+     dimuat belakangan (setelah <style> inline tiap halaman). */
   body { zoom: 1; }
 
-  /* Konten (#app) diberi lebar PASTI (100vw dikurangi lebar laci), bukan
-     lewat margin di <body>. Ini sengaja dipakai ketimbang margin-right
-     supaya tidak ada elemen manapun (termasuk nav-bar di bawah) yang perlu
-     "dilebarkan lalu ditarik balik" dengan lebar/margin negatif — teknik
-     lama itu selalu berpotensi kepotong (lubang kosong) atau menciptakan
-     area overflow yang bisa "digeser" (discroll) sedikit di beberapa
-     browser/WebView mobile walau sudah dikunci overflow-x:hidden. Dengan
-     lebar tetap begini, tidak ada satupun kotak yang pernah melebihi 100vw,
-     jadi horizontal-scroll/geser jadi mustahil terjadi dari sisi manapun. */
-  #app {
-    width: calc(100vw - 260px);
-    max-width: calc(100vw - 260px);
-    /* Nav-bar di bawah sekarang position:fixed (lepas dari alur halaman),
-       jadi #app perlu jarak atas sendiri sebesar tinggi nav-bar supaya
-       konten (banner, dst) tidak ketiban/ketutup nav-bar. */
-    padding-top: var(--nav-h, 64px);
-  }
-
-  /* Jaga-jaga tambahan: kunci scroll horizontal di html/body. Sudah tidak
-     lagi "bergantung" ke ini (tidak ada elemen yang overflow 100vw lagi
-     sejak nav-bar & #app di atas diubah), tapi tetap dipasang sebagai
-     lapis pengaman kedua. */
   html, body {
     overflow-x: hidden;
   }
 
-  /* SCROLLBAR BAWAAN BROWSER DIHILANGKAN (khusus desktop) — bukan cuma
-     kosmetik, ini beneran bikin bug. Browser tetap nyisain ruang buat
-     scrollbar-nya sendiri (~15-17px) DI LUAR margin-right di atas, jadi ada
-     celah sempit ekstra pas di batas antara konten (termasuk nav-bar) dan
-     laci menu — keliatan kayak garis/scrollbar aneh nyempil di situ, dan
-     nav-bar jadi kayak "kepotong" dikit sebelum nyampe ke laci. Scroll-nya
-     TETAP jalan normal (mouse wheel/trackpad/keyboard, atau scroll di
-     sidebar-nya sendiri) — cuma tampilan track/thumb-nya aja yang
-     disembunyikan, dan halaman otomatis "melebar" ngisi ruang yang tadinya
-     kepakai scrollbar itu, jadi nav-bar & konten nempel pas ke laci. */
-  html, body {
+  /* Scrollbar bawaan browser disembunyikan KHUSUS pada #app (bukan lagi
+     html/body) — karena #app (bukan html/body) yang jadi scroll container
+     sesungguhnya di halaman ini (lihat class .overflow-auto di markup).
+     Tanpa ini, scrollbar bawaan (~15-17px) memakan sedikit lebar #app,
+     jadi navbar & konten berhenti sedikit sebelum tepi kanan LAYAR
+     (bukan sebelum laci — laci sudah beres lewat flexbox di atas). Scroll
+     tetap jalan normal lewat mouse wheel/trackpad/keyboard, cuma
+     tampilan track/thumb-nya yang disembunyikan. */
+  #app {
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* Edge lama */
   }
-  html::-webkit-scrollbar, body::-webkit-scrollbar {
+  #app::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Edge baru */
   }
 
+  /* PENDEKATAN BARU (ganti total dari `position: fixed`): laci
+     (#page-menu-dropdown) sekarang dipindah lewat JS (page-menu-drawer.js)
+     jadi ANAK LANGSUNG #app, disandingkan dengan sisa konten lewat
+     flexbox (#app-content-row > #app-main-col + laci). Navbar juga
+     `position: sticky`, bukan `fixed` lagi. Kenapa diganti: kombinasi
+     `position: fixed` + lebar dihitung manual (baik lewat padding-right
+     maupun anchor left/right) + `zoom` terbukti gampang meleset di
+     banyak browser/WebView, sehingga navbar tetap kelihatan berhenti
+     sebelum tepi laci meski rumusnya sudah benar di atas kertas.
+     `position: sticky` dihitung langsung dari alur layout yang sudah
+     ter-zoom (bukan dari kalkulasi lebar viewport terpisah), jadi jauh
+     lebih tahan terhadap ketidakkonsistenan itu — dan laci pun otomatis
+     "satu layer" dengan konten (sama-sama anak normal #app), bukan lagi
+     elemen fixed yang melayang sendiri. */
+  /* #app jadi flex column: navbar di baris atas (tinggi secukupnya), baris
+     konten (#app-content-row) mengisi sisa tinggi layar. Ini perlu supaya
+     trik "dorong footer ke bawah" yang dipindah ke #app-main-col (lihat
+     page-menu-drawer.js) tetap bisa mengukur tinggi penuh dengan benar.
+     Untuk halaman yang sebelumnya tidak memakai flex sama sekali di #app,
+     ini tidak mengubah tampilan (navbar tetap di atas, konten tetap di
+     bawahnya secara berurutan seperti block biasa). */
+  #app {
+    display: flex;
+    flex-direction: column;
+  }
+  #app-content-row {
+    display: flex;
+    align-items: flex-start;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  #app-main-col {
+    flex: 1 1 auto;
+    min-width: 0; /* jaga-jaga: cegah konten dgn lebar tetap bikin flex row overflow */
+  }
+
   #page-menu-dropdown.page-menu-dropdown {
-    position: fixed;
-    /* Laci dimulai TEPAT di bawah nav-bar (bukan dari y:0 lagi), pakai
-       --nav-h yang dihitung JS dari tinggi nav-bar asli. Ini ngasih ruang
-       ke nav-bar supaya bisa full-bleed sampai ujung layar (lihat rule
-       .nav-bar di bawah) tanpa ketiban laci, dan laci jadi sejajar persis
-       dengan bagian atas banner — gak nutupin banner sedikit pun. */
+    position: sticky;
+    /* Nempel tepat di bawah navbar (bukan di y:0), pakai --nav-h yang
+       dihitung JS dari tinggi navbar asli — supaya laci tidak ketiban
+       navbar yang juga sticky di y:0. */
     top: var(--nav-h, 64px);
-    height: calc(100dvh - var(--nav-h, 64px));
+    align-self: flex-start;
+    flex: 0 0 260px;
     width: 260px;
     max-width: 260px;
+    max-height: calc(100dvh - var(--nav-h, 64px));
+    height: auto;
+    overflow-y: auto;
     visibility: visible !important;
     pointer-events: auto !important;
     transform: translateX(0) !important;
     box-shadow: -6px 0 24px rgba(0, 0, 0, 0.12);
     border-left: 1px solid var(--border);
-    /* z-index diturunin (dari 4001 bawaan mobile) supaya laci ini gak lagi
-       nangkring di atas modal/lightbox (mis. lightbox foto ranking, modal
-       detail model/video, dll — semuanya pakai z-index 100-200-an). Tetap
-       lebih tinggi dari nav-bar(40)/filter-board(30) biar laci selalu di
-       atas konten biasa. */
-    z-index: 60;
+    z-index: 30;
   }
 
   .page-menu-drawer-close { display: none; }
 
-  /* NAV-BAR SEKARANG SATU "LAYER" DENGAN LACI: sama-sama `position: fixed`
-     terhadap viewport asli (bukan lagi `sticky` + trik lebar-lalu-ditarik-
-     balik pakai margin negatif). Alasan diganti: teknik margin negatif
-     sebelumnya membuat kotak nav-bar SUNGGUHAN lebih lebar dari 100vw,
-     yang di beberapa browser/WebView mobile tetap bisa "kepotong" (nyisain
-     lubang kosong) atau malah menciptakan area yang bisa digeser meski
-     overflow-x sudah dikunci hidden. Dengan `position: fixed; width: 100vw`
-     di sini, nav-bar TIDAK PERNAH lebih lebar dari layar — jadi tidak ada
-     lagi yang bisa kepotong maupun digeser, sekaligus otomatis selalu
-     nutup penuh sampai ke-2 ujung layar tanpa trik tambahan apapun. Laci
-     (`#page-menu-dropdown`) tetap persis di posisi & ukuran yang sama
-     seperti sebelumnya (tidak disentuh). */
-  .nav-bar,
-  .navbar {
-    position: fixed !important;
+  /* Navbar: `position: sticky` (BUKAN fixed lagi), tetap paling atas
+     dan sekarang betul-betul memanjang penuh sampai ke-2 ujung layar
+     TANPA reservasi lebar apa pun — karena laci (#page-menu-dropdown)
+     sudah tidak lagi sejajar horizontal dengan navbar (laci ada di baris
+     konten DI BAWAH navbar, lihat #app-content-row di atas), jadi navbar
+     tidak perlu berhenti lebih awal untuk memberi ruang ke laci.
+     `.navbar` (halaman Member) dipisah ke rule sendiri di bawah supaya
+     z-index bawaannya (yang lebih tinggi, dipakai buat dropdown lain di
+     halaman itu) TIDAK ikut tertimpa — hanya position yang disamakan. */
+  .nav-bar {
+    position: sticky !important;
     top: 0;
-    left: 0;
-    /* Lebar nav-bar TIDAK LAGI dihitung manual lewat "width:100vw +
-       padding-right:260px" (kombinasi itu yang sebelumnya gampang meleset
-       kalau ketemu sisa efek `zoom` atau pembulatan sub-pixel, sehingga
-       muncul celah kosong sebelum laci meski nilainya sudah 260px sama-sama).
-       Sekarang dipakai anchor kiri+kanan langsung: `left:0` + `right:260px`
-       membuat browser SENDIRI yang menghitung lebar = (lebar layar - 260px),
-       persis pas dengan tepi kiri laci (`#page-menu-dropdown`, yang juga
-       260px & nempel `right:0`) — tidak ada lagi rumus manual yang bisa
-       meleset. `width` & `padding-right` lama dilepas total. */
-    right: 260px;
-    width: auto;
-    box-sizing: border-box;
-    margin-right: 0;
-    padding-right: 0;
+    width: 100%;
+    flex-shrink: 0;
     z-index: 40;
+  }
+  .navbar {
+    position: sticky !important;
+    top: 0;
+    width: 100%;
+    flex-shrink: 0;
   }
 }

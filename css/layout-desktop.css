@@ -129,20 +129,19 @@
 
   /* Navbar utama (Beranda & semua halaman lain yang memakai struktur
      ".nav-bar > .max-w-7xl"): isi baris DIPANJANGKAN penuh sampai ke
-     ujung layar — kiri (logo) & kanan (menu/tombol, sampai tepat di
-     sebelah laci "Menu Halaman" yang ruangnya sudah disisakan lewat
-     anchor `right:260px` pada .nav-bar itu sendiri, lihat page-menu-drawer.css).
-     max-width dihapus (bukan lagi calc(var(--afi-max) + 80px)) karena
-     itulah yang sebelumnya menyisakan celah kosong antara tombol navbar
-     dan laci menu — sekarang navbar tampil edge-to-edge seperti navbar
-     situs lain, logo & menu tidak lagi "mengambang" di tengah. */
+     KEDUA ujung layar — sekarang simetris kiri-kanan, karena laci "Menu
+     Halaman" sudah tidak lagi sejajar horizontal dengan navbar (laci
+     sekarang ada di baris konten DI BAWAH navbar lewat flexbox, lihat
+     #app-content-row di page-menu-drawer.css), jadi navbar tidak perlu
+     menyisakan ruang di kanan untuk laci sama sekali. max-width dihapus
+     total supaya navbar tampil edge-to-edge seperti navbar situs lain. */
   .nav-bar > .max-w-7xl {
     max-width: none;
     width: 100%;
     margin-left: 0;
     margin-right: 0;
     padding-left: var(--afi-pad);
-    padding-right: calc(var(--afi-pad) - 24px);
+    padding-right: var(--afi-pad);
     padding-top: 10px;
     padding-bottom: 10px;
   }
