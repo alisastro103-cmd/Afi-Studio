@@ -29,11 +29,36 @@
    ========================================================================= */
 
 .filter-board {
-  position: relative;
-  z-index: 30;
+  display: none;
+  position: sticky;
+  /* Nempel tepat di bawah navbar (pakai --nav-h yang sama dipakai navbar/
+     laci menu), jadi board pencarian ini ikut ke mana pun navbar "diam"
+     saat discroll — bukan cuma numpang di alur konten biasa yang bisa
+     ikut ke-scroll lewat & hilang dari layar. */
+  top: var(--nav-h, 64px);
+  z-index: 25;
   width: 100%;
   margin: 0 0 18px;
+  padding-top: 10px;
+  background: var(--bg);
 }
+.filter-board.open {
+  display: block;
+}
+
+/* Tombol kaca pembesar di navbar (buka/tutup filter-board) */
+.search-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  padding: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.search-toggle-btn:hover { opacity: 0.75; }
+.search-toggle-btn.active { color: var(--accent); }
 
 .filter-board-panel {
   display: flex;

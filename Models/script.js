@@ -113,7 +113,7 @@ function updateCategoryDropdownLabel() {
     const label = document.getElementById('category-dropdown-label');
     const btn = label ? label.closest('.filter-dropdown-btn') : null;
     if (!label) return;
-    label.textContent = activeCategory === 'Semua' ? 'Kategori' : activeCategory;
+    label.textContent = activeCategory === 'Semua' ? 'Tipe' : activeCategory;
     if (btn) btn.classList.toggle('has-active', activeCategory !== 'Semua');
 }
 

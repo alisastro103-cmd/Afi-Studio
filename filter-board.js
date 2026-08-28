@@ -25,9 +25,46 @@
     });
   }
 
+  function initSearchToggle() {
+    var toggleBtn = document.getElementById('search-toggle-btn');
+    var board = document.getElementById('filter-board-main') || document.querySelector('.filter-board');
+    if (!toggleBtn || !board) return;
+
+    function setOpen(open) {
+      board.classList.toggle('open', open);
+      toggleBtn.classList.toggle('active', open);
+      toggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (!open) {
+        closeAllDrawers(null);
+      } else {
+        var input = board.querySelector('.filter-search-input');
+        if (input) {
+          window.setTimeout(function () { input.focus(); }, 60);
+        }
+      }
+    }
+
+    toggleBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setOpen(!board.classList.contains('open'));
+    });
+
+    // Klik di luar board & di luar tombolnya sendiri -> tutup board.
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('.filter-board') || e.target.closest('#search-toggle-btn')) return;
+      if (board.classList.contains('open')) setOpen(false);
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && board.classList.contains('open')) setOpen(false);
+    });
+  }
+
   function init() {
     const boards = document.querySelectorAll('.filter-board');
     if (!boards.length) return;
+
+    initSearchToggle();
 
     document.querySelectorAll('.filter-dropdown-btn[data-drawer-target]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
