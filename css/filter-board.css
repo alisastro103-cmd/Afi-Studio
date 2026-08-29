@@ -128,7 +128,15 @@
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  overflow: hidden;
+  /* PENTING: sebelumnya "overflow: hidden" di sini (buat mastiin efek
+     kaca buram ikut kepotong sudut membulat). Tapi laci kategori
+     (.filter-drawer) posisinya absolute di DALAM .filter-dropdown-wrap,
+     yang notabene anak dari panel ini juga -- jadi ikut kepotong/​​
+     disembunyikan oleh overflow:hidden itu dan laci JADI GAK PERNAH
+     KELIHATAN sama sekali waktu dibuka (bug "kategori gak muncul").
+     Dihapus overflow-nya; sudut tetap membulat dari border-radius pada
+     box panel itu sendiri, cuma sekarang laci popup-nya bisa "keluar"
+     dari batas panel dan tampil sebagaimana mestinya. */
 }
 
 /* --- Kolom pencarian --- */
