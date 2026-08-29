@@ -81,6 +81,15 @@
     right: 260px;
   }
 }
+/* Mobile/tablet (<1024px) doang: board kemarin nempel banget ke navbar
+   (jaraknya cuma dari tinggi navbar doang, 0 gap tambahan). Dikasih jarak
+   ekstra dikit dari bawah navbar supaya gak "nempel" — desktop TIDAK
+   disentuh sama sekali (sudah pas). */
+@media (max-width: 1023.98px) {
+  .filter-board {
+    top: calc(var(--nav-h, 64px) + 10px);
+  }
+}
 
 /* Tombol kaca pembesar di navbar (buka/tutup filter-board). Sengaja TIDAK
    ganti warna (tetap warna teks biasa, var(--text)) waktu aktif — cukup
@@ -105,8 +114,11 @@
   display: flex;
   align-items: stretch;
   /* Diturunkan dari 94% ke 45% supaya beneran tembus pandang (efek
-     "kaca buram"), bukan hampir solid seperti sebelumnya. */
-  background: color-mix(in srgb, var(--surface) 45%, transparent);
+     "kaca buram"), bukan hampir solid seperti sebelumnya. Lalu dilapis
+     tint hitam tipis (linear-gradient rgba(0,0,0,.14) di atas warna kaca)
+     supaya sedikit lebih gelap & teks lebih gampang dibaca, tapi tetap
+     transparan tembus pandang & buram (bukan jadi solid). */
+  background: linear-gradient(rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.14)), color-mix(in srgb, var(--surface) 45%, transparent);
   border: 1px solid var(--border);
   /* Kotak panjang biasa dengan sudut tumpul TIPIS (bukan 999px = pil
      bulat, dan bukan 25% = melengkung berlebihan sampai kelihatan
@@ -314,5 +326,16 @@
     left: 12px;
     width: 15px;
     height: 15px;
+  }
+}
+
+/* Posisi popup laci kategori (.filter-drawer) di mobile/tablet (<1024px):
+   digeser dikit ke kanan & dinaikkan dikit ke atas dari posisi default,
+   supaya lebih nempel pas ke tombol dropdown-nya. Desktop (>=1024px)
+   TIDAK disentuh sama sekali — posisinya sudah pas. */
+@media (max-width: 1023.98px) {
+  .filter-drawer {
+    right: -8px;
+    top: calc(100% + 4px);
   }
 }
