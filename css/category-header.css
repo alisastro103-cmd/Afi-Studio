@@ -1,0 +1,37 @@
+/* =========================================================================
+   Afi Studio — Category / Section Header (judul di atas grid konten)
+   -------------------------------------------------------------------------
+   Dipakai di Beranda ("SEMUA ITEM", "Video & Tutorial"), Models, Video &
+   Tutorial ("Semua Video & Tutorial", "Baru saja dinonton"), dan Favorit
+   ("Model Favorit", "Video Favorit").
+
+   File ini SATU-SATUNYA sumber style untuk ".category-header" — sebelumnya
+   tiap halaman punya blok <style> sendiri-sendiri yang gampang beda-beda
+   tanpa sadar. Sekarang semua halaman load file SHARED ini supaya font,
+   ukuran, dan format-nya PASTI SAMA PERSIS di halaman manapun.
+   ========================================================================= */
+
+.category-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 1;
+  color: var(--text);
+  margin-left: 10px;
+}
+@media (min-width: 640px) {
+  .category-header { font-size: 28px; margin-left: 16px; }
+}
+
+/* Ikon opsional di depan judul (dipakai di halaman Video & Tutorial) */
+.category-header-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--text);
+}

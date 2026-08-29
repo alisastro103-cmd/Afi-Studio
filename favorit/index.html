@@ -82,20 +82,8 @@
 
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 
-        .category-header {
-            display: block;
-            font-family: 'Outfit', sans-serif;
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: 0;
-            text-transform: none;
-            opacity: 1;
-            color: var(--text);
-            margin-left: 10px;
-        }
-        @media (min-width: 640px) {
-            .category-header { font-size: 28px; margin-left: 16px; }
-        }
+        /* .category-header sekarang ada di /css/category-header.css (shared,
+           supaya format-nya pasti sama persis di semua halaman). */
 
         main {
             opacity: 0;
@@ -226,6 +214,7 @@
     <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
     <link rel="stylesheet" href="/css/page-menu-drawer.css">
     <link rel="stylesheet" href="/css/skeleton-shimmer.css">
+    <link rel="stylesheet" href="/css/category-header.css">
 </head>
 
 <body class="h-full">
