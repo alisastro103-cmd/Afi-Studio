@@ -231,15 +231,29 @@
 }
 
 /* --- Laci (drawer) kategori: TAMPIL SEBAGAI POPUP KECIL MELAYANG di
-   bawah tombol dropdown-nya (bukan lagi laci lebar isi chip yang
-   nge-wrap 2 baris penuh kayak sebelumnya). Diposisikan absolute nempel
-   ke pojok kanan board, isinya list vertikal satu kategori per baris —
-   mirip menu dropdown biasa. --- */
+   bawah tombol dropdown-nya, list vertikal satu kategori per baris —
+   mirip menu dropdown biasa.
+
+   PENTING (diganti dari position:absolute ke position:fixed): dulu
+   posisinya dihitung relatif ke box ".filter-board" (top:100% + right:0),
+   yang secara matematis SEHARUSNYA jatuh tepat di bawah tombol — tapi
+   itu cuma bener kalau tombolnya persis nempel ke tepi kanan board.
+   Begitu ada elemen lain (mis. tombol kedua di halaman Models, atau
+   perubahan lebar/padding board), hasilnya gampang meleset dan
+   "nempel" di posisi lama walau CSS-nya sudah diubah — karena dasarnya
+   memang cuma tebakan geometri, bukan posisi tombol yang sebenarnya.
+
+   Sekarang laci ini position:fixed dan top/left-nya di-set lewat
+   JavaScript (filter-board.js) berdasarkan getBoundingClientRect() dari
+   tombol yang benar-benar diklik, tiap kali dibuka. Jadi popup SELALU
+   nempel presisi tepat di bawah tombolnya, di halaman manapun & berapa
+   pun jumlah tombolnya. top/left di bawah ini cuma nilai fallback awal
+   sebelum JS sempat menghitung. */
 .filter-drawer {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  z-index: 45;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 46;
   width: max-content;
   min-width: 148px;
   max-width: calc(100vw - 32px);
@@ -329,13 +343,9 @@
   }
 }
 
-/* Posisi popup laci kategori (.filter-drawer) di mobile/tablet (<1024px):
-   digeser dikit ke kanan & dinaikkan dikit ke atas dari posisi default,
-   supaya lebih nempel pas ke tombol dropdown-nya. Desktop (>=1024px)
-   TIDAK disentuh sama sekali — posisinya sudah pas. */
-@media (max-width: 1023.98px) {
-  .filter-drawer {
-    right: -8px;
-    top: calc(100% + 4px);
-  }
-}
+/* Catatan: dulu ada override posisi khusus mobile/tablet di sini
+   (geser -8px / +4px, relatif ke board). Sudah tidak dipakai lagi
+   karena top/left laci sekarang dihitung presisi lewat JS langsung dari
+   posisi tombolnya (lihat komentar di aturan .filter-drawer di atas) —
+   otomatis pas di semua ukuran layar tanpa override manual per
+   breakpoint. */

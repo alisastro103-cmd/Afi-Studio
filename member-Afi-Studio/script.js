@@ -79,7 +79,10 @@ function openModal(gen, index) {
         const link = m.socials[key];
         if (link && link.trim() !== "") {
             const iconData = getIcon(key);
-            socialHtml += `<a href="${link}" target="_blank" class="social-btn" style="background-color: ${iconData.color}">${iconData.svg}</a>`;
+            // Board warna di belakang ikon (background-color) udah gak
+            // dipakai lagi — sekarang cuma render ikonnya aja polos
+            // putih, tanpa kotak background tambahan.
+            socialHtml += `<a href="${link}" target="_blank" class="social-btn">${iconData.svg}</a>`;
         }
     }
 

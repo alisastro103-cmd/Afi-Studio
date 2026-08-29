@@ -347,15 +347,19 @@
 
         .modal-subtext { font-family: var(--font-secondary); font-size: 14px; color: var(--text-sub); margin-top: 5px; line-height: 1.3; }
  
-        .social-container { display: flex; flex-direction: row; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+        .social-container { display: flex; flex-direction: row; gap: 14px; margin-top: 20px; flex-wrap: wrap; }
         .social-btn {
+            /* Board/kotak warna di belakang tiap ikon udah dihapus —
+               sekarang cuma ikonnya aja polos (putih), gak ada
+               background tambahan lagi. Ukuran tap-target tetap dijaga
+               32x32 lewat width/height di sini biar tetap enak dipencet
+               di HP, cuma dijadiin transparan (bukan kotak warna). */
             display: flex; align-items: center; justify-content: center;
-            width: 32px; height: 32px; border-radius: 8px;
+            width: 32px; height: 32px;
             text-decoration: none; transition: transform 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .social-btn:hover { transform: translateY(-2px); }
-        .social-btn svg { width: 18px; height: 18px; fill: #ffffff; }
+        .social-btn svg { width: 24px; height: 24px; fill: #ffffff; }
  
         .footer { margin-top: auto; display: flex; justify-content: center; padding-bottom: 30px; padding-top: 40px; }
         .selection-btn { 
