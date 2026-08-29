@@ -3,52 +3,25 @@
  * pencarian + kategori gabungan. Dipakai di Beranda, Models, dan Video &
  * Tutorial lewat <script src="/filter-board.js" defer>.
  *
- * Tiap tombol dropdown ".filter-dropdown-btn" ditandai
- * data-drawer-target="ID_LACI" yang menunjuk ke elemen ".filter-drawer"
- * dengan id yang sama. Klik tombolnya => toggle class "open" di tombol
- * & lacinya. Cuma satu laci yang boleh terbuka dalam satu waktu (kalau ada
- * 2 dropdown, misal di halaman Models), dan laci otomatis tertutup kalau
+ * Tiap tombol dropdown ".filter-dropdown-btn" dibungkus bareng laci
+ * ".filter-drawer"-nya di dalam satu ".filter-dropdown-wrap" (lihat
+ * index.html / Models/index.html), dan ditandai
+ * data-drawer-target="ID_LACI" yang menunjuk ke id laci itu. Posisi
+ * laci (nempel tepat di bawah tombolnya) sepenuhnya ditangani CSS lewat
+ * wrapper itu (position:relative + laci position:absolute di
+ * dalamnya) — jadi skrip ini CUMA urusan toggle buka/tutup, tidak ada
+ * hitung-hitungan piksel/koordinat sama sekali. Ini sengaja: pendekatan
+ * berbasis JS (getBoundingClientRect) sebelumnya rapuh kalau halaman
+ * dirender di dalam pembungkus yang men-scale tampilan (mis. mode
+ * preview device/zoom), karena bisa bikin arah meleset X di satu
+ * kondisi dan Y di kondisi lain. CSS relative/absolute murni tidak
+ * punya masalah itu karena browser yang urus konversi koordinatnya.
+ *
+ * Cuma satu laci yang boleh terbuka dalam satu waktu (kalau ada 2
+ * dropdown, misal di halaman Models), dan laci otomatis tertutup kalau
  * klik di luar board.
  */
 (function () {
-  // Menempelkan laci (drawer) persis di bawah tombol yang memicunya,
-  // dihitung dari posisi ASLI tombol di layar (getBoundingClientRect),
-  // bukan lagi ditebak lewat CSS top/right statis relatif ke board.
-  // Ini yang bikin popup-nya selalu pas ke mana pun tombolnya berada,
-  // di layar berapa pun ukurannya, dan gak lagi "nempel" di posisi lama.
-  function positionDrawer(drawer, btn) {
-    const GAP = 8; // jarak popup ke tombol
-    const EDGE = 16; // jarak minimal ke tepi layar
-
-    // Reset dulu supaya lebar drawer terukur natural (max-content),
-    // baru diukur ulang setelah itu.
-    drawer.style.left = '0px';
-    drawer.style.top = '0px';
-
-    const btnRect = btn.getBoundingClientRect();
-    const drawerRect = drawer.getBoundingClientRect();
-
-    // Defaultnya rata kanan ke tombol (pojok kanan drawer = pojok kanan
-    // tombol), sama seperti tampilan dropdown pada umumnya.
-    let left = btnRect.right - drawerRect.width;
-    // Kalau kepentok tepi kiri layar, geser supaya tetap kelihatan penuh.
-    if (left < EDGE) left = Math.max(EDGE, btnRect.left);
-    // Kalau kepentok tepi kanan layar, tarik balik ke dalam.
-    const maxLeft = window.innerWidth - drawerRect.width - EDGE;
-    if (left > maxLeft) left = Math.max(EDGE, maxLeft);
-
-    let top = btnRect.bottom + GAP;
-    // Kalau ruang di bawah tombol gak cukup (mis. tombolnya di bagian
-    // bawah layar), tampilkan di ATAS tombol sebagai gantinya.
-    const spaceBelow = window.innerHeight - btnRect.bottom;
-    if (spaceBelow < drawerRect.height + GAP && btnRect.top > drawerRect.height + GAP) {
-      top = btnRect.top - drawerRect.height - GAP;
-    }
-
-    drawer.style.left = Math.round(left) + 'px';
-    drawer.style.top = Math.round(top) + 'px';
-  }
-
   function closeAllDrawers(except) {
     document.querySelectorAll('.filter-drawer.open').forEach((drawer) => {
       if (drawer === except) return;
@@ -113,22 +86,10 @@
 
         const willOpen = !drawer.classList.contains('open');
         closeAllDrawers(willOpen ? drawer : null);
-        if (willOpen) positionDrawer(drawer, btn);
         drawer.classList.toggle('open', willOpen);
         btn.classList.toggle('open', willOpen);
         btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
       });
-    });
-
-    // Kalau layar di-resize / HP diputar selagi laci lagi kebuka, hitung
-    // ulang posisinya supaya tetap pas nempel ke tombolnya.
-    window.addEventListener('resize', () => {
-      const openDrawer = document.querySelector('.filter-drawer.open');
-      if (!openDrawer) return;
-      const openBtn = document.querySelector(
-        '.filter-dropdown-btn[data-drawer-target="' + openDrawer.id + '"]'
-      );
-      if (openBtn) positionDrawer(openDrawer, openBtn);
     });
 
     // Klik di luar board manapun -> tutup semua laci yang lagi terbuka.

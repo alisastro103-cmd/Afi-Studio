@@ -230,29 +230,34 @@
   opacity: 0.75;
 }
 
-/* --- Laci (drawer) kategori: TAMPIL SEBAGAI POPUP KECIL MELAYANG di
-   bawah tombol dropdown-nya, list vertikal satu kategori per baris —
-   mirip menu dropdown biasa.
+/* --- Wrapper kecil buat 1 pasang tombol dropdown + laci kategorinya.
+   Ini kuncinya: laci sekarang posisinya absolute relatif ke WRAPPER
+   TOMBOLNYA SENDIRI (bukan lagi ke seluruh board / dihitung manual
+   pakai JS-piksel). Karena murni CSS relative->absolute biasa, posisinya
+   otomatis ngikutin persis di bawah tombolnya di ukuran layar & kondisi
+   render apapun (termasuk kalau ada pembungkus device-preview/zoom yang
+   men-scale halaman) — beda dgn pendekatan sebelumnya (position:fixed +
+   getBoundingClientRect di JS) yang bisa meleset kalau ada ancestor
+   ber-transform, karena hitungan JS berbasis koordinat layar sementara
+   containing block fixed-nya jadi ancestor itu tadi (bukan viewport
+   asli), jadi arah mesetnya bisa X di satu kondisi & Y di kondisi lain
+   — persis gejala yang dilaporkan. Pola relative/absolute murni CSS ini
+   tidak punya celah itu sama sekali. */
+.filter-dropdown-wrap {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+}
 
-   PENTING (diganti dari position:absolute ke position:fixed): dulu
-   posisinya dihitung relatif ke box ".filter-board" (top:100% + right:0),
-   yang secara matematis SEHARUSNYA jatuh tepat di bawah tombol — tapi
-   itu cuma bener kalau tombolnya persis nempel ke tepi kanan board.
-   Begitu ada elemen lain (mis. tombol kedua di halaman Models, atau
-   perubahan lebar/padding board), hasilnya gampang meleset dan
-   "nempel" di posisi lama walau CSS-nya sudah diubah — karena dasarnya
-   memang cuma tebakan geometri, bukan posisi tombol yang sebenarnya.
-
-   Sekarang laci ini position:fixed dan top/left-nya di-set lewat
-   JavaScript (filter-board.js) berdasarkan getBoundingClientRect() dari
-   tombol yang benar-benar diklik, tiap kali dibuka. Jadi popup SELALU
-   nempel presisi tepat di bawah tombolnya, di halaman manapun & berapa
-   pun jumlah tombolnya. top/left di bawah ini cuma nilai fallback awal
-   sebelum JS sempat menghitung. */
+/* --- Laci (drawer) kategori: TAMPIL SEBAGAI POPUP KECIL MELAYANG tepat
+   di bawah tombolnya, list vertikal satu kategori per baris — mirip
+   menu dropdown biasa. Diposisikan absolute relatif ke
+   ".filter-dropdown-wrap" (wrapper tombolnya sendiri, lihat di atas),
+   BUKAN ke seluruh ".filter-board" lagi. */
 .filter-drawer {
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
   z-index: 46;
   width: max-content;
   min-width: 148px;
@@ -344,8 +349,8 @@
 }
 
 /* Catatan: dulu ada override posisi khusus mobile/tablet di sini
-   (geser -8px / +4px, relatif ke board). Sudah tidak dipakai lagi
-   karena top/left laci sekarang dihitung presisi lewat JS langsung dari
-   posisi tombolnya (lihat komentar di aturan .filter-drawer di atas) —
-   otomatis pas di semua ukuran layar tanpa override manual per
-   breakpoint. */
+   (pertama geser -8px/+4px relatif ke board, lalu sempat diganti hitung
+   piksel pakai JS). Sudah tidak dipakai lagi — sekarang laci ditempel
+   ke wrapper tombolnya sendiri pakai CSS relative/absolute biasa (lihat
+   .filter-dropdown-wrap & .filter-drawer di atas), jadi otomatis pas di
+   semua ukuran layar tanpa override manual apapun. */
