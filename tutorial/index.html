@@ -94,8 +94,15 @@
            /css/category-header.css (shared, supaya format-nya pasti sama
            persis di semua halaman). */
 
-        /* Transisi masuk konten halaman, senada dengan halaman lain (member-Afi-Studio, Models) */
-        main {
+        /* Transisi masuk konten halaman, senada dengan halaman lain (member-Afi-Studio, Models).
+           PENTING: sengaja TIDAK ditaruh di elemen <main> langsung. `transform` di elemen manapun
+           bikin dia jadi containing block baru buat descendant yang `position: fixed` -- dan
+           `.filter-board` (kolom pencarian) adalah anak langsung <main> yang butuh fixed relatif
+           ke VIEWPORT (bukan ke <main>). Itu penyebab bug kolom pencarian gak ngikutin navbar &
+           panjangnya beda di halaman ini. Makanya animasinya dipindah ke wrapper ".page-fade-in"
+           yang cuma membungkus konten di BAWAH filter-board, supaya <main> sendiri tetap tanpa
+           transform. */
+        .page-fade-in {
             opacity: 0;
             transform: translateY(10px);
             animation: section-fade-in 0.5s ease forwards;
@@ -418,24 +425,26 @@
                     </div>
                 </div>
 
-                <div id="popular-section" class="mb-8" style="display: none;">
+                <div class="page-fade-in">
+                    <div id="popular-section" class="mb-8" style="display: none;">
+                        <div class="mt-2 mb-4">
+                            <h2 class="category-header">
+                                <svg class="category-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+                                Baru saja dinonton
+                            </h2>
+                        </div>
+                        <section class="recent-scroll no-scrollbar" id="popular-grid"></section>
+                    </div>
+
                     <div class="mt-2 mb-4">
                         <h2 class="category-header">
-                            <svg class="category-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
-                            Baru saja dinonton
+                            <svg class="category-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="15" height="13" rx="2"></rect><path d="M17 10.5 22 7v11l-5-3.5"></path></svg>
+                            Semua Video &amp; Tutorial
                         </h2>
                     </div>
-                    <section class="recent-scroll no-scrollbar" id="popular-grid"></section>
-                </div>
 
-                <div class="mt-2 mb-4">
-                    <h2 class="category-header">
-                        <svg class="category-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="15" height="13" rx="2"></rect><path d="M17 10.5 22 7v11l-5-3.5"></path></svg>
-                        Semua Video &amp; Tutorial
-                    </h2>
+                    <section class="tutorial-grid" id="content-grid"></section>
                 </div>
-
-                <section class="tutorial-grid" id="content-grid"></section>
             </main>
         </div>
 
