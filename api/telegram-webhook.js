@@ -647,6 +647,40 @@ async function cmdSetSurveyThumb(id, url) {
   await tgSend(`Thumbnail survey <code>${id}</code> diganti ke:\n${url}`);
 }
 
+// Sama kayak cmdSetSurveyThumb, tapi sumbernya FOTO yang dikirim langsung ke bot (bukan
+// link). Disimpan sebagai data: URI di field survey.thumbnail (persis seperti mode "Upload"
+// di panel admin) — bukan commit ke GitHub, karena ini per-survey (gak perlu redeploy situs).
+// Gambar dikompres ke WebP dan dibatasi lebarnya supaya hasilnya jauh di bawah ~300KB, soalnya
+// WhatsApp diam-diam GAK nampilin og:image kalau ukuran filenya kelewat besar.
+async function cmdSetSurveyThumbFromPhoto(id, fileId) {
+  if (!redis) return tgSend('Redis belum dikonfigurasi di server.');
+  try {
+    await tgSend('Lagi proses... ambil & kompres gambarnya.');
+    const fileUrl = await tgGetFileUrl(fileId);
+    const imgResp = await fetch(fileUrl);
+    if (!imgResp.ok) throw new Error('Gagal download gambar dari Telegram.');
+    const original = Buffer.from(await imgResp.arrayBuffer());
+
+    let converted = await sharp(original).resize({ width: 1200, withoutEnlargement: true }).webp({ quality: 78 }).toBuffer();
+    if (converted.length > 280 * 1024) {
+      converted = await sharp(original).resize({ width: 900, withoutEnlargement: true }).webp({ quality: 60 }).toBuffer();
+    }
+
+    const list = (await redis.get(SURVEYS_KEY)) || [];
+    if (!Array.isArray(list)) return tgSend('Data survey kosong/rusak.');
+    const idx = list.findIndex(s => s.id === id);
+    if (idx === -1) return tgSend(`Gak ketemu survey dengan id "${escHtml(id)}".`);
+    list[idx] = { ...list[idx], thumbnail: `data:image/webp;base64,${converted.toString('base64')}` };
+    await redis.set(SURVEYS_KEY, list);
+    await tgSend(
+      `Thumbnail survey <code>${id}</code> berhasil diganti dari foto (±${Math.round(converted.length / 1024)}KB).\n` +
+      'Cek lagi dalam semenit di link preview WhatsApp/Discord (mungkin perlu di-refresh cache preview-nya kalau link-nya udah pernah dibagikan sebelumnya).'
+    );
+  } catch (e) {
+    await tgSend(`Gagal ganti thumbnail survey: ${escHtml(e.message)}`);
+  }
+}
+
 // --- Convert thumbnail pendaftaran model ke WebP/AVIF, on-demand ---
 // Dipicu tombol yang nempel di pesan dokumen thumbnail (dikirim apa adanya
 // oleh model-submit.js). File ASLI diambil ulang dari Telegram (bukan dari
@@ -1432,8 +1466,22 @@ async function processCallback(cq) {
   }
   if (data.startsWith('survthumb:')) {
     const surveyId = data.slice('survthumb:'.length);
+    return tgSendOrEdit(chatId, messageId, `Thumbnail survey <code>${surveyId}</code> mau diganti pakai apa?`, {
+      inline_keyboard: [
+        [{ text: '🔗 Link gambar', callback_data: `survthumblink:${surveyId}` }, { text: '📤 Upload foto', callback_data: `survthumbfile:${surveyId}` }],
+        [{ text: '⬅️ Kembali', callback_data: 'thumb:survey' }],
+      ],
+    });
+  }
+  if (data.startsWith('survthumblink:')) {
+    const surveyId = data.slice('survthumblink:'.length);
     await setState(chatId, { action: 'awaiting_thumb_link', target: 'survey', surveyId });
     return tgSendOrEdit(chatId, messageId, `Oke, kirim link thumbnail buat survey <code>${surveyId}</code> (harus http:// atau https://).`);
+  }
+  if (data.startsWith('survthumbfile:')) {
+    const surveyId = data.slice('survthumbfile:'.length);
+    await setState(chatId, { action: 'awaiting_thumb_photo', target: 'survey', surveyId });
+    return tgSendOrEdit(chatId, messageId, `Oke, kirim FOTO-nya langsung buat survey <code>${surveyId}</code> (bukan dikirim sebagai dokumen/file).`);
   }
 
   if (data === 'backup:create') { await cmdBackup(); return; }
@@ -1606,6 +1654,7 @@ async function processUpdate(update) {
           await clearState(chatId);
           const largest = message.photo[message.photo.length - 1];
           if (state.target === 'main') await cmdSetThumbFromPhoto(largest.file_id);
+          else if (state.target === 'survey' && state.surveyId) await cmdSetSurveyThumbFromPhoto(state.surveyId, largest.file_id);
           return;
         }
         if ((message.photo || message.document) && state.action === 'awaiting_convertimg_image') {
