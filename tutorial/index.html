@@ -83,18 +83,9 @@
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 
         .nav-brand { margin-left: 6px; }
-        .nav-links { display: none; align-items: center; gap: 4px; margin-right: 20px; }
-        .nav-link {
-          display: flex; align-items: center; padding: 6px 10px; border-radius: 6px;
-          color: var(--text-sub); text-decoration: none; font-size: 13px; font-weight: 500;
-          font-family: 'Outfit', sans-serif; white-space: nowrap;
-          transition: color 0.15s ease, background 0.15s ease;
-        }
-        .nav-link:hover { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); }
-        .nav-link.active { color: var(--text); font-weight: 700; }
-        .nav-link-wide { display: none; }
-        @media (min-width: 1024px) { .nav-links { display: flex; } }
-        @media (min-width: 1280px) { .nav-link-wide { display: flex; } }
+        /* .nav-links / .nav-link sekarang ada di /css/nav-links.css (shared,
+           termasuk animasi garis bawah aktif/hover), supaya sama persis di
+           semua halaman. */
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -348,6 +339,7 @@
     <link rel="stylesheet" href="/css/skeleton-shimmer.css">
     <link rel="stylesheet" href="/css/filter-board.css">
     <link rel="stylesheet" href="/css/category-header.css">
+    <link rel="stylesheet" href="/css/nav-links.css">
 </head>
 
 <body class="h-full">

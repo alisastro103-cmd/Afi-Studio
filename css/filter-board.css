@@ -42,7 +42,13 @@
      Board selalu position:fixed (baik lagi tertutup maupun terbuka) —
      ini yang bikin dia bisa dianimasikan pas muncul/tutup (transition
      opacity + transform), sekaligus tetap TIDAK memakan tempat di
-     layout <main> karena fixed selalu di luar alur dokumen normal. */
+     layout <main> karena fixed selalu di luar alur dokumen normal.
+
+     PENTING: wrapper ".filter-board" ini SENGAJA TIDAK dikasih
+     background/blur/shadow sendiri — dia cuma kontainer transparan buat
+     posisi & animasi muncul/tutup. Efek kaca buram yang sesungguhnya ada
+     di ".filter-board-panel" di bawah (itu kolom pencarian + tombol
+     dropdown-nya yang beneran kelihatan sebagai kartu kaca melayang). */
   display: block;
   position: fixed;
   top: var(--nav-h, 64px);
@@ -52,14 +58,7 @@
   max-width: 1152px; /* selaras dengan lebar kolom konten (main.max-w-6xl) */
   margin: 0 auto;
   padding: 12px 16px;
-  /* Kaca buram transparan, SAMA PERSIS seperti navbar (.nav-bar di
-     index.html/tutorial/index.html dst): warna latar campur transparan +
-     blur, jadi background di belakangnya (banner, konten) ikut kelihatan
-     buram tembus, bukan lagi solid nutup penuh seperti sebelumnya. */
-  background: color-mix(in srgb, var(--bg) 85%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+  background: transparent;
   /* Tersembunyi & tidak bisa diklik selagi tertutup, tapi tetap di DOM
      supaya transition-nya jalan mulus (bukan lompat display:none<->block
      yang tidak bisa dianimasikan). */
@@ -83,7 +82,10 @@
   }
 }
 
-/* Tombol kaca pembesar di navbar (buka/tutup filter-board) */
+/* Tombol kaca pembesar di navbar (buka/tutup filter-board). Sengaja TIDAK
+   ganti warna (tetap warna teks biasa, var(--text)) waktu aktif — cukup
+   membesar sedikit (scale) sebagai penanda "lagi aktif", lalu balik ke
+   ukuran normal begitu ditutup lagi. */
 .search-toggle-btn {
   display: flex;
   align-items: center;
@@ -93,9 +95,11 @@
   background: none;
   border: none;
   cursor: pointer;
+  transform: scale(1);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .search-toggle-btn:hover { opacity: 0.75; }
-.search-toggle-btn.active { color: var(--accent); }
+.search-toggle-btn.active { color: var(--text); transform: scale(1.25); }
 
 .filter-board-panel {
   display: flex;
