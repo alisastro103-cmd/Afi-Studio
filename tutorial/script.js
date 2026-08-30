@@ -116,17 +116,6 @@ function extractYouTubeId(url) {
     return match ? match[1] : null;
 }
 
-// Susunan kartu ala Pinterest untuk grid "Semua Video & Tutorial" -- logikanya
-// ada di /masonry.js (dipakai bareng beranda). Kolom & jarak disamain persis
-// dengan breakpoint .tutorial-grid yang lama (2 kolom di HP, 3 mulai 640px,
-// auto-fill 260px mulai 1024px) supaya tampilan tiap ukuran layar gak berubah.
-const videoMasonry = initMasonry('#content-grid', {
-    cardSelector: '.tutorial-card',
-    imageSelector: '.tutorial-thumb',
-    getColumns: (width) => window.innerWidth < 640 ? 2 : (window.innerWidth < 1024 ? 3 : Math.max(1, Math.floor((width + 14) / (260 + 14)))),
-    getGap: (w) => w < 640 ? 10 : (w < 1024 ? 14 : 14),
-});
-
 function videoCardHtml(v, index) {
     const id = extractYouTubeId(v.url);
     const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
@@ -163,7 +152,6 @@ function renderVideos(filter = '') {
         grid.innerHTML = filtered.map(v => videoCardHtml(v, VIDEOS.indexOf(v))).join('');
     }
     if (typeof lucide !== 'undefined') lucide.createIcons();
-    requestAnimationFrame(() => videoMasonry.relayout());
 }
 
 // Merender section "Baru saja dinonton" (riwayat nonton beneran, urut dari

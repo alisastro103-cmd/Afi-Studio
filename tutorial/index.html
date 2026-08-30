@@ -202,32 +202,9 @@
             line-height: 1.35;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
         @media (min-width: 640px) {
             .tutorial-card-title { padding: 8px 0 0; }
-        }
-
-        /* --- MASONRY ala Pinterest untuk grid "Semua Video & Tutorial" -----------
-           Sama seperti di beranda (lihat masonry.js): posisi tiap kartu diatur
-           lewat JS supaya video dengan judul pendek gak ikut memanjang samain
-           video judul panjang di sebelahnya. Tetap pakai class ".tutorial-grid"
-           yang sudah ada, cuma ditambah ".masonry-mode" biar kepisah dari
-           section "Baru saja dinonton" (#popular-grid) yang tetap scroll
-           horizontal seperti biasa. */
-        #content-grid.masonry-mode {
-            display: block;
-            position: relative;
-        }
-        #content-grid.masonry-mode .tutorial-card {
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: top 0.25s ease, left 0.25s ease;
         }
 
         /* Modal Styling (player video) */
@@ -466,7 +443,7 @@
                         </h2>
                     </div>
 
-                    <section class="tutorial-grid masonry-mode" id="content-grid"></section>
+                    <section class="tutorial-grid" id="content-grid"></section>
                 </div>
             </main>
         </div>
@@ -493,7 +470,6 @@
 
     <script src="/favorites.js"></script>
     <script src="/skeleton-loading.js"></script>
-    <script src="/masonry.js"></script>
     <script src="script.js"></script>
     <script src="/theme-toggle.js" defer></script>
     <script src="/filter-board.js" defer></script>
