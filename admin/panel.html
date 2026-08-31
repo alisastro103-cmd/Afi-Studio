@@ -1036,6 +1036,15 @@ document.addEventListener('input', e=>{
   if(e.target.tagName === 'TEXTAREA') autoGrowHeight(e.target);
 });
 function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+// Sama persis dengan formatRichText() di survey/index.html -- dipakai di
+// tampilan HASIL survey (bukan di textarea tempat admin ngetik) supaya
+// **tebal** dan *miring* kelihatan sama kayak yang dilihat pengisi survey.
+function formatRichText(s){
+  let safe = esc(s);
+  safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  return safe;
+}
 function ytThumb(url){
   const m = (url||'').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{6,})/);
   return m ? `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` : '';
@@ -2008,6 +2017,7 @@ function surveyFormHtml(bodyOnly){
           </div>
         </div>
         <textarea class="form-textarea" rows="2" placeholder="Tulis pertanyaan..." oninput="updateSurveyQuestion(${idx},'text',this.value)">${esc(q.text)}</textarea>
+        <div style="font-size:10.5px; color:var(--text-sub); margin:4px 0 0;">Bisa dipertebal/dimiringkan: ketik <code>**kata**</code> buat <b>tebal</b>, <code>*kata*</code> buat <i>miring</i>. Berlaku juga di teks opsi jawaban.</div>
         ${imageFieldHtml}
         <div class="flex items-center gap-2 mt-2">
           <select class="form-select" style="flex:1;" onchange="updateSurveyQuestionType(${idx},this.value)">
@@ -2210,16 +2220,16 @@ function renderSurveyResultsModal(data){
         const rows = (q.options||[]).map(o=>{
           const count = (q.counts && q.counts[o.id]) || 0;
           const pct = data.totalResponses ? Math.round((count/data.totalResponses)*100) : 0;
-          return `<div style="font-size:12px; display:flex; justify-content:space-between; margin-bottom:4px;"><span>${esc(o.label)}</span><span>${pct}% (${count})</span></div>
+          return `<div style="font-size:12px; display:flex; justify-content:space-between; margin-bottom:4px;"><span>${formatRichText(o.label)}</span><span>${pct}% (${count})</span></div>
             <div style="height:7px;border-radius:999px;background:var(--bg);border:1px solid var(--border);overflow:hidden;margin-bottom:8px;"><div style="height:100%;background:var(--accent-hover);width:${pct}%;"></div></div>`;
         }).join('');
-        return `<div class="panel p-3 mb-2"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${esc(q.text)}</div>${rows}</div>`;
+        return `<div class="panel p-3 mb-2"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${formatRichText(q.text)}</div>${rows}</div>`;
       }
       const texts = (q.texts||[]);
       const listHtml = texts.length
         ? texts.map(t=>`<div style="font-size:12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-bottom:6px;">${esc(t.value)}</div>`).join('')
         : `<div style="font-size:12px; color:var(--text-sub);">Belum ada jawaban teks.</div>`;
-      return `<div class="panel p-3 mb-2"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${esc(q.text)} <span style="font-weight:400; color:var(--text-sub);">(${texts.length} jawaban)</span></div>${listHtml}</div>`;
+      return `<div class="panel p-3 mb-2"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${formatRichText(q.text)} <span style="font-weight:400; color:var(--text-sub);">(${texts.length} jawaban)</span></div>${listHtml}</div>`;
     }).join('');
   }
   body += `<div class="flex justify-end mt-4"><button class="btn btn-outline" onclick="closeModal()">Tutup</button></div>`;

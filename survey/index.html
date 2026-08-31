@@ -612,16 +612,16 @@
         card.dataset.required = q.required ? '1' : '0';
 
         let inner = `<div class="q-number">Pertanyaan ${idx + 1} dari ${questions.length}</div>`;
-        inner += `<div class="q-text">${escapeHtml(q.text || '')}${q.required ? '<span class="q-required">*</span>' : ''}</div>`;
+        inner += `<div class="q-text">${formatRichText(q.text || '')}${q.required ? '<span class="q-required">*</span>' : ''}</div>`;
         if (q.image) inner += `<img class="q-image" src="${escapeAttr(q.image)}" alt="" loading="lazy" onerror="this.remove()">`;
 
         if (q.type === 'single') {
           (q.options || []).forEach(o => {
-            inner += `<label class="opt-row"><input type="radio" name="q_${q.id}" value="${escapeAttr(o.id)}"><span>${escapeHtml(o.label)}</span></label>`;
+            inner += `<label class="opt-row"><input type="radio" name="q_${q.id}" value="${escapeAttr(o.id)}"><span>${formatRichText(o.label)}</span></label>`;
           });
         } else if (q.type === 'multiple') {
           (q.options || []).forEach(o => {
-            inner += `<label class="opt-row"><input type="checkbox" name="q_${q.id}" value="${escapeAttr(o.id)}"><span>${escapeHtml(o.label)}</span></label>`;
+            inner += `<label class="opt-row"><input type="checkbox" name="q_${q.id}" value="${escapeAttr(o.id)}"><span>${formatRichText(o.label)}</span></label>`;
           });
         } else if (q.type === 'short_text') {
           inner += `<input class="form-input" type="text" maxlength="300" name="q_${q.id}" placeholder="Ketik jawaban singkat...">`;
@@ -664,6 +664,20 @@
       return d.innerHTML;
     }
     function escapeAttr(str) { return escapeHtml(str).replace(/"/g, '&quot;'); }
+
+    // Format teks pertanyaan/opsi survey supaya admin bisa nandain bagian
+    // penting pakai kode kecil ala Markdown: **kata** jadi TEBAL, *kata* jadi
+    // MIRING. PENTING soal urutan: teksnya di-escape DULU (escapeHtml) baru
+    // kode **/* di atasnya diubah jadi tag <strong>/<em> -- jadi kalau admin
+    // ngetik sesuatu yang kebetulan mirip HTML di teksnya, itu tetap aman
+    // tampil sebagai teks biasa, cuma dua kode ini doang yang diproses jadi
+    // tag sungguhan.
+    function formatRichText(str) {
+      let safe = escapeHtml(str);
+      safe = safe.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      safe = safe.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      return safe;
+    }
 
     async function submitSurvey() {
       const errBox = el('submit-error');

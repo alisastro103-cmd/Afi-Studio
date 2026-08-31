@@ -19,3 +19,4 @@ dist/*.map
 # Leftover/testing files
 Test.txt
 .env*
+.nomedia

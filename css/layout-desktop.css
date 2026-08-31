@@ -192,11 +192,6 @@
      Header seksi TANPA board/background — polos, cuma teks (sesuai desain
      asli), konsisten di semua halaman yang pakai .category-header. */
 
-  /* Board marquee (ticker berjalan) dihilangkan khusus desktop; nav-bar
-     tetap tampil seperti biasa, hanya "papan" tickernya yang dibuang. */
-  .marquee-bar {
-    display: none;
-  }
 
 }
 
