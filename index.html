@@ -260,11 +260,11 @@
             -webkit-touch-callout: none;
         }
         .banner-container:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        /* Padding-top trick: rasio banner 1200x600 = 2:1, jadi 600/1200 * 100 = 50% */
+        /* Padding-top trick: rasio banner 3:1 (2400x800), jadi 800/2400 * 100 = 33.33% */
         .banner-container::before {
             content: '';
             display: block;
-            padding-top: 50%;
+            padding-top: 33.33%;
         }
         .banner-container:active { cursor: grabbing; }
         
@@ -609,6 +609,7 @@
 
             <div class="mt-1 mb-2">
                 <h2 id="category-title" class="category-header">Semua Item</h2>
+                <span class="category-sub">Semua aset yang bisa kamu download gratis</span>
             </div>
 
             <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 grid-loading" id="content-grid"></section>
@@ -621,6 +622,7 @@
  
             <div class="mt-8" id="video-section" style="display:none;">
                 <h2 class="category-header mb-4">Video &amp; Tutorial</h2>
+                <span class="category-sub">Panduan rig, animasi, dan cara pakai aset</span>
                 <div class="flex gap-1 overflow-x-auto pb-2 no-scrollbar video-scroll" id="video-scroll"></div>
             </div>
 
@@ -687,9 +689,6 @@
     <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
         <div class="modal-box" onclick="event.stopPropagation()">
             <button id="model-fav-btn" class="modal-fav-btn" onclick="toggleCurrentModelFavorite()" aria-label="Tandai favorit"></button>
-            <button id="model-share-btn" class="modal-fav-btn modal-share-btn" onclick="handleShareModel()" aria-label="Salin link share model">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-            </button>
             <img id="modal-thumb" src="" class="w-full aspect-video object-cover" loading="lazy" decoding="async" alt="">
             <div class="p-5">
                 <h2 id="modal-title" class="text-xl font-bold mb-2"></h2>
@@ -697,7 +696,7 @@
                 <div id="info-container" class="rounded-xl p-4 mb-5 text-xs space-y-2" style="background: color-mix(in srgb, var(--accent) 10%, var(--surface));"></div>
                 <div class="flex flex-col gap-2">
                     <button class="w-full py-3.5 rounded-xl font-bold bg-[var(--accent)] text-white" onclick="handleDownload()">Download Now</button>
-                    <button class="w-full py-3.5 rounded-xl font-bold border border-[var(--border)]" onclick="handleCopyLink()">Copy Link</button>
+                    <button class="w-full py-3.5 rounded-xl font-bold border border-[var(--border)]" onclick="handleShareModel()">Bagikan</button>
                 </div>
             </div>
         </div>

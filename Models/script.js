@@ -359,15 +359,15 @@ function handleShareModel() {
         if (t) {
             const label = t.querySelector('span') || t;
             const original = label.textContent;
-            label.textContent = 'Link share disalin ke clipboard';
+            label.textContent = 'Link disalin ke clipboard';
             t.classList.remove('translate-y-20');
             setTimeout(() => { t.classList.add('translate-y-20'); label.textContent = original; }, 2000);
         }
     };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl).then(showToast).catch(() => prompt('Salin link ini:', shareUrl));
-    } else {
-        prompt('Salin link ini:', shareUrl);
+    if (navigator.share) {
+        navigator.share({ title: currentModel.name, url: shareUrl }).catch(() => {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(showToast).catch(() => {});
     }
 }
 

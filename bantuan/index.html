@@ -174,10 +174,12 @@
         .faq-question .q-icon { flex-shrink: 0; width: 18px; height: 18px; transition: transform 0.25s; color: #fff; }
         .faq-item.open .faq-question .q-icon { transform: rotate(45deg); }
         .faq-answer {
-            max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease;
-            font-size: 13px; line-height: 1.7; color: var(--text-sub); padding: 0 18px;
+            display: grid; grid-template-rows: 0fr; overflow: hidden; transition: grid-template-rows 0.35s ease;
+            font-size: 13px; line-height: 1.7; color: var(--text-sub);
         }
-        .faq-item.open .faq-answer { max-height: 600px; padding: 0 18px 18px; }
+        .faq-answer > div { overflow: hidden; padding: 0 18px; }
+        .faq-item.open .faq-answer { grid-template-rows: 1fr; }
+        .faq-item.open .faq-answer > div { padding: 0 18px 18px; }
         .faq-answer a {
             color: var(--accent-hover);
             font-weight: 700;
@@ -344,7 +346,7 @@
                     <span>${item.q}</span>
                     <i data-lucide="plus" class="q-icon"></i>
                 </div>
-                <div class="faq-answer">${item.a}</div>
+                <div class="faq-answer"><div>${item.a}</div></div>
             </div>
         `).join('');
         if (typeof lucide !== 'undefined') lucide.createIcons();
