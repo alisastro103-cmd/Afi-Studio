@@ -468,6 +468,8 @@ function shareToWhatsApp() {
 function shareToDiscord() {
     const msg = buildShareMessage();
     if (!msg) return;
+    closeShareSheet();
+
     // Discord gak punya URL resmi buat buka composer dengan teks yang udah
     // keisi kayak wa.me di atas -- tapi Web Share API bawaan OS (navigator.share)
     // bisa dipakai buat munculin share sheet ASLI si HP, dan Discord jadi salah
@@ -475,18 +477,31 @@ function shareToDiscord() {
     // di composer-nya, gak perlu salin-tempel manual lagi -- ini yang paling
     // mendekati pengalaman "sekali tap" kayak WhatsApp yang memungkinkan di
     // platform yang gak punya URL scheme resmi kayak Discord.
-    if (navigator.share) {
-        navigator.share({ text: msg }).catch((err) => {
-            if (err && err.name === 'AbortError') return; // user batal milih app, itu wajar
-            shareToDiscordFallback(msg);
-        });
-        closeShareSheet();
-        return;
+    //
+    // navigator.canShare() (kalau ada) dicek dulu SEBELUM manggil share() --
+    // dan pemanggilan share()-nya sendiri dibungkus try/catch. Soalnya
+    // sebagian browser lempar error SINKRON (bukan Promise rejection) kalau
+    // data yang dikirim gak didukung; kalau gak ditangkep, seluruh fungsi
+    // berhenti diam-diam dan tombol Discord kesannya "gak ngapa-ngapain" pas
+    // dipencet -- padahal sebenernya error, cuma gak kelihatan ke user.
+    const canUseWebShare = typeof navigator.share === 'function'
+        && (typeof navigator.canShare !== 'function' || navigator.canShare({ text: msg }));
+
+    if (canUseWebShare) {
+        try {
+            navigator.share({ text: msg }).catch((err) => {
+                if (err && err.name === 'AbortError') return; // user batal milih app, itu wajar
+                shareToDiscordFallback(msg);
+            });
+            return;
+        } catch (err) {
+            // Lanjut ke fallback di bawah -- lihat komentar di atas.
+        }
     }
-    // Browser yang gak dukung Web Share API (mis. kebanyakan desktop browser):
-    // balik ke cara lama, pesan disalin ke clipboard + Discord dibuka manual.
+    // Browser yang gak dukung Web Share API (mis. kebanyakan desktop browser),
+    // atau gagal sinkron di atas: balik ke cara lama, pesan disalin ke
+    // clipboard + Discord dibuka manual.
     shareToDiscordFallback(msg);
-    closeShareSheet();
 }
 
 function shareToDiscordFallback(msg) {

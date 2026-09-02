@@ -9,6 +9,9 @@
     "api/model-submit.js": {
       "maxDuration": 30
     },
+    "api/og-image.js": {
+      "maxDuration": 15
+    },
     "api/feedback.js": {
       "maxDuration": 30
     },

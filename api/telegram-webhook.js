@@ -45,10 +45,9 @@
 // "membangunkan" proses lama. JANGAN dibalik lagi.
 
 import { Redis } from '@upstash/redis';
-import dns from 'dns/promises';
-import net from 'net';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { SESSION_PREFIX as ADMIN_SESSION_PREFIX } from '../lib/admin-auth.js';
+import { assertSafeExternalUrl } from '../lib/safe-fetch.js';
 import sharp from 'sharp';
 import AdmZip from 'adm-zip';
 
@@ -311,53 +310,7 @@ async function githubPutFile(path, base64Content, message) {
 }
 
 // ================= HELPER: CEGAH SSRF =================
-// Dipakai sebelum server nge-fetch URL yang DIKETIK USER (bukan link dari
-// Telegram sendiri) — misal pas ganti thumbnail lewat link. Tanpa ini, orang
-// (atau akun admin yang kebobolan) bisa nyuruh server nge-fetch alamat
-// internal (169.254.169.254 buat metadata cloud, 127.0.0.1, IP LAN, dst).
-// Catatan: ini best-effort (cek IP hasil resolve DNS saat ini), bukan proteksi
-// 100% terhadap DNS-rebinding tingkat lanjut — tapi cukup buat nutup celah
-// paling umum, dan fitur ini cuma bisa dipicu admin yang udah lolos validasi
-// chat_id + webhook secret, jadi risikonya udah rendah dari awal.
-function isPrivateOrReservedIp(ip) {
-  if (net.isIPv6(ip)) {
-    return ip === '::1' || ip.startsWith('fc') || ip.startsWith('fd') || ip.startsWith('fe80');
-  }
-  const parts = ip.split('.').map(Number);
-  if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return true; // format aneh -> tolak aja
-  const [a, b] = parts;
-  if (a === 127) return true; // loopback
-  if (a === 10) return true; // private
-  if (a === 172 && b >= 16 && b <= 31) return true; // private
-  if (a === 192 && b === 168) return true; // private
-  if (a === 169 && b === 254) return true; // link-local, termasuk metadata cloud
-  if (a === 0) return true;
-  return false;
-}
-
-async function assertSafeExternalUrl(urlString) {
-  let parsed;
-  try {
-    parsed = new URL(urlString);
-  } catch {
-    throw new Error('URL gak valid.');
-  }
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    throw new Error('URL harus http:// atau https://');
-  }
-  const hostname = parsed.hostname;
-  if (hostname === 'localhost') throw new Error('URL nunjuk ke localhost, gak diizinkan.');
-
-  let addresses;
-  try {
-    addresses = await dns.lookup(hostname, { all: true });
-  } catch {
-    throw new Error('Gagal resolve domain dari URL itu.');
-  }
-  if (!addresses.length || addresses.some(a => isPrivateOrReservedIp(a.address))) {
-    throw new Error('URL nunjuk ke alamat internal/private, gak diizinkan.');
-  }
-}
+// Dipindah ke lib/safe-fetch.js (dipake bareng sama api/og-image.js sekarang).
 
 async function githubDeleteFile(path, message) {
   const meta = await githubGetFileMeta(path); // butuh sha buat hapus

@@ -36,6 +36,16 @@ function isOgSafeImage(url) {
   return typeof url === 'string' && OG_SAFE_IMAGE_EXT.test(url.trim());
 }
 
+function ogImageUrlFor(thumb) {
+  const trimmed = thumb ? String(thumb).trim() : '';
+  if (!trimmed) return null;
+  if (isOgSafeImage(trimmed)) return trimmed;
+  // Format gak aman buat og:image (mis. .avif) -- proxy lewat /api/og-image
+  // biar dikonversi otomatis ke webp, jadi thumbnail ASLI model tetep kepake
+  // alih-alih diganti ke gambar default Afi Studio.
+  return `${SITE_URL}/api/og-image?src=${encodeURIComponent(trimmed)}`;
+}
+
 function escapeHtml(str) {
   return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -80,12 +90,10 @@ export default async function handler(req, res) {
         if (model.thumb && isOgSafeImage(model.thumb)) {
           ogImage = model.thumb;
         } else if (model.thumb && String(model.thumb).trim()) {
-          // Ada thumb tapi formatnya gak aman buat preview link (mis. .avif) --
-          // tetap pakai DEFAULT_IMAGE (bukan dibiarkan kosong) supaya preview
-          // WhatsApp/Discord tetap nampilin sesuatu, dan dicatat di log server
-          // biar ketauan model mana yang thumbnail-nya perlu diganti ke
-          // jpg/png/webp lewat Admin Panel.
-          console.warn(`Thumb model "${model.name}" formatnya gak didukung buat og:image (${model.thumb}), pakai DEFAULT_IMAGE.`);
+          // Format thumb aslinya gak aman buat og:image (mis. .avif) --
+          // dikonversi otomatis lewat /api/og-image (lihat komentar di sana)
+          // supaya thumbnail ASLI model tetep kepake, bukan gambar default.
+          ogImage = ogImageUrlFor(model.thumb);
         }
       } else {
         title = 'Model Tidak Ditemukan - Afi Studio';
