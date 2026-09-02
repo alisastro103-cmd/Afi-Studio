@@ -131,7 +131,7 @@ function filterByCategory(cat) {
     activeCategory = cat;
     const titleElement = document.getElementById('category-title');
     if (titleElement) {
-        titleElement.textContent = cat.toLowerCase() === "semua" ? "SEMUA ITEM" : cat.toUpperCase();
+        titleElement.textContent = cat.toLowerCase() === "semua" ? "Semua Item" : cat;
     }
     renderCategoryButtons();
     const searchInput = document.getElementById('search-input');
@@ -345,6 +345,30 @@ function handleCopyLink() {
             setTimeout(() => t.classList.add('translate-y-20'), 2000);
         }
     });
+}
+
+// Salin link publik model (halaman /model/?id=...) yang thumbnail & judulnya bakal
+// kebaca otomatis kalau di-share ke WhatsApp/Discord (lihat api/model-page.js).
+// id-nya pakai model.link (URL download) -- sama seperti modelFavId() di
+// favorites.js -- karena data model belum punya field "id" sendiri.
+function handleShareModel() {
+    if (!currentModel || !currentModel.link) return;
+    const shareUrl = `${window.location.origin}/model/?id=${encodeURIComponent(currentModel.link)}`;
+    const showToast = () => {
+        const t = document.getElementById('toast');
+        if (t) {
+            const label = t.querySelector('span') || t;
+            const original = label.textContent;
+            label.textContent = 'Link share disalin ke clipboard';
+            t.classList.remove('translate-y-20');
+            setTimeout(() => { t.classList.add('translate-y-20'); label.textContent = original; }, 2000);
+        }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(showToast).catch(() => prompt('Salin link ini:', shareUrl));
+    } else {
+        prompt('Salin link ini:', shareUrl);
+    }
 }
 
 // Event Listeners

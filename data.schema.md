@@ -79,6 +79,16 @@ Array of object, tiap object = 1 model/aset yang bisa didownload.
 > 2 kategori beda kalau beda huruf besar/kecil), jadi coba selalu pakai
 > kapitalisasi yang sama tiap nulis kategori yang sama.
 
+> ⚠️ **Penting soal field `link`:** selain jadi URL download, `link` juga
+> dipakai sebagai **identitas unik model** di dua fitur — favorit
+> (`modelFavId()` di `favorites.js`) dan link share `/model/?id=...`
+> (`api/model-page.js`, tombol share di modal). Kalau `link` sebuah model
+> yang sudah live diubah, favorit yang sudah disimpan pengunjung untuk model
+> itu bakal "lepas" (dianggap model lain), dan link share yang sudah pernah
+> dibagikan orang jadi tidak valid lagi. Kalau memang perlu ganti link
+> download (mis. pindah hosting), idealnya nama model juga dianggap sebagai
+> entri "baru".
+
 ---
 
 ## 3. Ringkasan aturan validasi (dicek otomatis oleh `validate_data.py`)

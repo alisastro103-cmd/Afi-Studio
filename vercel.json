@@ -27,7 +27,9 @@
   ],
   "rewrites": [
     { "source": "/survey", "destination": "/api/survey-page" },
-    { "source": "/survey/", "destination": "/api/survey-page" }
+    { "source": "/survey/", "destination": "/api/survey-page" },
+    { "source": "/model", "destination": "/api/model-page" },
+    { "source": "/model/", "destination": "/api/model-page" }
   ],
   "headers": [
     {

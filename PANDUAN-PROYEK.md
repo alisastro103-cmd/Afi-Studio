@@ -70,6 +70,9 @@ Artinya: **cara resmi update konten sekarang adalah lewat admin panel**, bukan e
 - Video & tutorial dengan badge "Baru" otomatis dan penanda populer per-device
 - Halaman member per generasi, grup baru otomatis muncul kalau ada `gen_id` baru
 - Ranking render Top 3 + Top 10 dengan lightbox (caption width dihitung dari ukuran asli gambar)
+- Fitur Favorit (model & video, tanpa login, tersimpan lokal `localStorage`) — halaman `/favorit/`
+- Link share per-model (`/model/?id=...`) dengan Open Graph thumbnail otomatis — tombol share di modal, pola sama seperti share survey
+- Survey/polling dengan Open Graph thumbnail per-survey, dan dukungan format **tebal**/*miring* di teks pertanyaan & opsi (ketik `**kata**`/`*kata*`)
 - Tema gelap/terang (ikut sistem HP otomatis, bisa toggle manual)
 - PWA — bisa di-install ke homescreen, halaman utama tetap terbuka semi-offline
 - SEO dasar (sitemap, robots.txt)
@@ -88,7 +91,7 @@ Artinya: **cara resmi update konten sekarang adalah lewat admin panel**, bukan e
 - Search/filter di halaman Member
 - Sorting (model terbaru/terlama, member alfabet)
 - Counter download / like dari pengunjung (secara teknis sekarang sudah ada database, jadi ini lebih mudah diimplementasi dibanding versi lama proyek yang murni statis)
-- Fitur Favorit (nandain model/video favorit tanpa login, tersimpan lokal `localStorage`) — masih ide, belum diputuskan cakupannya (Model saja/Video saja/dua-duanya)
+- Fitur Report/lapor model (nandain model yang diklaim asli padahal hasil convert orang lain, bukan hasil creator yang tercantum) — masih ide, tempat yang direncanakan: ikon di sebelah tombol Share/Favorit di modal
 - Riwayat/log siapa yang login admin & kapan (sekarang admin cuma token tunggal tanpa audit trail)
 - Halaman riwayat Feedback di dalam admin panel (sekarang feedback cuma masuk ke Telegram, tidak tersimpan/terlihat di panel)
 
@@ -120,8 +123,6 @@ Artinya: **cara resmi update konten sekarang adalah lewat admin panel**, bukan e
 | `ADMIN_TOKEN` | Password tunggal login `/admin` |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Tujuan pesan form Feedback |
 | `RECAPTCHA_SECRET_KEY` | Verifikasi reCAPTCHA di form Feedback |
-
-Detail cara setup awal ada di `SETUP-ADMIN-DATABASE.md`.
 
 ## 9. Seed / Reset / Backup Data
 

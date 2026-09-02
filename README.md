@@ -41,6 +41,7 @@ Bagian yang manggil serverless function:
 | `/about/` | `about/index.html` | — | Halaman "Tentang Kami", statis, sudut pandang pengunjung. Ada di navbar & footer |
 | `/privacy/` | `privacy/index.html` | — | Kebijakan Privasi, statis. Ada di navbar & footer |
 | `/daftar-model/` | `daftar-model/index.html` + `api/model-submit.js` | `/api/data/categories` (buat pilihan kategori) | Form pendaftaran model publik. **Sengaja tidak ditaruh di navbar/footer** — cuma bisa diakses lewat link langsung. Alur lengkap di bagian 2b |
+| `/model/?id=...` | `model/template.html` (dirender lewat `api/model-page.js`) | `/api/data/models` | Halaman share 1 model — tombol "Share" di modal (ikon di pojok kanan-atas thumbnail, sebelah tombol favorit) generate link ini. `id` dipakai `model.link` (URL download) yang di-encode, sama seperti `modelFavId()` buat favorit — model belum punya field `id` sendiri. `og:image`/`og:title`/`og:description` di-render server-side biar thumbnail model kebaca kalau link-nya dibagikan ke WhatsApp/Discord |
 | `/admin/` | `admin/index.html` (login) + `admin/panel.html` (panel) | Semua endpoint `/api/data/:type` (GET+POST) | Lihat bagian 5 |
 
 ## 2b. Alur Pendaftaran Model (`/daftar-model/`)
@@ -75,6 +76,7 @@ User isi form di /daftar-model/ (nama, caption, thumbnail, file model, kategori,
 | `api/admin/telegram-file.js` | Proxy admin-only: ambil file/gambar dari Telegram (pakai bot token di server) buat ditampilkan sebagai preview di panel Pendaftaran, token gak pernah nyampe ke browser |
 | `api/feedback.js` | Kirim form feedback ke Telegram, pakai rate-limit Upstash + reCAPTCHA |
 | `api/model-submit.js` | Terima submission dari `/daftar-model/`: validasi (termasuk rasio thumbnail 16:9 pakai `image-size`) → kirim ke Telegram → simpan metadata ke Redis `pendingmodels`. Detail alur di bagian 2b |
+| `api/model-page.js` + `model/template.html` | Render halaman `/model/?id=...` (share 1 model) server-side, isi tag `og:*` sesuai data model biar preview link WhatsApp/Discord nampilin thumbnail & judul yang benar. Pola sama persis dengan `api/survey-page.js` + `survey/template.html`. Fallback ke `Models/models.json` kalau Redis down |
 | `admin/panel.html` | Seluruh UI & logic admin panel (CRUD tiap koleksi + tab Pendaftaran, drag-reorder disederhanakan jadi tap=edit/tahan=menu, resize kolom tabel, dsb) — satu file besar, vanilla JS |
 | `admin/icons/lucide-local.js`, `icons/lucide-local.js` | Bundel ikon Lucide yang **di-trim manual** (bukan npm package penuh) — nambah ikon baru harus ditambahkan manual ke file ini |
 | `categories.json`, `app-categories.json` | Seed awal untuk koleksi `categories`/`appcategories` di Redis — dikelola lewat tab "Kategori" di admin panel, otomatis dipropagasi ke form Model, form Daftar Model publik, filter chip publik, dan homepage |

@@ -130,6 +130,7 @@
         .modal-fav-btn:active { transform: scale(0.9); }
         .modal-fav-btn svg { width: 17px; height: 17px; }
         .modal-fav-btn.is-favorited { color: #FBBF24; }
+        .modal-share-btn { right: 50px; }
  
         /* .category-header sekarang ada di /css/category-header.css (shared,
            supaya format-nya pasti sama persis di semua halaman, kalau nanti
@@ -334,6 +335,9 @@
     <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
         <div class="modal-box" onclick="event.stopPropagation()">
             <button id="model-fav-btn" class="modal-fav-btn" onclick="toggleCurrentModelFavorite()" aria-label="Tandai favorit"></button>
+            <button id="model-share-btn" class="modal-fav-btn modal-share-btn" onclick="handleShareModel()" aria-label="Salin link share model">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
             <img id="modal-thumb" src="" class="w-full aspect-video object-cover">
             <div class="p-5">
                 <h2 id="modal-title" class="text-xl font-bold mb-2"></h2>

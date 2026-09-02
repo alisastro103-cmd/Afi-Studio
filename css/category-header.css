@@ -23,9 +23,25 @@
   opacity: 1;
   color: var(--text);
   margin-left: 10px;
+  position: relative;
+  padding-bottom: 12px;
 }
 @media (min-width: 640px) {
   .category-header { font-size: 28px; margin-left: 16px; }
+}
+
+/* Garis aksen pendek di bawah judul section -- bukan garis bawah teks
+   (underline biasa), tapi highlight singkat yang nempel di kiri bawah judul,
+   biar ada penekanan visual tanpa keliatan seperti garis bawah teks/link. */
+.category-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent-hover);
 }
 
 /* Ikon opsional di depan judul (dipakai di halaman Video & Tutorial) */

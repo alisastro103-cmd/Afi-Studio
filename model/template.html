@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <script src="/config.js"></script>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('afi-theme');
+      var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>%%PAGE_TITLE%%</title>
+  <meta name="description" content="%%OG_DESC%%">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="%%OG_URL%%">
+  <meta property="og:title" content="%%OG_TITLE%%">
+  <meta property="og:site_name" content="Afi Studio">
+  <meta property="og:description" content="%%OG_DESC%%">
+  <meta property="og:image" content="%%OG_IMAGE%%">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="%%OG_TITLE%%">
+  <meta name="twitter:description" content="%%OG_DESC%%">
+  <meta name="twitter:image" content="%%OG_IMAGE%%">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/dist/output.css">
+  <script src="/theme-toggle.js" defer></script>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; }
+    h1, h2, h3 { font-family: 'Outfit', sans-serif; font-weight: 600; }
+
+    :root {
+      --accent: #93C5FD;
+      --accent-hover: #7DD3FC;
+      --bg: #D0D7E1;
+      --surface: #E1E7EE;
+      --text: #334155;
+      --text-light: #64748B;
+      --border: #B9C4D3;
+      --grid-line: rgba(100,116,139,0.22);
+    }
+    html.dark {
+      --accent: #3B5578;
+      --accent-hover: #4A6690;
+      --bg: #1E293B;
+      --surface: #334155;
+      --text: #CBD5E1;
+      --text-light: #94A3B8;
+      --border: #475569;
+      --grid-line: rgba(148,163,184,0.16);
+    }
+
+    body {
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 32px 32px;
+      background-attachment: fixed;
+      color: var(--text);
+      line-height: 1.4;
+      min-height: 100%;
+    }
+
+    .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+    .brand { display: flex; align-items: center; gap: 8px; font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text); text-decoration: none; }
+    .brand img { width: 28px; height: 28px; }
+    .back-link { font-size: 13px; color: var(--text-light); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+
+    main { max-width: 560px; margin: 0 auto; padding: 8px 20px 60px; }
+
+    .model-card {
+      background: var(--surface);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .model-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--bg); }
+    .model-body { padding: 20px; }
+    .model-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .model-caption { font-size: 14px; color: var(--text-light); margin-bottom: 16px; }
+
+    .model-info { font-size: 13px; border-top: 1px solid var(--border); padding-top: 14px; margin-bottom: 18px; }
+    .model-info-row { display: flex; justify-content: space-between; padding: 4px 0; }
+    .model-info-row span:first-child { color: var(--text-light); }
+    .model-info-row b { font-weight: 700; text-align: right; }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .tag { font-size: 11px; background: var(--bg); border: 1px solid var(--border); color: var(--text-light); padding: 4px 10px; border-radius: 999px; }
+
+    .download-btn {
+      display: block; width: 100%; text-align: center;
+      background: var(--accent-hover); color: #fff; font-weight: 700;
+      font-family: 'Outfit', sans-serif; padding: 14px; border: none; border-radius: 10px;
+      font-size: 15px; cursor: pointer; text-decoration: none;
+    }
+    .download-btn:active { opacity: 0.85; }
+
+    .state-box { text-align: center; padding: 60px 20px; }
+    .state-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+    .state-sub { font-size: 13px; color: var(--text-light); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <a href="/" class="brand"><img src="/icon.png" alt=""> Afi-Studio</a>
+    <a href="/Models/" class="back-link">← Semua Model</a>
+  </div>
+
+  <main>
+    <div id="model-box" class="hidden">
+      <div class="model-card">
+        <img id="m-thumb" class="model-thumb" src="" alt="" loading="lazy">
+        <div class="model-body">
+          <div id="m-title" class="model-title"></div>
+          <div id="m-caption" class="model-caption"></div>
+          <div id="m-info" class="model-info"></div>
+          <div id="m-tags" class="tag-row"></div>
+          <a id="m-download" class="download-btn" href="#" target="_blank" rel="noopener">Download</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="notfound-box" class="state-box hidden">
+      <div class="state-title">Model tidak ditemukan</div>
+      <div class="state-sub">Link ini mungkin sudah tidak berlaku, atau modelnya sudah dihapus.</div>
+    </div>
+  </main>
+
+  <script>
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str == null ? '' : str);
+      return d.innerHTML;
+    }
+
+    async function init() {
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) { document.getElementById('notfound-box').classList.remove('hidden'); return; }
+      try {
+        const res = await fetch('/api/data/models');
+        const models = await res.json();
+        const model = Array.isArray(models) ? models.find(m => m.link === id) : null;
+        if (!model) { document.getElementById('notfound-box').classList.remove('hidden'); return; }
+
+        document.getElementById('m-thumb').src = model.thumb || '/thumbnail.webp';
+        document.getElementById('m-title').textContent = model.name || '';
+        document.getElementById('m-caption').textContent = model.caption || '';
+
+        let infoHtml = '';
+        if (model.creator) infoHtml += `<div class="model-info-row"><span>Creator</span><b>${escapeHtml(model.creator)}</b></div>`;
+        if (model.converter) infoHtml += `<div class="model-info-row"><span>Converter</span><b>${escapeHtml(model.converter)}</b></div>`;
+        if (model.app_target) infoHtml += `<div class="model-info-row"><span>Untuk Aplikasi</span><b>${escapeHtml(model.app_target)}</b></div>`;
+        document.getElementById('m-info').innerHTML = infoHtml;
+
+        const cats = Array.isArray(model.category) ? model.category : (model.category ? [model.category] : []);
+        document.getElementById('m-tags').innerHTML = cats.map(c => `<span class="tag">${escapeHtml(c)}</span>`).join('');
+
+        document.getElementById('m-download').href = model.link || '#';
+        document.getElementById('model-box').classList.remove('hidden');
+      } catch (e) {
+        document.getElementById('notfound-box').classList.remove('hidden');
+      }
+    }
+    init();
+  </script>
+</body>
+</html>
