@@ -188,6 +188,15 @@ function renderMarquee() {
     const contentB = document.getElementById('marquee-content-b');
     if (!bar || !track || !contentA || !contentB) return;
 
+    // Buang entry kosong/blank (string kosong atau cuma spasi) dari sumber
+    // data (marquee.json / admin panel / Redis). Kalau ada entry kosong yang
+    // ke-join, bakal muncul "item | | item_berikutnya" karena separator tetep
+    // dipasang di kedua sisi entry kosong itu meski isinya gak keliatan.
+    // Filter ini jaga-jaga di sisi kode, terlepas dari bersih/gaknya data.
+    const cleanTexts = (NEWS_TEXTS || [])
+        .map(t => (typeof t === 'string' ? t.trim() : ''))
+        .filter(t => t.length > 0);
+
     // Jarak margin horizontal antar teks dirapatkan dari 45px ke 20px
     const separator = `<span style="color: var(--accent); margin: 0 20px; font-weight: bold; opacity: 0.8;">|</span>`;
     // Separator HANYA di akhir (trailing-only), bukan di awal & akhir.
@@ -198,7 +207,8 @@ function renderMarquee() {
     // Dengan trailing-only, tiap salinan = teks+sep, jadi di titik sambungan
     // (baik A->B maupun B->A saat loop balik) selalu cuma ketemu 1 separator,
     // jaraknya pun konsisten sama kayak jarak antar teks lainnya.
-    const html = `${NEWS_TEXTS.join(separator)}${separator}`;
+    if (cleanTexts.length === 0) return;
+    const html = `${cleanTexts.join(separator)}${separator}`;
 
     // Kedua salinan diisi konten yang sama persis agar saat animasi
     // mencapai -50% (akhir salinan pertama), salinan kedua sudah pas
