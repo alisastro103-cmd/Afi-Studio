@@ -336,14 +336,61 @@ function handleDownload() {
     }, 1700);
 }
 
+// --- Util: salin teks ke clipboard secara aman.
+// navigator.clipboard bisa saja tidak ada sama sekali (mis. halaman dibuka
+// lewat iframe pihak ketiga tanpa izin "clipboard-write", atau browser lama)
+// -- kalau langsung dipanggil tanpa dicek, ini bikin error dan diam-diam
+// gagal (popup gak muncul, teks gak kesalin). Makanya selalu dicek dulu, dan
+// kalau gagal/tidak ada, jatuhkan ke cara lama (execCommand) sebagai cadangan.
+function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+    }
+    return fallbackCopyText(text);
+}
+
+function fallbackCopyText(text) {
+    return new Promise((resolve, reject) => {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '0';
+            ta.style.left = '-9999px';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            ta.setSelectionRange(0, text.length);
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (ok) resolve(); else reject(new Error('execCommand copy gagal'));
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+// Tampilkan popup kecil di bawah (#toast) dengan teks custom, lalu balikin
+// teks default-nya lagi setelah beberapa detik. Dipakai bareng-bareng oleh
+// handleCopyLink() dan opsi-opsi di sheet "Bagikan" di bawah.
+function showToastMessage(msg) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    const label = t.querySelector('span') || t;
+    const original = label.textContent;
+    label.textContent = msg;
+    t.classList.remove('translate-y-20');
+    setTimeout(() => { t.classList.add('translate-y-20'); label.textContent = original; }, 2000);
+}
+
 function handleCopyLink() {
     if (!currentModel) return;
-    navigator.clipboard.writeText(currentModel.link).then(() => {
-        const t = document.getElementById('toast');
-        if (t) {
-            t.classList.remove('translate-y-20');
-            setTimeout(() => t.classList.add('translate-y-20'), 2000);
-        }
+    copyTextToClipboard(currentModel.link).then(() => {
+        showToastMessage('Link disalin ke clipboard');
+    }).catch(() => {
+        prompt('Gagal menyalin otomatis, salin manual link ini:', currentModel.link);
     });
 }
 
@@ -351,24 +398,61 @@ function handleCopyLink() {
 // kebaca otomatis kalau di-share ke WhatsApp/Discord (lihat api/model-page.js).
 // id-nya pakai model.link (URL download) -- sama seperti modelFavId() di
 // favorites.js -- karena data model belum punya field "id" sendiri.
+function getModelShareUrl() {
+    if (!currentModel || !currentModel.link) return '';
+    return `${window.location.origin}/model/?id=${encodeURIComponent(currentModel.link)}`;
+}
+
+// Pesan template dipakai buat share ke WhatsApp & Discord.
+function buildShareMessage() {
+    if (!currentModel) return '';
+    return `Halo bang, Rig ${currentModel.name} bagus cuy, cobain aja bang.\n${getModelShareUrl()}`;
+}
+
+// Tombol "Bagikan" sekarang membuka sheet pilihan (WhatsApp / Discord / Salin
+// Link) alih-alih langsung memanggil Web Share API bawaan browser -- karena
+// di beberapa konteks (mis. dibuka di dalam iframe testing tool) API itu
+// tidak tersedia/diblokir dan gagal diam-diam tanpa ada tanda apa pun.
 function handleShareModel() {
     if (!currentModel || !currentModel.link) return;
-    const shareUrl = `${window.location.origin}/model/?id=${encodeURIComponent(currentModel.link)}`;
-    const showToast = () => {
-        const t = document.getElementById('toast');
-        if (t) {
-            const label = t.querySelector('span') || t;
-            const original = label.textContent;
-            label.textContent = 'Link disalin ke clipboard';
-            t.classList.remove('translate-y-20');
-            setTimeout(() => { t.classList.add('translate-y-20'); label.textContent = original; }, 2000);
-        }
-    };
-    if (navigator.share) {
-        navigator.share({ title: currentModel.name, url: shareUrl }).then(showToast).catch(() => {});
-    } else if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl).then(showToast).catch(() => {});
-    }
+    const el = document.getElementById('share-sheet-overlay');
+    if (el) el.classList.add('active');
+}
+
+function closeShareSheet() {
+    const el = document.getElementById('share-sheet-overlay');
+    if (el) el.classList.remove('active');
+}
+
+function shareToWhatsApp() {
+    const msg = buildShareMessage();
+    if (!msg) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+    closeShareSheet();
+}
+
+function shareToDiscord() {
+    const msg = buildShareMessage();
+    if (!msg) return;
+    // Discord tidak punya URL resmi buat buka composer dengan teks yang
+    // sudah terisi (beda dari wa.me di atas) -- jadi pesannya disalin ke
+    // clipboard dan Discord dibuka, tinggal user tempel (paste) sendiri.
+    window.open('https://discord.com/channels/@me', '_blank', 'noopener');
+    copyTextToClipboard(msg).then(() => {
+        showToastMessage('Pesan disalin, tempel di Discord ya!');
+    }).catch(() => {});
+    closeShareSheet();
+}
+
+function shareCopyLink() {
+    const url = getModelShareUrl();
+    if (!url) return;
+    copyTextToClipboard(url).then(() => {
+        showToastMessage('Link disalin ke clipboard');
+    }).catch(() => {
+        prompt('Gagal menyalin otomatis, salin manual link ini:', url);
+    });
+    closeShareSheet();
 }
 
 // Event Listeners

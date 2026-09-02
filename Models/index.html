@@ -108,6 +108,22 @@
         .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; position: relative; }
         .modal-overlay.active .modal-box { transform: scale(1); }
 
+        /* --- Sheet pilihan "Bagikan" (WhatsApp / Discord / Salin Link) --- */
+        .share-sheet-box { max-width: 360px; }
+        .share-option-btn {
+            display: flex; align-items: center; gap: 12px; width: 100%;
+            padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text); font-weight: 700; font-size: 14px;
+            cursor: pointer; transition: background 0.15s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .share-option-btn:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+        .share-option-btn:active { transform: scale(0.98); }
+        .share-option-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+        .share-option-icon-wa { color: #25D366; }
+        .share-option-icon-dc { color: #5865F2; }
+        .share-option-icon-link { color: var(--text-sub); }
+
         /* Tombol bintang favorit - nempel di ujung board popup model */
         .modal-fav-btn {
             position: absolute;
@@ -344,6 +360,29 @@
                     <button class="w-full py-3.5 rounded-xl font-bold bg-[var(--accent)] text-white" onclick="handleDownload()">Download Now</button>
                     <button class="w-full py-3.5 rounded-xl font-bold border border-[var(--border)]" onclick="handleShareModel()">Bagikan</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="share-sheet-overlay" class="modal-overlay" onclick="closeShareSheet()">
+        <div class="modal-box share-sheet-box" onclick="event.stopPropagation()">
+            <div class="p-5">
+                <h3 class="text-base font-bold mb-4">Bagikan Model</h3>
+                <div class="flex flex-col gap-2">
+                    <button type="button" class="share-option-btn" onclick="shareToWhatsApp()">
+                        <svg class="share-option-icon-wa" viewBox="0 0 512 512"><use href="/icons/social-icons.svg#icon-wa"></use></svg>
+                        <span>WhatsApp</span>
+                    </button>
+                    <button type="button" class="share-option-btn" onclick="shareToDiscord()">
+                        <svg class="share-option-icon-dc" viewBox="0 0 512 512"><use href="/icons/social-icons.svg#icon-dc"></use></svg>
+                        <span>Discord</span>
+                    </button>
+                    <button type="button" class="share-option-btn" onclick="shareCopyLink()">
+                        <svg class="share-option-icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.5"></path><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.5 19.5"></path></svg>
+                        <span>Salin Link</span>
+                    </button>
+                </div>
+                <button type="button" class="w-full mt-3 py-3 rounded-xl font-bold border border-[var(--border)]" onclick="closeShareSheet()">Batal</button>
             </div>
         </div>
     </div>

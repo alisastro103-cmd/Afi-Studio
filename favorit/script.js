@@ -176,14 +176,49 @@ function handleDownload() {
     }, 1700);
 }
 
+// --- Util: salin teks ke clipboard secara aman (lihat catatan yang sama
+// di Models/script.js -- navigator.clipboard bisa tidak ada/diblokir,
+// makanya perlu fallback execCommand supaya popup & salin-nya tetap jalan).
+function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+    }
+    return fallbackCopyText(text);
+}
+
+function fallbackCopyText(text) {
+    return new Promise((resolve, reject) => {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '0';
+            ta.style.left = '-9999px';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            ta.setSelectionRange(0, text.length);
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (ok) resolve(); else reject(new Error('execCommand copy gagal'));
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
 function handleCopyLink() {
     if (!currentModel) return;
-    navigator.clipboard.writeText(currentModel.link).then(() => {
+    copyTextToClipboard(currentModel.link).then(() => {
         const t = document.getElementById('toast');
         if (t) {
             t.classList.remove('translate-y-20');
             setTimeout(() => t.classList.add('translate-y-20'), 2000);
         }
+    }).catch(() => {
+        prompt('Gagal menyalin otomatis, salin manual link ini:', currentModel.link);
     });
 }
 
