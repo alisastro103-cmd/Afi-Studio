@@ -258,13 +258,17 @@
         .share-option-btn:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
         .share-option-btn:active { transform: scale(0.98); }
         .share-option-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
-        /* fill:currentColor wajib di sini -- path di icons/social-icons.svg gak
-           punya atribut fill sendiri, jadi defaultnya hitam solid dan gak
-           otomatis ngikutin `color` di atas kalau gak di-set eksplisit.
-           Warnanya ngikutin --text-sub (sama kayak icon "Salin Link") biar
-           otomatis nyesuain tema: gelap di tema terang, terang di tema gelap. */
-        .share-option-icon-wa,
-        .share-option-icon-tg { color: var(--text-sub); fill: currentColor; }
+        /* fill:currentColor cuma buat ikon WhatsApp -- path-nya di
+           icons/social-icons.svg gak punya atribut fill sendiri, jadi
+           defaultnya hitam solid dan gak otomatis ngikutin `color` di atas
+           kalau gak di-set eksplisit. Ikon Telegram & Salin Link gaya-nya
+           outline (stroke="currentColor" udah di-set langsung di elemen
+           <svg>-nya), jadi di sini cuma perlu `color` -- kalau ikut kena
+           fill:currentColor juga, bentuk pesawatnya keisi solid gak
+           outline lagi. Warnanya ngikutin --text-sub biar otomatis
+           nyesuain tema: gelap di tema terang, terang di tema gelap. */
+        .share-option-icon-wa { color: var(--text-sub); fill: currentColor; }
+        .share-option-icon-tg,
         .share-option-icon-link { color: var(--text-sub); }
 
         /* Toast "Link disalin" -- override durasi transisi bawaan Tailwind
@@ -737,7 +741,7 @@
                         <span>WhatsApp</span>
                     </button>
                     <button type="button" class="share-option-btn" onclick="shareToTelegram()">
-                        <svg class="share-option-icon-tg" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.301.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                        <svg class="share-option-icon-tg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                         <span>Telegram</span>
                     </button>
                     <button type="button" class="share-option-btn" onclick="shareCopyLink()">
@@ -745,7 +749,7 @@
                         <span>Salin Link</span>
                     </button>
                 </div>
-                <button type="button" class="w-full mt-3 py-3 rounded-xl font-bold border border-[var(--border)]" onclick="closeShareSheet()">Batal</button>
+                <button type="button" class="w-full mt-5 py-3 rounded-xl font-bold border border-[var(--border)]" onclick="closeShareSheet()">Batal</button>
             </div>
         </div>
     </div>
