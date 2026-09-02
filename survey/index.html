@@ -514,7 +514,7 @@
 
     // Cookie ringan buat nyegah orang isi survey yang sama 2x dari device/browser yang sama.
     // Ini cuma lapisan UX (biar gak nampilin form lagi ke orang yang jelas2 udah isi) —
-    // proteksi "beneran" tetap di server (cek IP, lihat api/survey-submit.js), soalnya cookie
+    // proteksi "beneran" tetap di server (cek IP, lihat api/survey.js, mode=submit), soalnya cookie
     // gampang dihapus/di-bypass kalau incognito.
     function getCookie(name) {
       const m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.$?*|{}()[\]\\/+^]/g, '\\$&') + '=([^;]*)'));

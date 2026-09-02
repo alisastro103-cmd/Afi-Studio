@@ -3,8 +3,9 @@
     "api/data/[type].js": {
       "includeFiles": "{Models/models.json,videos.json,banner.json,marquee.json,member-Afi-Studio/member.json,ranking/ranking.json,categories.json,app-categories.json,settings.json,surveys.json}"
     },
-    "api/survey-page.js": {
-      "includeFiles": "survey/template.html"
+    "api/survey.js": {
+      "includeFiles": "survey/template.html",
+      "maxDuration": 30
     },
     "api/model-submit.js": {
       "maxDuration": 30
@@ -13,9 +14,6 @@
       "maxDuration": 15
     },
     "api/feedback.js": {
-      "maxDuration": 30
-    },
-    "api/survey-submit.js": {
       "maxDuration": 30
     },
     "api/telegram-webhook.js": {
@@ -29,8 +27,12 @@
     { "path": "/api/cron/pending-reminder", "schedule": "0 9 * * *" }
   ],
   "rewrites": [
-    { "source": "/survey", "destination": "/api/survey-page" },
-    { "source": "/survey/", "destination": "/api/survey-page" },
+    { "source": "/survey", "destination": "/api/survey?mode=page" },
+    { "source": "/survey/", "destination": "/api/survey?mode=page" },
+    { "source": "/api/survey-page", "destination": "/api/survey?mode=page" },
+    { "source": "/api/survey-submit", "destination": "/api/survey?mode=submit" },
+    { "source": "/api/survey-results", "destination": "/api/survey?mode=results" },
+    { "source": "/api/survey-thumbnail", "destination": "/api/survey?mode=thumbnail" },
     { "source": "/model", "destination": "/api/model-page" },
     { "source": "/model/", "destination": "/api/model-page" }
   ],
