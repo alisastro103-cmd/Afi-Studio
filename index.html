@@ -260,11 +260,11 @@
             -webkit-touch-callout: none;
         }
         .banner-container:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        /* Padding-top trick: rasio banner 3:1 (2400x800), jadi 800/2400 * 100 = 33.33% */
+        /* Padding-top trick: rasio banner 2:1 (mis. 1600x800), jadi 800/1600 * 100 = 50% */
         .banner-container::before {
             content: '';
             display: block;
-            padding-top: 33.33%;
+            padding-top: 50%;
         }
         .banner-container:active { cursor: grabbing; }
         
@@ -609,7 +609,6 @@
 
             <div class="mt-1 mb-2">
                 <h2 id="category-title" class="category-header">Semua Item</h2>
-                <span class="category-sub">Semua aset yang bisa kamu download gratis</span>
             </div>
 
             <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 grid-loading" id="content-grid"></section>

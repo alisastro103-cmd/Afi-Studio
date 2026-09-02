@@ -365,7 +365,7 @@ function handleShareModel() {
         }
     };
     if (navigator.share) {
-        navigator.share({ title: currentModel.name, url: shareUrl }).catch(() => {});
+        navigator.share({ title: currentModel.name, url: shareUrl }).then(showToast).catch(() => {});
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shareUrl).then(showToast).catch(() => {});
     }
