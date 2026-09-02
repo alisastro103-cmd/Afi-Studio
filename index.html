@@ -311,15 +311,15 @@
         .banner-link { min-width: 100%; height: 100%; display: block; flex-shrink: 0; pointer-events: auto; -webkit-user-drag: none; user-drag: none; }
         .banner-slide { width: 100%; height: 100%; object-fit: cover; object-position: center; -webkit-user-drag: none; user-drag: none; }
  
-        /* Progress bar banner -- gantiin titik-titik indikator. Nempel di tepi
-           bawah board banner, isinya nunjukkin sisa waktu slide sekarang
-           sebelum ganti otomatis (mirip scrubber video). Defaultnya
-           tersembunyi (opacity 0) -- cuma nongol sebentar tiap kali slide
-           ganti/pas lagi digeser manual, abis itu ilang lagi kalau didiemin
-           (lihat showBannerProgress() di script). */
-        .banner-progress { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.25); overflow: hidden; z-index: 10; opacity: 0; transition: opacity 0.35s ease; pointer-events: none; }
+        /* Progress bar banner -- gantiin titik-titik indikator. Nempel pas di
+           sudut/tepi paling bawah board banner, lebarnya penuh ngikutin lebar
+           banner (gak ada jarak/inset dari kiri-kanan). Defaultnya
+           tersembunyi (opacity 0) -- CUMA nongol pas board digeser manual
+           (drag/panah kiri-kanan), pas auto-slide jalan sendiri dia tetep
+           disembunyiin (lihat showBannerProgress() di script). */
+        .banner-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,0.25); overflow: hidden; z-index: 10; opacity: 0; transition: opacity 0.35s ease; pointer-events: none; }
         .banner-progress.visible { opacity: 1; }
-        .banner-progress-fill { height: 100%; width: 0%; border-radius: 3px; background: #fff; }
+        .banner-progress-fill { height: 100%; width: 0%; background: #fff; }
         .banner-progress-fill.animating { transition: width linear; }
  
         .marquee-bar { 
@@ -888,19 +888,26 @@
         let currentIndex = 0;
         let startX, isDragging = false, currentTranslate = 0, prevTranslate = 0;
         let slideTimer;
+        let loopResetTimer;
 
         // Durasi 1 slide sebelum otomatis ganti -- dipakai bareng buat interval
         // auto-slide DAN buat lama animasi progress bar, jadi keduanya selalu
         // sinkron walau angkanya diubah nanti.
         const SLIDE_DURATION_MS = 5000;
-        // Progress bar cuma keliatan sebentar (2.5 detik) abis itu ilang lagi
-        // kalau gak ada interaksi baru -- lihat showBannerProgress().
-        const PROGRESS_IDLE_HIDE_MS = 2500;
+        // Sama kayak durasi transition slider (`slider.style.transition` di
+        // bawah) -- dipakai buat nentuin kapan boleh "snap" balik ke slide asli
+        // sehabis nyampe klon di ujung (lihat nextSlide()).
+        const SLIDE_TRANSITION_MS = 600;
+        // Progress bar cuma keliatan sebentar (0.8 detik) abis itu ilang lagi
+        // -- lihat showBannerProgress().
+        const PROGRESS_IDLE_HIDE_MS = 800;
         let progressHideTimeout;
 
         // Nyalain (fade-in) progress bar terus jadwalin dia buat ilang lagi
-        // abis idle. Dipanggil tiap kali ada "kejadian" di banner: slide
-        // ganti (auto/manual) atau lagi digeser tangan.
+        // abis idle. CUMA dipanggil dari interaksi manual (drag/panah kiri-
+        // kanan) -- sengaja TIDAK dipanggil dari auto-slide (nextSlide),
+        // soalnya progress bar ini emang harusnya diem/gak keliatan pas
+        // banner geser sendiri.
         function showBannerProgress() {
             progressBar.classList.add('visible');
             clearTimeout(progressHideTimeout);
@@ -910,8 +917,7 @@
         }
 
         // Reset isi bar ke 0% tanpa animasi, lalu (kalau play=true) jalanin
-        // animasi width 0% -> 100% selama SLIDE_DURATION_MS -- ini yang bikin
-        // dia keliatan kayak progress video yang ngisi pelan-pelan.
+        // animasi width 0% -> 100% selama SLIDE_DURATION_MS.
         function runBannerProgressFill(play) {
             progressFill.classList.remove('animating');
             progressFill.style.width = '0%';
@@ -927,13 +933,30 @@
 
         // Dibungkus jadi fungsi (bukan langsung jalan) karena bannerData sekarang
         // dimuat async dari banner.json — baru dipanggil setelah event 'bannerLoaded'.
+        //
+        // Di ujung, ditambahin 1 KLON dari slide pertama (gambarnya sama
+        // persis). Ini trik carousel "infinite loop": pas slide terakhir mau
+        // lanjut, dia geser ke klon ini dulu (jadi animasinya kerasa nerusin
+        // ke kanan, bukan lompat balik ke kiri), baru abis itu posisinya
+        // di-snap diam-diam ke slide asli index 0 tanpa animasi -- karena
+        // gambarnya identik, snap ini gak keliatan sama sekali. Urutan data
+        // asli (bannerData) tetap dipakai apa adanya, klon cuma tambahan
+        // visual di DOM.
         function renderBannerSlides() {
             slider.innerHTML = '';
-            bannerData.forEach((item, index) => {
+            const slidesToRender = bannerData.length
+                ? [...bannerData, bannerData[0]]
+                : [];
+            slidesToRender.forEach((item, index) => {
+                const isClone = index === bannerData.length;
                 const linkTag = document.createElement('a');
                 linkTag.href = item.url;
                 linkTag.target = "_blank";
                 linkTag.className = 'banner-link';
+                if (isClone) {
+                    linkTag.setAttribute('aria-hidden', 'true');
+                    linkTag.tabIndex = -1;
+                }
                 const imgTag = document.createElement('img');
                 imgTag.src = item.img;
                 imgTag.className = 'banner-slide';
@@ -942,8 +965,8 @@
                 // begitu halaman dibuka (ini elemen LCP/Largest Contentful
                 // Paint di halaman ini), jadi lazy-load malah nunda-nunda
                 // render-nya dan bikin skor LCP di PageSpeed Insights jelek.
-                // Slide ke-2 dst tetap lazy karena baru kelihatan kalau user
-                // geser slider-nya.
+                // Slide ke-2 dst (termasuk klon di ujung) tetap lazy karena
+                // baru kelihatan kalau user geser slider-nya.
                 if (index === 0) {
                     imgTag.loading = 'eager';
                     imgTag.fetchPriority = 'high';
@@ -970,18 +993,35 @@
             resetTimer();
         }
 
+        // Dipanggil CUMA dari timer auto-slide -- makanya di sini gak pernah
+        // manggil showBannerProgress()/runBannerProgressFill(), biar progress
+        // bar tetep diem pas banner geser sendiri.
         function nextSlide() {
-            currentIndex = (currentIndex + 1) % bannerData.length;
-            updateSlider();
-            showBannerProgress();
-            runBannerProgressFill(true);
+            if (currentIndex >= bannerData.length - 1) {
+                // Lagi di slide terakhir -> geser ke klon (posisi paling
+                // ujung) dulu biar animasinya kerasa nerusin ke kanan.
+                currentIndex = bannerData.length;
+                updateSlider();
+                clearTimeout(loopResetTimer);
+                loopResetTimer = setTimeout(() => {
+                    // Begitu animasi geser ke klon selesai, langsung (tanpa
+                    // animasi) snap balik ke slide asli index 0 -- gambarnya
+                    // identik jadi gak keliatan lompatannya sama sekali.
+                    slider.style.transition = 'none';
+                    currentIndex = 0;
+                    updateSlider();
+                    void slider.offsetWidth; // paksa reflow sebelum transition dinyalain lagi
+                    slider.style.transition = `transform ${SLIDE_TRANSITION_MS / 1000}s cubic-bezier(0.4, 0, 0.2, 1)`;
+                }, SLIDE_TRANSITION_MS);
+            } else {
+                currentIndex++;
+                updateSlider();
+            }
         }
 
         function resetTimer() {
             clearInterval(slideTimer);
             slideTimer = setInterval(nextSlide, SLIDE_DURATION_MS);
-            showBannerProgress();
-            runBannerProgressFill(true);
         }
 
         let isBannerHovered = false;
@@ -1016,7 +1056,7 @@
             slider.style.transition = 'none';
             // Progress bar berhenti ngisi selama digeser tangan (posisi slide
             // akhir belum pasti), tapi tetep dimunculin biar user tau board-nya
-            // responsif ke sentuhan.
+            // responsif ke sentuhan -- ini interaksi manual, jadi boleh nongol.
             showBannerProgress();
             runBannerProgressFill(false);
             // Cegah browser memulai seleksi teks/gambar bawaan saat mouse ditekan-geser.
@@ -1039,28 +1079,36 @@
             const endX = (e.type.includes('mouse')) ? e.pageX : (e.changedTouches ? e.changedTouches[0].clientX : startX);
             const movedBy = endX - startX;
  
-            slider.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            slider.style.transition = `transform ${SLIDE_TRANSITION_MS / 1000}s cubic-bezier(0.4, 0, 0.2, 1)`;
 
             if (movedBy < -100 && currentIndex < bannerData.length - 1) currentIndex++;
             else if (movedBy > 100 && currentIndex > 0) currentIndex--;
 
             updateSlider();
+            // Ini hasil geseran manual, jadi progress bar-nya ditampilin.
+            showBannerProgress();
+            runBannerProgressFill(true);
             resetTimer();
         }
 
         // Navigasi pakai tombol panah kiri/kanan saat kursor berada di atas banner
-        // (atau banner sedang fokus lewat keyboard/Tab).
+        // (atau banner sedang fokus lewat keyboard/Tab). Ini juga interaksi
+        // manual, jadi progress bar-nya ditampilin.
         document.addEventListener('keydown', (e) => {
             if (!isBannerHovered || !bannerData.length) return;
             if (e.key === 'ArrowRight' && currentIndex < bannerData.length - 1) {
                 e.preventDefault();
                 currentIndex++;
                 updateSlider();
+                showBannerProgress();
+                runBannerProgressFill(true);
                 resetTimer();
             } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
                 e.preventDefault();
                 currentIndex--;
                 updateSlider();
+                showBannerProgress();
+                runBannerProgressFill(true);
                 resetTimer();
             }
         });
