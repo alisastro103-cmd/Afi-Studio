@@ -258,17 +258,16 @@
         .share-option-btn:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
         .share-option-btn:active { transform: scale(0.98); }
         .share-option-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
-        /* fill:currentColor cuma buat ikon WhatsApp -- path-nya di
-           icons/social-icons.svg gak punya atribut fill sendiri, jadi
-           defaultnya hitam solid dan gak otomatis ngikutin `color` di atas
-           kalau gak di-set eksplisit. Ikon Telegram & Salin Link gaya-nya
-           outline (stroke="currentColor" udah di-set langsung di elemen
-           <svg>-nya), jadi di sini cuma perlu `color` -- kalau ikut kena
-           fill:currentColor juga, bentuk pesawatnya keisi solid gak
-           outline lagi. Warnanya ngikutin --text-sub biar otomatis
-           nyesuain tema: gelap di tema terang, terang di tema gelap. */
-        .share-option-icon-wa { color: var(--text-sub); fill: currentColor; }
-        .share-option-icon-tg,
+        /* fill:currentColor buat WhatsApp & Telegram -- dua-duanya logo solid
+           (bukan outline), dan path-nya sendiri gak punya atribut fill,
+           jadi defaultnya hitam dan gak otomatis ngikutin `color` di atas
+           kalau gak di-set eksplisit. Ikon Salin Link beda gaya (outline,
+           stroke="currentColor" udah di-set langsung di elemen <svg>-nya),
+           makanya dia gak perlu fill di sini. Warnanya ngikutin --text-sub
+           biar otomatis nyesuain tema: gelap di tema terang, terang di
+           tema gelap. */
+        .share-option-icon-wa,
+        .share-option-icon-tg { color: var(--text-sub); fill: currentColor; }
         .share-option-icon-link { color: var(--text-sub); }
 
         /* Toast "Link disalin" -- override durasi transisi bawaan Tailwind
@@ -312,9 +311,16 @@
         .banner-link { min-width: 100%; height: 100%; display: block; flex-shrink: 0; pointer-events: auto; -webkit-user-drag: none; user-drag: none; }
         .banner-slide { width: 100%; height: 100%; object-fit: cover; object-position: center; -webkit-user-drag: none; user-drag: none; }
  
-        .dots-container { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
-        .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); border: 0.5px solid rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; }
-        .dot.active { background: #fff; width: 14px; border-radius: 3px; }
+        /* Progress bar banner -- gantiin titik-titik indikator. Nempel di tepi
+           bawah board banner, isinya nunjukkin sisa waktu slide sekarang
+           sebelum ganti otomatis (mirip scrubber video). Defaultnya
+           tersembunyi (opacity 0) -- cuma nongol sebentar tiap kali slide
+           ganti/pas lagi digeser manual, abis itu ilang lagi kalau didiemin
+           (lihat showBannerProgress() di script). */
+        .banner-progress { position: absolute; left: 12px; right: 12px; bottom: 10px; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.25); overflow: hidden; z-index: 10; opacity: 0; transition: opacity 0.35s ease; pointer-events: none; }
+        .banner-progress.visible { opacity: 1; }
+        .banner-progress-fill { height: 100%; width: 0%; border-radius: 3px; background: #fff; }
+        .banner-progress-fill.animating { transition: width linear; }
  
         .marquee-bar { 
             background: var(--surface); 
@@ -605,7 +611,7 @@
 
         <div class="banner-container" id="banner-container" tabindex="0" role="region" aria-label="Banner promosi, geser dengan kursor atau tombol panah kiri/kanan">
             <div id="banner-slider" class="banner-wrapper"></div>
-            <div class="dots-container" id="dots-container"></div>
+            <div class="banner-progress" id="banner-progress"><div class="banner-progress-fill" id="banner-progress-fill"></div></div>
         </div>
  
         <div class="marquee-bar" id="marquee-bar">
@@ -741,7 +747,7 @@
                         <span>WhatsApp</span>
                     </button>
                     <button type="button" class="share-option-btn" onclick="shareToTelegram()">
-                        <svg class="share-option-icon-tg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        <svg class="share-option-icon-tg" viewBox="0 0 448 512"><path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-50.7 48.8c-5.6 5.6-10.3 10.3-21.1 10.3l7.5-106.5 193.1-174.5c8.4-7.5-1.8-11.7-13-4.2L118.5 285.3 16 253.7c-22.4-7-22.8-22.4 4.7-33.2L417.1 66.2c18.6-6.9 34.9 4.4 28.9 32.4z"/></svg>
                         <span>Telegram</span>
                     </button>
                     <button type="button" class="share-option-btn" onclick="shareCopyLink()">
@@ -877,16 +883,52 @@
         // --- BANNER & UI LOGIC ---
         const container = document.getElementById('banner-container');
         const slider = document.getElementById('banner-slider');
-        const dotsContainer = document.getElementById('dots-container');
+        const progressBar = document.getElementById('banner-progress');
+        const progressFill = document.getElementById('banner-progress-fill');
         let currentIndex = 0;
         let startX, isDragging = false, currentTranslate = 0, prevTranslate = 0;
         let slideTimer;
- 
+
+        // Durasi 1 slide sebelum otomatis ganti -- dipakai bareng buat interval
+        // auto-slide DAN buat lama animasi progress bar, jadi keduanya selalu
+        // sinkron walau angkanya diubah nanti.
+        const SLIDE_DURATION_MS = 5000;
+        // Progress bar cuma keliatan sebentar (2.5 detik) abis itu ilang lagi
+        // kalau gak ada interaksi baru -- lihat showBannerProgress().
+        const PROGRESS_IDLE_HIDE_MS = 2500;
+        let progressHideTimeout;
+
+        // Nyalain (fade-in) progress bar terus jadwalin dia buat ilang lagi
+        // abis idle. Dipanggil tiap kali ada "kejadian" di banner: slide
+        // ganti (auto/manual) atau lagi digeser tangan.
+        function showBannerProgress() {
+            progressBar.classList.add('visible');
+            clearTimeout(progressHideTimeout);
+            progressHideTimeout = setTimeout(() => {
+                progressBar.classList.remove('visible');
+            }, PROGRESS_IDLE_HIDE_MS);
+        }
+
+        // Reset isi bar ke 0% tanpa animasi, lalu (kalau play=true) jalanin
+        // animasi width 0% -> 100% selama SLIDE_DURATION_MS -- ini yang bikin
+        // dia keliatan kayak progress video yang ngisi pelan-pelan.
+        function runBannerProgressFill(play) {
+            progressFill.classList.remove('animating');
+            progressFill.style.width = '0%';
+            if (!play) return;
+            // Perlu "reflow" dulu di antara reset dan set width baru, kalau
+            // enggak browser bakal nganggep ini satu perubahan aja dan
+            // animasinya gak jalan (lompat langsung ke 100%).
+            void progressFill.offsetWidth;
+            progressFill.classList.add('animating');
+            progressFill.style.transitionDuration = SLIDE_DURATION_MS + 'ms';
+            progressFill.style.width = '100%';
+        }
+
         // Dibungkus jadi fungsi (bukan langsung jalan) karena bannerData sekarang
         // dimuat async dari banner.json — baru dipanggil setelah event 'bannerLoaded'.
         function renderBannerSlides() {
             slider.innerHTML = '';
-            dotsContainer.innerHTML = '';
             bannerData.forEach((item, index) => {
                 const linkTag = document.createElement('a');
                 linkTag.href = item.url;
@@ -911,41 +953,37 @@
                 imgTag.decoding = 'async';
                 linkTag.appendChild(imgTag);
                 slider.appendChild(linkTag);
- 
+
                 linkTag.draggable = false;
                 imgTag.draggable = false;
-
-                const dot = document.createElement('div');
-                dot.className = `dot ${index === 0 ? 'active' : ''}`;
-                dot.onclick = () => goToSlide(index);
-                dotsContainer.appendChild(dot);
             });
         }
  
         function updateSlider() {
             slider.style.transform = `translateX(-${currentIndex * 100}%)`;
-            document.querySelectorAll('.dot').forEach((dot, i) => {
-                dot.classList.toggle('active', i === currentIndex);
-            });
             prevTranslate = -currentIndex * container.offsetWidth;
         }
- 
+
         function goToSlide(index) {
             currentIndex = index;
             updateSlider();
             resetTimer();
         }
- 
+
         function nextSlide() {
             currentIndex = (currentIndex + 1) % bannerData.length;
             updateSlider();
+            showBannerProgress();
+            runBannerProgressFill(true);
         }
- 
+
         function resetTimer() {
             clearInterval(slideTimer);
-            slideTimer = setInterval(nextSlide, 5000);
+            slideTimer = setInterval(nextSlide, SLIDE_DURATION_MS);
+            showBannerProgress();
+            runBannerProgressFill(true);
         }
- 
+
         let isBannerHovered = false;
         let dragMoved = 0;
 
@@ -968,7 +1006,7 @@
                 e.stopPropagation();
             }
         }, true);
- 
+
         function dragStart(e) {
             if (e.type === 'mousedown' && e.button !== 0) return; // abaikan klik kanan dsb.
             isDragging = true;
@@ -976,10 +1014,15 @@
             startX = (e.type.includes('mouse')) ? e.pageX : e.touches[0].clientX;
             clearInterval(slideTimer);
             slider.style.transition = 'none';
+            // Progress bar berhenti ngisi selama digeser tangan (posisi slide
+            // akhir belum pasti), tapi tetep dimunculin biar user tau board-nya
+            // responsif ke sentuhan.
+            showBannerProgress();
+            runBannerProgressFill(false);
             // Cegah browser memulai seleksi teks/gambar bawaan saat mouse ditekan-geser.
             if (e.type === 'mousedown') e.preventDefault();
         }
- 
+
         function dragAction(e) {
             if (!isDragging) return;
             const currentX = (e.type.includes('mouse')) ? e.pageX : e.touches[0].clientX;
@@ -987,8 +1030,9 @@
             dragMoved = Math.abs(diff);
             const translate = prevTranslate + diff;
             slider.style.transform = `translateX(${translate}px)`;
+            showBannerProgress();
         }
- 
+
         function dragEnd(e) {
             if (!isDragging) return;
             isDragging = false;
@@ -996,10 +1040,10 @@
             const movedBy = endX - startX;
  
             slider.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
- 
+
             if (movedBy < -100 && currentIndex < bannerData.length - 1) currentIndex++;
             else if (movedBy > 100 && currentIndex > 0) currentIndex--;
- 
+
             updateSlider();
             resetTimer();
         }

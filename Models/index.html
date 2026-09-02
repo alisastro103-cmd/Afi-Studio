@@ -120,17 +120,16 @@
         .share-option-btn:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
         .share-option-btn:active { transform: scale(0.98); }
         .share-option-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
-        /* fill:currentColor cuma buat ikon WhatsApp -- path-nya di
-           icons/social-icons.svg gak punya atribut fill sendiri, jadi
-           defaultnya hitam solid dan gak otomatis ngikutin `color` di atas
-           kalau gak di-set eksplisit. Ikon Telegram & Salin Link gaya-nya
-           outline (stroke="currentColor" udah di-set langsung di elemen
-           <svg>-nya), jadi di sini cuma perlu `color` -- kalau ikut kena
-           fill:currentColor juga, bentuk pesawatnya keisi solid gak
-           outline lagi. Warnanya ngikutin --text-sub biar otomatis
-           nyesuain tema: gelap di tema terang, terang di tema gelap. */
-        .share-option-icon-wa { color: var(--text-sub); fill: currentColor; }
-        .share-option-icon-tg,
+        /* fill:currentColor buat WhatsApp & Telegram -- dua-duanya logo solid
+           (bukan outline), dan path-nya sendiri gak punya atribut fill,
+           jadi defaultnya hitam dan gak otomatis ngikutin `color` di atas
+           kalau gak di-set eksplisit. Ikon Salin Link beda gaya (outline,
+           stroke="currentColor" udah di-set langsung di elemen <svg>-nya),
+           makanya dia gak perlu fill di sini. Warnanya ngikutin --text-sub
+           biar otomatis nyesuain tema: gelap di tema terang, terang di
+           tema gelap. */
+        .share-option-icon-wa,
+        .share-option-icon-tg { color: var(--text-sub); fill: currentColor; }
         .share-option-icon-link { color: var(--text-sub); }
 
         /* Toast "Link disalin" -- override durasi transisi bawaan Tailwind
@@ -390,7 +389,7 @@
                         <span>WhatsApp</span>
                     </button>
                     <button type="button" class="share-option-btn" onclick="shareToTelegram()">
-                        <svg class="share-option-icon-tg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        <svg class="share-option-icon-tg" viewBox="0 0 448 512"><path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-50.7 48.8c-5.6 5.6-10.3 10.3-21.1 10.3l7.5-106.5 193.1-174.5c8.4-7.5-1.8-11.7-13-4.2L118.5 285.3 16 253.7c-22.4-7-22.8-22.4 4.7-33.2L417.1 66.2c18.6-6.9 34.9 4.4 28.9 32.4z"/></svg>
                         <span>Telegram</span>
                     </button>
                     <button type="button" class="share-option-btn" onclick="shareCopyLink()">
