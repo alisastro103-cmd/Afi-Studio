@@ -258,9 +258,21 @@
         .share-option-btn:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
         .share-option-btn:active { transform: scale(0.98); }
         .share-option-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
-        .share-option-icon-wa { color: #25D366; }
-        .share-option-icon-dc { color: #5865F2; }
+        /* fill:currentColor wajib di sini -- path di icons/social-icons.svg gak
+           punya atribut fill sendiri, jadi defaultnya hitam solid dan gak
+           otomatis ngikutin `color` di atas kalau gak di-set eksplisit.
+           Warnanya ngikutin --text-sub (sama kayak icon "Salin Link") biar
+           otomatis nyesuain tema: gelap di tema terang, terang di tema gelap. */
+        .share-option-icon-wa,
+        .share-option-icon-dc { color: var(--text-sub); fill: currentColor; }
         .share-option-icon-link { color: var(--text-sub); }
+
+        /* Toast "Link disalin" -- override durasi transisi bawaan Tailwind
+           (.transition-transform cuma 150ms, kerasa buru-buru banget).
+           300ms di sini HARUS senilai sama dengan TOAST_HIDE_TRANSITION_MS
+           di script.js supaya teksnya baru di-reset pas toast udah bener2
+           gak keliatan. */
+        #toast { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         /* --- PERBAIKAN BANNER --- */
         .banner-container { 
             width: 100%; 

@@ -24,6 +24,18 @@ const DEFAULT_TITLE = 'Model 3D - Afi Studio';
 const DEFAULT_DESC = 'Ratusan aset Minecraft gratis — rig, 3D model, texture, dan lebih banyak lagi dari komunitas Afi Studio.';
 const DEFAULT_IMAGE = `${SITE_URL}/thumbnail.webp`;
 
+// Crawler preview WhatsApp/Discord/Telegram cuma ngerti format gambar "lama"
+// (jpg/jpeg/png/webp/gif) buat og:image -- .avif SERING gagal dirender jadi
+// thumbnail (baik gambarnya gak muncul sama sekali maupun cuma nge-skip diam2),
+// walau linknya sendiri valid dan kebuka normal di browser. Makanya thumb yang
+// formatnya avif (atau format aneh lain) sengaja gak dipakai buat og:image --
+// fallback ke DEFAULT_IMAGE alih-alih nampilin gambar yang berpotensi gagal.
+const OG_SAFE_IMAGE_EXT = /\.(jpe?g|png|webp|gif)(\?.*)?$/i;
+
+function isOgSafeImage(url) {
+  return typeof url === 'string' && OG_SAFE_IMAGE_EXT.test(url.trim());
+}
+
 function escapeHtml(str) {
   return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -65,7 +77,16 @@ export default async function handler(req, res) {
         title = `${model.name} - Afi Studio`;
         description = model.caption && model.caption.trim() ? model.caption : DEFAULT_DESC;
         ogUrl = `${SITE_URL}/model/?id=${encodeURIComponent(id)}`;
-        if (model.thumb && String(model.thumb).trim()) ogImage = model.thumb;
+        if (model.thumb && isOgSafeImage(model.thumb)) {
+          ogImage = model.thumb;
+        } else if (model.thumb && String(model.thumb).trim()) {
+          // Ada thumb tapi formatnya gak aman buat preview link (mis. .avif) --
+          // tetap pakai DEFAULT_IMAGE (bukan dibiarkan kosong) supaya preview
+          // WhatsApp/Discord tetap nampilin sesuatu, dan dicatat di log server
+          // biar ketauan model mana yang thumbnail-nya perlu diganti ke
+          // jpg/png/webp lewat Admin Panel.
+          console.warn(`Thumb model "${model.name}" formatnya gak didukung buat og:image (${model.thumb}), pakai DEFAULT_IMAGE.`);
+        }
       } else {
         title = 'Model Tidak Ditemukan - Afi Studio';
       }

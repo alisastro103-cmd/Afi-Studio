@@ -372,17 +372,35 @@ function fallbackCopyText(text) {
     });
 }
 
-// Tampilkan popup kecil di bawah (#toast) dengan teks custom, lalu balikin
-// teks default-nya lagi setelah beberapa detik. Dipakai bareng-bareng oleh
-// handleCopyLink() dan opsi-opsi di sheet "Bagikan" di bawah.
+// Tampilkan popup kecil di bawah (#toast) dengan teks custom.
+// Catatan: teks LANGSUNG dikembalikan ke default begitu toast selesai
+// sembunyi total (bukan di saat bareng animasi keluar dimulai) -- sebelumnya
+// teks di-reset di setTimeout yang sama dengan yang men-trigger animasi
+// keluar, jadi sempat "keliatan" teksnya berubah sekilas pas toast lagi
+// meluncur turun. Delay ini disamain sama TOAST_HIDE_TRANSITION_MS di bawah
+// (durasi transisi CSS toast) supaya reset teksnya kejadian PAS toast udah
+// bener-bener gak keliatan lagi.
+const TOAST_VISIBLE_MS = 2000;
+const TOAST_HIDE_TRANSITION_MS = 300; // harus sama dengan durasi .toast-slide di CSS
+let toastHideTimer = null;
+let toastResetTimer = null;
+
 function showToastMessage(msg) {
     const t = document.getElementById('toast');
     if (!t) return;
     const label = t.querySelector('span') || t;
-    const original = label.textContent;
+    const original = t.dataset.defaultText || (t.dataset.defaultText = label.textContent);
+
+    clearTimeout(toastHideTimer);
+    clearTimeout(toastResetTimer);
+
     label.textContent = msg;
     t.classList.remove('translate-y-20');
-    setTimeout(() => { t.classList.add('translate-y-20'); label.textContent = original; }, 2000);
+
+    toastHideTimer = setTimeout(() => {
+        t.classList.add('translate-y-20');
+        toastResetTimer = setTimeout(() => { label.textContent = original; }, TOAST_HIDE_TRANSITION_MS);
+    }, TOAST_VISIBLE_MS);
 }
 
 function handleCopyLink() {
@@ -403,10 +421,26 @@ function getModelShareUrl() {
     return `${window.location.origin}/model/?id=${encodeURIComponent(currentModel.link)}`;
 }
 
+// Kumpulan template pesan share ke WhatsApp & Discord -- dipilih random tiap
+// kali tombol share dipencet, biar gak keliatan spam/robotic kalau dikirim
+// berkali-kali ke chat/grup yang sama. Semua tetap pakai "{name}" (nama
+// model) & baris URL terpisah di akhir, sama kayak template aslinya.
+const SHARE_MESSAGE_TEMPLATES = [
+    (name) => `Halo bang, Rig ${name} bagus cuy, cobain aja bang.`,
+    (name) => `Woy, ada Rig ${name} baru nih di Afi Studio, mayan buat koleksi.`,
+    (name) => `Gan, cek deh Rig ${name} ini, lumayan rapi hasilnya.`,
+    (name) => `Nemu Rig ${name} bagus nih, sikat aja gan sebelum lupa.`,
+    (name) => `Bro, Rig ${name} ini worth it buat dicoba, gratis pula.`,
+    (name) => `Rig ${name} ini keren sih menurutku, cobain deh bang.`,
+    (name) => `Ada rig baru nih namanya ${name}, kualitasnya lumayan bagus.`,
+    (name) => `Kalo butuh Rig ${name}, ini link download-nya bang, langsung sikat.`,
+];
+
 // Pesan template dipakai buat share ke WhatsApp & Discord.
 function buildShareMessage() {
     if (!currentModel) return '';
-    return `Halo bang, Rig ${currentModel.name} bagus cuy, cobain aja bang.\n${getModelShareUrl()}`;
+    const template = SHARE_MESSAGE_TEMPLATES[Math.floor(Math.random() * SHARE_MESSAGE_TEMPLATES.length)];
+    return `${template(currentModel.name)}\n${getModelShareUrl()}`;
 }
 
 // Tombol "Bagikan" sekarang membuka sheet pilihan (WhatsApp / Discord / Salin
@@ -434,14 +468,32 @@ function shareToWhatsApp() {
 function shareToDiscord() {
     const msg = buildShareMessage();
     if (!msg) return;
-    // Discord tidak punya URL resmi buat buka composer dengan teks yang
-    // sudah terisi (beda dari wa.me di atas) -- jadi pesannya disalin ke
-    // clipboard dan Discord dibuka, tinggal user tempel (paste) sendiri.
+    // Discord gak punya URL resmi buat buka composer dengan teks yang udah
+    // keisi kayak wa.me di atas -- tapi Web Share API bawaan OS (navigator.share)
+    // bisa dipakai buat munculin share sheet ASLI si HP, dan Discord jadi salah
+    // satu pilihan di situ. Begitu Discord dipilih, teksnya otomatis udah keisi
+    // di composer-nya, gak perlu salin-tempel manual lagi -- ini yang paling
+    // mendekati pengalaman "sekali tap" kayak WhatsApp yang memungkinkan di
+    // platform yang gak punya URL scheme resmi kayak Discord.
+    if (navigator.share) {
+        navigator.share({ text: msg }).catch((err) => {
+            if (err && err.name === 'AbortError') return; // user batal milih app, itu wajar
+            shareToDiscordFallback(msg);
+        });
+        closeShareSheet();
+        return;
+    }
+    // Browser yang gak dukung Web Share API (mis. kebanyakan desktop browser):
+    // balik ke cara lama, pesan disalin ke clipboard + Discord dibuka manual.
+    shareToDiscordFallback(msg);
+    closeShareSheet();
+}
+
+function shareToDiscordFallback(msg) {
     window.open('https://discord.com/channels/@me', '_blank', 'noopener');
     copyTextToClipboard(msg).then(() => {
         showToastMessage('Pesan disalin, tempel di Discord ya!');
     }).catch(() => {});
-    closeShareSheet();
 }
 
 function shareCopyLink() {
