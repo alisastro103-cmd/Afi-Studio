@@ -190,8 +190,15 @@ function renderMarquee() {
 
     // Jarak margin horizontal antar teks dirapatkan dari 45px ke 20px
     const separator = `<span style="color: var(--accent); margin: 0 20px; font-weight: bold; opacity: 0.8;">|</span>`;
-    const joinedContent = NEWS_TEXTS.join(separator);
-    const html = `${separator}${joinedContent}${separator}`;
+    // Separator HANYA di akhir (trailing-only), bukan di awal & akhir.
+    // Kalau dipasang di awal+akhir, dua salinan (A+B) yang ditaro sebelahan
+    // bakal ketemu "akhir A" (sep) langsung disusul "awal B" (sep) di titik
+    // sambungan -> muncul dua garis "|  |" numpuk jadi satu (double garis)
+    // dan jarak di titik itu jadi 2x lebih lebar dari jarak antar teks lain.
+    // Dengan trailing-only, tiap salinan = teks+sep, jadi di titik sambungan
+    // (baik A->B maupun B->A saat loop balik) selalu cuma ketemu 1 separator,
+    // jaraknya pun konsisten sama kayak jarak antar teks lainnya.
+    const html = `${NEWS_TEXTS.join(separator)}${separator}`;
 
     // Kedua salinan diisi konten yang sama persis agar saat animasi
     // mencapai -50% (akhir salinan pertama), salinan kedua sudah pas
