@@ -65,6 +65,11 @@
       color: var(--text);
       line-height: 1.4;
       min-height: 100%;
+      /* Halaman standalone lain (privacy, bantuan, favorit, tutorial, event,
+         daftar-model, feedback, member-Afi-Studio) semuanya pakai zoom: 0.75
+         di body. Baris ini sebelumnya kelewat di halaman /model/, makanya
+         kartu & teksnya kelihatan ~33% lebih besar dibanding halaman lain. */
+      zoom: 0.75;
     }
 
     .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }

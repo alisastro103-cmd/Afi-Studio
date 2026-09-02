@@ -246,7 +246,7 @@
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; position: relative; }
         .modal-overlay.active .modal-box { transform: scale(1); }
-        /* --- Sheet pilihan "Bagikan" (WhatsApp / Discord / Salin Link) --- */
+        /* --- Sheet pilihan "Bagikan" (WhatsApp / Telegram / Salin Link) --- */
         .share-sheet-box { max-width: 360px; }
         .share-option-btn {
             display: flex; align-items: center; gap: 12px; width: 100%;
@@ -264,7 +264,7 @@
            Warnanya ngikutin --text-sub (sama kayak icon "Salin Link") biar
            otomatis nyesuain tema: gelap di tema terang, terang di tema gelap. */
         .share-option-icon-wa,
-        .share-option-icon-dc { color: var(--text-sub); fill: currentColor; }
+        .share-option-icon-tg { color: var(--text-sub); fill: currentColor; }
         .share-option-icon-link { color: var(--text-sub); }
 
         /* Toast "Link disalin" -- override durasi transisi bawaan Tailwind
@@ -736,9 +736,9 @@
                         <svg class="share-option-icon-wa" viewBox="0 0 512 512"><use href="/icons/social-icons.svg#icon-wa"></use></svg>
                         <span>WhatsApp</span>
                     </button>
-                    <button type="button" class="share-option-btn" onclick="shareToDiscord()">
-                        <svg class="share-option-icon-dc" viewBox="0 0 512 512"><use href="/icons/social-icons.svg#icon-dc"></use></svg>
-                        <span>Discord</span>
+                    <button type="button" class="share-option-btn" onclick="shareToTelegram()">
+                        <svg class="share-option-icon-tg" viewBox="0 0 24 24"><use href="/icons/social-icons.svg#icon-tg"></use></svg>
+                        <span>Telegram</span>
                     </button>
                     <button type="button" class="share-option-btn" onclick="shareCopyLink()">
                         <svg class="share-option-icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.5"></path><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.5 19.5"></path></svg>

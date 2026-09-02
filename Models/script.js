@@ -413,7 +413,7 @@ function handleCopyLink() {
 }
 
 // Salin link publik model (halaman /model/?id=...) yang thumbnail & judulnya bakal
-// kebaca otomatis kalau di-share ke WhatsApp/Discord (lihat api/model-page.js).
+// kebaca otomatis kalau di-share ke WhatsApp/Telegram/Discord (lihat api/model-page.js).
 // id-nya pakai model.link (URL download) -- sama seperti modelFavId() di
 // favorites.js -- karena data model belum punya field "id" sendiri.
 function getModelShareUrl() {
@@ -421,7 +421,7 @@ function getModelShareUrl() {
     return `${window.location.origin}/model/?id=${encodeURIComponent(currentModel.link)}`;
 }
 
-// Kumpulan template pesan share ke WhatsApp & Discord -- dipilih random tiap
+// Kumpulan template pesan share ke WhatsApp & Telegram -- dipilih random tiap
 // kali tombol share dipencet, biar gak keliatan spam/robotic kalau dikirim
 // berkali-kali ke chat/grup yang sama. Semua tetap pakai "{name}" (nama
 // model) & baris URL terpisah di akhir, sama kayak template aslinya.
@@ -436,14 +436,23 @@ const SHARE_MESSAGE_TEMPLATES = [
     (name) => `Kalo butuh Rig ${name}, ini link download-nya bang, langsung sikat.`,
 ];
 
-// Pesan template dipakai buat share ke WhatsApp & Discord.
-function buildShareMessage() {
+// Teks pesan doang (tanpa link) -- dipakai Telegram yang punya parameter
+// "url" terpisah dari "text".
+function buildShareText() {
     if (!currentModel) return '';
     const template = SHARE_MESSAGE_TEMPLATES[Math.floor(Math.random() * SHARE_MESSAGE_TEMPLATES.length)];
-    return `${template(currentModel.name)}\n${getModelShareUrl()}`;
+    return template(currentModel.name);
 }
 
-// Tombol "Bagikan" sekarang membuka sheet pilihan (WhatsApp / Discord / Salin
+// Pesan template + link jadi satu baris -- dipakai buat share ke WhatsApp
+// & buat disalin ke clipboard, yang gak punya parameter link terpisah.
+function buildShareMessage() {
+    const text = buildShareText();
+    if (!text) return '';
+    return `${text}\n${getModelShareUrl()}`;
+}
+
+// Tombol "Bagikan" sekarang membuka sheet pilihan (WhatsApp / Telegram / Salin
 // Link) alih-alih langsung memanggil Web Share API bawaan browser -- karena
 // di beberapa konteks (mis. dibuka di dalam iframe testing tool) API itu
 // tidak tersedia/diblokir dan gagal diam-diam tanpa ada tanda apa pun.
@@ -465,50 +474,19 @@ function shareToWhatsApp() {
     closeShareSheet();
 }
 
-function shareToDiscord() {
-    const msg = buildShareMessage();
-    if (!msg) return;
+// Telegram punya URL share resmi (t.me/share/url) yang -- sama kayak wa.me --
+// langsung buka layar pilih kontak/grup tujuan begitu link-nya dibuka, jadi
+// user gak perlu buka app dulu lalu cari sendiri mau dikirim ke siapa
+// (beda dari Discord sebelumnya, yang cuma buka halaman utama app tanpa
+// arahan kirim ke mana). "text" diisi pesan template + nama model, "url"
+// diisi terpisah supaya Telegram yang nampilin link preview-nya sendiri.
+function shareToTelegram() {
+    if (!currentModel) return;
+    const text = buildShareText();
+    const url = getModelShareUrl();
+    if (!text || !url) return;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank', 'noopener');
     closeShareSheet();
-
-    // Discord gak punya URL resmi buat buka composer dengan teks yang udah
-    // keisi kayak wa.me di atas -- tapi Web Share API bawaan OS (navigator.share)
-    // bisa dipakai buat munculin share sheet ASLI si HP, dan Discord jadi salah
-    // satu pilihan di situ. Begitu Discord dipilih, teksnya otomatis udah keisi
-    // di composer-nya, gak perlu salin-tempel manual lagi -- ini yang paling
-    // mendekati pengalaman "sekali tap" kayak WhatsApp yang memungkinkan di
-    // platform yang gak punya URL scheme resmi kayak Discord.
-    //
-    // navigator.canShare() (kalau ada) dicek dulu SEBELUM manggil share() --
-    // dan pemanggilan share()-nya sendiri dibungkus try/catch. Soalnya
-    // sebagian browser lempar error SINKRON (bukan Promise rejection) kalau
-    // data yang dikirim gak didukung; kalau gak ditangkep, seluruh fungsi
-    // berhenti diam-diam dan tombol Discord kesannya "gak ngapa-ngapain" pas
-    // dipencet -- padahal sebenernya error, cuma gak kelihatan ke user.
-    const canUseWebShare = typeof navigator.share === 'function'
-        && (typeof navigator.canShare !== 'function' || navigator.canShare({ text: msg }));
-
-    if (canUseWebShare) {
-        try {
-            navigator.share({ text: msg }).catch((err) => {
-                if (err && err.name === 'AbortError') return; // user batal milih app, itu wajar
-                shareToDiscordFallback(msg);
-            });
-            return;
-        } catch (err) {
-            // Lanjut ke fallback di bawah -- lihat komentar di atas.
-        }
-    }
-    // Browser yang gak dukung Web Share API (mis. kebanyakan desktop browser),
-    // atau gagal sinkron di atas: balik ke cara lama, pesan disalin ke
-    // clipboard + Discord dibuka manual.
-    shareToDiscordFallback(msg);
-}
-
-function shareToDiscordFallback(msg) {
-    window.open('https://discord.com/channels/@me', '_blank', 'noopener');
-    copyTextToClipboard(msg).then(() => {
-        showToastMessage('Pesan disalin, tempel di Discord ya!');
-    }).catch(() => {});
 }
 
 function shareCopyLink() {
