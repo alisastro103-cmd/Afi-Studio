@@ -26,6 +26,7 @@
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/dist/output.css">
+  <link rel="stylesheet" href="/css/skeleton-shimmer.css">
   <script src="/theme-toggle.js" defer></script>
   <link rel="stylesheet" href="/fonts/fonts.css?v=3fonts">
 
@@ -100,6 +101,10 @@
       margin-bottom: 16px;
     }
     .model-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--bg); }
+    /* .model-thumb & .skeleton-shimmer sama-sama nyetel `background` --
+       override eksplisit di sini biar skeleton-nya tetap kelihatan abu-abu
+       (bukan ke-override balik sama var(--bg) punya .model-thumb). */
+    .model-thumb.skeleton-shimmer { background: var(--border); }
     .model-body { padding: 20px; }
     .model-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
     .model-caption { font-size: 14px; color: var(--text-light); margin-bottom: 16px; }
@@ -121,23 +126,34 @@
     }
     .download-btn:active { opacity: 0.85; }
 
-    .share-btn {
-      display: block; width: 100%; text-align: center;
+    .secondary-actions { display: flex; gap: 10px; }
+    .share-btn, .fav-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+      text-align: center;
       background: transparent; color: var(--text); font-weight: 700;
-      font-family: 'Geist', sans-serif; padding: 14px; border: 1px solid var(--border); border-radius: 10px;
-      font-size: 15px; cursor: pointer; text-decoration: none;
+      font-family: 'Geist', sans-serif; padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+      font-size: 14px; cursor: pointer; text-decoration: none;
     }
-    .share-btn:active { opacity: 0.85; }
+    .share-btn:active, .fav-btn:active { opacity: 0.85; }
+    .fav-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
+    .fav-btn.is-favorited { color: #F59E0B; border-color: #F59E0B; }
 
     .state-box { text-align: center; padding: 60px 20px; }
     .state-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
     .state-sub { font-size: 13px; color: var(--text-light); }
 
     .related-box { margin-top: 36px; }
-    .related-title { font-family: 'CreatoDisplay', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 14px; }
+    .related-title {
+      font-family: 'Minercraftory', 'CreatoDisplay', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
     .related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .related-card { display: block; background: var(--surface); border-radius: 10px; overflow: hidden; text-decoration: none; color: var(--text); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .related-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--bg); }
+    .related-thumb.skeleton-shimmer { background: var(--border); }
     .related-name { font-size: 12.5px; font-weight: 700; padding: 8px 10px; line-height: 1.3; }
 
     .hidden { display: none !important; }
@@ -188,6 +204,21 @@
 
   <main>
     <div class="page-fade-in">
+      <div id="skeleton-box" class="model-card skeleton-card" aria-hidden="true">
+        <div class="model-thumb skeleton-shimmer"></div>
+        <div class="model-body">
+          <div class="skeleton-shimmer skeleton-line" style="width:65%;height:22px;margin-top:0;"></div>
+          <div class="skeleton-shimmer skeleton-line" style="width:90%;margin-top:12px;margin-bottom:16px;"></div>
+          <div class="skeleton-shimmer skeleton-line" style="width:100%;margin-top:14px;"></div>
+          <div class="skeleton-shimmer skeleton-line" style="width:80%;margin-top:8px;margin-bottom:16px;"></div>
+          <div style="display:flex;gap:8px;margin-bottom:18px;">
+            <div class="skeleton-shimmer" style="width:64px;height:26px;border-radius:999px;"></div>
+            <div class="skeleton-shimmer" style="width:64px;height:26px;border-radius:999px;"></div>
+          </div>
+          <div class="skeleton-shimmer" style="width:100%;height:48px;border-radius:10px;"></div>
+        </div>
+      </div>
+
       <div id="model-box" class="hidden">
         <div class="model-card">
           <img id="m-thumb" class="model-thumb" src="" alt="" loading="lazy">
@@ -198,7 +229,12 @@
             <div id="m-tags" class="tag-row"></div>
             <div class="action-row">
               <a id="m-download" class="download-btn" href="#" target="_blank" rel="noopener">Download</a>
-              <button type="button" class="share-btn" onclick="handleShareModel()">Bagikan</button>
+              <div class="secondary-actions">
+                <button type="button" class="share-btn" onclick="handleShareModel()">Bagikan</button>
+                <button type="button" id="m-fav-btn" class="fav-btn" onclick="toggleFavoriteModel()" aria-label="Tandai favorit">
+                  <span id="m-fav-icon"></span> Favorit
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -207,6 +243,11 @@
       <div id="notfound-box" class="state-box hidden">
         <div class="state-title">Model tidak ditemukan</div>
         <div class="state-sub">Link ini mungkin sudah tidak berlaku, atau modelnya sudah dihapus.</div>
+      </div>
+
+      <div id="skeleton-related" class="related-box">
+        <div class="skeleton-shimmer skeleton-line" style="width:120px;height:17px;margin-top:0;margin-bottom:14px;"></div>
+        <div class="related-grid" id="skeleton-related-grid"></div>
       </div>
 
       <div id="related-box" class="related-box hidden"></div>
@@ -236,6 +277,7 @@
 
   <div id="toast" class="toast">Link disalin ke clipboard</div>
 
+  <script src="/favorites.js"></script>
   <script>
     function escapeHtml(str) {
       const d = document.createElement('div');
@@ -415,6 +457,45 @@
       closeShareSheet();
     }
 
+    // Isi grid skeleton "Model lainnya" sesegera mungkin (sebelum fetch data
+    // selesai), sama seperti pola skeleton di Beranda/Video & Tutorial/Models
+    // -- tapi bentuknya menyesuaikan struktur ".related-card" di halaman ini
+    // (bukan skeletonModelCardsHtml bawaan, yang formatnya buat ".model-card"
+    // di css/model-card.css yang tidak dimuat di halaman ini).
+    (function showInitialSkeleton() {
+      const grid = document.getElementById('skeleton-related-grid');
+      if (!grid) return;
+      let html = '';
+      for (let i = 0; i < 4; i++) {
+        html += `
+          <div class="related-card skeleton-card" aria-hidden="true">
+            <div class="related-thumb skeleton-shimmer"></div>
+            <div style="padding:8px 10px;">
+              <div class="skeleton-shimmer skeleton-line" style="width:${i % 2 ? '70%' : '85%'};height:11px;margin-top:0;"></div>
+            </div>
+          </div>`;
+      }
+      grid.innerHTML = html;
+    })();
+
+    function updateFavButton() {
+      const btn = document.getElementById('m-fav-btn');
+      const icon = document.getElementById('m-fav-icon');
+      if (!btn || !icon || !currentModel || typeof isModelFavorited !== 'function') return;
+      const id = modelFavId(currentModel);
+      const fav = isModelFavorited(id);
+      icon.innerHTML = favStarIconSvg(fav);
+      btn.classList.toggle('is-favorited', fav);
+      btn.setAttribute('aria-label', fav ? 'Hapus dari favorit' : 'Tandai favorit');
+    }
+
+    function toggleFavoriteModel() {
+      if (!currentModel || typeof toggleModelFavorite !== 'function') return;
+      const nowFavorited = toggleModelFavorite(modelFavId(currentModel));
+      updateFavButton();
+      showToastMessage(nowFavorited ? 'Telah masuk di Favorit' : 'Dihapus dari Favorit');
+    }
+
     async function init() {
       // Format lama: /model/?id=<link asli, di-encode>
       const idParam = new URLSearchParams(window.location.search).get('id');
@@ -439,6 +520,10 @@
         model = models.find(m => shortModelId(m.link) === shortId) || null;
       }
 
+      // Data sudah datang (baik ketemu maupun tidak) -> skeleton boleh dilepas.
+      document.getElementById('skeleton-box').classList.add('hidden');
+      document.getElementById('skeleton-related').classList.add('hidden');
+
       if (!model) {
         document.getElementById('notfound-box').classList.remove('hidden');
         renderRelatedModels(models, null);
@@ -461,6 +546,7 @@
 
       document.getElementById('m-download').href = model.link || '#';
       document.getElementById('model-box').classList.remove('hidden');
+      updateFavButton();
       renderRelatedModels(models, model);
     }
     init();
