@@ -88,7 +88,7 @@ User isi form di /daftar-model/ (nama, caption, thumbnail, file model, kategori,
 | `sw.js` + `manifest.json` | Service worker & config PWA — hanya halaman root (`/`) yang di-cache untuk mode offline. **Penting:** tiap kali `CORE_ASSETS` di `sw.js` diubah, naikkan `CACHE_NAME` (mis. `afi-studio-root-v6` → `v7`) supaya browser pengunjung ambil cache baru, bukan versi lama yang nyangkut |
 | `src/input.css` → `dist/output.css` (root & `admin/`) | Source Tailwind → hasil compile. Jalankan `npx tailwindcss -i ./src/input.css -o ./dist/output.css --minify` tiap habis nambah class Tailwind baru |
 | `tailwind.config.js` (root & `admin/`) | Daftar file yang di-scan Tailwind. **Pastikan semua halaman yang memakai `dist/output.css` masuk `content`**, kalau tidak, class yang cuma dipakai di halaman itu ke-purge dan hilang |
-| `fonts/fonts.css` | Font self-hosted (Outfit, DM Sans, Dancing Script) — tidak ada request ke Google Fonts CDN. Dipakai bareng oleh halaman publik & admin panel (`admin/*.html` juga load `/fonts/fonts.css`, bukan copy sendiri — sebelumnya sempat dobel, sudah digabung) |
+| `fonts/fonts.css` | Font self-hosted (Geist, Anton, Minercraftory, Dancing Script) — tidak ada request ke Google Fonts CDN. Dipakai bareng oleh halaman publik & admin panel (`admin/*.html` juga load `/fonts/fonts.css`, bukan copy sendiri — sebelumnya sempat dobel, sudah digabung) |
 | `vercel.json` | `functions.includeFiles` (daftar file JSON fallback yang wajib ikut ke-bundle ke serverless function) + aturan `Cache-Control` per jenis file |
 | `scripts/seed-redis.mjs` | Push isi file JSON di repo ke Redis (seed awal / reset data) |
 | `scripts/export-redis.mjs` | Tarik isi Redis balik jadi file JSON (backup / sinkronisasi ulang ke repo) |

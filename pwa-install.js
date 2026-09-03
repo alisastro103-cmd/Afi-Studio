@@ -39,7 +39,7 @@
     style.textContent = [
       '#afi-install-btn{position:fixed;right:16px;bottom:16px;z-index:2500;',
       'display:flex;align-items:center;gap:8px;padding:12px 16px;border-radius:999px;',
-      'background:var(--accent,#6c5ce7);color:#fff;font-family:\'Outfit\',sans-serif;',
+      'background:var(--accent,#6c5ce7);color:#fff;font-family:\'Geist\',sans-serif;',
       'font-weight:700;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);',
       'border:none;cursor:pointer;transform:translateY(80px);opacity:0;',
       'transition:transform .3s ease,opacity .3s ease;}',
@@ -54,7 +54,7 @@
       '#afi-install-sheet.open{opacity:1;pointer-events:all;}',
       '#afi-install-sheet .box{background:var(--surface,#fff);color:var(--text,#0f172a);',
       'width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:24px 20px 28px;',
-      'transform:translateY(30px);transition:transform .25s ease;font-family:\'Outfit\',sans-serif;}',
+      'transform:translateY(30px);transition:transform .25s ease;font-family:\'Geist\',sans-serif;}',
       '#afi-install-sheet.open .box{transform:translateY(0);}',
       '#afi-install-sheet h3{margin:0 0 8px;font-size:17px;font-weight:800;}',
       '#afi-install-sheet p{margin:0 0 4px;font-size:13.5px;line-height:1.6;opacity:.85;}',

@@ -105,7 +105,7 @@ function favStarIconSvg(filled) {
             '#' + OVERLAY_ID + '.show{opacity:1;visibility:visible;pointer-events:auto;}' +
             '#' + OVERLAY_ID + ' .afi-ty-heart{width:60px;height:60px;color:var(--accent,#4f86d6);' +
             'animation:afiHeartBeat 1.1s ease-in-out infinite;}' +
-            '#' + OVERLAY_ID + ' .afi-ty-title{font-family:"Outfit",sans-serif;font-size:21px;' +
+            '#' + OVERLAY_ID + ' .afi-ty-title{font-family:"Geist",sans-serif;font-size:21px;' +
             'font-weight:800;color:var(--text,#26313f);max-width:320px;line-height:1.35;}' +
             '#' + OVERLAY_ID + ' .afi-ty-sub{font-size:13px;color:var(--text-sub,#5b6b80);}' +
             '#' + OVERLAY_ID + ' .afi-ty-close{margin-top:8px;padding:10px 24px;border-radius:999px;' +

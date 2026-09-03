@@ -429,13 +429,40 @@ function handleCopyLink() {
     });
 }
 
-// Salin link publik model (halaman /model/?id=...) yang thumbnail & judulnya bakal
-// kebaca otomatis kalau di-share ke WhatsApp/Telegram/Discord (lihat api/model-page.js).
-// id-nya pakai model.link (URL download) -- sama seperti modelFavId() di
-// favorites.js -- karena data model belum punya field "id" sendiri.
+// Hash pendek (6 karakter base36) dari string apa pun -- dipakai buat generate ID
+// singkat dari model.link. HARUS PERSIS SAMA dengan versi di api/model-page.js
+// (server) supaya link yang dibuat di sini bisa ketemu balik di server.
+function shortModelId(str) {
+    let hash = 0x811c9dc5;
+    const s = String(str || '');
+    for (let i = 0; i < s.length; i++) {
+        hash ^= s.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+    }
+    return (hash >>> 0).toString(36).padStart(6, '0').slice(-6);
+}
+
+// Ubah nama model jadi slug URL-safe (huruf kecil, spasi/simbol -> "-").
+// HARUS PERSIS SAMA dengan versi di api/model-page.js.
+function slugifyModelName(name) {
+    const cleaned = String(name || '')
+        .toLowerCase()
+        .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 40);
+    return cleaned || 'model';
+}
+
+// Salin link publik model (format pendek /m/<id>-<nama-model>) yang thumbnail &
+// judulnya bakal kebaca otomatis kalau di-share ke WhatsApp/Telegram/Discord
+// (lihat api/model-page.js). id-nya hash dari model.link, bukan link asli yang
+// panjang -- jadi link yang dibagikan jauh lebih pendek.
 function getModelShareUrl() {
     if (!currentModel || !currentModel.link) return '';
-    return `${window.location.origin}/model/?id=${encodeURIComponent(currentModel.link)}`;
+    const shortId = shortModelId(currentModel.link);
+    const slug = slugifyModelName(currentModel.name);
+    return `${window.location.origin}/m/${shortId}-${slug}`;
 }
 
 // Kumpulan template pesan share ke WhatsApp & Telegram -- dipilih random tiap

@@ -1,15 +1,18 @@
 // api/model-page.js
-// Merender halaman /model/?id=... secara dinamis di server, supaya bot preview link
-// (WhatsApp, Discord, dll — yang gak menjalankan JavaScript) tetap bisa baca judul,
-// deskripsi, DAN thumbnail model yang benar dari tag <meta property="og:*">.
+// Merender halaman /model/?id=... (lama) ATAU /m/<id>-<nama-model> (baru, pendek)
+// secara dinamis di server, supaya bot preview link (WhatsApp, Discord, dll — yang
+// gak menjalankan JavaScript) tetap bisa baca judul, deskripsi, DAN thumbnail model
+// yang benar dari tag <meta property="og:*">.
 //
-// File ini SATU-SATUNYA yang boleh diakses lewat /model dan /model/ (lihat rewrites di
-// vercel.json) — HTML aslinya disimpan sebagai template statis di model/template.html
-// (bukan index.html) supaya gak "menang" duluan lawan rewrite di filesystem Vercel.
+// File ini SATU-SATUNYA yang boleh diakses lewat /model, /model/, dan /m/:slug
+// (lihat rewrites di vercel.json) — HTML aslinya disimpan sebagai template statis
+// di model/template.html (bukan index.html) supaya gak "menang" duluan lawan
+// rewrite di filesystem Vercel.
 //
-// ID model: karena data model gak punya field "id" sendiri, dipakai model.link (URL
-// download) yang sudah unik per model -- sama seperti modelFavId() di favorites.js buat
-// fitur favorit. Jadi ?id= di sini isinya link download yang di-encode.
+// ID model: karena data model gak punya field "id" sendiri, ID pendek dihasilkan
+// dari hash link download-nya (shortModelId, lihat di bawah) -- sama-sama unik per
+// model tanpa perlu nambah field baru di data. Link lama (?id=<link asli, di-encode
+// penuh>) TETAP jalan, gak dihapus, biar link yang udah kepencar gak putus.
 
 import fs from 'fs';
 import path from 'path';
@@ -46,6 +49,31 @@ function ogImageUrlFor(thumb) {
   return `${SITE_URL}/api/og-image?src=${encodeURIComponent(trimmed)}`;
 }
 
+// Hash pendek (6 karakter base36) dari string apa pun -- dipakai buat generate ID
+// singkat dari model.link. HARUS PERSIS SAMA dengan versi di Models/script.js
+// (client) supaya link yang dibuat di browser bisa ketemu balik di server ini.
+function shortModelId(str) {
+  let hash = 0x811c9dc5;
+  const s = String(str || '');
+  for (let i = 0; i < s.length; i++) {
+    hash ^= s.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(36).padStart(6, '0').slice(-6);
+}
+
+// Ubah nama model jadi slug URL-safe (huruf kecil, spasi/simbol -> "-").
+// HARUS PERSIS SAMA dengan versi di Models/script.js.
+function slugifyModelName(name) {
+  const cleaned = String(name || '')
+    .toLowerCase()
+    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+  return cleaned || 'model';
+}
+
 function escapeHtml(str) {
   return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
@@ -73,20 +101,27 @@ async function loadModels() {
 }
 
 export default async function handler(req, res) {
-  const id = req.query && req.query.id;
+  const id = req.query && req.query.id;       // format lama: /model/?id=<link asli>
+  const slug = req.query && req.query.slug;   // format baru: /m/<id6>-<nama-model>
   let title = DEFAULT_TITLE;
   let description = DEFAULT_DESC;
   let ogImage = DEFAULT_IMAGE;
   let ogUrl = `${SITE_URL}/model/`;
 
-  if (id) {
+  if (id || slug) {
     try {
       const models = await loadModels();
-      const model = models.find(m => m.link === id);
+      let model = null;
+      if (slug) {
+        const shortId = String(slug).split('-')[0];
+        model = models.find(m => shortModelId(m.link) === shortId);
+      } else {
+        model = models.find(m => m.link === id);
+      }
       if (model) {
         title = `${model.name} - Afi Studio`;
         description = model.caption && model.caption.trim() ? model.caption : DEFAULT_DESC;
-        ogUrl = `${SITE_URL}/model/?id=${encodeURIComponent(id)}`;
+        ogUrl = `${SITE_URL}/m/${shortModelId(model.link)}-${slugifyModelName(model.name)}`;
         if (model.thumb && isOgSafeImage(model.thumb)) {
           ogImage = model.thumb;
         } else if (model.thumb && String(model.thumb).trim()) {

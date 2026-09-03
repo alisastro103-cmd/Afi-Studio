@@ -34,7 +34,8 @@
     { "source": "/api/survey-results", "destination": "/api/survey?mode=results" },
     { "source": "/api/survey-thumbnail", "destination": "/api/survey?mode=thumbnail" },
     { "source": "/model", "destination": "/api/model-page" },
-    { "source": "/model/", "destination": "/api/model-page" }
+    { "source": "/model/", "destination": "/api/model-page" },
+    { "source": "/m/:slug", "destination": "/api/model-page?slug=:slug" }
   ],
   "headers": [
     {
