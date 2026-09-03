@@ -819,7 +819,8 @@ const genFabWrap = document.getElementById('gen-fab-wrap');
 const genFabBtn = document.getElementById('gen-fab-btn');
 const MEMBER_FAB_DROPDOWN_HTML = `
       <button onclick="closeActionMenus(); openMemberForm()"><i data-lucide="users"></i>Tambah Member</button>
-      <button onclick="closeActionMenus(); addNewGenFolder()"><i data-lucide="folder-plus"></i>Gen Baru</button>`;
+      <button onclick="closeActionMenus(); addNewGenFolder()"><i data-lucide="folder-plus"></i>Gen Baru</button>
+      <button onclick="closeActionMenus(); renameGenFolder()"><i data-lucide="pencil"></i>Ganti Nama Folder</button>`;
 const KATEGORI_FAB_DROPDOWN_HTML = `
       <button onclick="closeActionMenus(); openKategoriForm()"><i data-lucide="tag"></i>Kategori Model</button>
       <button onclick="closeActionMenus(); openKategoriAppForm()"><i data-lucide="layers"></i>Kategori Aplikasi</button>`;
@@ -1571,6 +1572,25 @@ async function addNewGenFolder(){
   renderMember(); renderDashboard();
   const ok = await persist('member');
   if(ok) toast('Folder generasi ditambahkan'); else { DB.member = prev; renderMemberFilter(); renderMember(); renderDashboard(); }
+}
+// Ganti nama folder generasi yang sedang dipilih di dropdown filter (mis. "gen-3" -> "gen-veteran"),
+// sambil tetap mempertahankan urutan folder & isi member di dalamnya.
+async function renameGenFolder(){
+  const sel = document.getElementById('member-gen-filter');
+  const gen = sel.value;
+  if(!gen || gen === '__all'){ toast('Pilih dulu folder generasinya lewat filter di atas'); return; }
+  const newName = (prompt(`Nama baru untuk folder "${gen}":`, gen) || '').trim();
+  if(!newName || newName === gen) return;
+  if(DB.member[newName]){ toast('Nama itu sudah dipakai folder generasi lain'); return; }
+  const prev = JSON.parse(JSON.stringify(DB.member));
+  const reordered = {};
+  Object.keys(DB.member).forEach(k=>{ reordered[k === gen ? newName : k] = DB.member[k]; });
+  DB.member = reordered;
+  renderMemberFilter();
+  sel.value = newName;
+  renderMember(); renderDashboard();
+  const ok = await persist('member');
+  if(ok) toast('Nama folder generasi diganti'); else { DB.member = prev; renderMemberFilter(); sel.value = gen; renderMember(); renderDashboard(); }
 }
 // Ambil field "Info-1", "Info-2", ... dari objek member, urut sesuai nomornya.
 // Ini format yang dipakai member-Afi-Studio/member.json di web utama (bukan array "info").
