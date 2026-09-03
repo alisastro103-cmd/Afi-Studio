@@ -59,7 +59,7 @@ function shortModelId(str) {
     hash ^= s.charCodeAt(i);
     hash = Math.imul(hash, 0x01000193);
   }
-  return (hash >>> 0).toString(36).padStart(6, '0').slice(-6);
+  return (hash >>> 0).toString(36).padStart(4, '0').slice(-4);
 }
 
 // Ubah nama model jadi slug URL-safe (huruf kecil, spasi/simbol -> "-").
@@ -70,7 +70,8 @@ function slugifyModelName(name) {
     .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 40);
+    .slice(0, 20)
+    .replace(/-+$/g, '');
   return cleaned || 'model';
 }
 
