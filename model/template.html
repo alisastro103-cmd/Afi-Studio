@@ -111,6 +111,13 @@
     .state-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
     .state-sub { font-size: 13px; color: var(--text-light); }
 
+    .related-box { margin-top: 8px; }
+    .related-title { font-family: 'CreatoDisplay', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+    .related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .related-card { display: block; background: var(--surface); border-radius: 10px; overflow: hidden; text-decoration: none; color: var(--text); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .related-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--bg); }
+    .related-name { font-size: 12.5px; font-weight: 700; padding: 8px 10px; line-height: 1.3; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -138,6 +145,8 @@
       <div class="state-title">Model tidak ditemukan</div>
       <div class="state-sub">Link ini mungkin sudah tidak berlaku, atau modelnya sudah dihapus.</div>
     </div>
+
+    <div id="related-box" class="related-box hidden"></div>
   </main>
 
   <script>
@@ -147,33 +156,112 @@
       return d.innerHTML;
     }
 
+    // HARUS PERSIS SAMA dengan versi di Models/script.js dan api/model-page.js
+    // supaya link /m/<id>-<nama> yang dibuat di sana bisa ketemu balik di sini.
+    function shortModelId(str) {
+      let hash = 0x811c9dc5;
+      const s = String(str || '');
+      for (let i = 0; i < s.length; i++) {
+        hash ^= s.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+      }
+      return (hash >>> 0).toString(36).padStart(4, '0').slice(-4);
+    }
+
+    function slugifyModelName(name) {
+      const cleaned = String(name || '')
+        .toLowerCase()
+        .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 20)
+        .replace(/-+$/g, '');
+      return cleaned || 'model';
+    }
+
+    function modelShareUrl(m) {
+      return `/m/${shortModelId(m.link)}-${slugifyModelName(m.name)}`;
+    }
+
+    // Pilih beberapa model lain buat ditampilin di bawah -- diprioritasin yang
+    // se-kategori sama model yang lagi dibuka (kalau ada), sisanya diisi model
+    // lain biar section-nya tetap kepenuhan.
+    function renderRelatedModels(models, currentModel) {
+      const box = document.getElementById('related-box');
+      const pool = models.filter(m => !currentModel || m.link !== currentModel.link);
+      if (!pool.length) return;
+
+      let picks;
+      if (currentModel) {
+        const cats = Array.isArray(currentModel.category) ? currentModel.category
+          : (currentModel.category ? [currentModel.category] : []);
+        const sameCategory = pool.filter(m => {
+          const mc = Array.isArray(m.category) ? m.category : (m.category ? [m.category] : []);
+          return mc.some(c => cats.includes(c));
+        });
+        const rest = pool.filter(m => !sameCategory.includes(m));
+        picks = sameCategory.concat(rest).slice(0, 6);
+      } else {
+        picks = pool.slice(0, 6);
+      }
+      if (!picks.length) return;
+
+      box.innerHTML = '<div class="related-title">Model lainnya</div><div class="related-grid">' +
+        picks.map(m => `
+          <a class="related-card" href="${modelShareUrl(m)}">
+            <img class="related-thumb" src="${m.thumb || '/thumbnail.webp'}" alt="" loading="lazy">
+            <div class="related-name">${escapeHtml(m.name || '')}</div>
+          </a>
+        `).join('') + '</div>';
+      box.classList.remove('hidden');
+    }
+
     async function init() {
-      const id = new URLSearchParams(window.location.search).get('id');
-      if (!id) { document.getElementById('notfound-box').classList.remove('hidden'); return; }
+      // Format lama: /model/?id=<link asli, di-encode>
+      const idParam = new URLSearchParams(window.location.search).get('id');
+      // Format baru: /m/<id4>-<nama-model> -- Vercel merewrite ini ke halaman
+      // ini secara transparan, jadi URL bar tetap /m/..., bukan query string.
+      const pathMatch = window.location.pathname.match(/^\/m\/([^/]+)/);
+      const shortId = pathMatch ? decodeURIComponent(pathMatch[1]).split('-')[0] : '';
+
+      let models = [];
       try {
         const res = await fetch('/api/data/models');
-        const models = await res.json();
-        const model = Array.isArray(models) ? models.find(m => m.link === id) : null;
-        if (!model) { document.getElementById('notfound-box').classList.remove('hidden'); return; }
-
-        document.getElementById('m-thumb').src = model.thumb || '/thumbnail.webp';
-        document.getElementById('m-title').textContent = model.name || '';
-        document.getElementById('m-caption').textContent = model.caption || '';
-
-        let infoHtml = '';
-        if (model.creator) infoHtml += `<div class="model-info-row"><span>Creator</span><b>${escapeHtml(model.creator)}</b></div>`;
-        if (model.converter) infoHtml += `<div class="model-info-row"><span>Converter</span><b>${escapeHtml(model.converter)}</b></div>`;
-        if (model.app_target) infoHtml += `<div class="model-info-row"><span>Untuk Aplikasi</span><b>${escapeHtml(model.app_target)}</b></div>`;
-        document.getElementById('m-info').innerHTML = infoHtml;
-
-        const cats = Array.isArray(model.category) ? model.category : (model.category ? [model.category] : []);
-        document.getElementById('m-tags').innerHTML = cats.map(c => `<span class="tag">${escapeHtml(c)}</span>`).join('');
-
-        document.getElementById('m-download').href = model.link || '#';
-        document.getElementById('model-box').classList.remove('hidden');
+        models = await res.json();
+        if (!Array.isArray(models)) models = [];
       } catch (e) {
-        document.getElementById('notfound-box').classList.remove('hidden');
+        models = [];
       }
+
+      let model = null;
+      if (idParam) {
+        model = models.find(m => m.link === idParam) || null;
+      } else if (shortId) {
+        model = models.find(m => shortModelId(m.link) === shortId) || null;
+      }
+
+      if (!model) {
+        document.getElementById('notfound-box').classList.remove('hidden');
+        renderRelatedModels(models, null);
+        return;
+      }
+
+      document.getElementById('m-thumb').src = model.thumb || '/thumbnail.webp';
+      document.getElementById('m-title').textContent = model.name || '';
+      document.getElementById('m-caption').textContent = model.caption || '';
+
+      let infoHtml = '';
+      if (model.creator) infoHtml += `<div class="model-info-row"><span>Creator</span><b>${escapeHtml(model.creator)}</b></div>`;
+      if (model.converter) infoHtml += `<div class="model-info-row"><span>Converter</span><b>${escapeHtml(model.converter)}</b></div>`;
+      if (model.app_target) infoHtml += `<div class="model-info-row"><span>Untuk Aplikasi</span><b>${escapeHtml(model.app_target)}</b></div>`;
+      document.getElementById('m-info').innerHTML = infoHtml;
+
+      const cats = Array.isArray(model.category) ? model.category : (model.category ? [model.category] : []);
+      document.getElementById('m-tags').innerHTML = cats.map(c => `<span class="tag">${escapeHtml(c)}</span>`).join('');
+
+      document.getElementById('m-download').href = model.link || '#';
+      document.getElementById('model-box').classList.remove('hidden');
+      renderRelatedModels(models, model);
     }
     init();
   </script>
