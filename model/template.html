@@ -93,6 +93,19 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
+    /* Animasi "muncul" kartu model & kartu terkait -- persis sama pola
+       (cardRevealUp) yang dipakai di Beranda & Semua Model (lihat
+       initCardRevealAnimation di Models/script.js), supaya transisinya
+       kerasa konsisten. Karena elemen ini disembunyikan lewat .hidden
+       (display:none) sampai data siap, animasinya otomatis kepicu PAS
+       kontennya beneran ditampilkan -- bukan cuma sekali pas <body> dimuat.*/
+    @keyframes cardRevealUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #model-box .model-card { animation: cardRevealUp 0.45s ease-out both; }
+    .related-grid .related-card { animation: cardRevealUp 0.45s ease-out both; }
+
     .model-card {
       background: var(--surface);
       box-shadow: 0 4px 18px rgba(0,0,0,0.16);
@@ -336,8 +349,8 @@
       if (!picks.length) return;
 
       box.innerHTML = '<h2 class="related-title">Model lainnya</h2><div class="related-grid">' +
-        picks.map(m => `
-          <a class="related-card" href="${modelShareUrl(m)}">
+        picks.map((m, i) => `
+          <a class="related-card" href="${modelShareUrl(m)}" style="animation-delay:${Math.min(i * 40, 400)}ms">
             <img class="related-thumb" src="${m.thumb || '/thumbnail.webp'}" alt="" loading="lazy">
             <div class="related-name">${escapeHtml(m.name || '')}</div>
           </a>
@@ -496,6 +509,13 @@
       showToastMessage(nowFavorited ? 'Telah masuk di Favorit' : 'Dihapus dari Favorit');
     }
 
+    // Delay minimum biar skeleton keliatan sebentar & gak "kedip" kelewat
+    // cepat kalau fetch-nya kebetulan super cepat (mis. data kecil/di-cache).
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    const MIN_SKELETON_MS = 550;
+
     async function init() {
       // Format lama: /model/?id=<link asli, di-encode>
       const idParam = new URLSearchParams(window.location.search).get('id');
@@ -506,7 +526,10 @@
 
       let models = [];
       try {
-        const res = await fetch('/api/data/models');
+        const [res] = await Promise.all([
+          fetch('/api/data/models'),
+          wait(MIN_SKELETON_MS),
+        ]);
         models = await res.json();
         if (!Array.isArray(models)) models = [];
       } catch (e) {
