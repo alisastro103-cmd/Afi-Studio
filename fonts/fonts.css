@@ -1,23 +1,37 @@
 /*
   fonts.css — pengganti lokal untuk Google Fonts CDN
-  (sebelumnya: https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=Dancing+Script:wght@700&display=swap)
 
-  Font aktif saat ini:
-  - Geist         -> body, deskripsi, caption, detail text, label, nav, tombol
-                     (gantiin Outfit non-heading + DM Sans). Lisensi SIL OFL 1.1.
-                     PERHATIAN: baru ada file weight 700 & 800 (Bold/ExtraBold).
-                     Belum ada Geist Regular/Medium (400/500/600) -- browser bakal
-                     nampilin versi Bold buat teks yang minta weight 400/500/600
-                     sampai file Geist-Regular/Geist-Medium ditambahin di sini.
-  - Anton         -> heading (h1-h4) di semua halaman, gantiin Outfit. Bold,
-                     condensed, mirip vibe Coolvetica tapi 100% gratis buat web
-                     (Google Fonts, lisensi SIL OFL 1.1 -- gak kayak Coolvetica
-                     yang butuh web embedding license berbayar).
-  - Minercraftory -> judul section/header (.category-header di Beranda/Models/
-                     Tutorial/Favorit, .folder di Member). Lisensi CC BY-SA 3.0,
-                     lihat Minercraftory-LICENSE.txt.
-  - Dancing Script -> logo/wordmark "Afi-Studio" saja.
+  3 font final yang dipakai situs ini (self-hosted, tanpa request keluar):
+  - Geist          -> body, deskripsi, caption, detail text, label, nav, tombol.
+                      Weight 500/600/700/800 aktif (Regular/400 belum ada file-nya —
+                      browser bakal render versi 500 buat teks yang minta weight
+                      di bawah itu). Lisensi SIL OFL 1.1.
+  - CreatoDisplay  -> heading (h1-h4) di semua halaman. Weight 300 (Light) & 700
+                      (Bold) aktif — weight lain (400/500/600/800) otomatis
+                      di-map browser ke yang paling dekat (biasanya Bold).
+  - Minercraftory  -> judul section/header (.category-header di Beranda/Models/
+                      Tutorial/Favorit, .folder di Member). Lisensi CC BY-SA 3.0,
+                      lihat Minercraftory-LICENSE.txt.
+
+  Dancing Script (logo/wordmark "Afi-Studio") tetap terpisah, bukan bagian dari
+  3 font di atas — elemen identitas brand, sengaja beda.
 */
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/Geist-500.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Geist-600.ttf') format('truetype');
+}
 
 @font-face {
   font-family: 'Geist';
@@ -36,11 +50,27 @@
 }
 
 @font-face {
-  font-family: 'Anton';
+  font-family: 'CreatoDisplay';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/CreatoDisplay-300.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'CreatoDisplay';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/CreatoDisplay-700.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Minercraftory';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/Anton-400.woff2') format('woff2');
+  src: url('/fonts/Minercraftory.ttf') format('truetype');
 }
 
 @font-face {
@@ -49,12 +79,4 @@
   font-weight: 700;
   font-display: swap;
   src: url('/fonts/DancingScript-700.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Minercraftory';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/Minercraftory.woff2') format('woff2');
 }
