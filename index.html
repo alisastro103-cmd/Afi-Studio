@@ -848,7 +848,7 @@
                 const selected = shuffled.slice(0, getHomeModelCount());
                 
                 grid.innerHTML = selected.map(model => `
-                    <article class="model-card" onclick="openModal(${MODELS.indexOf(model)})">
+                    <article class="model-card" onclick="window.location.href='${modelShareUrl(model)}'">
                         <img src="${model.thumb}" class="card-image" loading="lazy" alt="${(model.name || "Thumbnail model").replace(/"/g, "&quot;")}">
                         <div class="card-content">
                             <div class="card-title">${model.name}</div>

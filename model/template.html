@@ -79,6 +79,19 @@
 
     main { max-width: 560px; margin: 0 auto; padding: 8px 20px 60px; }
 
+    /* Transisi masuk konten halaman, senada dengan halaman lain (Beranda,
+       Video & Tutorial, Member). Dibungkus lewat wrapper ".page-fade-in"
+       di dalam <main>, bukan di <main> itu sendiri, biar aman kalau nanti
+       ada elemen fixed di dalamnya. */
+    .page-fade-in {
+        opacity: 0;
+        transform: translateY(10px);
+        animation: section-fade-in 0.5s ease forwards;
+    }
+    @keyframes section-fade-in {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     .model-card {
       background: var(--surface);
       box-shadow: 0 4px 18px rgba(0,0,0,0.16);
@@ -96,9 +109,10 @@
     .model-info-row span:first-child { color: var(--text-light); }
     .model-info-row b { font-weight: 700; text-align: right; }
 
-    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-    .tag { font-size: 11px; background: var(--bg); border: 1px solid var(--border); color: var(--text-light); padding: 4px 10px; border-radius: 999px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .tag { font-size: 13.5px; font-weight: 600; background: var(--bg); border: 1px solid var(--border); color: var(--text-light); padding: 6px 14px; border-radius: 999px; }
 
+    .action-row { display: flex; flex-direction: column; gap: 10px; }
     .download-btn {
       display: block; width: 100%; text-align: center;
       background: var(--accent-hover); color: #fff; font-weight: 700;
@@ -107,18 +121,63 @@
     }
     .download-btn:active { opacity: 0.85; }
 
+    .share-btn {
+      display: block; width: 100%; text-align: center;
+      background: transparent; color: var(--text); font-weight: 700;
+      font-family: 'Geist', sans-serif; padding: 14px; border: 1px solid var(--border); border-radius: 10px;
+      font-size: 15px; cursor: pointer; text-decoration: none;
+    }
+    .share-btn:active { opacity: 0.85; }
+
     .state-box { text-align: center; padding: 60px 20px; }
     .state-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
     .state-sub { font-size: 13px; color: var(--text-light); }
 
-    .related-box { margin-top: 8px; }
-    .related-title { font-family: 'CreatoDisplay', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+    .related-box { margin-top: 36px; }
+    .related-title { font-family: 'CreatoDisplay', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 14px; }
     .related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .related-card { display: block; background: var(--surface); border-radius: 10px; overflow: hidden; text-decoration: none; color: var(--text); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .related-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: var(--bg); }
     .related-name { font-size: 12.5px; font-weight: 700; padding: 8px 10px; line-height: 1.3; }
 
     .hidden { display: none !important; }
+
+    /* --- Sheet pilihan "Bagikan" (WhatsApp / Telegram / Salin Link) ---
+       Gaya & struktur sengaja disamakan dengan modal share di halaman lain
+       (Beranda / Semua Model) supaya pengalamannya konsisten. */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 360px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; position: relative; }
+    .modal-overlay.active .modal-box { transform: scale(1); }
+    .modal-box-body { padding: 20px; }
+    .modal-box-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .share-option-btn {
+      display: flex; align-items: center; gap: 12px; width: 100%;
+      padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text); font-weight: 700; font-size: 14px;
+      cursor: pointer; transition: background 0.15s, transform 0.1s; margin-bottom: 10px;
+      font-family: 'Geist', sans-serif;
+    }
+    .share-option-btn:last-of-type { margin-bottom: 0; }
+    .share-option-btn:active { transform: scale(0.98); }
+    .share-option-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+    .share-option-icon-wa, .share-option-icon-tg { fill: currentColor; }
+    .share-option-icon-wa { color: #25D366; }
+    .share-option-icon-tg { color: #229ED9; }
+    .share-option-icon-link { color: var(--text-light); }
+    .share-cancel-btn {
+      width: 100%; margin-top: 6px; padding: 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: transparent; color: var(--text);
+      font-weight: 700; font-size: 14px; cursor: pointer; font-family: 'Geist', sans-serif;
+    }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 80px);
+      background: var(--accent-hover); color: #fff; padding: 12px 24px; border-radius: 999px;
+      font-weight: 700; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease; z-index: 200;
+    }
+    .toast.show { transform: translate(-50%, 0); }
   </style>
 </head>
 <body>
@@ -128,26 +187,54 @@
   </div>
 
   <main>
-    <div id="model-box" class="hidden">
-      <div class="model-card">
-        <img id="m-thumb" class="model-thumb" src="" alt="" loading="lazy">
-        <div class="model-body">
-          <div id="m-title" class="model-title"></div>
-          <div id="m-caption" class="model-caption"></div>
-          <div id="m-info" class="model-info"></div>
-          <div id="m-tags" class="tag-row"></div>
-          <a id="m-download" class="download-btn" href="#" target="_blank" rel="noopener">Download</a>
+    <div class="page-fade-in">
+      <div id="model-box" class="hidden">
+        <div class="model-card">
+          <img id="m-thumb" class="model-thumb" src="" alt="" loading="lazy">
+          <div class="model-body">
+            <div id="m-title" class="model-title"></div>
+            <div id="m-caption" class="model-caption"></div>
+            <div id="m-info" class="model-info"></div>
+            <div id="m-tags" class="tag-row"></div>
+            <div class="action-row">
+              <a id="m-download" class="download-btn" href="#" target="_blank" rel="noopener">Download</a>
+              <button type="button" class="share-btn" onclick="handleShareModel()">Bagikan</button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div id="notfound-box" class="state-box hidden">
-      <div class="state-title">Model tidak ditemukan</div>
-      <div class="state-sub">Link ini mungkin sudah tidak berlaku, atau modelnya sudah dihapus.</div>
-    </div>
+      <div id="notfound-box" class="state-box hidden">
+        <div class="state-title">Model tidak ditemukan</div>
+        <div class="state-sub">Link ini mungkin sudah tidak berlaku, atau modelnya sudah dihapus.</div>
+      </div>
 
-    <div id="related-box" class="related-box hidden"></div>
+      <div id="related-box" class="related-box hidden"></div>
+    </div>
   </main>
+
+  <div id="share-sheet-overlay" class="modal-overlay" onclick="closeShareSheet()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-box-body">
+        <div class="modal-box-title">Bagikan Model</div>
+        <button type="button" class="share-option-btn" onclick="shareToWhatsApp()">
+          <svg class="share-option-icon-wa" viewBox="0 0 512 512"><use href="/icons/social-icons.svg#icon-wa"></use></svg>
+          <span>WhatsApp</span>
+        </button>
+        <button type="button" class="share-option-btn" onclick="shareToTelegram()">
+          <svg class="share-option-icon-tg" viewBox="0 0 448 512"><path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-50.7 48.8c-5.6 5.6-10.3 10.3-21.1 10.3l7.5-106.5 193.1-174.5c8.4-7.5-1.8-11.7-13-4.2L118.5 285.3 16 253.7c-22.4-7-22.8-22.4 4.7-33.2L417.1 66.2c18.6-6.9 34.9 4.4 28.9 32.4z"/></svg>
+          <span>Telegram</span>
+        </button>
+        <button type="button" class="share-option-btn" onclick="shareCopyLink()">
+          <svg class="share-option-icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.5"></path><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.5 19.5"></path></svg>
+          <span>Salin Link</span>
+        </button>
+        <button type="button" class="share-cancel-btn" onclick="closeShareSheet()">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Link disalin ke clipboard</div>
 
   <script>
     function escapeHtml(str) {
@@ -206,7 +293,7 @@
       }
       if (!picks.length) return;
 
-      box.innerHTML = '<div class="related-title">Model lainnya</div><div class="related-grid">' +
+      box.innerHTML = '<h2 class="related-title">Model lainnya</h2><div class="related-grid">' +
         picks.map(m => `
           <a class="related-card" href="${modelShareUrl(m)}">
             <img class="related-thumb" src="${m.thumb || '/thumbnail.webp'}" alt="" loading="lazy">
@@ -214,6 +301,118 @@
           </a>
         `).join('') + '</div>';
       box.classList.remove('hidden');
+    }
+
+    // Model yang sedang ditampilkan di halaman ini -- dipakai oleh fungsi
+    // Bagikan (share sheet) di bawah.
+    let currentModel = null;
+
+    function copyTextToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+      }
+      return fallbackCopyText(text);
+    }
+
+    function fallbackCopyText(text) {
+      return new Promise((resolve, reject) => {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.top = '0';
+          ta.style.left = '-9999px';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          ta.setSelectionRange(0, text.length);
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (ok) resolve(); else reject(new Error('execCommand copy gagal'));
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+
+    let toastHideTimer = null;
+    function showToastMessage(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      clearTimeout(toastHideTimer);
+      t.classList.add('show');
+      toastHideTimer = setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    // Kumpulan template pesan share -- sama seperti di Beranda/Semua Model,
+    // dipilih random tiap kali tombol Bagikan dipencet.
+    const SHARE_MESSAGE_TEMPLATES = [
+      (name) => `Halo bang, Rig ${name} bagus cuy, cobain aja bang.`,
+      (name) => `Woy, ada Rig ${name} baru nih di Afi Studio, mayan buat koleksi.`,
+      (name) => `Gan, cek deh Rig ${name} ini, lumayan rapi hasilnya.`,
+      (name) => `Nemu Rig ${name} bagus nih, sikat aja gan sebelum lupa.`,
+      (name) => `Bro, Rig ${name} ini worth it buat dicoba, gratis pula.`,
+      (name) => `Rig ${name} ini keren sih menurutku, cobain deh bang.`,
+      (name) => `Ada rig baru nih namanya ${name}, kualitasnya lumayan bagus.`,
+      (name) => `Kalo butuh Rig ${name}, ini link download-nya bang, langsung sikat.`,
+    ];
+
+    function getModelShareUrl() {
+      if (!currentModel) return '';
+      return `${window.location.origin}${modelShareUrl(currentModel)}`;
+    }
+
+    function buildShareText() {
+      if (!currentModel) return '';
+      const template = SHARE_MESSAGE_TEMPLATES[Math.floor(Math.random() * SHARE_MESSAGE_TEMPLATES.length)];
+      return template(currentModel.name);
+    }
+
+    function buildShareMessage() {
+      const text = buildShareText();
+      if (!text) return '';
+      return `${text}\n${getModelShareUrl()}`;
+    }
+
+    function handleShareModel() {
+      if (!currentModel) return;
+      const el = document.getElementById('share-sheet-overlay');
+      if (el) el.classList.add('active');
+    }
+
+    function closeShareSheet() {
+      const el = document.getElementById('share-sheet-overlay');
+      if (el) el.classList.remove('active');
+    }
+
+    function shareToWhatsApp() {
+      const msg = buildShareMessage();
+      if (!msg) return;
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+      closeShareSheet();
+    }
+
+    function shareToTelegram() {
+      if (!currentModel) return;
+      const text = buildShareText();
+      const url = getModelShareUrl();
+      if (!text || !url) return;
+      window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+      closeShareSheet();
+    }
+
+    function shareCopyLink() {
+      const url = getModelShareUrl();
+      if (!url) return;
+      copyTextToClipboard(url).then(() => {
+        showToastMessage('Link disalin ke clipboard');
+      }).catch(() => {
+        prompt('Gagal menyalin otomatis, salin manual link ini:', url);
+      });
+      closeShareSheet();
     }
 
     async function init() {
@@ -246,6 +445,7 @@
         return;
       }
 
+      currentModel = model;
       document.getElementById('m-thumb').src = model.thumb || '/thumbnail.webp';
       document.getElementById('m-title').textContent = model.name || '';
       document.getElementById('m-caption').textContent = model.caption || '';

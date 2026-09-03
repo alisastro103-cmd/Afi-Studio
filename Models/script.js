@@ -280,7 +280,7 @@ function renderModels(filter = '') {
             </div>`;
     } else {
         grid.innerHTML = filtered.map(model => `
-            <article class="model-card" onclick="openModal(${MODELS.indexOf(model)})">
+            <article class="model-card" onclick="window.location.href='${modelShareUrl(model)}'">
                 <img src="${model.thumb}" class="card-image" loading="lazy" alt="${(model.name || "Thumbnail model").replace(/"/g, "&quot;")}">
                 <div class="card-content">
                     <div class="card-title">${model.name}</div>
@@ -295,6 +295,13 @@ function renderModels(filter = '') {
     grid.classList.remove('grid-loading');
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Link publik model (format pendek /m/<id>-<nama-model>). Dipakai buat
+// langsung pindah ke halaman detail model (bukan buka popup lagi) begitu
+// kartu model dipencet di Beranda maupun halaman Semua Model.
+function modelShareUrl(m) {
+    return `/m/${shortModelId(m.link)}-${slugifyModelName(m.name)}`;
 }
 
 // Fungsi Modal
