@@ -6,8 +6,13 @@
   bukan dari CDN Google) — Outfit 400/500/600/700/800, DM Sans 400/500/600,
   Dancing Script 700. Tidak ada request keluar sama sekali saat halaman dibuka.
 
+  Ditambahkan: Minercraftory (dari paket npm @fontsource, bukan CDN) — dipakai
+  khusus untuk judul section/header (mis. "Semua Item", "Video dan Tutorial").
+  Lisensi CC BY-SA 3.0, lihat Minercraftory-LICENSE.txt.
+
   Pemakaian di seluruh halaman:
-  - Outfit         -> heading (h1-h4), label uppercase kecil, angka/statistik, tombol, nav
+  - Outfit         -> label uppercase kecil, angka/statistik, tombol, nav, teks nama/detail yang pakai var(--font-primary)
+  - Minercraftory  -> judul section/header (.category-header di Beranda/Models/Tutorial/Favorit, .folder di Member)
   - DM Sans        -> body text, deskripsi, caption, paragraf, footer
   - Dancing Script -> logo/wordmark "Afi-Studio" saja
 */
@@ -82,4 +87,12 @@
   font-weight: 700;
   font-display: swap;
   src: url('/fonts/DancingScript-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Minercraftory';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Minercraftory.woff2') format('woff2');
 }
