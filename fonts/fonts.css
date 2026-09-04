@@ -3,9 +3,8 @@
 
   3 font final yang dipakai situs ini (self-hosted, tanpa request keluar):
   - Geist          -> body, deskripsi, caption, detail text, label, nav, tombol.
-                      Weight 500/600/700/800 aktif (Regular/400 belum ada file-nya —
-                      browser bakal render versi 500 buat teks yang minta weight
-                      di bawah itu). Lisensi SIL OFL 1.1.
+                      Weight lengkap 100/200/300/400/500/600/700/800/900 aktif.
+                      Lisensi SIL OFL 1.1.
   - CreatoDisplay  -> heading (h1-h4) di semua halaman. Weight 300 (Light) & 700
                       (Bold) aktif — weight lain (400/500/600/800) otomatis
                       di-map browser ke yang paling dekat (biasanya Bold).
@@ -16,6 +15,38 @@
   Dancing Script (logo/wordmark "Afi-Studio") tetap terpisah, bukan bagian dari
   3 font di atas — elemen identitas brand, sengaja beda.
 */
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url('/fonts/Geist-100.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url('/fonts/Geist-200.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/Geist-300.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Geist-400.ttf') format('truetype');
+}
 
 @font-face {
   font-family: 'Geist';
@@ -47,6 +78,14 @@
   font-weight: 800;
   font-display: swap;
   src: url('/fonts/Geist-800.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/Geist-900.ttf') format('truetype');
 }
 
 @font-face {
