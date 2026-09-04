@@ -287,14 +287,17 @@
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 100px);
       display: flex; align-items: center; gap: 14px;
-      background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      /* Kaca transparan, konsisten sama .nav-bar (lihat atas) */
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border); color: var(--text);
       padding: 16px 20px; border-radius: 16px;
       min-width: 260px; width: min(88%, 340px); max-width: calc(100% - 32px);
       box-shadow: 0 12px 32px rgba(0,0,0,0.3);
       transition: transform 0.3s ease; z-index: 200; cursor: default;
     }
     .toast.show { transform: translate(-50%, 0); }
-    .toast-icon { flex-shrink: 0; width: 24px; height: 24px; color: #F59E0B; }
+    .toast-icon { flex-shrink: 0; width: 24px; height: 24px; color: #fff; }
     .toast-icon svg { width: 24px; height: 24px; display: block; }
     .toast-text { min-width: 0; }
     .toast-title { font-weight: 700; font-size: 14px; line-height: 1.3; }
