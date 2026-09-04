@@ -5,9 +5,10 @@
   - Geist          -> body, deskripsi, caption, detail text, label, nav, tombol.
                       Weight lengkap 100/200/300/400/500/600/700/800/900 aktif.
                       Lisensi SIL OFL 1.1.
-  - CreatoDisplay  -> heading (h1-h4) di semua halaman. Weight 300 (Light) & 700
-                      (Bold) aktif — weight lain (400/500/600/800) otomatis
-                      di-map browser ke yang paling dekat (biasanya Bold).
+  - CreatoDisplay  -> heading (h1-h4) di semua halaman. Weight 300/400/500/700/
+                      800/900 aktif (600 belum ada file aslinya, browser bakal
+                      pakai 500 atau 700 terdekat — bukan masalah, karena masih
+                      ada face asli di sekitarnya, bukan fake-bold).
   - Minercraftory  -> judul section/header (.category-header di Beranda/Models/
                       Tutorial/Favorit, .folder di Member). Lisensi CC BY-SA 3.0,
                       lihat Minercraftory-LICENSE.txt.
@@ -99,9 +100,41 @@
 @font-face {
   font-family: 'CreatoDisplay';
   font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/CreatoDisplay-400.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'CreatoDisplay';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/CreatoDisplay-500.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'CreatoDisplay';
+  font-style: normal;
   font-weight: 700;
   font-display: swap;
   src: url('/fonts/CreatoDisplay-700.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'CreatoDisplay';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/CreatoDisplay-800.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'CreatoDisplay';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/CreatoDisplay-900.otf') format('opentype');
 }
 
 @font-face {
