@@ -173,6 +173,11 @@
     .global-fab { bottom:calc(22px + env(safe-area-inset-bottom)); right:16px; gap:12px; }
     .global-fab .btn-add-circle { width:58px; height:58px; }
     .global-fab .btn-add-circle svg { width:26px; height:26px; }
+    /* Kartu grid (Member, Models, Ranking, dst) sebelumnya pakai minmax(170px,1fr)
+       yang sama kayak desktop -- padahal <html> udah di-zoom 0.85 di mobile, jadi
+       yang muat cuma 2 kolom dan tiap kartu kelihatan gede banget/gak proporsional.
+       Diperkecil khusus di sini biar 3 kolom kebagi rapi di layar HP. */
+    .data-grid { grid-template-columns: repeat(auto-fill, minmax(128px,1fr)); gap:10px; }
   }
 
   .section-view { display:none; }
