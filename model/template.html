@@ -285,23 +285,20 @@
     }
 
     .toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 90px);
-      display: flex; align-items: center; gap: 12px;
+      position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 100px);
+      display: flex; align-items: center; gap: 14px;
       background: var(--surface); border: 1px solid var(--border); color: var(--text);
-      padding: 12px 16px; border-radius: 14px; max-width: calc(100% - 40px); width: max-content;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.28);
-      transition: transform 0.3s ease; z-index: 200;
+      padding: 16px 20px; border-radius: 16px;
+      min-width: 260px; width: min(88%, 340px); max-width: calc(100% - 32px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease; z-index: 200; cursor: default;
     }
     .toast.show { transform: translate(-50%, 0); }
-    .toast-icon {
-      flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(245,158,11,0.15); color: #F59E0B;
-    }
-    .toast-icon svg { width: 17px; height: 17px; }
+    .toast-icon { flex-shrink: 0; width: 24px; height: 24px; color: #F59E0B; }
+    .toast-icon svg { width: 24px; height: 24px; display: block; }
     .toast-text { min-width: 0; }
-    .toast-title { font-weight: 700; font-size: 13.5px; line-height: 1.3; }
-    .toast-sub { font-size: 11.5px; color: var(--text-light); margin-top: 2px; }
+    .toast-title { font-weight: 700; font-size: 14px; line-height: 1.3; }
+    .toast-sub { font-size: 12px; color: var(--text-light); margin-top: 3px; }
   </style>
 </head>
 <body>
@@ -610,6 +607,7 @@
       const url = getModelShareUrl();
       if (!url) return;
       copyTextToClipboard(url).then(() => {
+        toastClickMode = null;
         showToastMessage('Link disalin ke clipboard');
       }).catch(() => {
         prompt('Gagal menyalin otomatis, salin manual link ini:', url);
@@ -654,6 +652,9 @@
     // lagi begitu toast-nya hilang, atau begitu dipakai buat undo.
     let pendingUndoFavId = null;
     let favUndoTimer = null;
+    // Dipakai buat nentuin apa toast yang lagi tampil itu boleh di-ketuk
+    // (sekali tap) buat lompat ke halaman Favorit -- cuma pas nambahin.
+    let toastClickMode = null;
 
     function toggleFavoriteModel() {
       if (!currentModel || typeof toggleModelFavorite !== 'function') return;
@@ -663,10 +664,12 @@
       clearTimeout(favUndoTimer);
       if (nowFavorited) {
         pendingUndoFavId = null;
-        showToastMessage('Telah masuk di Favorit', { icon: favStarIconSvg(true) });
+        toastClickMode = 'view-fav';
+        showToastMessage('Telah masuk di Favorit', { icon: favStarIconSvg(true), sub: 'Ketuk untuk melihat' });
       } else {
         // Cuma kasus "dihapus" yang butuh hint undo -- nambah ke favorit
         // gak butuh, karena aksinya gak destruktif.
+        toastClickMode = null;
         pendingUndoFavId = id;
         favUndoTimer = setTimeout(() => { pendingUndoFavId = null; }, 3000);
         showToastMessage('Dihapus dari Favorit', {
@@ -685,9 +688,19 @@
       pendingUndoFavId = null;
       clearTimeout(favUndoTimer);
       updateFavButton();
-      showToastMessage('Dibatalkan, kembali ke Favorit', { icon: favStarIconSvg(true) });
+      toastClickMode = 'view-fav';
+      showToastMessage('Dibatalkan, kembali ke Favorit', { icon: favStarIconSvg(true), sub: 'Ketuk untuk melihat' });
     }
-    document.getElementById('toast').addEventListener('dblclick', undoFavoriteRemoval);
+    const toastEl = document.getElementById('toast');
+    toastEl.addEventListener('dblclick', undoFavoriteRemoval);
+    // Tap sekali cuma aktif pas toast lagi mode "view-fav" (habis nambah ke
+    // Favorit/undo) -- pas mode "dihapus", tap sekali sengaja gak ngapa-ngapain
+    // biar gak ke-trigger pas orang lagi coba ketuk dua kali buat undo.
+    toastEl.addEventListener('click', () => {
+      if (toastClickMode === 'view-fav') {
+        window.location.href = '/favorit/index.html';
+      }
+    });
 
     // Delay minimum biar skeleton keliatan sebentar & gak "kedip" kelewat
     // cepat kalau fetch-nya kebetulan super cepat (mis. data kecil/di-cache).
