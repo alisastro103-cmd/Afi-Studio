@@ -139,6 +139,24 @@
     .state-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
     .state-sub { font-size: 13px; color: var(--text-light); }
 
+    /* Animasi "berhasil" (pesawat > kertas dilipat > centang) di layar Terima Kasih,
+       sama kayak popup sukses di halaman feedback & daftar model. */
+    .success-popup-stage { position: relative; width: 88px; height: 88px; margin: 0 auto 16px; }
+    .success-popup-stage .stage-icon {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+      opacity: 0; transform: scale(0.5) rotate(-15deg);
+      transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .success-popup-stage .stage-icon.active { opacity: 1; transform: scale(1) rotate(0deg); }
+    .success-popup-stage .stage-icon svg { width: 40px; height: 40px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .success-popup-stage .stage-icon[data-stage="plane"] svg { stroke: var(--accent); }
+    .success-popup-stage .stage-icon[data-stage="paper"] svg { stroke: var(--accent); }
+    .success-popup-stage .stage-icon[data-stage="check"] { background: color-mix(in srgb, #22C55E 18%, var(--surface)); }
+    .success-popup-stage .stage-icon[data-stage="check"] svg { stroke: #22C55E; }
+
     .result-row { margin-bottom: 14px; }
     .result-q { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
     .result-opt { display:flex; justify-content:space-between; font-size:12px; color:var(--text-light); margin-bottom:4px; }
@@ -176,11 +194,13 @@
     .exit-survey-row { display: flex; justify-content: center; margin-top: 14px; }
     .exit-survey-btn {
       display: inline-flex; align-items: center; gap: 6px;
-      background: none; border: none; cursor: pointer;
+      background: color-mix(in srgb, #EF4444 12%, var(--surface));
+      border: none; border-radius: 8px; cursor: pointer;
       font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 700;
-      color: #EF4444; padding: 4px 2px;
+      color: #EF4444; padding: 8px 14px;
     }
     .exit-survey-btn svg { width: 15px; height: 15px; }
+    .exit-survey-btn:hover { background: color-mix(in srgb, #EF4444 18%, var(--surface)); }
     .exit-survey-btn:active { opacity: 0.7; }
 
     /* Modal konfirmasi keluar survey */
@@ -418,8 +438,19 @@
     </div>
 
     <div id="thankyou-state" class="state-box hidden">
-      <div class="state-title">Terima kasih! 🎉</div>
-      <div class="state-sub">Jawaban kamu udah tersimpan.</div>
+      <div class="success-popup-stage" id="thankyou-stage">
+        <div class="stage-icon" data-stage="plane">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </div>
+        <div class="stage-icon" data-stage="paper">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+        </div>
+        <div class="stage-icon" data-stage="check">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+      </div>
+      <div class="state-title">Terima kasih</div>
+      <div class="state-sub">Sampai jumpa lagi, terimakasih luang waktu untuk isi survey ini.</div>
       <div id="results-wrap" style="margin-top:24px; text-align:left;"></div>
       <a href="/survey/" class="submit-btn" style="display:block; text-decoration:none; margin-top:20px;">Lihat Survey Lain</a>
     </div>
@@ -443,6 +474,28 @@
     let currentSurvey = null;
 
     const el = id => document.getElementById(id);
+
+    // Animasi berurutan yang diulang terus: pesawat (0.5s) > kertas (0.5s) >
+    // centang (0.5s, lalu ditahan) > jeda ~2s > ulang. Dipakai di layar Terima Kasih.
+    function startStageIconLoop(stageEl) {
+      const plane = stageEl.querySelector('[data-stage="plane"]');
+      const paper = stageEl.querySelector('[data-stage="paper"]');
+      const check = stageEl.querySelector('[data-stage="check"]');
+      const timers = [];
+      function clearTimers() { timers.forEach(clearTimeout); timers.length = 0; }
+      function cycle() {
+        plane.classList.remove('active'); paper.classList.remove('active'); check.classList.remove('active');
+        void plane.offsetWidth; // paksa reflow biar transisi ke-retrigger tiap ulangan
+        plane.classList.add('active');
+        timers.push(setTimeout(function () { plane.classList.remove('active'); paper.classList.add('active'); }, 500));
+        timers.push(setTimeout(function () { paper.classList.remove('active'); check.classList.add('active'); }, 1000));
+        timers.push(setTimeout(cycle, 3500)); // 500 + 500 + 500 (centang) + 2000 (jeda) = 3500ms per putaran
+      }
+      clearTimers();
+      cycle();
+      return clearTimers;
+    }
+
     function showState(name) {
       ['loading-state','error-state','already-state','list-state','survey-wrap','thankyou-state'].forEach(s => {
         el(s).classList.toggle('hidden', s !== name);
@@ -738,6 +791,7 @@
 
     function renderThankYou(results) {
       showState('thankyou-state');
+      startStageIconLoop(el('thankyou-stage'));
       const wrap = el('results-wrap');
       wrap.innerHTML = '';
       if (!results || !Array.isArray(results)) return;

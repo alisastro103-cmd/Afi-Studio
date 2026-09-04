@@ -573,38 +573,57 @@
     })();
 
     // Popup sukses di tengah layar, gantiin alert() bawaan browser.
-    // Animasi berurutan: pesawat > kertas dilipat > centang, baru teksnya muncul.
+    // Animasi berurutan yang diulang terus selama popup terbuka:
+    // pesawat (0.5s) > kertas (0.5s) > centang (0.5s, lalu ditahan) > jeda ~2s > ulang.
+    // Teks & tombol Oke cuma muncul sekali di siklus pertama, lalu tetap kelihatan.
+    function startStageIconLoop(overlay) {
+      const plane = overlay.querySelector('[data-stage="plane"]');
+      const paper = overlay.querySelector('[data-stage="paper"]');
+      const check = overlay.querySelector('[data-stage="check"]');
+      const timers = [];
+      function clearTimers() { timers.forEach(clearTimeout); timers.length = 0; }
+      function cycle() {
+        if (!overlay.classList.contains('show')) return;
+        plane.classList.remove('active'); paper.classList.remove('active'); check.classList.remove('active');
+        void plane.offsetWidth; // paksa reflow biar transisi ke-retrigger tiap ulangan
+        plane.classList.add('active');
+        timers.push(setTimeout(function () { plane.classList.remove('active'); paper.classList.add('active'); }, 500));
+        timers.push(setTimeout(function () { paper.classList.remove('active'); check.classList.add('active'); }, 1000));
+        timers.push(setTimeout(cycle, 3500)); // 500 + 500 + 500 (centang) + 2000 (jeda) = 3500ms per putaran
+      }
+      clearTimers();
+      cycle();
+      return clearTimers;
+    }
+
     function showSuccessPopup(message) {
       const overlay = document.getElementById('success-popup-overlay');
       const stages = overlay.querySelectorAll('.stage-icon');
       const text = document.getElementById('success-popup-text');
       const btn = document.getElementById('success-popup-ok');
 
+      if (overlay._stopLoop) overlay._stopLoop();
       stages.forEach(s => s.classList.remove('active'));
       text.classList.remove('show');
       btn.classList.remove('show');
       text.innerText = message;
       overlay.classList.add('show');
 
-      const plane = overlay.querySelector('[data-stage="plane"]');
-      const paper = overlay.querySelector('[data-stage="paper"]');
-      const check = overlay.querySelector('[data-stage="check"]');
-
-      plane.classList.add('active');
-      setTimeout(() => { plane.classList.remove('active'); paper.classList.add('active'); }, 700);
-      setTimeout(() => { paper.classList.remove('active'); check.classList.add('active'); }, 1400);
-      setTimeout(() => {
+      overlay._stopLoop = startStageIconLoop(overlay);
+      setTimeout(function () {
         text.classList.add('show');
         btn.classList.add('show');
-      }, 1850);
+      }, 1000);
     }
     (function () {
       const overlay = document.getElementById('success-popup-overlay');
-      document.getElementById('success-popup-ok').addEventListener('click', function () {
+      function closePopup() {
         overlay.classList.remove('show');
-      });
+        if (overlay._stopLoop) overlay._stopLoop();
+      }
+      document.getElementById('success-popup-ok').addEventListener('click', closePopup);
       overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) overlay.classList.remove('show');
+        if (e.target === overlay) closePopup();
       });
     })();
 

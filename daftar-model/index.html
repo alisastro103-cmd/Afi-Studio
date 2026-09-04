@@ -1014,13 +1014,37 @@
       }
     });
 
-    // Popup sukses pendaftaran model: animasi pesawat > kertas dilipat > centang,
-    // baru muncul tulisan "Model Anda akan terdaftar...". Dipanggil sekali submit
-    // sukses beneran (bukan buat error, error tetap lewat showMessage di bawah).
+    // Popup sukses pendaftaran model: animasi pesawat > kertas dilipat > centang
+    // yang diulang terus selama popup terbuka, baru muncul tulisan "Model Anda akan
+    // terdaftar...". Dipanggil sekali submit sukses beneran (bukan buat error,
+    // error tetap lewat showMessage di bawah).
+    function startStageIconLoop(overlay) {
+      const plane = overlay.querySelector('[data-stage="plane"]');
+      const paper = overlay.querySelector('[data-stage="paper"]');
+      const check = overlay.querySelector('[data-stage="check"]');
+      const timers = [];
+      function clearTimers() { timers.forEach(clearTimeout); timers.length = 0; }
+      function cycle() {
+        if (!overlay.classList.contains('show')) return;
+        plane.classList.remove('active'); paper.classList.remove('active'); check.classList.remove('active');
+        void plane.offsetWidth; // paksa reflow biar transisi ke-retrigger tiap ulangan
+        plane.classList.add('active');
+        timers.push(setTimeout(function () { plane.classList.remove('active'); paper.classList.add('active'); }, 500));
+        timers.push(setTimeout(function () { paper.classList.remove('active'); check.classList.add('active'); }, 1000));
+        timers.push(setTimeout(cycle, 3500)); // 500 + 500 + 500 (centang) + 2000 (jeda) = 3500ms per putaran
+      }
+      clearTimers();
+      cycle();
+      return clearTimers;
+    }
+
     (function () {
       const overlay = document.getElementById('register-success-overlay');
       const btn = document.getElementById('register-success-btn');
-      function closePopup() { overlay.classList.remove('show'); }
+      function closePopup() {
+        overlay.classList.remove('show');
+        if (overlay._stopLoop) overlay._stopLoop();
+      }
       btn.addEventListener('click', closePopup);
       overlay.addEventListener('click', function (e) { if (e.target === overlay) closePopup(); });
     })();
@@ -1032,24 +1056,19 @@
       const text = document.getElementById('register-success-text');
       const btn = document.getElementById('register-success-btn');
 
+      if (overlay._stopLoop) overlay._stopLoop();
       stages.forEach(s => s.classList.remove('active'));
       title.classList.remove('show');
       text.classList.remove('show');
       btn.classList.remove('show');
       overlay.classList.add('show');
 
-      const plane = overlay.querySelector('[data-stage="plane"]');
-      const paper = overlay.querySelector('[data-stage="paper"]');
-      const check = overlay.querySelector('[data-stage="check"]');
-
-      plane.classList.add('active');
-      setTimeout(() => { plane.classList.remove('active'); paper.classList.add('active'); }, 700);
-      setTimeout(() => { paper.classList.remove('active'); check.classList.add('active'); }, 1400);
-      setTimeout(() => {
+      overlay._stopLoop = startStageIconLoop(overlay);
+      setTimeout(function () {
         title.classList.add('show');
         text.classList.add('show');
         btn.classList.add('show');
-      }, 1850);
+      }, 1000);
     }
 
     function showMessage(msg, type) {
