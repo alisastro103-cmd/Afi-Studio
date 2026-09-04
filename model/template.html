@@ -223,13 +223,13 @@
     .share-btn, .fav-btn {
       flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
       text-align: center;
-      background: transparent; color: var(--text); font-weight: 700;
-      font-family: 'Geist', sans-serif; padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface); color: var(--text); font-weight: 700;
+      font-family: 'Geist', sans-serif; padding: 12px; border: none; border-radius: 10px;
       font-size: 14px; cursor: pointer; text-decoration: none;
     }
     .share-btn:active, .fav-btn:active { opacity: 0.85; }
     .share-btn svg, .fav-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
-    .fav-btn.is-favorited { color: #F59E0B; border-color: #F59E0B; }
+    .fav-btn.is-favorited { background: rgba(245,158,11,0.15); color: #F59E0B; }
 
     .state-box { text-align: center; padding: 60px 20px; }
     .state-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
