@@ -226,9 +226,9 @@
     }
  
     .btn-secondary {
-      background: var(--surface);
+      background: color-mix(in srgb, var(--accent) 14%, var(--surface));
       border: none;
-      color: var(--text-light);
+      color: var(--accent);
       font-weight: 600;
       margin-top: 12px;
       text-decoration: none;
@@ -239,8 +239,7 @@
     }
  
     .btn-secondary:hover {
-      background: var(--border);
-      color: var(--text);
+      background: color-mix(in srgb, var(--accent) 22%, var(--surface));
     }
  
     .footer-note { text-align: center; font-size: 12px; color: var(--text-light); margin-top: 24px; }
@@ -366,20 +365,31 @@
             transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease;
         }
         .success-popup-overlay.show .success-popup-box { transform: scale(1) translateY(0); opacity: 1; }
-        .success-popup-icon {
-            width: 56px; height: 56px; margin: 0 auto 14px;
-            border-radius: 50%;
-            background: color-mix(in srgb, #22C55E 18%, var(--surface));
+        .success-popup-stage { position: relative; width: 88px; height: 88px; margin: 0 auto 16px; }
+        .success-popup-stage .stage-icon {
+            position: absolute; inset: 0;
             display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+            opacity: 0; transform: scale(0.5) rotate(-15deg);
+            transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1);
         }
-        .success-popup-icon svg { width: 28px; height: 28px; stroke: #22C55E; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-        .success-popup-text { font-size: 14.5px; line-height: 1.5; color: var(--text); margin-bottom: 20px; }
+        .success-popup-stage .stage-icon.active { opacity: 1; transform: scale(1) rotate(0deg); }
+        .success-popup-stage .stage-icon svg { width: 40px; height: 40px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .success-popup-stage .stage-icon[data-stage="plane"] svg { stroke: var(--accent); }
+        .success-popup-stage .stage-icon[data-stage="paper"] svg { stroke: var(--accent); }
+        .success-popup-stage .stage-icon[data-stage="check"] { background: color-mix(in srgb, #22C55E 18%, var(--surface)); }
+        .success-popup-stage .stage-icon[data-stage="check"] svg { stroke: #22C55E; }
+        .success-popup-text { font-size: 14.5px; line-height: 1.5; color: var(--text); margin-bottom: 20px; opacity: 0; transform: translateY(6px); transition: opacity 0.3s ease, transform 0.3s ease; }
+        .success-popup-text.show { opacity: 1; transform: translateY(0); }
         .success-popup-btn {
             background: var(--accent); color: #fff; border: none;
             border-radius: 10px; padding: 10px 28px;
             font-size: 14px; font-weight: 700; cursor: pointer;
             font-family: 'Geist', sans-serif;
+            opacity: 0; transition: opacity 0.3s ease;
         }
+        .success-popup-btn.show { opacity: 1; }
         .success-popup-btn:active { opacity: 0.8; }
     </style>
     <link rel="stylesheet" href="/css/theme-tokens.css">
@@ -493,8 +503,16 @@
 
   <div id="success-popup-overlay" class="success-popup-overlay">
     <div class="success-popup-box">
-      <div class="success-popup-icon">
-        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <div class="success-popup-stage">
+        <div class="stage-icon" data-stage="plane">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </div>
+        <div class="stage-icon" data-stage="paper">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+        </div>
+        <div class="stage-icon" data-stage="check">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
       </div>
       <p class="success-popup-text" id="success-popup-text"></p>
       <button type="button" class="success-popup-btn" id="success-popup-ok">Oke</button>
@@ -554,10 +572,31 @@
       });
     })();
 
-    // Popup sukses di tengah layar, gantiin alert() bawaan browser
+    // Popup sukses di tengah layar, gantiin alert() bawaan browser.
+    // Animasi berurutan: pesawat > kertas dilipat > centang, baru teksnya muncul.
     function showSuccessPopup(message) {
-      document.getElementById('success-popup-text').innerText = message;
-      document.getElementById('success-popup-overlay').classList.add('show');
+      const overlay = document.getElementById('success-popup-overlay');
+      const stages = overlay.querySelectorAll('.stage-icon');
+      const text = document.getElementById('success-popup-text');
+      const btn = document.getElementById('success-popup-ok');
+
+      stages.forEach(s => s.classList.remove('active'));
+      text.classList.remove('show');
+      btn.classList.remove('show');
+      text.innerText = message;
+      overlay.classList.add('show');
+
+      const plane = overlay.querySelector('[data-stage="plane"]');
+      const paper = overlay.querySelector('[data-stage="paper"]');
+      const check = overlay.querySelector('[data-stage="check"]');
+
+      plane.classList.add('active');
+      setTimeout(() => { plane.classList.remove('active'); paper.classList.add('active'); }, 700);
+      setTimeout(() => { paper.classList.remove('active'); check.classList.add('active'); }, 1400);
+      setTimeout(() => {
+        text.classList.add('show');
+        btn.classList.add('show');
+      }, 1850);
     }
     (function () {
       const overlay = document.getElementById('success-popup-overlay');
