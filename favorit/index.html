@@ -304,24 +304,13 @@
         </div>
     </div>
 
-    <!-- Modal model -->
-    <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <button id="model-fav-btn" class="modal-fav-btn" onclick="toggleCurrentModelFavorite()" aria-label="Tandai favorit"></button>
-            <img id="modal-thumb" src="" class="w-full aspect-video object-cover" alt="">
-            <div class="p-5">
-                <h2 id="modal-title" class="text-xl font-bold mb-2"></h2>
-                <p id="modal-caption" class="text-xs mb-4 opacity-70"></p>
-                <div id="info-container" class="rounded-xl p-4 mb-5 text-xs space-y-2" style="background: color-mix(in srgb, var(--accent) 10%, var(--surface));"></div>
-                <div class="flex flex-col gap-2">
-                    <button class="w-full py-3.5 rounded-xl font-bold bg-[var(--accent)] text-white" onclick="handleDownload()">Download Now</button>
-                    <button class="w-full py-3.5 rounded-xl font-bold border border-[var(--border)]" onclick="handleCopyLink()">Copy Link</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--accent)] text-white px-6 py-3 rounded-full font-bold text-sm translate-y-20 transition-transform shadow-lg" style="z-index: 200;">Link Disalin!</div>
+    <!-- Modal popup model (kayak di gambar "Props and Stuff") udah DIHAPUS.
+         Sekarang kartu model favorit di halaman ini nge-link langsung ke
+         halaman detail /m/<id>-<nama>, persis kayak di Beranda & Semua Model
+         (lihat modelCardHtml() & modelShareUrl() di script.js). Tombol
+         "Bagikan"/"Copy Link" ikut hilang dari sini karena memang cuma ada
+         di modal lama itu -- sekarang aksi itu dilakukan di halaman detail
+         model (/m/...), sama seperti di Beranda & Semua Model. -->
 
     <script src="/favorites.js"></script>
     <script src="/skeleton-loading.js"></script>

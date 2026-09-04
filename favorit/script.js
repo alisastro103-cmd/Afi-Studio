@@ -3,7 +3,6 @@
 let VIDEOS = [];
 let MODELS = [];
 let currentVideo = null;
-let currentModel = null;
 
 // Skeleton loading buat kedua grid favorit — tampil segera saat halaman
 // dibuka, diganti konten asli (atau pesan "belum ada") begitu
@@ -97,9 +96,42 @@ function closeVideoModal() {
 }
 
 // --- Model Favorit ---
+// Link publik model (format pendek /m/<id>-<nama-model>). HARUS PERSIS SAMA
+// dengan versi di Models/script.js & api/model-page.js supaya link yang
+// dibuat di sini bisa ketemu balik di server.
+function shortModelId(str) {
+    let hash = 0x811c9dc5;
+    const s = String(str || '');
+    for (let i = 0; i < s.length; i++) {
+        hash ^= s.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+    }
+    return (hash >>> 0).toString(36).padStart(4, '0').slice(-4);
+}
+
+function slugifyModelName(name) {
+    const cleaned = String(name || '')
+        .toLowerCase()
+        .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 20)
+        .replace(/-+$/g, '');
+    return cleaned || 'model';
+}
+
+function modelShareUrl(m) {
+    return `/m/${shortModelId(m.link)}-${slugifyModelName(m.name)}`;
+}
+
+// Kartu model favorit sekarang nge-link LANGSUNG ke halaman detail model
+// (/m/<id>-<nama>), persis kayak di Beranda & Semua Model -- bukan buka
+// modal popup lagi (sistem modal lama udah dihapus, sama modal-model-nya
+// di index.html + fungsi openModal/closeModal/handleDownload/handleCopyLink
+// yang dulu nemplok di sini).
 function modelCardHtml(model, index) {
     return `
-        <article class="model-card" onclick="openModal(${index})">
+        <article class="model-card" onclick="window.location.href='${modelShareUrl(model)}'">
             <img src="${model.thumb}" class="card-image" loading="lazy" alt="${(model.name || "Thumbnail model").replace(/"/g, "&quot;")}">
             <div class="card-content">
                 <div class="card-title">${model.name}</div>
@@ -121,105 +153,6 @@ function renderFavoriteModels() {
         : favModels.map(entry => modelCardHtml(entry.m, entry.i)).join('');
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
-}
-
-function updateModelFavButton() {
-    const btn = document.getElementById('model-fav-btn');
-    if (!btn || !currentModel) return;
-    const fav = isModelFavorited(modelFavId(currentModel));
-    btn.innerHTML = favStarIconSvg(fav);
-    btn.classList.toggle('is-favorited', fav);
-    btn.setAttribute('aria-label', fav ? 'Hapus dari favorit' : 'Tandai favorit');
-}
-
-function toggleCurrentModelFavorite() {
-    if (!currentModel) return;
-    toggleModelFavorite(modelFavId(currentModel));
-    updateModelFavButton();
-    renderFavoriteModels(); // langsung hilang dari daftar begitu dihapus dari favorit
-}
-
-function openModal(index) {
-    currentModel = MODELS[index];
-    const infoBox = document.getElementById('info-container');
-    const modalThumb = document.getElementById('modal-thumb');
-
-    if (modalThumb) modalThumb.src = currentModel.thumb;
-    document.getElementById('modal-title').textContent = currentModel.name;
-    document.getElementById('modal-caption').textContent = currentModel.caption;
-
-    let infoHtml = '';
-    if (currentModel.creator) infoHtml += `<div class="flex justify-between"><span>Creator:</span><b>${currentModel.creator}</b></div>`;
-    if (currentModel.converter) infoHtml += `<div class="flex justify-between"><span>Converter:</span><b>${currentModel.converter}</b></div>`;
-    if (currentModel.app_target) infoHtml += `<div class="flex justify-between"><span>Untuk Aplikasi:</span><b>${currentModel.app_target}</b></div>`;
-    if (currentModel.category) {
-        const catText = Array.isArray(currentModel.category) ? currentModel.category.join(', ') : currentModel.category;
-        infoHtml += `<div class="flex justify-between"><span>Category:</span><b>${catText}</b></div>`;
-    }
-    if (infoBox) infoBox.innerHTML = infoHtml;
-    document.getElementById('modal-overlay').classList.add('active');
-    updateModelFavButton();
-}
-
-function closeModal() {
-    const modal = document.getElementById('modal-overlay');
-    if (modal) modal.classList.remove('active');
-}
-
-function handleDownload() {
-    if (!currentModel) return;
-    // Tampilkan layar "Terima kasih" dulu (lihat favorites.js), baru redirect
-    // ke link download setelah sempat terlihat sebentar.
-    if (typeof showThankYouOverlay === 'function') showThankYouOverlay();
-    setTimeout(function () {
-        window.location.href = currentModel.link;
-    }, 1700);
-}
-
-// --- Util: salin teks ke clipboard secara aman (lihat catatan yang sama
-// di Models/script.js -- navigator.clipboard bisa tidak ada/diblokir,
-// makanya perlu fallback execCommand supaya popup & salin-nya tetap jalan).
-function copyTextToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
-    }
-    return fallbackCopyText(text);
-}
-
-function fallbackCopyText(text) {
-    return new Promise((resolve, reject) => {
-        try {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.setAttribute('readonly', '');
-            ta.style.position = 'fixed';
-            ta.style.top = '0';
-            ta.style.left = '-9999px';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.focus();
-            ta.select();
-            ta.setSelectionRange(0, text.length);
-            const ok = document.execCommand('copy');
-            document.body.removeChild(ta);
-            if (ok) resolve(); else reject(new Error('execCommand copy gagal'));
-        } catch (err) {
-            reject(err);
-        }
-    });
-}
-
-function handleCopyLink() {
-    if (!currentModel) return;
-    copyTextToClipboard(currentModel.link).then(() => {
-        const t = document.getElementById('toast');
-        if (t) {
-            t.classList.remove('translate-y-20');
-            setTimeout(() => t.classList.add('translate-y-20'), 2000);
-        }
-    }).catch(() => {
-        prompt('Gagal menyalin otomatis, salin manual link ini:', currentModel.link);
-    });
 }
 
 // --- Inisialisasi ---
