@@ -549,6 +549,26 @@
 </head>
  <body class="h-full">
   <div id="gateOverlay" class="gate-overlay"></div>
+
+  <div id="register-success-overlay" class="register-success-overlay">
+    <div class="register-success-box">
+      <div class="register-success-stage">
+        <div class="stage-icon" data-stage="plane">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </div>
+        <div class="stage-icon" data-stage="paper">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+        </div>
+        <div class="stage-icon" data-stage="check">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+      </div>
+      <p class="register-success-title" id="register-success-title">Terkirim!</p>
+      <p class="register-success-text" id="register-success-text">Model Anda akan terdaftar, mohon menunggu 1-2 hari.</p>
+      <button type="button" class="register-success-btn" id="register-success-btn">Oke</button>
+    </div>
+  </div>
+
   <script>
     // Gerbang akses: kalau ada yang buka /daftar-model/ langsung lewat link
     // sementara admin lagi nutup jalur pendaftaran model, lempar balik ke
@@ -1165,25 +1185,6 @@
     })();
   </script>
     <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
-
-    <div id="register-success-overlay" class="register-success-overlay">
-      <div class="register-success-box">
-        <div class="register-success-stage">
-          <div class="stage-icon" data-stage="plane">
-            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-          </div>
-          <div class="stage-icon" data-stage="paper">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-          </div>
-          <div class="stage-icon" data-stage="check">
-            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          </div>
-        </div>
-        <p class="register-success-title" id="register-success-title">Terkirim!</p>
-        <p class="register-success-text" id="register-success-text">Model Anda akan terdaftar, mohon menunggu 1-2 hari.</p>
-        <button type="button" class="register-success-btn" id="register-success-btn">Oke</button>
-      </div>
-    </div>
 
     <script src="/pwa-install.js" defer></script>
     <script src="/page-menu-drawer.js" defer></script>
