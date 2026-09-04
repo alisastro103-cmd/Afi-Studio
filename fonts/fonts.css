@@ -22,7 +22,7 @@
   font-style: normal;
   font-weight: 100;
   font-display: swap;
-  src: url('/fonts/Geist-100.ttf') format('truetype');
+  src: url('/fonts/Geist-100.woff2') format('woff2');
 }
 
 @font-face {
@@ -30,7 +30,7 @@
   font-style: normal;
   font-weight: 200;
   font-display: swap;
-  src: url('/fonts/Geist-200.ttf') format('truetype');
+  src: url('/fonts/Geist-200.woff2') format('woff2');
 }
 
 @font-face {
@@ -38,7 +38,7 @@
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  src: url('/fonts/Geist-300.ttf') format('truetype');
+  src: url('/fonts/Geist-300.woff2') format('woff2');
 }
 
 @font-face {
@@ -46,7 +46,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/Geist-400.ttf') format('truetype');
+  src: url('/fonts/Geist-400.woff2') format('woff2');
 }
 
 @font-face {
@@ -54,7 +54,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('/fonts/Geist-500.ttf') format('truetype');
+  src: url('/fonts/Geist-500.woff2') format('woff2');
 }
 
 @font-face {
@@ -62,7 +62,7 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url('/fonts/Geist-600.ttf') format('truetype');
+  src: url('/fonts/Geist-600.woff2') format('woff2');
 }
 
 @font-face {
@@ -86,7 +86,7 @@
   font-style: normal;
   font-weight: 900;
   font-display: swap;
-  src: url('/fonts/Geist-900.ttf') format('truetype');
+  src: url('/fonts/Geist-900.woff2') format('woff2');
 }
 
 @font-face {
@@ -94,7 +94,7 @@
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  src: url('/fonts/CreatoDisplay-300.otf') format('opentype');
+  src: url('/fonts/CreatoDisplay-300.woff2') format('woff2');
 }
 
 @font-face {
@@ -102,7 +102,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/CreatoDisplay-400.otf') format('opentype');
+  src: url('/fonts/CreatoDisplay-400.woff2') format('woff2');
 }
 
 @font-face {
@@ -110,7 +110,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url('/fonts/CreatoDisplay-500.otf') format('opentype');
+  src: url('/fonts/CreatoDisplay-500.woff2') format('woff2');
 }
 
 @font-face {
@@ -118,7 +118,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('/fonts/CreatoDisplay-700.otf') format('opentype');
+  src: url('/fonts/CreatoDisplay-700.woff2') format('woff2');
 }
 
 @font-face {
@@ -126,7 +126,7 @@
   font-style: normal;
   font-weight: 800;
   font-display: swap;
-  src: url('/fonts/CreatoDisplay-800.otf') format('opentype');
+  src: url('/fonts/CreatoDisplay-800.woff2') format('woff2');
 }
 
 @font-face {
@@ -134,7 +134,7 @@
   font-style: normal;
   font-weight: 900;
   font-display: swap;
-  src: url('/fonts/CreatoDisplay-900.otf') format('opentype');
+  src: url('/fonts/CreatoDisplay-900.woff2') format('woff2');
 }
 
 @font-face {
@@ -142,7 +142,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/Minercraftory.ttf') format('truetype');
+  src: url('/fonts/Minercraftory.woff2') format('woff2');
 }
 
 @font-face {

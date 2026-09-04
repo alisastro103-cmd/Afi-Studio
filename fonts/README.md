@@ -1,27 +1,23 @@
 # Font lokal — status
 
 Semua font di sini self-hosted (bukan CDN Google) — tidak ada request keluar
-sama sekali saat halaman dibuka. **3 font final** yang dipakai situs ini:
+sama sekali saat halaman dibuka. **3 font final** yang dipakai situs ini,
+semua sudah format `.woff2` (paling kecil & didukung semua browser modern):
 
 | Font | Peran | Status |
 |---|---|---|
-| Geist 500/600/700/800 | Body, deskripsi, caption, detail text, label, nav, tombol | Aktif. Belum ada Regular (400) — browser nampilin versi 500 buat teks yang minta weight di bawah itu |
-| CreatoDisplay 300/700 | Heading (h1-h4) di semua halaman | Aktif. Cuma ada Light & Bold — weight lain (400/500/600/800) di-map browser ke yang paling dekat |
-| Minercraftory | Judul section/header (`.category-header`, `.folder`) | Aktif — lihat `Minercraftory-LICENSE.txt` (CC BY-SA 3.0) |
+| Geist 100–900 (9 weight) | Body, deskripsi, caption, detail text, label, nav, tombol | Aktif, lengkap semua weight |
+| CreatoDisplay 300/400/500/700/800/900 | Heading (h1-h4) di semua halaman | Aktif. Weight 600 belum ada file asli — browser pakai 500/700 terdekat, bukan fake-bold karena masih ada face asli di sekitarnya |
+| Minercraftory | Judul section/header (`.category-header`, `.folder`) | Aktif — lihat `Minercraftory-LICENSE.txt` (CC BY-SA 3.0). PENTING: selalu pakai `font-weight: 400` (satu-satunya weight asli) — jangan dipaksa 700/800, browser bakal fake-bold dan bikin bentuk hurufnya rusak/berdempetan |
 | Dancing Script 700 | Logo/wordmark "Afi-Studio" saja (bukan bagian dari 3 font di atas, identitas brand) | Aktif |
 
 Anton dan Outfit sudah tidak dipakai lagi (dihapus dari folder ini) sejak
 CreatoDisplay resmi jadi font heading final.
 
-## Kalau mau lengkapi Geist Regular (400)
-Download dari https://vercel.com/font (resmi, gratis, lisensi SIL OFL) — ambil
-`Geist-Regular.woff2`, taruh di folder ini, lalu tambahkan blok `@font-face`
-baru di `fonts.css` mengikuti pola yang sudah ada untuk weight 500/600/700/800.
-
-## Soal format file (.ttf/.otf vs .woff2)
-`Geist-500.ttf`, `Geist-600.ttf`, `CreatoDisplay-300.otf`, `CreatoDisplay-700.otf`,
-dan `Minercraftory.ttf` masih format asli (TrueType/OpenType), belum dikompres
-ke `.woff2`. Fungsinya sama persis di browser, cuma ukuran file sedikit lebih
-besar dari versi woff2. Kalau mau dikecilin, convert lewat
-https://cloudconvert.com/ttf-to-woff2 (atau otf-to-woff2), lalu ganti
-ekstensi + `format('woff2')` di `fonts.css`.
+## Soal format file
+Semua font di folder ini sudah dikonversi ke `.woff2` (dari `.ttf`/`.otf`
+aslinya) — ukuran total turun dari ~864 KB jadi ~348 KB tanpa bedanya
+kelihatan sama sekali, karena woff2 cuma format kompresi, bukan font baru.
+Kalau nanti nambah weight baru, convert dulu ke woff2 (misal lewat
+https://cloudconvert.com/ttf-to-woff2) sebelum ditaruh di sini, biar
+konsisten & tetap kecil.
