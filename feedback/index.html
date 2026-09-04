@@ -346,6 +346,41 @@
             transition: transform 0.3s ease; z-index: 5000;
         }
         .toast-daftar.show { transform: translate(-50%, 0); }
+
+        /* --- Popup sukses kirim feedback: gantiin alert() bawaan browser --- */
+        .success-popup-overlay {
+            position: fixed; inset: 0; z-index: 6000;
+            background: rgba(0,0,0,0.55);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0.2s;
+        }
+        .success-popup-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
+        .success-popup-box {
+            background: var(--surface); color: var(--text);
+            border-radius: 16px; padding: 28px 24px 24px;
+            max-width: 320px; width: 100%; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.9) translateY(8px); opacity: 0;
+            transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease;
+        }
+        .success-popup-overlay.show .success-popup-box { transform: scale(1) translateY(0); opacity: 1; }
+        .success-popup-icon {
+            width: 56px; height: 56px; margin: 0 auto 14px;
+            border-radius: 50%;
+            background: color-mix(in srgb, #22C55E 18%, var(--surface));
+            display: flex; align-items: center; justify-content: center;
+        }
+        .success-popup-icon svg { width: 28px; height: 28px; stroke: #22C55E; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+        .success-popup-text { font-size: 14.5px; line-height: 1.5; color: var(--text); margin-bottom: 20px; }
+        .success-popup-btn {
+            background: var(--accent); color: #fff; border: none;
+            border-radius: 10px; padding: 10px 28px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            font-family: 'Geist', sans-serif;
+        }
+        .success-popup-btn:active { opacity: 0.8; }
     </style>
     <link rel="stylesheet" href="/css/theme-tokens.css">
     <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
@@ -510,6 +545,21 @@
       });
     })();
 
+    // Popup sukses di tengah layar, gantiin alert() bawaan browser
+    function showSuccessPopup(message) {
+      document.getElementById('success-popup-text').innerText = message;
+      document.getElementById('success-popup-overlay').classList.add('show');
+    }
+    (function () {
+      const overlay = document.getElementById('success-popup-overlay');
+      document.getElementById('success-popup-ok').addEventListener('click', function () {
+        overlay.classList.remove('show');
+      });
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.classList.remove('show');
+      });
+    })();
+
     async function sendFeedback(event) {
       event.preventDefault();
 
@@ -566,7 +616,7 @@
         const result = await response.json();
 
         if (response.ok && result.success) {
-          alert("Feedback berhasil dikirim ke Telegram! Terima kasih.");
+          showSuccessPopup("Pesan Anda berhasil terkirim, terima kasih atas masukan yang kamu berikan!");
           document.getElementById('feedbackForm').reset();
           // Reset counter tulisan kembali ke 0
           document.getElementById('nameCount').innerText = "0 / 50";
@@ -585,6 +635,17 @@
     }
   </script>
      <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
+
+     <div id="success-popup-overlay" class="success-popup-overlay">
+       <div class="success-popup-box">
+         <div class="success-popup-icon">
+           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+         </div>
+         <p class="success-popup-text" id="success-popup-text"></p>
+         <button type="button" class="success-popup-btn" id="success-popup-ok">Oke</button>
+       </div>
+     </div>
+
     <script src="/pwa-install.js" defer></script>
     <script src="/page-menu-drawer.js" defer></script>
 </body>

@@ -201,6 +201,17 @@
 
   /* --- TOGGLE TAMPILAN: Tabel <-> Kotak (kartu database) --- */
   .data-grid { display:none; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap:12px; }
+  /* Kartu Member khusus dibikin lebih kecil & rapat (4 kolom, turun ke 3 kolom
+     di layar sempit) -- sebelumnya ikut ukuran umum data-grid dan kegedean/
+     boros ruang dibanding kartu lain. */
+  #member-grid.data-grid { grid-template-columns: repeat(4, minmax(0,1fr)); gap:8px; }
+  @media (max-width: 480px) {
+    #member-grid.data-grid { grid-template-columns: repeat(3, minmax(0,1fr)); gap:6px; }
+  }
+  #member-grid .mimic-id-card .namebar { padding:5px 3px; min-height:26px; }
+  #member-grid .mimic-id-card .namebar span { font-size:11px; }
+  #member-grid .mimic-id-card .meta { padding:5px 6px; gap:2px; }
+  #member-grid .mimic-id-card .meta > div { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; font-size:9.5px !important; }
   html.view-grid .data-table-wrap { display:none; }
   html.view-grid .data-grid { display:grid; }
   .data-card { display:flex; flex-direction:column; gap:8px; }

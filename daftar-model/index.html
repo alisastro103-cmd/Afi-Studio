@@ -491,6 +491,55 @@
       background: var(--bg);
       display: flex; align-items: center; justify-content: center;
     }
+
+    /* --- Popup sukses pendaftaran model: animasi pesawat > kertas dilipat > centang --- */
+    .register-success-overlay {
+      position: fixed; inset: 0; z-index: 6000;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 0.2s ease, visibility 0.2s;
+    }
+    .register-success-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
+    .register-success-box {
+      background: var(--surface); color: var(--text);
+      border-radius: 18px; padding: 32px 24px 26px;
+      max-width: 320px; width: 100%; text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      transform: scale(0.9) translateY(8px); opacity: 0;
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease;
+    }
+    .register-success-overlay.show .register-success-box { transform: scale(1) translateY(0); opacity: 1; }
+    .register-success-stage {
+      position: relative; width: 88px; height: 88px; margin: 0 auto 16px;
+    }
+    .register-success-stage .stage-icon {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+      opacity: 0; transform: scale(0.5) rotate(-15deg);
+      transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    }
+    .register-success-stage .stage-icon.active { opacity: 1; transform: scale(1) rotate(0deg); }
+    .register-success-stage .stage-icon svg { width: 40px; height: 40px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .register-success-stage .stage-icon[data-stage="plane"] svg { stroke: var(--accent); }
+    .register-success-stage .stage-icon[data-stage="paper"] svg { stroke: var(--accent); }
+    .register-success-stage .stage-icon[data-stage="check"] { background: color-mix(in srgb, #22C55E 18%, var(--surface)); }
+    .register-success-stage .stage-icon[data-stage="check"] svg { stroke: #22C55E; }
+    .register-success-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; opacity: 0; transform: translateY(6px); transition: opacity 0.3s ease, transform 0.3s ease; }
+    .register-success-text { font-size: 14px; line-height: 1.5; color: var(--text-sub); margin-bottom: 20px; opacity: 0; transform: translateY(6px); transition: opacity 0.3s ease, transform 0.3s ease; }
+    .register-success-title.show, .register-success-text.show { opacity: 1; transform: translateY(0); }
+    .register-success-btn {
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 10px; padding: 10px 28px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: 'Geist', sans-serif;
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .register-success-btn.show { opacity: 1; }
+    .register-success-btn:active { opacity: 0.8; }
   </style>
     <link rel="stylesheet" href="/css/theme-tokens.css">
     <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
@@ -945,6 +994,44 @@
       }
     });
 
+    // Popup sukses pendaftaran model: animasi pesawat > kertas dilipat > centang,
+    // baru muncul tulisan "Model Anda akan terdaftar...". Dipanggil sekali submit
+    // sukses beneran (bukan buat error, error tetap lewat showMessage di bawah).
+    (function () {
+      const overlay = document.getElementById('register-success-overlay');
+      const btn = document.getElementById('register-success-btn');
+      function closePopup() { overlay.classList.remove('show'); }
+      btn.addEventListener('click', closePopup);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) closePopup(); });
+    })();
+
+    function showRegisterSuccessPopup() {
+      const overlay = document.getElementById('register-success-overlay');
+      const stages = overlay.querySelectorAll('.stage-icon');
+      const title = document.getElementById('register-success-title');
+      const text = document.getElementById('register-success-text');
+      const btn = document.getElementById('register-success-btn');
+
+      stages.forEach(s => s.classList.remove('active'));
+      title.classList.remove('show');
+      text.classList.remove('show');
+      btn.classList.remove('show');
+      overlay.classList.add('show');
+
+      const plane = overlay.querySelector('[data-stage="plane"]');
+      const paper = overlay.querySelector('[data-stage="paper"]');
+      const check = overlay.querySelector('[data-stage="check"]');
+
+      plane.classList.add('active');
+      setTimeout(() => { plane.classList.remove('active'); paper.classList.add('active'); }, 700);
+      setTimeout(() => { paper.classList.remove('active'); check.classList.add('active'); }, 1400);
+      setTimeout(() => {
+        title.classList.add('show');
+        text.classList.add('show');
+        btn.classList.add('show');
+      }, 1850);
+    }
+
     function showMessage(msg, type) {
       const box = document.getElementById('form-message');
       box.textContent = msg;
@@ -1025,7 +1112,7 @@
         // pesan sukses jadi keliatan seolah-olah pendaftarannya gagal
         // (padahal udah kekirim). Ini pernah kejadian gara-gara pemanggilan
         // fungsi yang gak ada.
-        showMessage('Pendaftaran berhasil dikirim! Tim admin akan meninjau sebelum dipublikasikan.', 'success');
+        showRegisterSuccessPopup();
         try {
           document.getElementById('daftarModelForm').reset();
           resetAllPreviews();
@@ -1078,6 +1165,26 @@
     })();
   </script>
     <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
+
+    <div id="register-success-overlay" class="register-success-overlay">
+      <div class="register-success-box">
+        <div class="register-success-stage">
+          <div class="stage-icon" data-stage="plane">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </div>
+          <div class="stage-icon" data-stage="paper">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+          </div>
+          <div class="stage-icon" data-stage="check">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+        </div>
+        <p class="register-success-title" id="register-success-title">Terkirim!</p>
+        <p class="register-success-text" id="register-success-text">Model Anda akan terdaftar, mohon menunggu 1-2 hari.</p>
+        <button type="button" class="register-success-btn" id="register-success-btn">Oke</button>
+      </div>
+    </div>
+
     <script src="/pwa-install.js" defer></script>
     <script src="/page-menu-drawer.js" defer></script>
 </body>
