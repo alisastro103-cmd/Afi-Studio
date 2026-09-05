@@ -361,25 +361,17 @@
         }
         .lightbox-close:hover { background: rgba(255,255,255,0.2); }
 
-        /* Section divider */
+        /* Section heading (Top 3 / Runner Up) */
         .section-divider {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: 'Geist', sans-serif;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            opacity: 0.55;
+            font-family: 'Minercraftory', 'Geist', sans-serif;
+            font-size: 20px;
+            font-weight: 400;
+            letter-spacing: 1.2px;
+            opacity: 1;
             margin-bottom: 16px;
         }
-        .section-divider::before,
-        .section-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
+        @media (min-width: 640px) {
+            .section-divider { font-size: 23px; letter-spacing: 1.5px; }
         }
     </style>
 
@@ -466,7 +458,6 @@
         <main class="max-w-5xl mx-auto px-4 pt-2 pb-10 sm:px-6">
 
             <div class="text-center" style="padding: 40px 20px 8px;">
-                <p style="font-family:'Geist',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent);opacity:0.85;margin-bottom:6px;">Galeri Render</p>
                 <h1 style="font-family:'CreatoDisplay',sans-serif;font-size:48px;font-weight:800;line-height:1.15;letter-spacing:-0.02em;">Render Terbaik di Bulan Ini</h1>
                 <p style="font-size:15px;color:var(--text-sub);margin-top:10px;">Ketuk gambar untuk melihat detail penuh</p>
             </div>

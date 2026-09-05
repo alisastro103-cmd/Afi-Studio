@@ -16,7 +16,7 @@
   align-items: center;
   gap: 10px;
   font-family: 'Minercraftory', 'Geist', sans-serif;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 400;
   letter-spacing: 1.2px;
   text-transform: none;
@@ -25,7 +25,7 @@
   margin-left: 10px;
 }
 @media (min-width: 640px) {
-  .category-header { font-size: 23px; margin-left: 16px; letter-spacing: 1.5px; }
+  .category-header { font-size: 25px; margin-left: 16px; letter-spacing: 1.5px; }
 }
 
 /* Teks kecil penjelasan opsional di bawah judul section (lihat .category-sub) */
