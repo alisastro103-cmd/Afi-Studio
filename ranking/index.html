@@ -368,7 +368,20 @@
             font-weight: 400;
             letter-spacing: 1.2px;
             opacity: 1;
+            text-align: center;
             margin-bottom: 16px;
+        }
+        .section-divider--runner-up {
+            margin-top: 32px;
+        }
+        /* Render terakhir tanpa pasangan di grid Runner Up: tengahkan sendiri */
+        .runner-lone {
+            grid-column: 1 / -1;
+            justify-self: center;
+            width: calc(50% - 6px);
+        }
+        @media (min-width: 640px) {
+            .runner-lone { width: calc(50% - 8px); }
         }
         @media (min-width: 640px) {
             .section-divider { font-size: 23px; letter-spacing: 1.5px; }
@@ -466,7 +479,7 @@
             <div class="grid grid-cols-3 gap-4 sm:gap-6 mb-10" id="top3-grid">
             </div>
 
-            <div class="section-divider">Runner Up</div>
+            <div class="section-divider section-divider--runner-up">Runner Up</div>
             <div class="grid grid-cols-2 gap-3 sm:gap-4" id="runner-up-grid">
             </div>
 
@@ -554,6 +567,11 @@
             col.addEventListener('click', () => openLightbox(i));
             (i < 3 ? top3Grid : runnerGrid).appendChild(col);
         });
+
+        /* Kalau jumlah Runner Up ganjil, render terakhir gak ada pasangan di sampingnya -> tengahkan */
+        if (runnerGrid.children.length % 2 !== 0) {
+            runnerGrid.lastElementChild.classList.add('runner-lone');
+        }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
