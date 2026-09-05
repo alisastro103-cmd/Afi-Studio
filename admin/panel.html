@@ -330,6 +330,7 @@
     <div class="side-item" data-view="pendingmodels"><i data-lucide="inbox"></i>Pendaftaran<span id="pending-badge" style="display:none; margin-left:auto; background:#EF4444; color:#fff; font-size:10px; font-weight:800; padding:1px 6px; border-radius:999px;"></span></div>
     <div class="side-item" data-view="survey"><i data-lucide="clipboard-list"></i>Survey</div>
     <div class="side-item" data-view="pengaturan"><i data-lucide="settings"></i>Pengaturan</div>
+    <div class="side-item" data-view="iklan"><i data-lucide="link"></i>Iklan</div>
     <div class="side-item" data-view="adminaccess" id="nav-adminaccess" style="display:none;"><i data-lucide="shield-check"></i>Kelola Admin</div>
     <div class="mt-auto pt-3" style="border-top:1px solid var(--border);">
       <div class="side-item" id="theme-toggle-btn"><i data-lucide="moon-star"></i>Ganti Tema</div>
@@ -554,6 +555,40 @@
         </div>
       </section>
 
+      <section class="section-view" id="view-iklan">
+        <div class="panel p-4">
+          <h3 class="text-sm font-bold mb-1">Slot Iklan / Sponsor</h3>
+          <p style="font-size:12.5px; color:var(--text-sub); line-height:1.6; margin-bottom:14px;">Satu slot iklan yang ditempel IN-FLOW di tengah halaman (bukan mengambang), jadi gak akan pernah nutupin navbar atau tombol lain. Boleh sering muncul, yang penting posisinya gak sembarangan.</p>
+          <div class="setting-row">
+            <div>
+              <div class="setting-row-title">Aktifkan Iklan</div>
+              <div class="setting-row-desc">Kalau dimatikan, slotnya hilang total dari semua halaman.</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="ads-toggle" onchange="updateAds('enabled', this.checked)">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+            <div class="setting-row-title">Gambar Iklan</div>
+            <img id="ads-preview" style="max-width:280px; width:100%; border-radius:8px; display:none; margin-bottom:4px;" alt="Preview iklan">
+            <div class="flex items-center gap-2">
+              <input type="file" accept="image/*" id="ads-img-file" style="flex:1; font-size:11px;">
+              <button type="button" class="btn btn-outline" style="font-size:11px; padding:6px 10px; white-space:nowrap;" onclick="uploadFileToSecondary(document.getElementById('ads-img-file'),'ads-img-hidden','/secondary/ads').then(()=>syncAdsImgFromHidden())">Upload</button>
+            </div>
+            <input type="hidden" id="ads-img-hidden">
+          </div>
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+            <div class="setting-row-title">Link Tujuan</div>
+            <input type="text" id="ads-url" placeholder="https://..." onchange="updateAds('url', this.value.trim())">
+          </div>
+          <div class="setting-row" style="flex-direction:column; align-items:stretch; gap:8px; border-bottom:none;">
+            <div class="setting-row-title">Label Kecil (pojok gambar)</div>
+            <input type="text" id="ads-label" placeholder="Sponsor" onchange="updateAds('label', this.value.trim() || 'Sponsor')">
+          </div>
+        </div>
+      </section>
+
       <section class="section-view" id="view-adminaccess">
         <div class="panel p-4 mb-3">
           <h3 class="text-sm font-bold mb-1">Undang Admin Baru</h3>
@@ -624,7 +659,7 @@
 /* ================= DATA: dimuat dari API (Redis), BUKAN seed statis lagi ================= */
 // DB kosong dulu, diisi oleh loadAllData() setelah login berhasil.
 let DB = { models: [], videos: [], banner: [], marquee: [], member: {}, ranking: [], settings: { isDaftarModelOpen: true, isDaftarMemberOpen: false, isEventOpen: true, daftarModelUrl: '', daftarMemberUrl: '', eventDriveUrl: '' }, categories: [], appcategories: [], pendingmodels: [], surveys: [] };
-const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','settings','categories','appcategories','pendingmodels','surveys'];
+const DATA_TYPES = ['models','videos','banner','marquee','member','ranking','settings','categories','appcategories','pendingmodels','surveys','ads'];
 
 /* ================= LOGIN & TOKEN ================= */
 // Token disimpan di sessionStorage (bukan localStorage) supaya otomatis
@@ -691,7 +726,7 @@ async function bootAdminApp(){
   toast('Memuat data...');
   await loadAllData();
   renderDashboard(); renderModels(); renderKategori(); renderKategoriApp(); renderVideos(); renderBanner();
-  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderPengaturan(); renderPendingModels(); renderSurvey();
+  renderMarquee(); renderMemberFilter(); renderMember(); renderRanking(); renderPengaturan(); renderIklan(); renderPendingModels(); renderSurvey();
   document.getElementById('nav-adminaccess').style.display = isOwnerSession ? 'flex' : 'none';
   if(isOwnerSession) loadAdminSessions();
   lucide.createIcons();
@@ -1897,6 +1932,30 @@ async function updateSettingUrl(key, value){
     return;
   }
   await updateSetting(key, value);
+}
+
+/* ================= IKLAN / SPONSOR (config tunggal, in-flow) ================= */
+function renderIklan(){
+  document.getElementById('ads-toggle').checked = !!DB.ads.enabled;
+  document.getElementById('ads-img-hidden').value = DB.ads.img || '';
+  document.getElementById('ads-url').value = DB.ads.url || '';
+  document.getElementById('ads-label').value = DB.ads.label || '';
+  const preview = document.getElementById('ads-preview');
+  if(DB.ads.img){ preview.src = DB.ads.img; preview.style.display = 'block'; }
+  else { preview.style.display = 'none'; }
+}
+async function updateAds(key, value){
+  const prev = DB.ads[key];
+  DB.ads = { ...DB.ads, [key]: value };
+  const ok = await persist('ads');
+  if(ok){ toast('Iklan disimpan'); renderIklan(); }
+  else { DB.ads = { ...DB.ads, [key]: prev }; renderIklan(); }
+}
+// Dipanggil setelah uploadFileToSecondary ngisi input hidden #ads-img-hidden
+// dengan URL hasil upload -- baru dari situ disimpan ke database iklan.
+async function syncAdsImgFromHidden(){
+  const url = document.getElementById('ads-img-hidden').value;
+  if(url) await updateAds('img', url);
 }
 
 /* ================= PENDAFTARAN MODEL (PENDING) ================= */

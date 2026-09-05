@@ -1,0 +1,23 @@
+/* Sponsor/ad slot -- SELALU in-flow (bagian dari alur halaman biasa),
+   JANGAN pernah dikasih position:fixed/sticky di sini atau di tempat lain.
+   Itu yang bikin dia gak mungkin nutupin navbar/tombol lain. */
+.sponsor-slot {
+    display: block;
+    max-width: 640px;
+    margin: 20px auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+    position: relative;
+    transition: border-color 0.3s ease;
+}
+.sponsor-slot:hover { border-color: var(--accent-hover); }
+.sponsor-slot img { display: block; width: 100%; height: auto; }
+.sponsor-slot-tag {
+    position: absolute; top: 8px; left: 8px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px;
+    background: rgba(0,0,0,0.55); color: #fff;
+    backdrop-filter: blur(3px);
+}

@@ -27,6 +27,11 @@ const TYPES = {
   settings:   { redisKey: 'afi-studio:data:settings',   file: 'settings.json' },
   pendingmodels: { redisKey: 'afi-studio:data:pendingmodels', file: 'pendingmodels.json' },
   surveys: { redisKey: 'afi-studio:data:surveys', file: 'surveys.json', cache: 'public, max-age=0, must-revalidate' },
+  // Iklan/sponsor -- 1 objek config (bukan array), dipasang IN-FLOW di halaman
+  // (bukan overlay/fixed) supaya gak pernah nutupin tombol lain. Diatur dari
+  // admin panel menu "Iklan". Default aman: enabled=false, gak nongol apa-apa
+  // sebelum admin sengaja nyalain & isi gambarnya.
+  ads: { redisKey: 'afi-studio:data:ads', file: 'ads.json' },
 };
 
 const DEFAULT_CACHE = 'public, max-age=30, stale-while-revalidate=120';

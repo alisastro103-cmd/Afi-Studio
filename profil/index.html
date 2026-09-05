@@ -27,7 +27,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; font-family: 'Geist', sans-serif; scroll-behavior: smooth; }
         h1, h2, h3, h4 { font-family: 'CreatoDisplay', sans-serif; }
-        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; zoom: 0.75; }
 
         /* ---- Sketsa banner: catatan buat versi nyata ---- */
         .sketch-note {
@@ -39,60 +39,64 @@
         }
         .sketch-note strong { color: var(--text); }
 
-        /* ---- Banner + avatar ---- */
-        .profile-banner {
+        /* ---- Satu "board" akun: banner + avatar + nama + deskripsi + stat,
+           semuanya di DALAM satu kartu bordered, gak lagi kepisah-pisah. ---- */
+        .account-wrap { max-width: 640px; margin: 16px auto 0; padding: 0 20px; }
+        .account-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .account-banner {
             width: 100%;
             aspect-ratio: 3 / 1;
-            max-height: 260px;
+            max-height: 180px;
             background: linear-gradient(135deg, #4c7bc0 0%, #6c5ce7 100%);
             position: relative;
         }
-        .profile-banner-edit {
-            position: absolute; right: 14px; bottom: 14px;
+        .account-banner-edit {
+            position: absolute; right: 12px; bottom: 12px;
             display: flex; align-items: center; gap: 6px;
-            padding: 7px 14px; border-radius: 999px;
+            padding: 6px 12px; border-radius: 999px;
             background: rgba(0,0,0,0.45); color: #fff;
-            font-size: 12px; font-weight: 700;
+            font-size: 11.5px; font-weight: 700;
             backdrop-filter: blur(4px);
-            opacity: 0.6; cursor: not-allowed;
+            opacity: 0.7; cursor: not-allowed;
         }
-        .profile-header {
-            max-width: 720px; margin: 0 auto; padding: 0 20px;
-            display: flex; align-items: flex-end; gap: 16px;
-            margin-top: -44px;
-        }
-        .profile-avatar {
-            width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0;
-            background: var(--surface);
-            border: 4px solid var(--bg);
+        .account-body { padding: 0 18px 18px; position: relative; }
+        .account-avatar {
+            width: 76px; height: 76px; border-radius: 50%; flex-shrink: 0;
+            background: var(--bg);
+            border: 4px solid var(--surface);
+            margin-top: -38px;
             display: flex; align-items: center; justify-content: center;
             color: var(--text-sub);
         }
-        .profile-avatar svg { width: 44px; height: 44px; }
-        .profile-name-block { padding-bottom: 6px; }
-        .profile-name { font-size: 21px; font-weight: 800; line-height: 1.2; }
-        .profile-role-badge {
-            display: inline-flex; align-items: center; margin-left: 8px;
+        .account-avatar svg { width: 36px; height: 36px; }
+        .account-name-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .account-name { font-size: 19px; font-weight: 800; line-height: 1.2; }
+        .account-role-badge {
             font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
             padding: 2px 8px; border-radius: 999px;
             background: color-mix(in srgb, var(--accent) 20%, transparent);
             color: var(--accent);
-            vertical-align: middle;
         }
-        .profile-meta { font-size: 12.5px; color: var(--text-sub); margin-top: 3px; }
+        .account-username { font-size: 12.5px; color: var(--text-sub); margin-top: 2px; }
+        .account-desc { font-size: 13px; color: var(--text-sub); line-height: 1.55; margin-top: 10px; }
 
-        .profile-actions { max-width: 720px; margin: 14px auto 0; padding: 0 20px; display: flex; gap: 8px; }
-        .profile-btn {
-            font-size: 12.5px; font-weight: 700; padding: 9px 16px; border-radius: 8px;
-            border: 1px solid var(--border); background: var(--surface); color: var(--text-sub);
+        .account-actions { display: flex; gap: 8px; margin-top: 14px; }
+        .account-btn {
+            font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text-sub);
             cursor: not-allowed; opacity: 0.6;
         }
 
-        .profile-stats { max-width: 720px; margin: 18px auto 0; padding: 0 20px; display: flex; gap: 24px; }
-        .profile-stat-num { font-size: 17px; font-weight: 800; }
-        .profile-stat-label { font-size: 11.5px; color: var(--text-sub); }
+        .account-stats { display: flex; gap: 22px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .account-stat-num { font-size: 16px; font-weight: 800; }
+        .account-stat-label { font-size: 11px; color: var(--text-sub); }
 
-        .profile-section { max-width: 720px; margin: 26px auto 0; padding: 0 20px 40px; }
+        .profile-section { max-width: 640px; margin: 24px auto 0; padding: 0 20px 40px; }
         .empty-note { font-size: 12.5px; color: var(--text-sub); margin-top: 10px; }
     </style>
 
@@ -167,34 +171,40 @@
             </div>
         </nav>
 
-        <div class="sketch-note">
-            <strong>Ini sketsa tampilan, belum nyambung ke akun Google beneran.</strong> Data di bawah (nama, jumlah model, dst) masih contoh — dibuat buat dilihat bentuknya dulu sebelum sistem login digarap.
-        </div>
-
-        <div class="profile-banner">
-            <div class="profile-banner-edit">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                Ganti Banner
+        <div class="account-wrap">
+            <div class="sketch-note" style="margin: 14px 0;">
+                <strong>Ini sketsa tampilan, belum nyambung ke akun Google beneran.</strong> Data di bawah masih contoh, dibuat buat dilihat bentuknya dulu.
             </div>
-        </div>
 
-        <div class="profile-header">
-            <div class="profile-avatar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+            <div class="account-card">
+                <div class="account-banner">
+                    <div class="account-banner-edit">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                        Ganti Banner
+                    </div>
+                </div>
+                <div class="account-body">
+                    <div class="account-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+                    </div>
+                    <div class="account-name-row">
+                        <div class="account-name">Ali Sastro</div>
+                        <span class="account-role-badge">Creator</span>
+                    </div>
+                    <div class="account-username">@alisastro</div>
+                    <p class="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
+
+                    <div class="account-actions">
+                        <button class="account-btn">Edit Profil</button>
+                        <button class="account-btn">Bagikan Profil</button>
+                    </div>
+
+                    <div class="account-stats">
+                        <div><div class="account-stat-num">4</div><div class="account-stat-label">Model diupload</div></div>
+                        <div><div class="account-stat-num">128</div><div class="account-stat-label">Like</div></div>
+                    </div>
+                </div>
             </div>
-            <div class="profile-name-block">
-                <div class="profile-name">Ali Sastro<span class="profile-role-badge">Creator</span></div>
-                <div class="profile-meta">Bergabung sejak September 2026</div>
-            </div>
-        </div>
-
-        <div class="profile-actions">
-            <button class="profile-btn">Edit Profil</button>
-            <button class="profile-btn">Bagikan Profil</button>
-        </div>
-
-        <div class="profile-stats">
-            <div><div class="profile-stat-num">4</div><div class="profile-stat-label">Model diupload</div></div>
         </div>
 
         <div class="profile-section">
