@@ -1443,13 +1443,54 @@ function renderBanner(){
   bindCardHold('banner-grid');
   bindCardHold('banner-tbody');
 }
+// Helper generik: baca file dari <input type=file>, upload ke secondary
+// storage (ImageKit) lewat /api/admin/media, lalu isi otomatis ke field
+// URL yang ditunjuk. Dipakai di form Banner, dan bisa dipakai form lain
+// yang masih pakai input URL manual (biar pelan-pelan lepas dari
+// kebiasaan paste link ibb/postimg).
+async function uploadFileToSecondary(inputEl, targetFieldId, folder){
+  const file = inputEl.files[0];
+  if(!file) return;
+  const btn = inputEl.nextElementSibling;
+  const originalLabel = btn ? btn.textContent : '';
+  if(btn){ btn.textContent = 'Mengupload...'; btn.disabled = true; }
+  try{
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const resp = await fetch('/api/admin/media?action=upload-secondary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getToken() },
+      body: JSON.stringify({ imageBase64: base64, fileName: file.name, folder }),
+    });
+    const data = await resp.json();
+    if(!resp.ok || !data.ok){ toast(data.error || 'Gagal upload gambar.'); return; }
+    document.getElementById(targetFieldId).value = data.url;
+    toast('Gambar terupload.');
+  } catch(e){
+    toast('Gagal upload: ' + e.message);
+  } finally {
+    if(btn){ btn.textContent = originalLabel; btn.disabled = false; }
+    inputEl.value = '';
+  }
+}
+
 function openBannerForm(idx){
   const isEdit = idx !== undefined;
   const b = isEdit ? DB.banner[idx] : { img:'', url:'' };
   openModal(`
     <h3 class="text-sm font-bold mb-4">${isEdit?'Edit':'Tambah'} Banner</h3>
     <div class="flex flex-col gap-3">
-      <div><label>Nama file / URL gambar</label><input id="f-img" value="${esc(b.img)}"></div>
+      <div><label>Nama file / URL gambar</label>
+        <input id="f-img" value="${esc(b.img)}">
+        <div class="flex items-center gap-2 mt-2">
+          <input type="file" accept="image/*" id="f-img-file" style="flex:1; font-size:11px;">
+          <button type="button" class="btn btn-outline" style="font-size:11px; padding:6px 10px; white-space:nowrap;" onclick="uploadFileToSecondary(document.getElementById('f-img-file'),'f-img','/secondary/banner')">Upload</button>
+        </div>
+      </div>
       <div><label>Link Tujuan</label><input id="f-burl" value="${esc(b.url)}"></div>
     </div>
     <div class="flex justify-end gap-2 mt-5">
@@ -1893,7 +1934,9 @@ function renderPendingModels(){
     const submittedDate = item.submittedAt ? new Date(item.submittedAt).toLocaleString('id-ID') : '-';
 
     let thumbPreviewHtml = '';
-    if (item.thumb?.type === 'link') {
+    if (item.thumbSecondary?.url) {
+      thumbPreviewHtml = `<img src="${escapeHtml(item.thumbSecondary.url)}" alt="Preview thumbnail" style="max-width:200px; width:100%; border-radius:8px; margin-top:8px; display:block;" onerror="this.style.display='none'">`;
+    } else if (item.thumb?.type === 'link') {
       thumbPreviewHtml = `<img src="${escapeHtml(item.thumb.value)}" alt="Preview thumbnail" style="max-width:200px; width:100%; border-radius:8px; margin-top:8px; display:block;" onerror="this.style.display='none'">`;
     } else if (item.thumb?.fileId) {
       thumbPreviewHtml = `<img data-tg-file-id="${escapeHtml(item.thumb.fileId)}" class="pending-thumb-preview" alt="Memuat preview..." style="max-width:200px; width:100%; min-height:70px; border-radius:8px; margin-top:8px; display:block; background:color-mix(in srgb, var(--text-sub) 10%, var(--surface));">`;
@@ -1922,6 +1965,10 @@ function renderPendingModels(){
           <div><strong style="color:var(--text);">Thumbnail:</strong> ${thumbInfo}</div>
           ${thumbPreviewHtml}
           <div><strong style="color:var(--text);">File Model:</strong> ${downloadInfo}</div>
+        </div>
+        <div class="flex gap-2 mt-3">
+          <button onclick="approvePendingModel('${escapeHtml(item.id)}')" class="btn btn-accent" style="flex:1; font-size:12px; padding:8px;">✅ Approve</button>
+          <button onclick="rejectPendingModel('${escapeHtml(item.id)}')" class="btn btn-outline" style="flex:1; font-size:12px; padding:8px;">❌ Reject</button>
         </div>
       </div>`;
   }).join('');
@@ -1955,6 +2002,51 @@ async function deletePendingModel(id){
   const ok = await persist('pendingmodels');
   if(ok){ toast('Notifikasi dihapus dari panel.'); renderPendingModels(); }
   else { DB.pendingmodels = prev; renderPendingModels(); }
+}
+
+// Approve: mindahin thumbnail dari secondary (ImageKit) ke permanent
+// (Cloudinary) di server, otomatis bikin entry Model baru, dan buang
+// submission-nya dari antrian -- semuanya dalam satu klik.
+async function approvePendingModel(id){
+  if(!confirm('Approve pendaftaran ini? Model baru bakal otomatis ditambahkan & langsung tayang di web.')) return;
+  try{
+    const resp = await fetch('/api/admin/media?action=approve-model', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getToken() },
+      body: JSON.stringify({ pendingId: id }),
+    });
+    const data = await resp.json();
+    if(!resp.ok || !data.ok){ toast(data.error || 'Gagal approve.'); return; }
+
+    DB.models.push(data.model);
+    DB.pendingmodels = DB.pendingmodels.filter(p => p.id !== id);
+    renderModels(); renderPendingModels(); renderDashboard();
+
+    toast(data.needsManualLink
+      ? 'Model ditambahkan! Link download filenya masih perlu diisi manual lewat Edit Model.'
+      : 'Model ditambahkan & tayang.');
+  } catch(e){
+    toast('Gagal approve: ' + e.message);
+  }
+}
+
+// Reject: hapus salinan gambarnya dari secondary storage + buang dari antrian.
+async function rejectPendingModel(id){
+  if(!confirm('Reject pendaftaran ini? Gambar yang sudah tersimpan akan dihapus permanen dan submission dibuang dari antrian.')) return;
+  try{
+    const resp = await fetch('/api/admin/media?action=reject-model', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getToken() },
+      body: JSON.stringify({ pendingId: id }),
+    });
+    const data = await resp.json();
+    if(!resp.ok || !data.ok){ toast(data.error || 'Gagal reject.'); return; }
+    DB.pendingmodels = DB.pendingmodels.filter(p => p.id !== id);
+    renderPendingModels();
+    toast('Submission direject & gambar dihapus.');
+  } catch(e){
+    toast('Gagal reject: ' + e.message);
+  }
 }
 
 /* ================= SURVEY ================= */
@@ -2129,31 +2221,57 @@ function setSurveyThumbnailMode(mode){
   surveyDraft.thumbnailMode = mode;
   refreshSurveyModal();
 }
-function handleSurveyThumbnailFile(inputEl){
+async function handleSurveyThumbnailFile(inputEl){
   const file = inputEl.files && inputEl.files[0];
   if(!file) return;
   if(!file.type.startsWith('image/')){ toast('File harus berupa gambar.'); return; }
   if(file.size > 1.5*1024*1024){ toast('Ukuran gambar maksimal 1.5MB. Pakai opsi Link buat gambar yang lebih besar.'); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    surveyDraft.thumbnail = reader.result;
+  try{
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    toast('Mengupload gambar...');
+    const resp = await fetch('/api/admin/media?action=upload-secondary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getToken() },
+      body: JSON.stringify({ imageBase64: base64, fileName: file.name, folder: '/secondary/survey' }),
+    });
+    const data = await resp.json();
+    if(!resp.ok || !data.ok){ toast(data.error || 'Gagal upload gambar.'); return; }
+    surveyDraft.thumbnail = data.url;
     refreshSurveyModal();
-  };
-  reader.onerror = () => toast('Gagal membaca file gambar.');
-  reader.readAsDataURL(file);
+  } catch(e){
+    toast('Gagal upload gambar: ' + e.message);
+  }
 }
-function handleSurveyQuestionFile(idx, inputEl){
+async function handleSurveyQuestionFile(idx, inputEl){
   const file = inputEl.files && inputEl.files[0];
   if(!file) return;
   if(!file.type.startsWith('image/')){ toast('File harus berupa gambar.'); return; }
   if(file.size > 1.5*1024*1024){ toast('Ukuran gambar maksimal 1.5MB. Pakai opsi Link buat gambar yang lebih besar.'); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    surveyDraft.questions[idx].image = reader.result;
+  try{
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    toast('Mengupload gambar...');
+    const resp = await fetch('/api/admin/media?action=upload-secondary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': getToken() },
+      body: JSON.stringify({ imageBase64: base64, fileName: file.name, folder: '/secondary/survey' }),
+    });
+    const data = await resp.json();
+    if(!resp.ok || !data.ok){ toast(data.error || 'Gagal upload gambar.'); return; }
+    surveyDraft.questions[idx].image = data.url;
     refreshSurveyModal();
-  };
-  reader.onerror = () => toast('Gagal membaca file gambar.');
-  reader.readAsDataURL(file);
+  } catch(e){
+    toast('Gagal upload gambar: ' + e.message);
+  }
 }
 function toDatetimeLocal(iso){
   const d = new Date(iso);

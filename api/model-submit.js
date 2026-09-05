@@ -206,9 +206,13 @@ export default async function handler(req, res) {
     // cuma buat KASIH SARAN ke admin di pesan Telegram (lewat noteForAdmin),
     // bukan buat nolak. Rasio/resolusi tetap disaranin ke user lewat teks
     // hint di form (lihat data-field="thumb-link"/"thumb-upload").
+    // ID dibikin di sini (paling awal, dipakai buat nama file upload
+    // secondary DAN buat ditempel ke callback_data tombol Telegram nanti).
+    const pendingId = 'pm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
     let thumbRatioNote = '';
+    let thumbBuffer = null;
     try {
-      let thumbBuffer;
       if (thumbMode === 'upload') {
         thumbBuffer = fs.readFileSync(thumbFile.filepath || thumbFile.path);
       } else {
@@ -225,6 +229,26 @@ export default async function handler(req, res) {
       // Gagal diambil/dibaca (timeout, hotlink-protection, dll) — jangan
       // gagalin submission-nya, cuma kasih tau admin biar bisa dicek manual.
       thumbRatioNote = 'ℹ️ Rasio/dimensi thumbnail gak bisa dicek otomatis (gagal diambil atau bukan format gambar yang dikenali). Cek manual pas review.';
+    }
+
+    // === 2d. UPLOAD THUMBNAIL KE SECONDARY (ImageKit) ===
+    // Ganti kebiasaan lama "admin rehost manual ke ibb/postimg": begitu
+    // submission masuk, thumbnail-nya (baik dari link ATAU upload) langsung
+    // disimpen salinannya sendiri di ImageKit (kantong sementara). Kalau
+    // admin approve nanti, salinan ini yang dipindah ke Cloudinary
+    // (permanent) -- kalau reject, salinan ini yang dihapus. Sengaja gak
+    // bikin submission gagal kalau langkah ini error (misal env var belum
+    // lengkap) -- fallback-nya admin masih bisa proses manual dari lampiran
+    // Telegram kayak sebelumnya.
+    let thumbSecondary = null;
+    try {
+      if (thumbBuffer) {
+        const { uploadToSecondary } = await import('../lib/image-storage.js');
+        const uploaded = await uploadToSecondary(thumbBuffer, `${pendingId}.jpg`, '/secondary/pendingmodels');
+        thumbSecondary = { url: uploaded.url, fileId: uploaded.fileId };
+      }
+    } catch (e) {
+      console.error('Gagal upload thumbnail ke secondary (ImageKit):', e.message);
     }
 
     // === 3. VERIFIKASI reCAPTCHA ===
@@ -256,11 +280,6 @@ export default async function handler(req, res) {
     text += `Thumbnail: ${thumbMode === 'link' ? thumbLink : `Upload (lihat lampiran, ${thumbFile ? Math.round(thumbFile.size / 1024) : '?'} KB)`}\n`;
     text += `File Model: ${downloadMode === 'link' ? downloadLink : `Upload (lihat lampiran, ${downloadFile ? Math.round(downloadFile.size / 1024) : '?'} KB)`}`;
     if (thumbRatioNote) text += `\n\n${escapeMarkdown(thumbRatioNote)}`;
-
-    // ID dibikin di sini (bukan di bawah pas nyimpen ke Redis) karena perlu
-    // ditempel ke callback_data tombol Telegram DULUAN, sebelum entry-nya
-    // sendiri kelar disusun.
-    const pendingId = 'pm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
     let thumbFileId = null;
 
@@ -363,6 +382,11 @@ export default async function handler(req, res) {
       thumb: thumbMode === 'link'
         ? { type: 'link', value: thumbLink }
         : { type: 'upload', filename: thumbFile.originalFilename || '', sizeKb: Math.round((thumbFile.size || 0) / 1024), fileId: thumbFileId },
+      // Salinan di secondary storage (ImageKit) -- ada isinya kalau upload
+      // tadi berhasil, dipakai admin panel buat preview & tombol Approve
+      // (approve = pindah ke Cloudinary permanen). null kalau upload
+      // secondary gagal -- admin fallback proses manual kayak sebelumnya.
+      thumbSecondary,
       download: downloadMode === 'link'
         ? { type: 'link', value: downloadLink }
         : { type: 'upload', filename: downloadFile.originalFilename || '', sizeKb: Math.round((downloadFile.size || 0) / 1024) },
