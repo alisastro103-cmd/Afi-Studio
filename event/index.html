@@ -246,12 +246,13 @@
       font-weight: 600;
       font-size: 14px;
       font-family: 'Geist', sans-serif;
-      transition: all 0.3s ease;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.3s ease, color 0.3s ease;
       text-decoration: none;
       display: inline-block;
       text-align: center;
       min-width: 280px;
     }
+    .btn:not(.disabled):active { opacity: 0.75; transform: scale(0.96); }
  
     .btn.disabled {
       background: var(--disabled);

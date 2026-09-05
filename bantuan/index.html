@@ -144,8 +144,8 @@
             font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 700;
             letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); opacity: 0.85; margin-bottom: 6px;
         }
-        .help-header h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
-        .help-header p.sub { font-size: 14px; color: var(--text-sub); margin-top: 8px; }
+        .help-header h1 { font-size: 48px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }
+        .help-header p.sub { font-size: 15px; color: var(--text-sub); margin-top: 10px; }
 
         .faq-list { display: flex; flex-direction: column; gap: 10px; }
         .faq-item {
@@ -188,7 +188,35 @@
         }
         .faq-answer a:hover { color: var(--accent); }
 
-
+        .help-cta {
+            margin-top: 28px;
+            padding: 22px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            text-align: center;
+        }
+        .help-cta p.title { font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 4px; }
+        .help-cta p.desc { font-size: 13px; color: var(--text-sub); margin-bottom: 16px; }
+        .help-cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 26px;
+            border: 2px solid var(--accent);
+            background: var(--accent);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Geist', sans-serif;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: transform 0.15s ease, opacity 0.15s ease, background 0.3s ease, color 0.3s ease;
+        }
+        @media (hover: hover) and (pointer: fine) {
+            .help-cta-btn:hover { background: transparent; color: var(--accent-hover); }
+        }
+        .help-cta-btn:active { opacity: 0.75; transform: scale(0.96); }
 
         .footer-text {
             text-align: center;
@@ -288,6 +316,15 @@
             </div>
 
             <div class="faq-list" id="faq-list"></div>
+
+            <div class="help-cta">
+                <p class="title">Masih belum terjawab?</p>
+                <p class="desc">Sampaikan pertanyaan, kendala, atau masukanmu langsung ke tim kami.</p>
+                <a href="../feedback/" class="help-cta-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"/></svg>
+                    Kirim Feedback
+                </a>
+            </div>
 
         </main>
     </div>

@@ -634,13 +634,25 @@
         }, 200);
     }
 
+    // Skala zoom (saat tombol zoom ditekan, bukan pinch) dibedakan per lebar layar.
+    // Body halaman ini pakai CSS `zoom` yang beda-beda per breakpoint (0.75 di mobile,
+    // 0.9 di tablet, 1 di desktop — lihat layout-mobile.css/layout-desktop.css), yang
+    // bikin scale(1.6) yang sama terasa jauh lebih besar di layar kecil. Jadi nilainya
+    // diturunkan makin ke bawah breakpoint-nya.
+    function getTapZoomScale() {
+        const w = window.innerWidth;
+        if (w < 768) return 1.3;        // mobile
+        if (w < 1024) return 1.45;      // tablet
+        return 1.6;                     // desktop (sudah pas, tidak diubah)
+    }
+
     function toggleZoom() {
         const lb = document.getElementById('lightbox');
         const entering = !lb.classList.contains('zoomed');
         lb.classList.toggle('zoomed');
         if (entering) {
             lbImgWrap.style.width = ''; lbImgWrap.style.height = '';
-            zoomScale = 1.6; zoomTx = 0; zoomTy = 0;
+            zoomScale = getTapZoomScale(); zoomTx = 0; zoomTy = 0;
             lbImg.style.transition = '';
             applyZoomTransform();
         } else {

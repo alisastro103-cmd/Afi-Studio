@@ -162,11 +162,14 @@
       font-weight: 700;
       font-size: 14px;
       font-family: 'Geist', sans-serif;
-      transition: all 0.3s ease;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.3s ease, color 0.3s ease;
       text-decoration: none;
       border-radius: 8px;
     }
-    .btn:hover { background: transparent; color: var(--accent-hover); }
+    @media (hover: hover) and (pointer: fine) {
+      .btn:hover { background: transparent; color: var(--accent-hover); }
+    }
+    .btn:active { opacity: 0.75; transform: scale(0.96); }
 
     .btn-secondary {
       background: var(--surface);
