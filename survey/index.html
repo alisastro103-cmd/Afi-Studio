@@ -82,9 +82,9 @@
     .progress-bar { height: 6px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); overflow: hidden; }
     .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.25s ease; }
 
-    .survey-header { padding: 8px 0 20px; text-align: center; }
-    .survey-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
-    .survey-desc { font-size: 14px; color: var(--text-light); }
+    .survey-header { padding: 40px 0 8px; text-align: center; }
+    .survey-title { font-size: 48px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .survey-desc { font-size: 15px; color: var(--text-light); margin-top: 10px; }
 
     .question-card {
       background: var(--surface);
@@ -130,8 +130,9 @@
       font-size: 15px;
       cursor: pointer;
       margin-top: 4px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
-    .submit-btn:active { opacity: 0.85; }
+    .submit-btn:active { opacity: 0.85; transform: scale(0.97); }
     .submit-btn:disabled { background: var(--disabled); cursor: not-allowed; }
 
     .state-box { text-align: center; padding: 60px 20px; }
@@ -178,11 +179,15 @@
       flex: 1; text-align: center; background: var(--accent-hover); color: #fff; font-weight: 700;
       font-family: 'Geist', sans-serif; padding: 10px; border: none; border-radius: 8px; font-size: 13px;
       cursor: pointer; text-decoration: none; display: block;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
+    .survey-list-actions .fill-btn:active { opacity: 0.85; transform: scale(0.97); }
     .icon-copy-btn {
       background: var(--bg); border: 1px solid var(--border); color: var(--text);
       width: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
+    .icon-copy-btn:active { opacity: 0.7; transform: scale(0.93); }
     .icon-copy-btn svg { width: 17px; height: 17px; }
 
     .hidden { display: none !important; }
@@ -197,10 +202,11 @@
       border: none; border-radius: 8px; cursor: pointer;
       font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 700;
       color: #EF4444; padding: 8px 14px;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.3s ease;
     }
     .exit-survey-btn svg { width: 15px; height: 15px; }
     .exit-survey-btn:hover { background: color-mix(in srgb, #EF4444 18%, var(--surface)); }
-    .exit-survey-btn:active { opacity: 0.7; }
+    .exit-survey-btn:active { opacity: 0.7; transform: scale(0.96); }
 
     /* Modal konfirmasi keluar survey */
     .exit-confirm-overlay {
@@ -224,11 +230,12 @@
     .exit-confirm-actions button {
       flex: 1; padding: 11px; border-radius: 8px; font-size: 13px; font-weight: 700;
       font-family: 'Geist', sans-serif; cursor: pointer; border: none;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
     .exit-confirm-stay { background: var(--accent-hover); color: #fff; }
-    .exit-confirm-stay:active { opacity: 0.85; }
+    .exit-confirm-stay:active { opacity: 0.85; transform: scale(0.96); }
     .exit-confirm-leave { background: #EF4444; color: #fff; }
-    .exit-confirm-leave:active { opacity: 0.85; }
+    .exit-confirm-leave:active { opacity: 0.85; transform: scale(0.96); }
 
     @keyframes afiStateIn {
       from { opacity: 0; transform: translateY(10px); }
