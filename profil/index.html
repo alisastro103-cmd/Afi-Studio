@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script src="/config.js"></script>
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afi Studio - Profil</title>
+    <meta name="robots" content="noindex">
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="../favicon.png">
+
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+    <link rel="stylesheet" href="/fonts/fonts.css?v=3fonts">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'Geist', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'CreatoDisplay', sans-serif; }
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+
+        /* ---- Sketsa banner: catatan buat versi nyata ---- */
+        .sketch-note {
+            max-width: 720px; margin: 14px auto 0; padding: 12px 16px;
+            background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+            border: 1px dashed var(--accent);
+            border-radius: 8px;
+            font-size: 12.5px; line-height: 1.6; color: var(--text-sub);
+        }
+        .sketch-note strong { color: var(--text); }
+
+        /* ---- Banner + avatar ---- */
+        .profile-banner {
+            width: 100%;
+            aspect-ratio: 3 / 1;
+            max-height: 260px;
+            background: linear-gradient(135deg, #4c7bc0 0%, #6c5ce7 100%);
+            position: relative;
+        }
+        .profile-banner-edit {
+            position: absolute; right: 14px; bottom: 14px;
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 999px;
+            background: rgba(0,0,0,0.45); color: #fff;
+            font-size: 12px; font-weight: 700;
+            backdrop-filter: blur(4px);
+            opacity: 0.6; cursor: not-allowed;
+        }
+        .profile-header {
+            max-width: 720px; margin: 0 auto; padding: 0 20px;
+            display: flex; align-items: flex-end; gap: 16px;
+            margin-top: -44px;
+        }
+        .profile-avatar {
+            width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0;
+            background: var(--surface);
+            border: 4px solid var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-sub);
+        }
+        .profile-avatar svg { width: 44px; height: 44px; }
+        .profile-name-block { padding-bottom: 6px; }
+        .profile-name { font-size: 21px; font-weight: 800; line-height: 1.2; }
+        .profile-role-badge {
+            display: inline-flex; align-items: center; margin-left: 8px;
+            font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
+            padding: 2px 8px; border-radius: 999px;
+            background: color-mix(in srgb, var(--accent) 20%, transparent);
+            color: var(--accent);
+            vertical-align: middle;
+        }
+        .profile-meta { font-size: 12.5px; color: var(--text-sub); margin-top: 3px; }
+
+        .profile-actions { max-width: 720px; margin: 14px auto 0; padding: 0 20px; display: flex; gap: 8px; }
+        .profile-btn {
+            font-size: 12.5px; font-weight: 700; padding: 9px 16px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--surface); color: var(--text-sub);
+            cursor: not-allowed; opacity: 0.6;
+        }
+
+        .profile-stats { max-width: 720px; margin: 18px auto 0; padding: 0 20px; display: flex; gap: 24px; }
+        .profile-stat-num { font-size: 17px; font-weight: 800; }
+        .profile-stat-label { font-size: 11.5px; color: var(--text-sub); }
+
+        .profile-section { max-width: 720px; margin: 26px auto 0; padding: 0 20px 40px; }
+        .empty-note { font-size: 12.5px; color: var(--text-sub); margin-top: 10px; }
+    </style>
+
+    <link rel="stylesheet" href="/css/theme-tokens.css">
+    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
+    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="/css/page-menu-drawer.css">
+    <link rel="stylesheet" href="/css/nav-links.css">
+    <link rel="stylesheet" href="/css/category-header.css">
+    <link rel="stylesheet" href="/css/model-card.css">
+</head>
+
+<body class="h-full">
+<div id="app" class="h-full overflow-auto w-full flex flex-col justify-between">
+    <div>
+        <nav class="nav-bar">
+            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="cursor-pointer flex items-center gap-1 nav-brand">
+                        <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                        <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">
+                            Afi-Studio
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <nav class="nav-links" aria-label="Navigasi halaman">
+                      <a href="../index.html" class="nav-link">Beranda</a>
+                      <a href="../about/index.html" class="nav-link">About</a>
+                      <a href="../Models/index.html" class="nav-link nav-link-wide">Models</a>
+                      <a href="../tutorial/index.html" class="nav-link">Video</a>
+                      <a href="../bantuan/index.html" class="nav-link">Bantuan</a>
+                    </nav>
+                    <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </button>
+                    <div class="page-menu">
+                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+                        </button>
+                        <div id="page-menu-dropdown" class="page-menu-dropdown">
+                            <div class="page-menu-profile-preview" aria-disabled="true">
+                              <span class="page-menu-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg></span>
+                              <span class="page-menu-profile-text">
+                                <span class="page-menu-profile-cta">Lihat Profil</span>
+                                <span class="page-menu-profile-sub">Segera hadir</span>
+                              </span>
+                            </div>
+                            <div class="page-menu-profile-auth" aria-disabled="true">
+                              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--solid">Masuk</span>
+                              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--outline">Daftar</span>
+                            </div>
+                            <div class="page-menu-divider"></div>
+                            <a href="../index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
+                            <a href="../member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
+                            <a href="../event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
+                            <a href="../ranking/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 5H5a2 2 0 0 0 0 4h1M16 5h3a2 2 0 0 1 0 4h-1"/><path d="M12 13v3M9 20h6M10 17h4v3h-4z"/></svg><span class="page-menu-label">Ranking Render</span></a>
+                            <a href="../tutorial/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><span class="page-menu-label">Video &amp; Tutorial</span></a>
+                            <a href="../bantuan/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg><span class="page-menu-label">Bantuan</span></a>
+                            <a href="../feedback/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"/></svg><span class="page-menu-label">Feedback</span></a>
+                            <a href="../favorit/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.6-9.5 9-9.5 9z"/></svg><span class="page-menu-label">Favorit</span></a>
+                            <a href="../survey/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/></svg><span class="page-menu-label">Survey</span></a>
+                            <a href="../about/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/></svg><span class="page-menu-label">Tentang Kami</span></a>
+                            <a href="../privacy/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg><span class="page-menu-label">Kebijakan Privasi</span></a>
+                            <div class="page-menu-divider"></div>
+                            <a href="../daftar-model/index.html" class="link-daftar-model page-menu-item page-menu-item-cta" rel="noopener"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span class="page-menu-label">Daftar Model 3D</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="sketch-note">
+            <strong>Ini sketsa tampilan, belum nyambung ke akun Google beneran.</strong> Data di bawah (nama, jumlah model, dst) masih contoh — dibuat buat dilihat bentuknya dulu sebelum sistem login digarap.
+        </div>
+
+        <div class="profile-banner">
+            <div class="profile-banner-edit">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                Ganti Banner
+            </div>
+        </div>
+
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+            </div>
+            <div class="profile-name-block">
+                <div class="profile-name">Ali Sastro<span class="profile-role-badge">Creator</span></div>
+                <div class="profile-meta">Bergabung sejak September 2026</div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <button class="profile-btn">Edit Profil</button>
+            <button class="profile-btn">Bagikan Profil</button>
+        </div>
+
+        <div class="profile-stats">
+            <div><div class="profile-stat-num">4</div><div class="profile-stat-label">Model diupload</div></div>
+        </div>
+
+        <div class="profile-section">
+            <div class="category-header">Model yang Diupload</div>
+            <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" style="margin-top:14px;" id="profile-models-grid"></section>
+            <p class="empty-note">Grid ini nanti nampilin Model beneran milik akun yang login, ditarik dari database Model yang sama kayak halaman Semua Model.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    // Data contoh doang buat sketsa -- nanti diganti fetch data model asli
+    // milik akun yang login begitu sistem Google login jadi.
+    const DUMMY_MODELS = [
+        { name: 'Rumah Kayu Sederhana', caption: 'Map rumah kayu buat konten survival, cocok Prisma3D.' },
+        { name: 'Rig Karakter Ninja', caption: 'Rig full body, gampang dianimasiin buat parkour/action.' },
+        { name: 'Mobil Sport Low Poly', caption: 'Model kendaraan gaya low-poly, ringan buat render cepat.' },
+        { name: 'Pack Senjata Fantasy', caption: 'Kumpulan senjata gaya fantasy: pedang, busur, perisai.' },
+    ];
+
+    document.getElementById('profile-models-grid').innerHTML = DUMMY_MODELS.map(m => `
+        <article class="model-card">
+            <img src="/thumbnail.webp" class="card-image" loading="lazy" alt="${m.name}">
+            <div class="card-content">
+                <div class="card-title">${m.name}</div>
+                <div class="card-caption">${m.caption}</div>
+            </div>
+        </article>
+    `).join('');
+</script>
+<script src="/pwa-install.js" defer></script>
+<script src="/page-menu-drawer.js" defer></script>
+</body>
+</html>
