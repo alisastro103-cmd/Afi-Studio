@@ -139,30 +139,29 @@
     .state-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
     .state-sub { font-size: 13px; color: var(--text-light); }
 
-    /* Animasi "berhasil" (pesawat > kertas dilipat > centang) di layar Terima Kasih,
-       sama kayak popup sukses di halaman feedback & daftar model. */
-    .success-popup-stage { position: relative; width: 88px; height: 88px; margin: 0 auto 16px; }
-    .success-popup-stage .stage-icon {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 50%;
-      background: color-mix(in srgb, var(--accent) 15%, var(--surface));
-      opacity: 0; transform: scale(0.5) rotate(-15deg);
-      transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    /* Popup kecil "Terima kasih" yang muncul di ATAS halaman survey (bukan ganti
+       halaman) begitu jawaban berhasil terkirim -- gantiin layar Terima Kasih
+       penuh yang lama (dulu ada animasi pesawat>kertas>centang, sekarang dihapus
+       total sesuai revisi). Gaya kaca transparan senada sama toast di halaman model. */
+    .survey-thanks-popup {
+      position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 120px);
+      display: flex; align-items: center; gap: 12px;
+      background: color-mix(in srgb, var(--surface) 85%, transparent);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 14px 18px; border-radius: 14px;
+      width: min(90%, 360px); max-width: calc(100% - 32px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.28);
+      transition: transform 0.3s ease; z-index: 200;
     }
-    .success-popup-stage .stage-icon.active { opacity: 1; transform: scale(1) rotate(0deg); }
-    .success-popup-stage .stage-icon svg { width: 40px; height: 40px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .success-popup-stage .stage-icon[data-stage="plane"] svg { stroke: var(--accent); }
-    .success-popup-stage .stage-icon[data-stage="paper"] svg { stroke: var(--accent); }
-    .success-popup-stage .stage-icon[data-stage="check"] { background: color-mix(in srgb, #22C55E 18%, var(--surface)); }
-    .success-popup-stage .stage-icon[data-stage="check"] svg { stroke: #22C55E; }
-
-    .result-row { margin-bottom: 14px; }
-    .result-q { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-    .result-opt { display:flex; justify-content:space-between; font-size:12px; color:var(--text-light); margin-bottom:4px; }
-    .result-bar-bg { height: 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); overflow:hidden; margin-bottom: 10px; }
-    .result-bar-fill { height:100%; background: var(--accent-hover); }
-    .result-text-item { font-size: 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
+    .survey-thanks-popup.show { transform: translate(-50%, 0); }
+    .survey-thanks-popup .thanks-icon {
+      flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: color-mix(in srgb, #22C55E 18%, var(--surface));
+    }
+    .survey-thanks-popup .thanks-icon svg { width: 16px; height: 16px; stroke: #22C55E; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .survey-thanks-popup .thanks-text { font-size: 13px; line-height: 1.4; }
 
     .survey-list-card {
       background: var(--surface);
@@ -239,8 +238,7 @@
     #error-state:not(.hidden),
     #already-state:not(.hidden),
     #list-state:not(.hidden),
-    #survey-wrap:not(.hidden),
-    #thankyou-state:not(.hidden) {
+    #survey-wrap:not(.hidden) {
       animation: afiStateIn 0.35s ease both;
     }
     @keyframes afiQuestionIn {
@@ -367,7 +365,11 @@
                 <span class="page-menu-profile-sub">Segera hadir</span>
               </span>
             </div>
-            <div class="page-menu-divider"></div>
+            <div class="page-menu-profile-auth" aria-disabled="true">
+              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--solid">Masuk</span>
+              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--outline">Daftar</span>
+            </div>
+                        <div class="page-menu-divider"></div>
             <a href="/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
             <a href="/member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
             <a href="/event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
@@ -445,22 +447,9 @@
       </div>
     </div>
 
-    <div id="thankyou-state" class="state-box hidden">
-      <div class="success-popup-stage" id="thankyou-stage">
-        <div class="stage-icon" data-stage="plane">
-          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </div>
-        <div class="stage-icon" data-stage="paper">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-        </div>
-        <div class="stage-icon" data-stage="check">
-          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        </div>
-      </div>
-      <div class="state-title">Terima kasih</div>
-      <div class="state-sub">Sampai jumpa lagi, terimakasih luang waktu untuk isi survey ini.</div>
-      <div id="results-wrap" style="margin-top:24px; text-align:left;"></div>
-      <a href="/survey/" class="submit-btn" style="display:block; text-decoration:none; margin-top:20px;">Lihat Survey Lain</a>
+    <div id="survey-thanks-popup" class="survey-thanks-popup">
+      <span class="thanks-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+      <span class="thanks-text">Makasih banyak udah meluangkan sedikit waktu buat isi survey kami!</span>
     </div>
   </main>
 
@@ -483,29 +472,16 @@
 
     const el = id => document.getElementById(id);
 
-    // Animasi berurutan yang diulang terus: pesawat (0.5s) > kertas (0.5s) >
-    // centang (0.5s, lalu ditahan) > jeda ~2s > ulang. Dipakai di layar Terima Kasih.
-    function startStageIconLoop(stageEl) {
-      const plane = stageEl.querySelector('[data-stage="plane"]');
-      const paper = stageEl.querySelector('[data-stage="paper"]');
-      const check = stageEl.querySelector('[data-stage="check"]');
-      const timers = [];
-      function clearTimers() { timers.forEach(clearTimeout); timers.length = 0; }
-      function cycle() {
-        plane.classList.remove('active'); paper.classList.remove('active'); check.classList.remove('active');
-        void plane.offsetWidth; // paksa reflow biar transisi ke-retrigger tiap ulangan
-        plane.classList.add('active');
-        timers.push(setTimeout(function () { plane.classList.remove('active'); paper.classList.add('active'); }, 500));
-        timers.push(setTimeout(function () { paper.classList.remove('active'); check.classList.add('active'); }, 1000));
-        timers.push(setTimeout(cycle, 3500)); // 500 + 500 + 500 (centang) + 2000 (jeda) = 3500ms per putaran
-      }
-      clearTimers();
-      cycle();
-      return clearTimers;
+    // Popup kecil "Terima kasih" (lihat .survey-thanks-popup) -- muncul di atas
+    // halaman survey yang tetap kelihatan, lalu hilang lagi sendiri.
+    function showSurveyThanksPopup() {
+      const popup = el('survey-thanks-popup');
+      popup.classList.add('show');
+      setTimeout(function () { popup.classList.remove('show'); }, 4000);
     }
 
     function showState(name) {
-      ['loading-state','error-state','already-state','list-state','survey-wrap','thankyou-state'].forEach(s => {
+      ['loading-state','error-state','already-state','list-state','survey-wrap'].forEach(s => {
         el(s).classList.toggle('hidden', s !== name);
       });
     }
@@ -788,42 +764,14 @@
           return;
         }
         setCookie(filledCookieName(surveyId), '1', 365);
-        renderThankYou(data.results);
+        btn.textContent = 'Terkirim ✓';
+        showSurveyThanksPopup();
       } catch (e) {
         errBox.textContent = 'Koneksi bermasalah. Coba lagi.';
         errBox.classList.add('show');
         btn.disabled = false;
         btn.textContent = 'Kirim Jawaban';
       }
-    }
-
-    function renderThankYou(results) {
-      showState('thankyou-state');
-      startStageIconLoop(el('thankyou-stage'));
-      const wrap = el('results-wrap');
-      wrap.innerHTML = '';
-      if (!results || !Array.isArray(results)) return;
-
-      results.forEach(r => {
-        const row = document.createElement('div');
-        row.className = 'result-row';
-        const q = (currentSurvey.questions || []).find(qq => qq.id === r.questionId);
-        const qText = q ? q.text : '';
-        if (r.type === 'single' || r.type === 'multiple') {
-          const total = r.total || 0;
-          let html = `<div class="result-q">${escapeHtml(qText)}</div>`;
-          (q.options || []).forEach(o => {
-            const count = (r.counts && r.counts[o.id]) || 0;
-            const pct = total ? Math.round((count / total) * 100) : 0;
-            html += `<div class="result-opt"><span>${escapeHtml(o.label)}</span><span>${pct}% (${count})</span></div>
-                      <div class="result-bar-bg"><div class="result-bar-fill" style="width:${pct}%"></div></div>`;
-          });
-          row.innerHTML = html;
-          wrap.appendChild(row);
-        }
-        // Jawaban teks bebas gak ditampilkan ke publik (privasi jawaban orang lain),
-        // cuma dihitung buat admin lewat panel.
-      });
     }
 
     init();

@@ -376,8 +376,6 @@
         }
         .success-popup-stage .stage-icon.active { opacity: 1; transform: scale(1) rotate(0deg); }
         .success-popup-stage .stage-icon svg { width: 40px; height: 40px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        .success-popup-stage .stage-icon[data-stage="plane"] svg { stroke: var(--accent); }
-        .success-popup-stage .stage-icon[data-stage="paper"] svg { stroke: var(--accent); }
         .success-popup-stage .stage-icon[data-stage="check"] { background: color-mix(in srgb, #22C55E 18%, var(--surface)); }
         .success-popup-stage .stage-icon[data-stage="check"] svg { stroke: #22C55E; }
         .success-popup-text { font-size: 14.5px; line-height: 1.5; color: var(--text); margin-bottom: 20px; opacity: 0; transform: translateY(6px); transition: opacity 0.3s ease, transform 0.3s ease; }
@@ -434,7 +432,11 @@
             <span class="page-menu-profile-sub">Segera hadir</span>
           </span>
         </div>
-        <div class="page-menu-divider"></div>
+        <div class="page-menu-profile-auth" aria-disabled="true">
+          <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--solid">Masuk</span>
+          <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--outline">Daftar</span>
+        </div>
+                <div class="page-menu-divider"></div>
         <a href="../index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
         <a href="../member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
         <a href="../event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
@@ -512,13 +514,7 @@
   <div id="success-popup-overlay" class="success-popup-overlay">
     <div class="success-popup-box">
       <div class="success-popup-stage">
-        <div class="stage-icon" data-stage="plane">
-          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </div>
-        <div class="stage-icon" data-stage="paper">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-        </div>
-        <div class="stage-icon" data-stage="check">
+        <div class="stage-icon active" data-stage="check">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
       </div>
@@ -580,54 +576,29 @@
       });
     })();
 
-    // Popup sukses di tengah layar, gantiin alert() bawaan browser.
-    // Animasi berurutan yang diulang terus selama popup terbuka:
-    // pesawat (0.5s) > kertas (0.5s) > centang (0.5s, lalu ditahan) > jeda ~2s > ulang.
-    // Teks & tombol Oke cuma muncul sekali di siklus pertama, lalu tetap kelihatan.
-    function startStageIconLoop(overlay) {
-      const plane = overlay.querySelector('[data-stage="plane"]');
-      const paper = overlay.querySelector('[data-stage="paper"]');
-      const check = overlay.querySelector('[data-stage="check"]');
-      const timers = [];
-      function clearTimers() { timers.forEach(clearTimeout); timers.length = 0; }
-      function cycle() {
-        if (!overlay.classList.contains('show')) return;
-        plane.classList.remove('active'); paper.classList.remove('active'); check.classList.remove('active');
-        void plane.offsetWidth; // paksa reflow biar transisi ke-retrigger tiap ulangan
-        plane.classList.add('active');
-        timers.push(setTimeout(function () { plane.classList.remove('active'); paper.classList.add('active'); }, 500));
-        timers.push(setTimeout(function () { paper.classList.remove('active'); check.classList.add('active'); }, 1000));
-        timers.push(setTimeout(cycle, 3500)); // 500 + 500 + 500 (centang) + 2000 (jeda) = 3500ms per putaran
-      }
-      clearTimers();
-      cycle();
-      return clearTimers;
-    }
-
+    // Popup sukses di tengah layar, gantiin alert() bawaan browser. Dulu ada
+    // animasi berurutan (pesawat > kertas > centang, diulang terus) -- sekarang
+    // dihapus total, langsung tampilkan ikon centang begitu popup dibuka.
+    // Teks & tombol Oke muncul sekali lalu tetap kelihatan.
     function showSuccessPopup(message) {
       const overlay = document.getElementById('success-popup-overlay');
-      const stages = overlay.querySelectorAll('.stage-icon');
       const text = document.getElementById('success-popup-text');
       const btn = document.getElementById('success-popup-ok');
 
-      if (overlay._stopLoop) overlay._stopLoop();
-      stages.forEach(s => s.classList.remove('active'));
       text.classList.remove('show');
       btn.classList.remove('show');
       text.innerText = message;
       overlay.classList.add('show');
 
-      overlay._stopLoop = startStageIconLoop(overlay);
       setTimeout(function () {
         text.classList.add('show');
         btn.classList.add('show');
-      }, 1000);
+      }, 300);
     }
     (function () {
       const overlay = document.getElementById('success-popup-overlay');
       function closePopup() {
         overlay.classList.remove('show');
-        if (overlay._stopLoop) overlay._stopLoop();
       }
       document.getElementById('success-popup-ok').addEventListener('click', closePopup);
       overlay.addEventListener('click', function (e) {
