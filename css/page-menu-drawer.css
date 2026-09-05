@@ -140,6 +140,48 @@
   padding: 10px 10px 24px;
 }
 
+/* Pratinjau profil (avatar + "Lihat Profil") di paling atas laci — ruang
+   yang disiapkan buat halaman akun Google yang masih draft. Sengaja dibuat
+   NON-interaktif dulu (bukan <a>, tanpa href/onclick) sampai halaman akun
+   itu benar-benar jadi. */
+.page-menu-profile-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin: 0 0 4px;
+  border-radius: 10px;
+  opacity: 0.55;
+  cursor: default;
+  user-select: none;
+}
+.page-menu-profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  color: var(--text-sub);
+}
+.page-menu-profile-avatar svg { width: 20px; height: 20px; }
+.page-menu-profile-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.page-menu-profile-cta {
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.page-menu-profile-sub {
+  font-family: 'Geist', sans-serif;
+  font-size: 11px;
+  color: var(--text-sub);
+  line-height: 1.2;
+}
+
 /* Kunci scroll body saat laci terbuka di mobile */
 body.page-menu-locked { overflow: hidden; }
 

@@ -75,11 +75,13 @@ function getFavoriteModelIds() {
     return _favGetList(FAV_MODEL_KEY);
 }
 
-// Ikon bintang kecil (SVG) - dua versi: kosong (belum favorit) & penuh (sudah favorit)
+// Ikon bintang kecil (SVG) - selalu solid/penuh (tanpa versi outline/lubang),
+// baik pas belum maupun udah favorit. Beda status cuma dibedain lewat WARNA
+// (lihat CSS .is-favorited di tiap halaman), bukan lewat bentuk ikonnya.
+// Parameter `filled` dipertahankan (dipanggil dari banyak file) tapi sudah
+// gak ngaruh ke bentuk -- keduanya render svg solid yang sama persis.
 function favStarIconSvg(filled) {
-    return filled
-        ? '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>'
-        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>';
+    return '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>';
 }
 
 // === Layar "Terima kasih" full-screen saat model diunduh =========================

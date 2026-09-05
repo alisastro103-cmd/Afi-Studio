@@ -287,8 +287,9 @@
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 100px);
       display: flex; align-items: center; gap: 14px;
-      /* Kaca transparan, konsisten sama .nav-bar (lihat atas) */
-      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      /* Kaca transparan, sama gaya dengan .nav-bar (color-mix + blur)
+         supaya papan notif ini konsisten dengan tampilan navbar. */
+      background: color-mix(in srgb, var(--surface) 85%, transparent);
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--border); color: var(--text);
       padding: 16px 20px; border-radius: 16px;
@@ -298,6 +299,7 @@
     }
     .toast.show { transform: translate(-50%, 0); }
     .toast-icon { flex-shrink: 0; width: 24px; height: 24px; color: #fff; }
+    .toast-icon.icon-fav-accent { color: #F59E0B; }
     .toast-icon svg { width: 24px; height: 24px; display: block; }
     .toast-text { min-width: 0; }
     .toast-title { font-weight: 700; font-size: 14px; line-height: 1.3; }
@@ -330,6 +332,14 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
           </button>
           <div id="page-menu-dropdown" class="page-menu-dropdown">
+            <div class="page-menu-profile-preview" aria-disabled="true">
+              <span class="page-menu-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg></span>
+              <span class="page-menu-profile-text">
+                <span class="page-menu-profile-cta">Lihat Profil</span>
+                <span class="page-menu-profile-sub">Segera hadir</span>
+              </span>
+            </div>
+            <div class="page-menu-divider"></div>
             <a href="/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
             <a href="/member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
             <a href="/event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
@@ -541,7 +551,8 @@
       const t = document.getElementById('toast');
       if (!t) return;
       opts = opts || {};
-      const iconHtml = opts.icon ? `<div class="toast-icon">${opts.icon}</div>` : '';
+      const iconClass = opts.iconClass ? ` ${opts.iconClass}` : '';
+      const iconHtml = opts.icon ? `<div class="toast-icon${iconClass}">${opts.icon}</div>` : '';
       const subHtml = opts.sub ? `<div class="toast-sub">${escapeHtml(opts.sub)}</div>` : '';
       t.innerHTML = `${iconHtml}<div class="toast-text"><div class="toast-title">${escapeHtml(msg)}</div>${subHtml}</div>`;
       clearTimeout(toastHideTimer);
@@ -671,7 +682,7 @@
       if (nowFavorited) {
         pendingUndoFavId = null;
         toastClickMode = 'view-fav';
-        showToastMessage('Telah masuk di Favorit', { icon: favStarIconSvg(true), sub: 'Ketuk untuk melihat' });
+        showToastMessage('Telah masuk di Favorit', { icon: favStarIconSvg(true), iconClass: 'icon-fav-accent', sub: 'Ketuk untuk melihat' });
       } else {
         // Cuma kasus "dihapus" yang butuh hint undo -- nambah ke favorit
         // gak butuh, karena aksinya gak destruktif.
@@ -695,7 +706,7 @@
       clearTimeout(favUndoTimer);
       updateFavButton();
       toastClickMode = 'view-fav';
-      showToastMessage('Dibatalkan, kembali ke Favorit', { icon: favStarIconSvg(true), sub: 'Ketuk untuk melihat' });
+      showToastMessage('Dibatalkan, kembali ke Favorit', { icon: favStarIconSvg(true), iconClass: 'icon-fav-accent', sub: 'Ketuk untuk melihat' });
     }
     const toastEl = document.getElementById('toast');
     toastEl.addEventListener('dblclick', undoFavoriteRemoval);
