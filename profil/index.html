@@ -98,20 +98,16 @@
         html.dark #theme-toggle-btn .icon-sun { display: none; }
         html.dark #theme-toggle-btn .icon-moon { display: block; }
 
-        .profil-header { text-align: center; padding: 40px 20px 8px; }
-        .profil-header h1 { font-size: 48px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
-        .profil-header p { font-size: 15px; color: var(--text-sub); margin-top: 10px; }
-
         .footer-text { text-align: center; font-size: 11px; color: var(--text-sub); padding: 16px 0 28px; font-weight: 500; }
 
-        /* ---- Tab preview sketsa: lihat profil sendiri vs profil orang lain ---- */
-        .preview-tabs { max-width: 640px; margin: 16px auto 0; padding: 0 20px; display: flex; gap: 8px; }
-        .preview-tab {
-            flex: 1; text-align: center; font-size: 12px; font-weight: 700;
-            padding: 8px; border-radius: 8px; border: 1px solid var(--border);
-            background: var(--surface); color: var(--text-sub); cursor: pointer;
+        .social-container { display: flex; flex-direction: row; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+        .social-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            text-decoration: none; transition: transform 0.2s;
         }
-        .preview-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .social-btn:hover { transform: translateY(-2px); }
+        .social-btn svg { width: 22px; height: 22px; fill: var(--text-sub); }
 
         /* ---- Sketsa banner: catatan buat versi nyata ---- */
         .sketch-note {
@@ -150,14 +146,14 @@
         }
         .account-body { padding: 0 18px 18px; position: relative; }
         .account-avatar {
-            width: 76px; height: 76px; border-radius: 50%; flex-shrink: 0;
+            width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0;
             background: var(--bg);
             border: 4px solid var(--surface);
-            margin-top: -38px;
+            margin-top: -46px;
             display: flex; align-items: center; justify-content: center;
             color: var(--text-sub);
         }
-        .account-avatar svg { width: 36px; height: 36px; }
+        .account-avatar svg { width: 44px; height: 44px; }
         .account-name-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
         .account-name { font-size: 19px; font-weight: 800; line-height: 1.2; }
         .account-role-badge {
@@ -266,17 +262,7 @@
             </div>
         </nav>
 
-        <div class="profil-header">
-            <h1>Profil Akun</h1>
-            <p>Kelola identitas &amp; lihat model yang kamu upload di Afi Studio.</p>
-        </div>
-
-        <div class="preview-tabs">
-            <div class="preview-tab active" id="tab-self" onclick="showPreview('self')">Profil Saya</div>
-            <div class="preview-tab" id="tab-other" onclick="showPreview('other')">Contoh: Profil Orang Lain</div>
-        </div>
-
-        <div class="account-wrap" id="self-view">
+        <div class="account-wrap" id="self-view" style="margin-top: 20px;">
             <div class="sketch-note" style="margin: 14px 0;">
                 <strong>Jumlah model, like, dan daftar model di bawah masih contoh.</strong> Bagian itu nunggu sistem "model milik akun" digarap. Identitas akun (nama, foto, email) di bawah ini sekarang beneran ditarik dari akun Google kamu.
             </div>
@@ -298,6 +284,12 @@
                     </div>
                     <div class="account-username" id="account-username">@alisastro</div>
                     <p class="account-desc" id="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
+
+                    <div class="social-container">
+                        <a href="#" class="social-btn" title="Instagram"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-ig"></use></svg></a>
+                        <a href="#" class="social-btn" title="YouTube"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-yt"></use></svg></a>
+                        <a href="#" class="social-btn" title="WhatsApp"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-wa"></use></svg></a>
+                    </div>
 
                     <div class="account-actions" id="account-actions">
                         <button class="account-btn">Edit Profil</button>
@@ -326,44 +318,6 @@
                 <p class="empty-note">Grid ini nanti nampilin Model beneran milik akun yang login, ditarik dari database Model yang sama kayak halaman Semua Model.</p>
             </div>
         </div>
-
-        <!-- Contoh sketsa: tampilan pas ORANG LAIN yang buka profil ini (read-only,
-             gak ada Ganti Banner/Edit Profil/Keluar -- diganti tombol Ikuti). -->
-        <div class="account-wrap" id="other-view" style="display:none;">
-            <div class="sketch-note" style="margin: 14px 0;">
-                <strong>Ini contoh tampilan kalau orang lain yang buka profil ini.</strong> Masih statis/dummy -- fitur lihat profil user lain (lewat link/username) belum digarap.
-            </div>
-
-            <div class="account-card">
-                <div class="account-banner"></div>
-                <div class="account-body">
-                    <div class="account-avatar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
-                    </div>
-                    <div class="account-name-row">
-                        <div class="account-name">Bunga Melati</div>
-                        <span class="account-role-badge">Converter</span>
-                    </div>
-                    <div class="account-username">@bungamelati</div>
-                    <p class="account-desc">Hobi convert model dari game lama ke Prisma3D. Request boleh, DM aja.</p>
-
-                    <div class="account-actions">
-                        <button class="account-btn">Ikuti</button>
-                        <button class="account-btn">Bagikan Profil</button>
-                    </div>
-
-                    <div class="account-stats">
-                        <div><div class="account-stat-num">11</div><div class="account-stat-label">Model diupload</div></div>
-                        <div><div class="account-stat-num">342</div><div class="account-stat-label">Like</div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="profile-section" style="padding-left:0; padding-right:0;">
-                <div class="category-header">Model yang Diupload</div>
-                <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" style="margin-top:14px;" id="other-models-grid"></section>
-            </div>
-        </div>
     </div>
 
     <footer class="footer-text">
@@ -373,13 +327,6 @@
 
 <script>
     if (typeof lucide !== 'undefined') lucide.createIcons();
-
-    function showPreview(which){
-        document.getElementById('self-view').style.display = which === 'self' ? 'block' : 'none';
-        document.getElementById('other-view').style.display = which === 'other' ? 'block' : 'none';
-        document.getElementById('tab-self').classList.toggle('active', which === 'self');
-        document.getElementById('tab-other').classList.toggle('active', which === 'other');
-    }
 
     // Cek sesi login Google asli. Kalau belum login, tutup kartu akun & ganti
     // dengan tombol "Masuk dengan Google"; grid Model di bawah tetep muncul
@@ -429,11 +376,6 @@
         { name: 'Rig Karakter Ninja', caption: 'Rig full body, gampang dianimasiin buat parkour/action.' },
         { name: 'Mobil Sport Low Poly', caption: 'Model kendaraan gaya low-poly, ringan buat render cepat.' },
         { name: 'Pack Senjata Fantasy', caption: 'Kumpulan senjata gaya fantasy: pedang, busur, perisai.' },
-    ]);
-
-    renderModelGrid('other-models-grid', [
-        { name: 'Senter Kepala Survival', caption: 'Item pack senter buat mode survival malam hari.' },
-        { name: 'Rig Naga Mini', caption: 'Rig naga ukuran kecil, gampang buat animasi terbang.' },
     ]);
 </script>
 <script src="/pwa-install.js" defer></script>
