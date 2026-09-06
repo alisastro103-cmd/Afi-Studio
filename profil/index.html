@@ -29,6 +29,90 @@
         h1, h2, h3, h4 { font-family: 'CreatoDisplay', sans-serif; }
         body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; zoom: 0.75; }
 
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-attachment: fixed;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-brand { margin-left: 6px; }
+
+        .page-menu { position: relative; }
+        .page-menu-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 220px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; line-height: 1.15; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 400; font-family: 'Geist', sans-serif; }
+        .page-menu-item .page-menu-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.75; }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item:active { opacity: 0.6; }
+        .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); font-weight: 700; }
+        html.dark .page-menu-item.active { color: #fff; }
+
+        .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+        .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: flex-start; }
+        html.dark .page-menu-item-cta { color: #fff; }
+        .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item-cta:active { opacity: 0.6; }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+        .profil-header { text-align: center; padding: 40px 20px 8px; }
+        .profil-header h1 { font-size: 48px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
+        .profil-header p { font-size: 15px; color: var(--text-sub); margin-top: 10px; }
+
+        .footer-text { text-align: center; font-size: 11px; color: var(--text-sub); padding: 16px 0 28px; font-weight: 500; }
+
+        /* ---- Tab preview sketsa: lihat profil sendiri vs profil orang lain ---- */
+        .preview-tabs { max-width: 640px; margin: 16px auto 0; padding: 0 20px; display: flex; gap: 8px; }
+        .preview-tab {
+            flex: 1; text-align: center; font-size: 12px; font-weight: 700;
+            padding: 8px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text-sub); cursor: pointer;
+        }
+        .preview-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
         /* ---- Sketsa banner: catatan buat versi nyata ---- */
         .sketch-note {
             max-width: 720px; margin: 14px auto 0; padding: 12px 16px;
@@ -182,12 +266,22 @@
             </div>
         </nav>
 
-        <div class="account-wrap">
+        <div class="profil-header">
+            <h1>Profil Akun</h1>
+            <p>Kelola identitas &amp; lihat model yang kamu upload di Afi Studio.</p>
+        </div>
+
+        <div class="preview-tabs">
+            <div class="preview-tab active" id="tab-self" onclick="showPreview('self')">Profil Saya</div>
+            <div class="preview-tab" id="tab-other" onclick="showPreview('other')">Contoh: Profil Orang Lain</div>
+        </div>
+
+        <div class="account-wrap" id="self-view">
             <div class="sketch-note" style="margin: 14px 0;">
                 <strong>Jumlah model, like, dan daftar model di bawah masih contoh.</strong> Bagian itu nunggu sistem "model milik akun" digarap. Identitas akun (nama, foto, email) di bawah ini sekarang beneran ditarik dari akun Google kamu.
             </div>
 
-            <div class="account-card">
+            <div class="account-card" id="self-account-card">
                 <div class="account-banner">
                     <div class="account-banner-edit">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
@@ -225,18 +319,67 @@
                     Masuk dengan Google
                 </a>
             </div>
+
+            <div class="profile-section" id="profile-models-section" style="padding-left:0; padding-right:0;">
+                <div class="category-header">Model yang Diupload</div>
+                <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" style="margin-top:14px;" id="profile-models-grid"></section>
+                <p class="empty-note">Grid ini nanti nampilin Model beneran milik akun yang login, ditarik dari database Model yang sama kayak halaman Semua Model.</p>
+            </div>
         </div>
 
-        <div class="profile-section" id="profile-models-section">
-            <div class="category-header">Model yang Diupload</div>
-            <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" style="margin-top:14px;" id="profile-models-grid"></section>
-            <p class="empty-note">Grid ini nanti nampilin Model beneran milik akun yang login, ditarik dari database Model yang sama kayak halaman Semua Model.</p>
+        <!-- Contoh sketsa: tampilan pas ORANG LAIN yang buka profil ini (read-only,
+             gak ada Ganti Banner/Edit Profil/Keluar -- diganti tombol Ikuti). -->
+        <div class="account-wrap" id="other-view" style="display:none;">
+            <div class="sketch-note" style="margin: 14px 0;">
+                <strong>Ini contoh tampilan kalau orang lain yang buka profil ini.</strong> Masih statis/dummy -- fitur lihat profil user lain (lewat link/username) belum digarap.
+            </div>
+
+            <div class="account-card">
+                <div class="account-banner"></div>
+                <div class="account-body">
+                    <div class="account-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+                    </div>
+                    <div class="account-name-row">
+                        <div class="account-name">Bunga Melati</div>
+                        <span class="account-role-badge">Converter</span>
+                    </div>
+                    <div class="account-username">@bungamelati</div>
+                    <p class="account-desc">Hobi convert model dari game lama ke Prisma3D. Request boleh, DM aja.</p>
+
+                    <div class="account-actions">
+                        <button class="account-btn">Ikuti</button>
+                        <button class="account-btn">Bagikan Profil</button>
+                    </div>
+
+                    <div class="account-stats">
+                        <div><div class="account-stat-num">11</div><div class="account-stat-label">Model diupload</div></div>
+                        <div><div class="account-stat-num">342</div><div class="account-stat-label">Like</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-section" style="padding-left:0; padding-right:0;">
+                <div class="category-header">Model yang Diupload</div>
+                <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" style="margin-top:14px;" id="other-models-grid"></section>
+            </div>
         </div>
     </div>
+
+    <footer class="footer-text">
+        <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+    </footer>
 </div>
 
 <script>
     if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    function showPreview(which){
+        document.getElementById('self-view').style.display = which === 'self' ? 'block' : 'none';
+        document.getElementById('other-view').style.display = which === 'other' ? 'block' : 'none';
+        document.getElementById('tab-self').classList.toggle('active', which === 'self');
+        document.getElementById('tab-other').classList.toggle('active', which === 'other');
+    }
 
     // Cek sesi login Google asli. Kalau belum login, tutup kartu akun & ganti
     // dengan tombol "Masuk dengan Google"; grid Model di bawah tetep muncul
@@ -256,7 +399,7 @@
                 <button class="account-btn" onclick="logoutAccount()" style="cursor:pointer; opacity:1;">Keluar</button>`;
         })
         .catch(() => {
-            document.querySelector('.account-card').style.display = 'none';
+            document.getElementById('self-account-card').style.display = 'none';
             document.getElementById('login-gate').style.display = 'block';
         });
 
@@ -269,22 +412,29 @@
     // BAWAH ini masih dummy, karena sistem "model milik akun tertentu" belum
     // digarap. Identitas akun (nama, foto, email) di ATAS sini sekarang UDAH
     // beneran, ditarik dari sesi login Google asli lewat /api/auth?action=me.
-    const DUMMY_MODELS = [
+    function renderModelGrid(elId, list){
+        document.getElementById(elId).innerHTML = list.map(m => `
+            <article class="model-card">
+                <img src="/thumbnail.webp" class="card-image" loading="lazy" alt="${m.name}">
+                <div class="card-content">
+                    <div class="card-title">${m.name}</div>
+                    <div class="card-caption">${m.caption}</div>
+                </div>
+            </article>
+        `).join('');
+    }
+
+    renderModelGrid('profile-models-grid', [
         { name: 'Rumah Kayu Sederhana', caption: 'Map rumah kayu buat konten survival, cocok Prisma3D.' },
         { name: 'Rig Karakter Ninja', caption: 'Rig full body, gampang dianimasiin buat parkour/action.' },
         { name: 'Mobil Sport Low Poly', caption: 'Model kendaraan gaya low-poly, ringan buat render cepat.' },
         { name: 'Pack Senjata Fantasy', caption: 'Kumpulan senjata gaya fantasy: pedang, busur, perisai.' },
-    ];
+    ]);
 
-    document.getElementById('profile-models-grid').innerHTML = DUMMY_MODELS.map(m => `
-        <article class="model-card">
-            <img src="/thumbnail.webp" class="card-image" loading="lazy" alt="${m.name}">
-            <div class="card-content">
-                <div class="card-title">${m.name}</div>
-                <div class="card-caption">${m.caption}</div>
-            </div>
-        </article>
-    `).join('');
+    renderModelGrid('other-models-grid', [
+        { name: 'Senter Kepala Survival', caption: 'Item pack senter buat mode survival malam hari.' },
+        { name: 'Rig Naga Mini', caption: 'Rig naga ukuran kecil, gampang buat animasi terbang.' },
+    ]);
 </script>
 <script src="/pwa-install.js" defer></script>
 <script src="/page-menu-drawer.js" defer></script>
