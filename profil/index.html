@@ -98,6 +98,17 @@
 
         .profile-section { max-width: 640px; margin: 24px auto 0; padding: 0 20px 40px; }
         .empty-note { font-size: 12.5px; color: var(--text-sub); margin-top: 10px; }
+
+        .google-login-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 11px 20px; border-radius: 8px;
+            background: #fff; color: #1f1f1f;
+            font-size: 13.5px; font-weight: 700;
+            border: 1px solid var(--border);
+            text-decoration: none;
+        }
+        .google-login-btn:hover { background: #f5f5f5; }
+        #account-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
     </style>
 
     <link rel="stylesheet" href="/css/theme-tokens.css">
@@ -173,7 +184,7 @@
 
         <div class="account-wrap">
             <div class="sketch-note" style="margin: 14px 0;">
-                <strong>Ini sketsa tampilan, belum nyambung ke akun Google beneran.</strong> Data di bawah masih contoh, dibuat buat dilihat bentuknya dulu.
+                <strong>Jumlah model, like, dan daftar model di bawah masih contoh.</strong> Bagian itu nunggu sistem "model milik akun" digarap. Identitas akun (nama, foto, email) di bawah ini sekarang beneran ditarik dari akun Google kamu.
             </div>
 
             <div class="account-card">
@@ -184,17 +195,17 @@
                     </div>
                 </div>
                 <div class="account-body">
-                    <div class="account-avatar">
+                    <div class="account-avatar" id="account-avatar">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
                     </div>
                     <div class="account-name-row">
-                        <div class="account-name">Ali Sastro</div>
+                        <div class="account-name" id="account-name">Ali Sastro</div>
                         <span class="account-role-badge">Creator</span>
                     </div>
-                    <div class="account-username">@alisastro</div>
-                    <p class="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
+                    <div class="account-username" id="account-username">@alisastro</div>
+                    <p class="account-desc" id="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
 
-                    <div class="account-actions">
+                    <div class="account-actions" id="account-actions">
                         <button class="account-btn">Edit Profil</button>
                         <button class="account-btn">Bagikan Profil</button>
                     </div>
@@ -205,9 +216,18 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Ditampilin gantiin account-card di atas selama BELUM login. -->
+            <div class="account-card login-gate" id="login-gate" style="display:none; padding: 34px 20px; text-align:center;">
+                <p style="font-size:13px; color:var(--text-sub); margin-bottom:16px;">Masuk pakai akun Google buat lihat &amp; atur profil kamu.</p>
+                <a id="google-login-btn" href="/api/auth?action=google-login&next=/profil/" class="google-login-btn">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6c-2.1 1.5-4.7 2.4-7.7 2.4-5.2 0-9.6-3.3-11.2-7.9l-6.6 5.1C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.7l6.6 5.6C41.5 36.2 44 30.6 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+                    Masuk dengan Google
+                </a>
+            </div>
         </div>
 
-        <div class="profile-section">
+        <div class="profile-section" id="profile-models-section">
             <div class="category-header">Model yang Diupload</div>
             <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" style="margin-top:14px;" id="profile-models-grid"></section>
             <p class="empty-note">Grid ini nanti nampilin Model beneran milik akun yang login, ditarik dari database Model yang sama kayak halaman Semua Model.</p>
@@ -218,8 +238,37 @@
 <script>
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    // Data contoh doang buat sketsa -- nanti diganti fetch data model asli
-    // milik akun yang login begitu sistem Google login jadi.
+    // Cek sesi login Google asli. Kalau belum login, tutup kartu akun & ganti
+    // dengan tombol "Masuk dengan Google"; grid Model di bawah tetep muncul
+    // (masih dummy) biar orang tetep bisa liat bentuknya walau belum login.
+    fetch('/api/auth?action=me')
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+            const u = data.user;
+            document.getElementById('account-name').textContent = u.name || u.email || 'Tanpa nama';
+            document.getElementById('account-username').textContent = u.username ? '@' + u.username : u.email;
+            document.getElementById('account-desc').textContent = u.bio || 'Belum ada deskripsi.';
+            if (u.picture) {
+                document.getElementById('account-avatar').innerHTML = `<img src="${u.picture}" alt="${u.name || ''}">`;
+            }
+            document.getElementById('account-actions').innerHTML = `
+                <button class="account-btn">Edit Profil</button>
+                <button class="account-btn" onclick="logoutAccount()" style="cursor:pointer; opacity:1;">Keluar</button>`;
+        })
+        .catch(() => {
+            document.querySelector('.account-card').style.display = 'none';
+            document.getElementById('login-gate').style.display = 'block';
+        });
+
+    async function logoutAccount(){
+        await fetch('/api/auth?action=logout', { method: 'POST' }).catch(()=>{});
+        location.reload();
+    }
+
+    // Data contoh doang buat sketsa -- jumlah model/like & grid model DI
+    // BAWAH ini masih dummy, karena sistem "model milik akun tertentu" belum
+    // digarap. Identitas akun (nama, foto, email) di ATAS sini sekarang UDAH
+    // beneran, ditarik dari sesi login Google asli lewat /api/auth?action=me.
     const DUMMY_MODELS = [
         { name: 'Rumah Kayu Sederhana', caption: 'Map rumah kayu buat konten survival, cocok Prisma3D.' },
         { name: 'Rig Karakter Ninja', caption: 'Rig full body, gampang dianimasiin buat parkour/action.' },
