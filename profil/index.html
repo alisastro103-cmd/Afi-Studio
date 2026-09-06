@@ -189,6 +189,92 @@
         }
         .google-login-btn:hover { background: #f5f5f5; }
         #account-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .account-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .account-role-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .account-social-empty { font-size: 12px; color: var(--text-sub); margin-top: 12px; }
+
+        /* ==================== Wizard pendaftaran akun ==================== */
+        .wizard-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 20px 22px;
+        }
+        .wizard-head { margin-bottom: 18px; }
+        .wizard-title { font-size: 17px; font-weight: 800; }
+        .wizard-sub { font-size: 12.5px; color: var(--text-sub); margin-top: 4px; line-height: 1.5; }
+
+        .wizard-progress { display: flex; gap: 6px; margin-top: 14px; }
+        .wizard-dot { flex: 1; height: 4px; border-radius: 999px; background: var(--border); transition: background 0.25s ease; }
+        .wizard-dot.done, .wizard-dot.active { background: var(--accent); }
+
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; }
+        .wizard-step-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+
+        .field-group { margin-bottom: 16px; }
+        .field-label { font-size: 12.5px; font-weight: 700; margin-bottom: 6px; display: block; }
+        .field-hint { font-size: 11.5px; color: var(--text-sub); margin-top: 5px; line-height: 1.5; }
+        .field-input {
+            width: 100%; padding: 10px 12px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text);
+            font-size: 13.5px; font-family: 'Geist', sans-serif;
+        }
+        .field-input:focus { outline: none; border-color: var(--accent); }
+        .username-input-row { position: relative; }
+        .username-at { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 13.5px; pointer-events: none; }
+        .username-input-row .field-input { padding-left: 24px; }
+        .username-status { font-size: 11.5px; margin-top: 6px; font-weight: 700; min-height: 15px; }
+        .username-status.ok { color: #2e9e5b; }
+        .username-status.bad { color: #d9534f; }
+        .username-status.checking { color: var(--text-sub); font-weight: 400; }
+
+        .role-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .role-chip {
+            padding: 9px 14px; border-radius: 999px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); font-size: 12.5px; font-weight: 700;
+            cursor: pointer; user-select: none; transition: all 0.15s ease;
+        }
+        .role-chip:hover { border-color: var(--accent); }
+        .role-chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .social-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .social-row .social-icon-badge {
+            width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg); border: 1px solid var(--border);
+        }
+        .social-row .social-icon-badge svg { width: 17px; height: 17px; fill: var(--text-sub); }
+        .social-row .field-input { font-size: 12.5px; }
+
+        .upload-row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+        .upload-box { flex: 1; min-width: 140px; }
+        .upload-preview-avatar {
+            width: 84px; height: 84px; border-radius: 50%; background: var(--bg);
+            border: 2px dashed var(--border); display: flex; align-items: center;
+            justify-content: center; color: var(--text-sub); overflow: hidden; cursor: pointer;
+        }
+        .upload-preview-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .upload-preview-banner {
+            width: 100%; aspect-ratio: 3/1; border-radius: 10px; background: var(--bg);
+            border: 2px dashed var(--border); display: flex; align-items: center;
+            justify-content: center; color: var(--text-sub); overflow: hidden; cursor: pointer;
+        }
+        .upload-preview-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .upload-label { font-size: 11.5px; font-weight: 700; margin-bottom: 8px; }
+        .upload-input { display: none; }
+
+        .wizard-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 10px; }
+        .wizard-btn {
+            font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 8px;
+            border: 1px solid var(--border); cursor: pointer; font-family: 'Geist', sans-serif;
+        }
+        .wizard-btn-secondary { background: var(--bg); color: var(--text); }
+        .wizard-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .wizard-btn-primary:hover { background: var(--accent-hover); }
+        .wizard-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .wizard-error { font-size: 12.5px; color: #d9534f; margin-top: 10px; min-height: 15px; }
+        .wizard-skip-note { font-size: 11.5px; color: var(--text-sub); margin-top: 12px; }
     </style>
 
     <link rel="stylesheet" href="/css/theme-tokens.css">
@@ -312,6 +398,116 @@
                 </a>
             </div>
 
+            <!-- Wizard pendaftaran akun: 4 langkah (nickname+username, peran,
+                 sosmed, foto profil+banner). Muncul gantiin account-card kalau
+                 user UDAH login Google tapi BELUM pernah isi username -- juga
+                 dipakai ulang buat "Edit Profil" (prefilled) setelah registrasi. -->
+            <div class="wizard-card" id="account-wizard" style="display:none;">
+                <div class="wizard-head">
+                    <div class="wizard-title" id="wizard-title">Lengkapi Profil Kamu</div>
+                    <div class="wizard-sub">Sebelum bisa daftarin model atau jadi member, isi dulu profil Afi Studio kamu. Cuma sekali ini aja kok.</div>
+                    <div class="wizard-progress">
+                        <div class="wizard-dot" data-dot="1"></div>
+                        <div class="wizard-dot" data-dot="2"></div>
+                        <div class="wizard-dot" data-dot="3"></div>
+                        <div class="wizard-dot" data-dot="4"></div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Nickname & Username -->
+                <div class="wizard-step active" data-step="1">
+                    <div class="wizard-step-label">Langkah 1 dari 4 &middot; Identitas</div>
+                    <div class="field-group">
+                        <label class="field-label" for="wz-nickname">Nickname</label>
+                        <input type="text" id="wz-nickname" class="field-input" placeholder="Nama yang mau ditampilin, mis. Ali Sastro" maxlength="30">
+                        <div class="field-hint">Ini yang muncul di depan umum. Bebas ganti kapan aja belakangan.</div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label" for="wz-username">Username</label>
+                        <div class="username-input-row">
+                            <span class="username-at">@</span>
+                            <input type="text" id="wz-username" class="field-input" placeholder="username_kamu" maxlength="20">
+                        </div>
+                        <div class="username-status" id="wz-username-status"></div>
+                        <div class="field-hint">3-20 karakter, huruf kecil/angka/underscore aja. Harus unik -- kalau udah dipakai, ganti username lain sebelum lanjut.</div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Peran -->
+                <div class="wizard-step" data-step="2">
+                    <div class="wizard-step-label">Langkah 2 dari 4 &middot; Peran Kamu</div>
+                    <div class="field-group">
+                        <label class="field-label">Kamu berkecimpung sebagai apa? (boleh pilih lebih dari satu)</label>
+                        <div class="role-grid" id="wz-role-grid">
+                            <button type="button" class="role-chip" data-role="Designer">Designer</button>
+                            <button type="button" class="role-chip" data-role="Animator">Animator</button>
+                            <button type="button" class="role-chip" data-role="Renderer">Renderer</button>
+                            <button type="button" class="role-chip" data-role="Modeller">Modeller</button>
+                            <button type="button" class="role-chip" data-role="Converter Model">Converter Model</button>
+                        </div>
+                        <div class="field-hint">Ini nentuin badge peran yang tampil di profil kamu. Bisa diubah lagi belakangan.</div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Sosmed -->
+                <div class="wizard-step" data-step="3">
+                    <div class="wizard-step-label">Langkah 3 dari 4 &middot; Link Sosial Media (opsional)</div>
+                    <div class="social-row">
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-yt"></use></svg></span>
+                        <input type="url" class="field-input" id="wz-social-yt" placeholder="Link channel YouTube">
+                    </div>
+                    <div class="social-row">
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-ig"></use></svg></span>
+                        <input type="url" class="field-input" id="wz-social-ig" placeholder="Link profil Instagram">
+                    </div>
+                    <div class="social-row">
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-fb"></use></svg></span>
+                        <input type="url" class="field-input" id="wz-social-fb" placeholder="Link profil Facebook">
+                    </div>
+                    <div class="social-row">
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-tk"></use></svg></span>
+                        <input type="url" class="field-input" id="wz-social-tk" placeholder="Link profil TikTok">
+                    </div>
+                    <div class="social-row">
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-wa"></use></svg></span>
+                        <input type="url" class="field-input" id="wz-social-wa" placeholder="Link WhatsApp / channel WA">
+                    </div>
+                    <div class="social-row">
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-dc"></use></svg></span>
+                        <input type="url" class="field-input" id="wz-social-dc" placeholder="Link/username Discord">
+                    </div>
+                    <div class="wizard-skip-note">Semua boleh dikosongin, bisa diisi belakangan dari halaman Edit Profil.</div>
+                </div>
+
+                <!-- Step 4: Foto profil & banner -->
+                <div class="wizard-step" data-step="4">
+                    <div class="wizard-step-label">Langkah 4 dari 4 &middot; Foto Profil &amp; Banner</div>
+                    <div class="upload-row">
+                        <div class="upload-box">
+                            <div class="upload-label">Foto Profil</div>
+                            <div class="upload-preview-avatar" id="wz-avatar-preview">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+                            </div>
+                            <input type="file" accept="image/*" class="upload-input" id="wz-avatar-input">
+                        </div>
+                        <div class="upload-box" style="flex:2;">
+                            <div class="upload-label">Banner</div>
+                            <div class="upload-preview-banner" id="wz-banner-preview">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 15 5-5 4 4 3-3 6 6"></path></svg>
+                            </div>
+                            <input type="file" accept="image/*" class="upload-input" id="wz-banner-input">
+                        </div>
+                    </div>
+                    <div class="wizard-skip-note">Gak wajib diisi. Kalau dilewatin: foto profil ikut foto akun Google kamu, banner pakai gradasi default.</div>
+                </div>
+
+                <div class="wizard-error" id="wizard-error"></div>
+                <div class="wizard-actions">
+                    <button type="button" class="wizard-btn wizard-btn-secondary" id="wz-back-btn" style="visibility:hidden;">Kembali</button>
+                    <button type="button" class="wizard-btn wizard-btn-primary" id="wz-next-btn">Lanjut</button>
+                </div>
+            </div>
+
             <div class="profile-section" id="profile-models-section" style="padding-left:0; padding-right:0;">
                 <div class="category-header">Model yang Diupload</div>
                 <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" style="margin-top:14px;" id="profile-models-grid"></section>
@@ -328,22 +524,25 @@
 <script>
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    // Cek sesi login Google asli. Kalau belum login, tutup kartu akun & ganti
-    // dengan tombol "Masuk dengan Google"; grid Model di bawah tetep muncul
-    // (masih dummy) biar orang tetep bisa liat bentuknya walau belum login.
+    const SOCIAL_META = {
+        yt: 'YouTube', ig: 'Instagram', fb: 'Facebook', tk: 'TikTok', wa: 'WhatsApp', dc: 'Discord',
+    };
+    let currentUser = null; // cache hasil /api/auth?action=me, dipakai buat prefill wizard pas Edit Profil
+
+    // Cek sesi login Google asli. 3 kemungkinan tampilan:
+    //   1. Belum login sama sekali           -> login-gate
+    //   2. Login tapi belum isi username      -> wizard pendaftaran (account-wizard)
+    //   3. Login & profil udah lengkap        -> account-card beneran
+    // Grid Model di bawah tetep dummy (nunggu sistem "model milik akun").
     fetch('/api/auth?action=me')
         .then(r => r.ok ? r.json() : Promise.reject())
         .then(data => {
-            const u = data.user;
-            document.getElementById('account-name').textContent = u.name || u.email || 'Tanpa nama';
-            document.getElementById('account-username').textContent = u.username ? '@' + u.username : u.email;
-            document.getElementById('account-desc').textContent = u.bio || 'Belum ada deskripsi.';
-            if (u.picture) {
-                document.getElementById('account-avatar').innerHTML = `<img src="${u.picture}" alt="${u.name || ''}">`;
+            currentUser = data.user;
+            if (currentUser.registered) {
+                renderAccountCard(currentUser);
+            } else {
+                openWizard(currentUser, { isEdit: false });
             }
-            document.getElementById('account-actions').innerHTML = `
-                <button class="account-btn">Edit Profil</button>
-                <button class="account-btn" onclick="logoutAccount()" style="cursor:pointer; opacity:1;">Keluar</button>`;
         })
         .catch(() => {
             document.getElementById('self-account-card').style.display = 'none';
@@ -354,6 +553,258 @@
         await fetch('/api/auth?action=logout', { method: 'POST' }).catch(()=>{});
         location.reload();
     }
+
+    function renderAccountCard(u){
+        document.getElementById('account-wizard').style.display = 'none';
+        document.getElementById('login-gate').style.display = 'none';
+        document.getElementById('self-account-card').style.display = 'block';
+
+        document.getElementById('account-username').textContent = '@' + u.username;
+        document.getElementById('account-desc').textContent = u.bio || 'Belum ada deskripsi.';
+
+        const avatarSrc = u.avatarUrl || u.picture;
+        if (avatarSrc) {
+            document.getElementById('account-avatar').innerHTML = `<img src="${avatarSrc}" alt="${u.nickname || ''}">`;
+        }
+        if (u.bannerUrl) {
+            document.getElementById('self-account-card').querySelector('.account-banner').innerHTML =
+                `<img src="${u.bannerUrl}" alt="Banner ${u.nickname || ''}">`;
+        }
+
+        const rolesHtml = (u.roles || []).map(r => `<span class="account-role-badge">${r}</span>`).join('');
+        document.querySelector('.account-name-row').innerHTML =
+            `<div class="account-name" id="account-name">${u.nickname || u.name}</div>` +
+            `<div class="account-role-badges">${rolesHtml}</div>`;
+
+        const socialEntries = Object.entries(u.socials || {}).filter(([, v]) => v);
+        const socialsEl = document.querySelector('.social-container');
+        if (socialEntries.length) {
+            socialsEl.style.display = 'flex';
+            socialsEl.innerHTML = socialEntries.map(([key, url]) => `
+                <a href="${url}" target="_blank" rel="noopener" class="social-btn" title="${SOCIAL_META[key] || key}">
+                    <svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-${key}"></use></svg>
+                </a>`).join('');
+        } else {
+            socialsEl.style.display = 'none';
+        }
+
+        document.getElementById('account-actions').innerHTML = `
+            <button class="account-btn" style="cursor:pointer; opacity:1;" onclick="openWizard(currentUser, {isEdit:true})">Edit Profil</button>
+            <button class="account-btn" onclick="logoutAccount()" style="cursor:pointer; opacity:1;">Keluar</button>`;
+    }
+
+    /* ==================== Wizard pendaftaran / edit profil ==================== */
+    let wzStep = 1;
+    let wzSelectedRoles = [];
+    let wzAvatarBase64 = null;
+    let wzBannerBase64 = null;
+    let wzUsernameOk = false;
+    let wzUsernameCheckTimer = null;
+
+    function openWizard(user, opts){
+        document.getElementById('self-account-card').style.display = 'none';
+        document.getElementById('login-gate').style.display = 'none';
+        document.getElementById('account-wizard').style.display = 'block';
+
+        document.getElementById('wizard-title').textContent = opts.isEdit ? 'Edit Profil' : 'Lengkapi Profil Kamu';
+
+        // Prefill kalau lagi edit (atau kalau reload wizard yang belum kelar).
+        document.getElementById('wz-nickname').value = user.nickname || '';
+        document.getElementById('wz-username').value = user.username || '';
+        wzUsernameOk = !!user.username;
+
+        wzSelectedRoles = Array.isArray(user.roles) ? [...user.roles] : [];
+        document.querySelectorAll('#wz-role-grid .role-chip').forEach(chip => {
+            chip.classList.toggle('selected', wzSelectedRoles.includes(chip.dataset.role));
+        });
+
+        const socials = user.socials || {};
+        ['yt','ig','fb','tk','wa','dc'].forEach(key => {
+            document.getElementById('wz-social-' + key).value = socials[key] || '';
+        });
+
+        wzAvatarBase64 = null;
+        wzBannerBase64 = null;
+        document.getElementById('wz-avatar-preview').innerHTML = user.avatarUrl || user.picture
+            ? `<img src="${user.avatarUrl || user.picture}">`
+            : document.getElementById('wz-avatar-preview').innerHTML;
+        if (user.bannerUrl) document.getElementById('wz-banner-preview').innerHTML = `<img src="${user.bannerUrl}">`;
+
+        wzGoToStep(1);
+        document.getElementById('wizard-error').textContent = '';
+    }
+
+    function wzGoToStep(n){
+        wzStep = n;
+        document.querySelectorAll('.wizard-step').forEach(el => el.classList.toggle('active', Number(el.dataset.step) === n));
+        document.querySelectorAll('.wizard-dot').forEach(el => {
+            const dn = Number(el.dataset.dot);
+            el.classList.toggle('active', dn === n);
+            el.classList.toggle('done', dn < n);
+        });
+        document.getElementById('wz-back-btn').style.visibility = n === 1 ? 'hidden' : 'visible';
+        document.getElementById('wz-next-btn').textContent = n === 4 ? 'Selesai' : 'Lanjut';
+        document.getElementById('wizard-error').textContent = '';
+    }
+
+    document.getElementById('wz-back-btn').addEventListener('click', () => { if (wzStep > 1) wzGoToStep(wzStep - 1); });
+
+    document.getElementById('wz-username').addEventListener('input', (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        e.target.value = val;
+        const statusEl = document.getElementById('wz-username-status');
+        clearTimeout(wzUsernameCheckTimer);
+        wzUsernameOk = false;
+
+        if (!val) { statusEl.textContent = ''; statusEl.className = 'username-status'; return; }
+        if (!/^[a-z0-9_]{3,20}$/.test(val)) {
+            statusEl.textContent = 'Format belum pas: 3-20 karakter, huruf kecil/angka/underscore.';
+            statusEl.className = 'username-status bad';
+            return;
+        }
+        statusEl.textContent = 'Mengecek ketersediaan...';
+        statusEl.className = 'username-status checking';
+        wzUsernameCheckTimer = setTimeout(() => {
+            fetch('/api/auth?action=check-username&username=' + encodeURIComponent(val))
+                .then(r => r.json())
+                .then(res => {
+                    if (document.getElementById('wz-username').value !== val) return; // udah keburu ganti lagi
+                    if (res.available) {
+                        statusEl.textContent = 'Tersedia.';
+                        statusEl.className = 'username-status ok';
+                        wzUsernameOk = true;
+                    } else {
+                        statusEl.textContent = 'Sudah dipakai orang lain, coba nama lain.';
+                        statusEl.className = 'username-status bad';
+                    }
+                })
+                .catch(() => { statusEl.textContent = ''; statusEl.className = 'username-status'; });
+        }, 400);
+    });
+
+    document.querySelectorAll('#wz-role-grid .role-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const role = chip.dataset.role;
+            if (wzSelectedRoles.includes(role)) {
+                wzSelectedRoles = wzSelectedRoles.filter(r => r !== role);
+                chip.classList.remove('selected');
+            } else {
+                wzSelectedRoles.push(role);
+                chip.classList.add('selected');
+            }
+        });
+    });
+
+    function fileToResizedBase64(file, maxDim){
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error('Gagal baca file.'));
+            reader.onload = () => {
+                const img = new Image();
+                img.onerror = () => reject(new Error('File bukan gambar yang valid.'));
+                img.onload = () => {
+                    let { width, height } = img;
+                    if (width > maxDim || height > maxDim) {
+                        const scale = maxDim / Math.max(width, height);
+                        width = Math.round(width * scale);
+                        height = Math.round(height * scale);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/webp', 0.85));
+                };
+                img.src = reader.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    document.getElementById('wz-avatar-preview').addEventListener('click', () => document.getElementById('wz-avatar-input').click());
+    document.getElementById('wz-avatar-input').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            const dataUrl = await fileToResizedBase64(file, 640);
+            wzAvatarBase64 = dataUrl;
+            document.getElementById('wz-avatar-preview').innerHTML = `<img src="${dataUrl}">`;
+        } catch (err) {
+            document.getElementById('wizard-error').textContent = err.message;
+        }
+    });
+
+    document.getElementById('wz-banner-preview').addEventListener('click', () => document.getElementById('wz-banner-input').click());
+    document.getElementById('wz-banner-input').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            const dataUrl = await fileToResizedBase64(file, 1400);
+            wzBannerBase64 = dataUrl;
+            document.getElementById('wz-banner-preview').innerHTML = `<img src="${dataUrl}">`;
+        } catch (err) {
+            document.getElementById('wizard-error').textContent = err.message;
+        }
+    });
+
+    document.getElementById('wz-next-btn').addEventListener('click', async () => {
+        const errEl = document.getElementById('wizard-error');
+        errEl.textContent = '';
+
+        if (wzStep === 1) {
+            const nickname = document.getElementById('wz-nickname').value.trim();
+            if (nickname.length < 2) { errEl.textContent = 'Isi nickname minimal 2 karakter dulu ya.'; return; }
+            if (!wzUsernameOk) { errEl.textContent = 'Isi username yang valid & masih tersedia dulu ya.'; return; }
+            wzGoToStep(2);
+            return;
+        }
+        if (wzStep === 2) {
+            if (wzSelectedRoles.length === 0) { errEl.textContent = 'Pilih minimal 1 peran dulu ya.'; return; }
+            wzGoToStep(3);
+            return;
+        }
+        if (wzStep === 3) {
+            wzGoToStep(4);
+            return;
+        }
+
+        // Step 4 -> submit beneran
+        const btn = document.getElementById('wz-next-btn');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+        try {
+            const payload = {
+                nickname: document.getElementById('wz-nickname').value.trim(),
+                username: document.getElementById('wz-username').value.trim(),
+                roles: wzSelectedRoles,
+                socials: {
+                    yt: document.getElementById('wz-social-yt').value.trim(),
+                    ig: document.getElementById('wz-social-ig').value.trim(),
+                    fb: document.getElementById('wz-social-fb').value.trim(),
+                    tk: document.getElementById('wz-social-tk').value.trim(),
+                    wa: document.getElementById('wz-social-wa').value.trim(),
+                    dc: document.getElementById('wz-social-dc').value.trim(),
+                },
+            };
+            if (wzAvatarBase64) payload.avatarBase64 = wzAvatarBase64;
+            if (wzBannerBase64) payload.bannerBase64 = wzBannerBase64;
+
+            const resp = await fetch('/api/auth?action=complete-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Gagal simpan profil.');
+
+            currentUser = data.user;
+            renderAccountCard(currentUser);
+        } catch (err) {
+            errEl.textContent = err.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Selesai';
+        }
+    });
 
     // Data contoh doang buat sketsa -- jumlah model/like & grid model DI
     // BAWAH ini masih dummy, karena sistem "model milik akun tertentu" belum

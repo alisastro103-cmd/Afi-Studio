@@ -8,6 +8,8 @@
 //   GET  /api/auth?action=google-callback  -> Google balik ke sini abis user pilih akun
 //   GET  /api/auth?action=me               -> cek sesi aktif, balikin profil (atau 401)
 //   POST /api/auth?action=logout           -> hapus sesi + cookie
+//   GET  /api/auth?action=check-username   -> cek ketersediaan username (buat live-check di form)
+//   POST /api/auth?action=complete-profile -> simpan nickname/username/role/sosmed/foto (wizard pendaftaran akun)
 //
 // Database akun (Redis) SENGAJA terpisah dari database utama situs (models,
 // banner, survey, dll) -- pakai instance Upstash yang beda (env var
@@ -16,6 +18,7 @@
 
 import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
+import { uploadToPermanent } from '../lib/image-storage.js';
 
 const accountsRedis = (process.env.ACCOUNTS_REDIS_REST_URL && process.env.ACCOUNTS_REDIS_REST_TOKEN)
   ? new Redis({ url: process.env.ACCOUNTS_REDIS_REST_URL, token: process.env.ACCOUNTS_REDIS_REST_TOKEN })
@@ -25,7 +28,18 @@ export const SESSION_COOKIE = 'afi_account_session';
 const STATE_COOKIE = 'afi_oauth_state';
 const SESSION_PREFIX = 'afi-accounts:session:';
 const USER_PREFIX = 'afi-accounts:user:'; // key = Google "sub" (ID akun Google, permanen & unik)
+const USERNAME_PREFIX = 'afi-accounts:username:'; // key = username (lowercase) -> Google "sub" pemiliknya
 const SESSION_TTL_SEC = 60 * 60 * 24 * 30; // sesi login bertahan 30 hari
+
+// 5 peran yang bisa dipilih user pas daftar akun (nyambung ke field
+// creator/converter di Models/models.json -- lihat data.schema.md).
+export const ROLES = ['Designer', 'Animator', 'Renderer', 'Modeller', 'Converter Model'];
+
+// 6 platform sosmed, sama persis kayak yang dipakai di member-Afi-Studio/member.json
+// (field "socials": yt/ig/fb/tk/wa/dc), biar konsisten satu situs.
+const SOCIAL_KEYS = ['yt', 'ig', 'fb', 'tk', 'wa', 'dc'];
+
+const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 
 const SITE_URL = 'https://afi-studio.vercel.app';
 const REDIRECT_URI = `${SITE_URL}/api/auth?action=google-callback`;
@@ -47,6 +61,169 @@ function parseCookies(req) {
 // domain luar -- biar parameter ?next= gak disalahgunain buat open-redirect.
 function safeNextPath(value) {
   return (typeof value === 'string' && value.startsWith('/') && !value.startsWith('//')) ? value : '/profil/';
+}
+
+// Terima "data:image/webp;base64,AAAA..." ATAU base64 polos -> Buffer.
+// (Pola sama kayak decodeBase64Image di api/admin/media.js.)
+function decodeBase64Image(dataUrlOrBase64) {
+  const match = /^data:.+;base64,(.*)$/.exec(String(dataUrlOrBase64 || ''));
+  const raw = match ? match[1] : dataUrlOrBase64;
+  return Buffer.from(raw, 'base64');
+}
+
+async function parseJsonBody(req) {
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch { body = {}; }
+  }
+  return body || {};
+}
+
+async function getSessionUser(req) {
+  if (!accountsRedis) return { error: 'Database akun belum tersambung.', status: 500 };
+  const cookies = parseCookies(req);
+  const sessionId = cookies[SESSION_COOKIE];
+  if (!sessionId) return { error: 'Belum login.', status: 401 };
+  const session = await accountsRedis.get(SESSION_PREFIX + sessionId);
+  if (!session) return { error: 'Sesi tidak valid atau sudah habis, silakan login ulang.', status: 401 };
+  const user = await accountsRedis.get(USER_PREFIX + session.googleId);
+  if (!user) return { error: 'Akun tidak ditemukan.', status: 401 };
+  return { user };
+}
+
+function publicUser(u) {
+  return {
+    googleId: u.googleId,
+    name: u.name,
+    email: u.email,
+    picture: u.picture,
+    nickname: u.nickname || null,
+    username: u.username || null,
+    bio: u.bio || '',
+    roles: Array.isArray(u.roles) ? u.roles : [],
+    socials: u.socials || {},
+    avatarUrl: u.avatarUrl || null,
+    bannerUrl: u.bannerUrl || null,
+    // "registered" = udah kelar wizard pendaftaran (nickname+username udah diisi).
+    // Dipakai profil/index.html buat mutusin nampilin wizard atau kartu akun.
+    registered: !!(u.nickname && u.username),
+  };
+}
+
+/* ---------------- action: check-username ---------------- */
+// GET ?username=xxx  -> { available: true/false, reason? }
+// Kalau lagi login dan username yang dicek sama persis kayak username DIA
+// SENDIRI, tetep dianggap "available" (bukan bentrok sama diri sendiri).
+async function actionCheckUsername(req, res) {
+  if (!accountsRedis) return res.status(500).json({ error: 'Database akun belum tersambung.' });
+
+  const raw = String(req.query.username || '').trim().toLowerCase();
+  if (!USERNAME_RE.test(raw)) {
+    return res.status(200).json({ available: false, reason: 'format' });
+  }
+
+  const ownerId = await accountsRedis.get(USERNAME_PREFIX + raw);
+  if (!ownerId) return res.status(200).json({ available: true });
+
+  // Cek apakah pemiliknya adalah sesi yang lagi login sekarang.
+  const cookies = parseCookies(req);
+  const sessionId = cookies[SESSION_COOKIE];
+  const session = sessionId ? await accountsRedis.get(SESSION_PREFIX + sessionId) : null;
+  if (session && session.googleId === ownerId) {
+    return res.status(200).json({ available: true });
+  }
+  return res.status(200).json({ available: false, reason: 'taken' });
+}
+
+/* ---------------- action: complete-profile ---------------- */
+// POST body (JSON): { nickname, username, roles: [...], socials: {yt,ig,fb,tk,wa,dc},
+//                      avatarBase64?, bannerBase64? }
+// avatarBase64/bannerBase64 opsional -- kalau gak dikirim, foto/banner yang lama
+// (atau fallback foto Google / gradient default) tetap dipakai.
+async function actionCompleteProfile(req, res) {
+  if (req.method !== 'POST') { res.setHeader('Allow', ['POST']); return res.status(405).json({ error: 'Method tidak diizinkan.' }); }
+
+  const { user, error, status } = await getSessionUser(req);
+  if (error) return res.status(status).json({ error });
+
+  const body = await parseJsonBody(req);
+
+  const nickname = String(body.nickname || '').trim().slice(0, 30);
+  if (nickname.length < 2) {
+    return res.status(400).json({ error: 'Nickname minimal 2 karakter.' });
+  }
+
+  const username = String(body.username || '').trim().toLowerCase();
+  if (!USERNAME_RE.test(username)) {
+    return res.status(400).json({ error: 'Username 3-20 karakter, cuma huruf kecil, angka, dan underscore.' });
+  }
+
+  const roles = Array.isArray(body.roles) ? body.roles.filter((r) => ROLES.includes(r)) : [];
+  if (roles.length === 0) {
+    return res.status(400).json({ error: 'Pilih minimal 1 peran.' });
+  }
+
+  const socialsIn = body.socials && typeof body.socials === 'object' ? body.socials : {};
+  const socials = {};
+  for (const key of SOCIAL_KEYS) {
+    const v = String(socialsIn[key] || '').trim();
+    // Boleh kosong (opsional). Kalau diisi, wajib http(s) -- bukan buat validasi
+    // ketat platformnya, cuma jaga-jaga biar gak kesimpen sampah bukan URL.
+    if (v && !/^https?:\/\//i.test(v)) {
+      return res.status(400).json({ error: `Link ${key.toUpperCase()} harus diawali http:// atau https://` });
+    }
+    socials[key] = v;
+  }
+
+  // Username WAJIB unik -- cek ulang di server (jangan cuma percaya hasil
+  // live-check di form, bisa aja udah kesamber orang lain di antara waktu
+  // itu sama waktu submit).
+  const existingOwner = await accountsRedis.get(USERNAME_PREFIX + username);
+  if (existingOwner && existingOwner !== user.googleId) {
+    return res.status(409).json({ error: 'Username itu udah dipakai orang lain, coba yang lain ya.' });
+  }
+
+  let avatarUrl = user.avatarUrl || null;
+  let bannerUrl = user.bannerUrl || null;
+
+  try {
+    if (body.avatarBase64) {
+      const buffer = decodeBase64Image(body.avatarBase64);
+      // public_id = googleId -> upload berikutnya otomatis NIMPA yang lama,
+      // gak numpuk file basi di Cloudinary tiap kali user ganti foto.
+      const result = await uploadToPermanent(buffer, 'afi-accounts/avatar', user.googleId);
+      avatarUrl = result.url;
+    }
+    if (body.bannerBase64) {
+      const buffer = decodeBase64Image(body.bannerBase64);
+      const result = await uploadToPermanent(buffer, 'afi-accounts/banner', user.googleId);
+      bannerUrl = result.url;
+    }
+  } catch (e) {
+    console.error('Gagal upload foto profil/banner:', e.message);
+    return res.status(500).json({ error: 'Gagal upload gambar. Coba pakai file yang lebih kecil.' });
+  }
+
+  // Pindahin index username kalau berubah dari sebelumnya (hapus yang lama
+  // dulu supaya slot username lama itu bebas dipakai orang lain lagi).
+  if (user.username && user.username !== username) {
+    await accountsRedis.del(USERNAME_PREFIX + user.username).catch(() => {});
+  }
+  await accountsRedis.set(USERNAME_PREFIX + username, user.googleId);
+
+  const updated = {
+    ...user,
+    nickname,
+    username,
+    roles,
+    socials,
+    avatarUrl,
+    bannerUrl,
+    updatedAt: new Date().toISOString(),
+  };
+  await accountsRedis.set(USER_PREFIX + user.googleId, updated);
+
+  return res.status(200).json({ ok: true, user: publicUser(updated) });
 }
 
 /* ---------------- action: google-login ---------------- */
@@ -160,10 +337,7 @@ async function actionMe(req, res) {
   const user = await accountsRedis.get(USER_PREFIX + session.googleId);
   if (!user) return res.status(401).json({ error: 'Akun tidak ditemukan.' });
 
-  return res.status(200).json({
-    ok: true,
-    user: { name: user.name, email: user.email, picture: user.picture, username: user.username, bio: user.bio, googleId: user.googleId },
-  });
+  return res.status(200).json({ ok: true, user: publicUser(user) });
 }
 
 /* ---------------- action: logout ---------------- */
@@ -183,6 +357,8 @@ const ACTIONS = {
   'google-callback': actionGoogleCallback,
   me: actionMe,
   logout: actionLogout,
+  'check-username': actionCheckUsername,
+  'complete-profile': actionCompleteProfile,
 };
 
 export default async function handler(req, res) {
