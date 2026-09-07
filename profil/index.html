@@ -135,16 +135,18 @@
             background: linear-gradient(135deg, #4c7bc0 0%, #6c5ce7 100%);
             position: relative;
         }
-        .account-banner-edit {
-            position: absolute; right: 12px; bottom: 12px;
+        .account-edit-btn {
+            position: absolute; right: 12px; top: 12px;
             display: flex; align-items: center; gap: 6px;
-            padding: 6px 12px; border-radius: 999px;
+            padding: 7px 14px; border-radius: 999px;
             background: rgba(0,0,0,0.45); color: #fff;
             font-size: 11.5px; font-weight: 700;
             backdrop-filter: blur(4px);
-            opacity: 0.7; cursor: not-allowed;
+            border: none; cursor: pointer;
         }
+        .account-edit-btn:hover { background: rgba(0,0,0,0.6); }
         .account-body { padding: 0 18px 18px; position: relative; }
+        .account-top-row { display: flex; align-items: flex-end; justify-content: space-between; }
         .account-avatar {
             width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0;
             background: var(--bg);
@@ -154,27 +156,42 @@
             color: var(--text-sub);
         }
         .account-avatar svg { width: 44px; height: 44px; }
-        .account-name-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-        .account-name { font-size: 19px; font-weight: 800; line-height: 1.2; }
+
+        .account-stats { display: flex; gap: 22px; padding-bottom: 4px; }
+        .account-stat { text-align: center; }
+        .account-stat-num { font-size: 16px; font-weight: 800; }
+        .account-stat-label { font-size: 11px; color: var(--text-sub); }
+
+        .account-name-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .account-name { font-size: 20px; font-weight: 800; line-height: 1.2; }
+        .account-copy-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; border-radius: 6px;
+            border: none; background: none; color: var(--text-sub); cursor: pointer;
+        }
+        .account-copy-btn svg { width: 15px; height: 15px; }
+        .account-copy-btn:hover { color: var(--text); }
+        .account-copy-btn.copied { color: #2e9e5b; }
+        .account-username { display: inline-block; font-size: 12.5px; color: var(--text-sub); margin-top: 2px; text-decoration: none; }
+        .account-username:hover { text-decoration: underline; }
+
         .account-role-badge {
             font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
-            padding: 2px 8px; border-radius: 999px;
+            padding: 4px 10px; border-radius: 999px;
             background: color-mix(in srgb, var(--accent) 20%, transparent);
             color: var(--accent);
         }
-        .account-username { font-size: 12.5px; color: var(--text-sub); margin-top: 2px; }
-        .account-desc { font-size: 13px; color: var(--text-sub); line-height: 1.55; margin-top: 10px; }
 
-        .account-actions { display: flex; gap: 8px; margin-top: 14px; }
+        .account-section { margin-top: 16px; }
+        .account-section-title { font-size: 12.5px; font-weight: 800; margin-bottom: 6px; }
+        .account-desc { font-size: 13px; color: var(--text-sub); line-height: 1.55; }
+
+        .account-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
         .account-btn {
             font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px;
             border: 1px solid var(--border); background: var(--bg); color: var(--text-sub);
             cursor: not-allowed; opacity: 0.6;
         }
-
-        .account-stats { display: flex; gap: 22px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
-        .account-stat-num { font-size: 16px; font-weight: 800; }
-        .account-stat-label { font-size: 11px; color: var(--text-sub); }
 
         .profile-section { max-width: 640px; margin: 24px auto 0; padding: 0 20px 40px; }
         .empty-note { font-size: 12.5px; color: var(--text-sub); margin-top: 10px; }
@@ -355,36 +372,51 @@
 
             <div class="account-card" id="self-account-card">
                 <div class="account-banner">
-                    <div class="account-banner-edit">
+                    <button type="button" class="account-edit-btn" id="account-edit-btn" onclick="openWizard(currentUser, {isEdit:true})">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                        Ganti Banner
-                    </div>
+                        Edit
+                    </button>
                 </div>
                 <div class="account-body">
-                    <div class="account-avatar" id="account-avatar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+                    <div class="account-top-row">
+                        <div class="account-avatar" id="account-avatar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+                        </div>
+                        <div class="account-stats" id="account-stats">
+                            <div class="account-stat"><div class="account-stat-num" id="stat-models">4</div><div class="account-stat-label">Models</div></div>
+                            <div class="account-stat"><div class="account-stat-num" id="stat-like">128</div><div class="account-stat-label">Like</div></div>
+                        </div>
                     </div>
+
                     <div class="account-name-row">
                         <div class="account-name" id="account-name">Ali Sastro</div>
+                        <button type="button" class="account-copy-btn" id="account-copy-btn" title="Salin link profil">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                    </div>
+                    <a href="#" class="account-username" id="account-username">@alisastro</a>
+
+                    <div class="account-section">
+                        <div class="account-section-title">Deskripsi</div>
+                        <p class="account-desc" id="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
+                    </div>
+
+                    <div class="account-role-badges" id="account-role-badges">
                         <span class="account-role-badge">Creator</span>
                     </div>
-                    <div class="account-username" id="account-username">@alisastro</div>
-                    <p class="account-desc" id="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
 
-                    <div class="social-container">
-                        <a href="#" class="social-btn" title="Instagram"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-ig"></use></svg></a>
-                        <a href="#" class="social-btn" title="YouTube"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-yt"></use></svg></a>
-                        <a href="#" class="social-btn" title="WhatsApp"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-wa"></use></svg></a>
+                    <div class="account-section" id="account-social-section">
+                        <div class="account-section-title">Sosial Media</div>
+                        <div class="social-container">
+                            <a href="#" class="social-btn" title="Instagram"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-ig"></use></svg></a>
+                            <a href="#" class="social-btn" title="YouTube"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-yt"></use></svg></a>
+                            <a href="#" class="social-btn" title="WhatsApp"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-wa"></use></svg></a>
+                        </div>
                     </div>
 
                     <div class="account-actions" id="account-actions">
                         <button class="account-btn">Edit Profil</button>
-                        <button class="account-btn">Bagikan Profil</button>
-                    </div>
-
-                    <div class="account-stats">
-                        <div><div class="account-stat-num">4</div><div class="account-stat-label">Model diupload</div></div>
-                        <div><div class="account-stat-num">128</div><div class="account-stat-label">Like</div></div>
+                        <button class="account-btn">Keluar</button>
                     </div>
                 </div>
             </div>
@@ -554,27 +586,52 @@
         location.reload();
     }
 
+    // Tombol salin link profil: https://afi-studio.vercel.app/@username
+    document.getElementById('account-copy-btn').addEventListener('click', () => {
+        const usernameEl = document.getElementById('account-username');
+        const handle = usernameEl.textContent.replace(/^@/, '');
+        if (!handle) return;
+        const link = 'https://afi-studio.vercel.app/@' + handle;
+        navigator.clipboard.writeText(link).then(() => {
+            const btn = document.getElementById('account-copy-btn');
+            btn.classList.add('copied');
+            setTimeout(() => btn.classList.remove('copied'), 1200);
+        }).catch(() => {});
+    });
+
     function renderAccountCard(u){
         document.getElementById('account-wizard').style.display = 'none';
         document.getElementById('login-gate').style.display = 'none';
         document.getElementById('self-account-card').style.display = 'block';
 
+        document.getElementById('account-name').textContent = u.nickname || u.name;
         document.getElementById('account-username').textContent = '@' + u.username;
+        document.getElementById('account-username').href = 'https://afi-studio.vercel.app/@' + u.username;
         document.getElementById('account-desc').textContent = u.bio || 'Belum ada deskripsi.';
 
         const avatarSrc = u.avatarUrl || u.picture;
         if (avatarSrc) {
             document.getElementById('account-avatar').innerHTML = `<img src="${avatarSrc}" alt="${u.nickname || ''}">`;
         }
+        const bannerEl = document.getElementById('self-account-card').querySelector('.account-banner');
         if (u.bannerUrl) {
-            document.getElementById('self-account-card').querySelector('.account-banner').innerHTML =
-                `<img src="${u.bannerUrl}" alt="Banner ${u.nickname || ''}">`;
+            let bannerImg = bannerEl.querySelector('img');
+            if (!bannerImg) {
+                bannerImg = document.createElement('img');
+                bannerImg.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;';
+                bannerEl.prepend(bannerImg);
+            }
+            bannerImg.src = u.bannerUrl;
+            bannerImg.alt = 'Banner ' + (u.nickname || '');
         }
 
-        const rolesHtml = (u.roles || []).map(r => `<span class="account-role-badge">${r}</span>`).join('');
-        document.querySelector('.account-name-row').innerHTML =
-            `<div class="account-name" id="account-name">${u.nickname || u.name}</div>` +
-            `<div class="account-role-badges">${rolesHtml}</div>`;
+        const rolesHtml = (u.roles || []).length
+            ? u.roles.map(r => `<span class="account-role-badge">${r}</span>`).join('')
+            : '<span class="account-role-badge">Creator</span>';
+        document.getElementById('account-role-badges').innerHTML = rolesHtml;
+
+        document.getElementById('stat-models').textContent = u.modelsCount ?? 4;
+        document.getElementById('stat-like').textContent = u.likesCount ?? 128;
 
         const socialEntries = Object.entries(u.socials || {}).filter(([, v]) => v);
         const socialsEl = document.querySelector('.social-container');

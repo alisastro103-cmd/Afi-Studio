@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afi Studio - Lengkapi Profil</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="apple-touch-icon" href="../favicon.png">
+
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/theme-toggle.js" defer></script>
+    <link rel="stylesheet" href="/fonts/fonts.css?v=3fonts">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'Geist', sans-serif; }
+        h1, h2, h3 { font-family: 'CreatoDisplay', sans-serif; font-weight: 700; }
+
+        :root {
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+            --danger: #EF4444;
+            --ok: #22C55E;
+        }
+        .dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+            --danger: #F87171;
+            --ok: #4ADE80;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-attachment: fixed;
+            color: var(--text);
+            min-height: 100%;
+            transition: background-color .3s ease, color .3s ease, border-color .3s ease;
+        }
+
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px;
+            position: sticky; top: 0; z-index: 40;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .top-bar-brand { display: flex; align-items: center; gap: 8px; font-family: 'CreatoDisplay', sans-serif; font-weight: 700; font-size: 18px; }
+        .theme-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+
+        .wrap { max-width: 460px; margin: 0 auto; padding: 28px 18px 60px; }
+
+        .step-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 22px; }
+        .step-dot { height: 4px; flex: 1; max-width: 46px; border-radius: 999px; background: var(--border); transition: background .25s ease; }
+        .step-dot.active { background: var(--accent-hover); }
+        .step-dot.done { background: var(--accent); }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 26px 22px;
+            box-shadow: 0 10px 30px -12px rgba(0,0,0,0.25);
+            animation: cardIn .35s ease;
+        }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card-title { font-size: 22px; margin-bottom: 4px; }
+        .card-subtitle { font-size: 13.5px; color: var(--text-sub); line-height: 1.5; margin-bottom: 20px; }
+
+        .field { margin-bottom: 18px; }
+        .field-label { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+        .field-label .opt { font-weight: 400; color: var(--text-sub); }
+        .field-hint { font-size: 11.5px; color: var(--text-sub); margin-top: 6px; line-height: 1.5; }
+        .field-count { font-size: 11px; color: var(--text-sub); }
+        .field-row-between { display: flex; align-items: center; justify-content: space-between; }
+
+        .input, textarea.input {
+            width: 100%;
+            font-family: 'Geist', sans-serif;
+            font-size: 14.5px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            background: color-mix(in srgb, var(--surface) 60%, var(--bg));
+            color: var(--text);
+            outline: none;
+            transition: border-color .15s ease;
+        }
+        .input::placeholder { color: var(--text-sub); opacity: .75; }
+        .input:focus { border-color: var(--accent-hover); }
+        .input.is-valid { border-color: var(--ok); }
+        .input.is-invalid { border-color: var(--danger); }
+        .username-wrap { position: relative; }
+        .username-at { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 14.5px; pointer-events: none; }
+        .username-wrap .input { padding-left: 26px; }
+        .username-status { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+        .username-status.ok { color: var(--ok); }
+        .username-status.bad { color: var(--danger); }
+
+        textarea.input { min-height: 96px; resize: vertical; }
+
+        /* step 2 - foto */
+        .photo-box { border: 1.5px dashed var(--border); border-radius: 16px; overflow: hidden; position: relative; background: var(--bg); }
+        .banner-area { aspect-ratio: 3 / 1; width: 100%; background-size: cover; background-position: center; display: flex; align-items: flex-end; justify-content: flex-start; }
+        .banner-fill-hint { padding: 8px 12px; font-size: 11px; color: var(--text-sub); }
+        .avatar-area {
+            width: 88px; height: 88px; border-radius: 999px; overflow: hidden;
+            border: 3px solid var(--surface); background: var(--bg);
+            background-size: cover; background-position: center;
+            margin: -44px 0 0 18px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; position: relative; z-index: 2;
+        }
+        .avatar-area svg { width: 26px; height: 26px; color: var(--text-sub); }
+        .photo-links { display: flex; gap: 16px; padding: 12px 18px 4px; font-size: 12.5px; }
+        .photo-links button { background: none; border: none; color: var(--accent-hover); font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+        .preview-namecard { padding: 30px 18px 16px; }
+        .preview-nick { font-size: 20px; font-weight: 700; }
+        .preview-user { font-size: 13px; color: var(--text-sub); }
+
+        /* step 3 - chips */
+        .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            font-size: 12.5px; padding: 7px 14px; border-radius: 999px;
+            border: 1.5px solid var(--border); background: var(--bg);
+            color: var(--text); cursor: pointer; user-select: none;
+            transition: all .15s ease;
+        }
+        .chip.active { background: var(--accent-hover); border-color: var(--accent-hover); color: #0B1220; font-weight: 600; }
+
+        /* step 4 - sosmed */
+        .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 380px) { .social-grid { grid-template-columns: 1fr; } }
+        .social-field { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--border); border-radius: 12px; padding: 4px 4px 4px 10px; background: color-mix(in srgb, var(--surface) 60%, var(--bg)); }
+        .social-field svg, .social-field .gh-icon { width: 18px; height: 18px; flex-shrink: 0; color: var(--text-sub); }
+        .social-field input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--text); font-size: 12.5px; padding: 9px 6px; font-family: 'Geist', sans-serif; }
+        .social-field input::placeholder { color: var(--text-sub); opacity: .7; }
+
+        /* nav buttons */
+        .step-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; }
+        .step-count { font-size: 12.5px; color: var(--text-sub); }
+        .step-actions { display: flex; gap: 8px; }
+        .btn { font-size: 13.5px; font-weight: 600; padding: 10px 20px; border-radius: 999px; border: none; cursor: pointer; transition: all .15s ease; }
+        .btn-primary { background: var(--accent-hover); color: #0B1220; }
+        .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+        .btn-primary:not(:disabled):active { transform: scale(.96); }
+        .btn-ghost { background: transparent; color: var(--text-sub); border: 1.5px solid var(--border); }
+        .btn-ghost:disabled { opacity: .3; cursor: not-allowed; }
+        .btn-ghost:not(:disabled):active { transform: scale(.96); }
+        .skip-link { background: none; border: none; color: var(--text-sub); font-size: 12.5px; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+
+        .step-panel { display: none; }
+        .step-panel.active { display: block; }
+
+        .replay-bar { display: flex; justify-content: center; margin-top: 16px; }
+        .replay-btn { font-size: 12px; color: var(--text-sub); background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .replay-btn:hover { color: var(--text); }
+
+        .summary-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 12px; color: var(--text-sub); white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow: auto; margin-top: 14px; }
+        .done-icon { width: 52px; height: 52px; border-radius: 999px; background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="top-bar-brand">🪴 Afi Studio</div>
+        <button class="theme-btn" id="theme-toggle-btn" aria-label="Ganti tema">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+        </button>
+    </div>
+
+    <div class="wrap">
+
+        <div class="step-dots" id="step-dots"></div>
+
+        <!-- STEP 1 -->
+        <div class="step-panel active" data-step="1">
+            <div class="card">
+                <h1 class="card-title">Selamat Datang</h1>
+                <p class="card-subtitle">Selamat datang di Afi Studio. Siapin profil lengkapnya bang, biar bisa dikenal banyak orang.</p>
+
+                <div class="field">
+                    <div class="field-row-between">
+                        <label class="field-label" for="f-username">Username</label>
+                        <span class="field-count"><span id="username-count">0</span>/20</span>
+                    </div>
+                    <div class="username-wrap">
+                        <span class="username-at">@</span>
+                        <input class="input" id="f-username" maxlength="20" placeholder="username" autocomplete="off">
+                        <span class="username-status" id="username-status"></span>
+                    </div>
+                    <p class="field-hint" id="username-hint">Huruf besar/kecil, angka, dan simbol keyboard biasa (& - _ | * ! ? % dll) boleh dipakai. Tidak bisa diganti lagi setelah dibuat.</p>
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="f-nickname">Nickname</label>
+                    <input class="input" id="f-nickname" maxlength="30" placeholder="nickname">
+                    <p class="field-hint">Nama panggilan kamu — bisa diganti kapan pun lewat pengaturan profil.</p>
+                </div>
+
+                <div class="step-nav">
+                    <span class="step-count">1 dari 5</span>
+                    <div class="step-actions">
+                        <button class="btn btn-ghost" disabled>Kembali</button>
+                        <button class="btn btn-primary" id="next-1" disabled>Lanjut</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step-panel" data-step="2">
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div class="photo-box" style="border: none; border-radius: 0;">
+                    <label class="banner-area" id="banner-preview" for="f-banner">
+                        <span class="banner-fill-hint" id="banner-hint-text">Rasio banner 1:3</span>
+                    </label>
+                    <input type="file" accept="image/*" id="f-banner" hidden>
+
+                    <label class="avatar-area" id="avatar-preview" for="f-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4"/><circle cx="12" cy="7" r="4"/></svg>
+                    </label>
+                    <input type="file" accept="image/*" id="f-avatar" hidden>
+
+                    <div class="photo-links">
+                        <button type="button" id="btn-pick-banner">Tambahkan Banner</button>
+                        <button type="button" id="btn-pick-avatar">Tambahkan Foto Profil</button>
+                    </div>
+
+                    <div class="preview-namecard">
+                        <div class="preview-nick" id="preview-nick">Nickname</div>
+                        <div class="preview-user">@<span id="preview-user">username</span></div>
+                    </div>
+                </div>
+
+                <div style="padding: 0 22px 22px;">
+                    <p class="field-hint">Foto profil 1:1, banner 1:3. Cuma pratinjau di sisi kamu dulu — kompresi &amp; penyimpanan permanennya nanti kita sambungkan ke sistem.</p>
+                    <div class="step-nav">
+                        <span class="step-count">2 dari 5</span>
+                        <div class="step-actions">
+                            <button class="btn btn-ghost" id="back-2">Kembali</button>
+                            <button class="btn btn-primary" id="next-2">Lanjut</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step-panel" data-step="3">
+            <div class="card">
+                <h1 class="card-title">Deskripsi</h1>
+                <p class="card-subtitle">Masukan deskripsi tentang dirimu bang. (bisa diubah lain waktu)</p>
+
+                <div class="field">
+                    <textarea class="input" id="f-desc" maxlength="200" placeholder="Jelaskan tentang diri kamu..."></textarea>
+                    <div class="field-row-between" style="margin-top: 6px;">
+                        <span></span>
+                        <span class="field-count"><span id="desc-count">0</span>/200</span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Role/Skills kamu <span class="opt">(pilih satu atau lebih)</span></label>
+                    <div class="chip-grid" id="role-chips">
+                        <button type="button" class="chip" data-role="Artist">Artist</button>
+                        <button type="button" class="chip" data-role="Designer">Designer</button>
+                        <button type="button" class="chip" data-role="Modeler">Modeler</button>
+                        <button type="button" class="chip" data-role="Animator">Animator</button>
+                        <button type="button" class="chip" data-role="Converter Model">Converter Model</button>
+                        <button type="button" class="chip" data-role="Singer">Singer</button>
+                        <button type="button" class="chip" data-role="Voice Actor">Voice Actor</button>
+                        <button type="button" class="chip" data-role="Artist 3D">Artist 3D</button>
+                        <button type="button" class="chip" data-role="Renderer">Renderer</button>
+                        <button type="button" class="chip" data-role="SFX">SFX</button>
+                        <button type="button" class="chip" data-role="GFX">GFX</button>
+                        <button type="button" class="chip" data-role="VFX">VFX</button>
+                    </div>
+                </div>
+
+                <div class="step-nav">
+                    <span class="step-count">3 dari 5</span>
+                    <div class="step-actions">
+                        <button class="btn btn-ghost" id="back-3">Kembali</button>
+                        <button class="btn btn-primary" id="next-3">Lanjut</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="step-panel" data-step="4">
+            <div class="card">
+                <h1 class="card-title">Isi Kontak dan Sosmed Kamu Disini</h1>
+                <p class="card-subtitle">Pasang sosmed kamu di sini biar orang pada tau kamu. Pastikan menggunakan link URL (https://) — semua kolom opsional.</p>
+
+                <div class="social-grid">
+                    <div class="social-field">
+                        <svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-dc"></use></svg>
+                        <input type="url" id="s-discord" placeholder="Link Server atau Person">
+                    </div>
+                    <div class="social-field">
+                        <svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-tk"></use></svg>
+                        <input type="url" id="s-tiktok" placeholder="Link Profil TikTok">
+                    </div>
+                    <div class="social-field">
+                        <svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-fb"></use></svg>
+                        <input type="url" id="s-facebook" placeholder="Link profil Facebook">
+                    </div>
+                    <div class="social-field">
+                        <svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-wa"></use></svg>
+                        <input id="s-whatsapp" placeholder="Bisa No WA atau Channel WhatsApp">
+                    </div>
+                    <div class="social-field">
+                        <svg class="gh-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/></svg>
+                        <input type="url" id="s-github" placeholder="Link Profil GitHub">
+                    </div>
+                    <div class="social-field">
+                        <svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-yt"></use></svg>
+                        <input type="url" id="s-youtube" placeholder="Link Channel YouTube">
+                    </div>
+                    <div class="social-field">
+                        <svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-ig"></use></svg>
+                        <input type="url" id="s-instagram" placeholder="Link Profil Instagram">
+                    </div>
+                    <div class="social-field">
+                        <svg viewBox="0 0 24 24"><use href="../icons/social-icons.svg#icon-tg"></use></svg>
+                        <input type="url" id="s-telegram" placeholder="Link Profil Telegram">
+                    </div>
+                </div>
+
+                <div class="step-nav">
+                    <span class="step-count">4 dari 5</span>
+                    <div class="step-actions">
+                        <button class="btn btn-ghost" id="back-4">Kembali</button>
+                        <button class="btn btn-primary" id="next-4">Lanjut</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="step-panel" data-step="5">
+            <div class="card">
+                <h1 class="card-title">Langkah Terakhir (Opsional)</h1>
+                <p class="card-subtitle">Biar admin bisa kenali kamu lebih jelas. Pastikan Nomor WhatsApp dan Email kamu benar-benar aktif.</p>
+
+                <div class="field">
+                    <label class="field-label" for="f-email">E-mail <span class="opt">(opsional)</span></label>
+                    <input class="input" type="email" id="f-email" placeholder="nama@email.com">
+                </div>
+
+                <div class="field">
+                    <label class="field-label" for="f-wa">No WA <span class="opt">(opsional)</span></label>
+                    <input class="input" type="tel" id="f-wa" placeholder="08xxxxxxxxxx">
+                </div>
+
+                <div class="step-nav">
+                    <span class="step-count">5 dari 5</span>
+                    <div class="step-actions">
+                        <button class="skip-link" id="skip-5">Nanti saja</button>
+                        <button class="btn btn-primary" id="finish-5">Selesai</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 6 - ringkasan (dev only) -->
+        <div class="step-panel" data-step="6">
+            <div class="card" style="text-align: center;">
+                <div class="done-icon">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+                <h1 class="card-title">Data Siap</h1>
+                <p class="card-subtitle">Ini baru pratinjau frontend — belum dikirim ke server mana pun. Kalau layout &amp; alurnya udah pas, tinggal kita sambungkan ke sistem pendaftaran akun beneran.</p>
+                <div class="summary-box" id="summary-json"></div>
+                <div class="replay-bar">
+                    <button class="replay-btn" id="replay-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                        Ulangi dari awal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ---------- state ----------
+        var totalSteps = 5;
+        var state = { username: '', nickname: '', banner: null, avatar: null, desc: '', roles: [], social: {}, email: '', wa: '' };
+        var current = 1;
+
+        var panels = document.querySelectorAll('.step-panel');
+        var dotsWrap = document.getElementById('step-dots');
+        for (var i = 1; i <= totalSteps; i++) {
+            var d = document.createElement('div');
+            d.className = 'step-dot';
+            d.dataset.step = i;
+            dotsWrap.appendChild(d);
+        }
+
+        function renderDots() {
+            dotsWrap.querySelectorAll('.step-dot').forEach(function (d) {
+                var n = Number(d.dataset.step);
+                d.classList.toggle('active', n === current);
+                d.classList.toggle('done', n < current);
+            });
+        }
+
+        function goTo(step) {
+            current = step;
+            panels.forEach(function (p) {
+                p.classList.toggle('active', Number(p.dataset.step) === step);
+            });
+            if (step <= totalSteps) renderDots(); else dotsWrap.style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ---------- step 1: username & nickname ----------
+        var fUsername = document.getElementById('f-username');
+        var fNickname = document.getElementById('f-nickname');
+        var usernameCount = document.getElementById('username-count');
+        var usernameStatus = document.getElementById('username-status');
+        var usernameHint = document.getElementById('username-hint');
+        var next1 = document.getElementById('next-1');
+        var USERNAME_RE = /^[A-Za-z0-9!@#$%^&*()\-_=+|;:,.<>?~]+$/;
+
+        function validateUsername() {
+            var v = fUsername.value;
+            usernameCount.textContent = v.length;
+            if (v.length === 0) {
+                fUsername.classList.remove('is-valid', 'is-invalid');
+                usernameStatus.textContent = '';
+                next1.disabled = true;
+                return;
+            }
+            var ok = USERNAME_RE.test(v) && v.length <= 20;
+            fUsername.classList.toggle('is-valid', ok);
+            fUsername.classList.toggle('is-invalid', !ok);
+            usernameStatus.textContent = ok ? '✓' : '✕';
+            usernameStatus.className = 'username-status ' + (ok ? 'ok' : 'bad');
+            usernameHint.style.color = ok ? '' : 'var(--danger)';
+            next1.disabled = !ok;
+        }
+        fUsername.addEventListener('input', validateUsername);
+        next1.addEventListener('click', function () {
+            state.username = fUsername.value.trim();
+            state.nickname = fNickname.value.trim() || state.username;
+            document.getElementById('preview-nick').textContent = state.nickname;
+            document.getElementById('preview-user').textContent = state.username;
+            goTo(2);
+        });
+
+        // ---------- step 2: banner & avatar ----------
+        var bannerInput = document.getElementById('f-banner');
+        var avatarInput = document.getElementById('f-avatar');
+        document.getElementById('btn-pick-banner').addEventListener('click', function () { bannerInput.click(); });
+        document.getElementById('btn-pick-avatar').addEventListener('click', function () { avatarInput.click(); });
+        document.getElementById('avatar-preview').addEventListener('click', function (e) { e.preventDefault(); avatarInput.click(); });
+
+        bannerInput.addEventListener('change', function () {
+            if (!bannerInput.files[0]) return;
+            var url = URL.createObjectURL(bannerInput.files[0]);
+            var el = document.getElementById('banner-preview');
+            el.style.backgroundImage = 'url(' + url + ')';
+            document.getElementById('banner-hint-text').style.display = 'none';
+            state.banner = bannerInput.files[0].name;
+        });
+        avatarInput.addEventListener('change', function () {
+            if (!avatarInput.files[0]) return;
+            var url = URL.createObjectURL(avatarInput.files[0]);
+            var el = document.getElementById('avatar-preview');
+            el.style.backgroundImage = 'url(' + url + ')';
+            el.querySelector('svg').style.display = 'none';
+            state.avatar = avatarInput.files[0].name;
+        });
+
+        document.getElementById('back-2').addEventListener('click', function () { goTo(1); });
+        document.getElementById('next-2').addEventListener('click', function () { goTo(3); });
+
+        // ---------- step 3: deskripsi & role ----------
+        var fDesc = document.getElementById('f-desc');
+        var descCount = document.getElementById('desc-count');
+        fDesc.addEventListener('input', function () { descCount.textContent = fDesc.value.length; });
+
+        document.querySelectorAll('#role-chips .chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                chip.classList.toggle('active');
+            });
+        });
+
+        document.getElementById('back-3').addEventListener('click', function () { goTo(2); });
+        document.getElementById('next-3').addEventListener('click', function () {
+            state.desc = fDesc.value.trim();
+            state.roles = Array.from(document.querySelectorAll('#role-chips .chip.active')).map(function (c) { return c.dataset.role; });
+            goTo(4);
+        });
+
+        // ---------- step 4: sosmed ----------
+        document.getElementById('back-4').addEventListener('click', function () { goTo(3); });
+        document.getElementById('next-4').addEventListener('click', function () {
+            ['discord', 'tiktok', 'facebook', 'whatsapp', 'github', 'youtube', 'instagram', 'telegram'].forEach(function (key) {
+                var el = document.getElementById('s-' + key);
+                if (el.value.trim()) state.social[key] = el.value.trim();
+            });
+            goTo(5);
+        });
+
+        // ---------- step 5: email & wa (opsional) ----------
+        function finishStep5() {
+            state.email = document.getElementById('f-email').value.trim();
+            state.wa = document.getElementById('f-wa').value.trim();
+            document.getElementById('summary-json').textContent = JSON.stringify(state, null, 2);
+            goTo(6);
+        }
+        document.getElementById('finish-5').addEventListener('click', finishStep5);
+        document.getElementById('skip-5').addEventListener('click', finishStep5);
+
+        // ---------- replay (biar bisa dibuka & dicoba berkali-kali) ----------
+        document.getElementById('replay-btn').addEventListener('click', function () {
+            state = { username: '', nickname: '', banner: null, avatar: null, desc: '', roles: [], social: {}, email: '', wa: '' };
+            fUsername.value = ''; fNickname.value = ''; fDesc.value = '';
+            usernameCount.textContent = '0'; descCount.textContent = '0';
+            fUsername.classList.remove('is-valid', 'is-invalid');
+            usernameStatus.textContent = '';
+            document.querySelectorAll('#role-chips .chip.active').forEach(function (c) { c.classList.remove('active'); });
+            ['discord', 'tiktok', 'facebook', 'whatsapp', 'github', 'youtube', 'instagram', 'telegram'].forEach(function (key) {
+                document.getElementById('s-' + key).value = '';
+            });
+            document.getElementById('f-email').value = ''; document.getElementById('f-wa').value = '';
+            document.getElementById('banner-preview').style.backgroundImage = '';
+            document.getElementById('banner-hint-text').style.display = '';
+            var avEl = document.getElementById('avatar-preview');
+            avEl.style.backgroundImage = ''; avEl.querySelector('svg').style.display = '';
+            document.getElementById('preview-nick').textContent = 'Nickname';
+            document.getElementById('preview-user').textContent = 'username';
+            dotsWrap.style.display = '';
+            goTo(1);
+        });
+
+        // ---------- theme toggle (fallback ringan kalau theme-toggle.js beda selector) ----------
+        document.getElementById('theme-toggle-btn').addEventListener('click', function () {
+            var isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('afi-theme', isDark ? 'dark' : 'light');
+        });
+    </script>
+</body>
+</html>
