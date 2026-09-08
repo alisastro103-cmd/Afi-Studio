@@ -71,8 +71,8 @@
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
         }
-        .top-bar-brand { display: flex; align-items: center; gap: 8px; }
-        .top-bar-brand img { width: 34px; height: 34px; object-fit: contain; }
+        .top-bar-brand { display: flex; align-items: center; gap: 4px; margin-left: 6px; }
+        .top-bar-brand img { width: 40px; height: 40px; object-fit: contain; }
         .top-bar-brand span { font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text); }
         .welcome-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
         .welcome-head img { width: 30px; height: 30px; object-fit: contain; flex-shrink: 0; }
@@ -157,7 +157,7 @@
             color: var(--text); cursor: pointer; user-select: none;
             transition: all .15s ease;
         }
-        .chip.active { background: var(--accent-hover); border-color: var(--accent-hover); color: #0B1220; font-weight: 600; }
+        .chip.active { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; font-weight: 600; }
 
         /* step 4 - sosmed */
         .social-grid { display: flex; flex-direction: column; gap: 10px; }
@@ -355,7 +355,7 @@
                         <input type="url" id="s-instagram" placeholder="Link Profil Instagram">
                     </div>
                     <div class="social-field">
-                        <svg viewBox="0 0 24 24"><use href="../icons/social-icons.svg#icon-tg"></use></svg>
+                        <img src="../icons/telegram.svg" alt="Telegram" style="width:18px;height:18px;">
                         <input type="url" id="s-telegram" placeholder="Link Profil Telegram">
                     </div>
                 </div>
