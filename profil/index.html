@@ -186,12 +186,28 @@
         .account-section-title { font-size: 12.5px; font-weight: 800; margin-bottom: 6px; }
         .account-desc { font-size: 13px; color: var(--text-sub); line-height: 1.55; }
 
-        .account-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .account-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; }
         .account-btn {
             font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px;
-            border: 1px solid var(--border); background: var(--bg); color: var(--text-sub);
-            cursor: not-allowed; opacity: 0.6;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text);
+            cursor: pointer;
         }
+        .account-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .account-btn-primary:hover { background: var(--accent-hover); }
+
+        /* ---- toggle satu board: lihat vs edit, gak pindah halaman/wizard lagi ---- */
+        .account-card:not(.editing) .edit-only { display: none !important; }
+        .account-card.editing .view-only { display: none !important; }
+        .account-avatar { position: relative; }
+        .avatar-edit-overlay {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: rgba(0,0,0,0.5); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .avatar-edit-overlay svg { width: 22px; height: 22px; }
+        .account-name-row .field-input { padding: 6px 10px; font-size: 15px; font-weight: 700; }
+        .username-input-row.edit-only { margin-top: 4px; }
 
         .profile-section { max-width: 640px; margin: 24px auto 0; padding: 0 20px 40px; }
         .empty-note { font-size: 12.5px; color: var(--text-sub); margin-top: 10px; }
@@ -371,55 +387,91 @@
             </div>
 
             <div class="account-card" id="self-account-card">
-                <div class="account-banner">
-                    <button type="button" class="account-edit-btn" id="account-edit-btn" onclick="openWizard(currentUser, {isEdit:true})">
+                <div class="account-banner" id="account-banner">
+                    <input type="file" accept="image/*" id="edit-banner-input" hidden>
+                    <button type="button" class="account-edit-btn view-only" id="account-edit-btn">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                         Edit
+                    </button>
+                    <button type="button" class="account-edit-btn edit-only" id="edit-banner-pick" style="right:auto; left:12px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 15 5-5 4 4 3-3 6 6"/></svg>
+                        Ganti Banner
                     </button>
                 </div>
                 <div class="account-body">
                     <div class="account-top-row">
                         <div class="account-avatar" id="account-avatar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+                            <input type="file" accept="image/*" id="edit-avatar-input" hidden>
+                            <div class="avatar-edit-overlay edit-only" id="edit-avatar-pick">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 15 5-5 4 4 3-3 6 6"/></svg>
+                            </div>
                         </div>
-                        <div class="account-stats" id="account-stats">
+                        <div class="account-stats view-only" id="account-stats">
                             <div class="account-stat"><div class="account-stat-num" id="stat-models">4</div><div class="account-stat-label">Models</div></div>
                             <div class="account-stat"><div class="account-stat-num" id="stat-like">128</div><div class="account-stat-label">Like</div></div>
                         </div>
                     </div>
 
                     <div class="account-name-row">
-                        <div class="account-name" id="account-name">Ali Sastro</div>
-                        <button type="button" class="account-copy-btn" id="account-copy-btn" title="Salin link profil">
+                        <div class="account-name view-only" id="account-name">Ali Sastro</div>
+                        <input class="field-input edit-only" id="edit-nickname" maxlength="30" placeholder="Nickname" style="max-width:220px;">
+                        <button type="button" class="account-copy-btn view-only" id="account-copy-btn" title="Salin link profil">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                         </button>
                     </div>
-                    <a href="#" class="account-username" id="account-username">@alisastro</a>
+                    <a href="#" class="account-username view-only" id="account-username">@alisastro</a>
+                    <div class="username-input-row edit-only" style="max-width:240px;">
+                        <span class="username-at">@</span>
+                        <input class="field-input" id="edit-username" maxlength="20" placeholder="username">
+                    </div>
+                    <div class="username-status edit-only" id="edit-username-status"></div>
 
                     <div class="account-section">
                         <div class="account-section-title">Deskripsi</div>
-                        <p class="account-desc" id="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
+                        <p class="account-desc view-only" id="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
+                        <textarea class="field-input edit-only" id="edit-desc" maxlength="200" style="width:100%; min-height:80px; resize:vertical;" placeholder="Ceritain tentang diri kamu..."></textarea>
                     </div>
 
-                    <div class="account-role-badges" id="account-role-badges">
+                    <div class="account-role-badges view-only" id="account-role-badges">
                         <span class="account-role-badge">Creator</span>
+                    </div>
+                    <div class="role-grid edit-only" id="edit-role-grid">
+                        <button type="button" class="role-chip" data-role="Designer">Designer</button>
+                        <button type="button" class="role-chip" data-role="Animator">Animator</button>
+                        <button type="button" class="role-chip" data-role="Renderer">Renderer</button>
+                        <button type="button" class="role-chip" data-role="Modeller">Modeller</button>
+                        <button type="button" class="role-chip" data-role="Converter Model">Converter Model</button>
                     </div>
 
                     <div class="account-section" id="account-social-section">
                         <div class="account-section-title">Sosial Media</div>
-                        <div class="social-container">
+                        <div class="social-container view-only">
                             <a href="#" class="social-btn" title="Instagram"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-ig"></use></svg></a>
                             <a href="#" class="social-btn" title="YouTube"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-yt"></use></svg></a>
                             <a href="#" class="social-btn" title="WhatsApp"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-wa"></use></svg></a>
                         </div>
+                        <div class="edit-only" id="edit-social-rows">
+                            <div class="social-row"><span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-yt"></use></svg></span><input type="url" class="field-input" id="edit-social-yt" placeholder="Link channel YouTube"></div>
+                            <div class="social-row"><span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-ig"></use></svg></span><input type="url" class="field-input" id="edit-social-ig" placeholder="Link profil Instagram"></div>
+                            <div class="social-row"><span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-fb"></use></svg></span><input type="url" class="field-input" id="edit-social-fb" placeholder="Link profil Facebook"></div>
+                            <div class="social-row"><span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-tk"></use></svg></span><input type="url" class="field-input" id="edit-social-tk" placeholder="Link profil TikTok"></div>
+                            <div class="social-row"><span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-wa"></use></svg></span><input type="url" class="field-input" id="edit-social-wa" placeholder="Link/No WhatsApp"></div>
+                            <div class="social-row"><span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-dc"></use></svg></span><input type="url" class="field-input" id="edit-social-dc" placeholder="Link/username Discord"></div>
+                        </div>
                     </div>
 
+                    <div class="wizard-error edit-only" id="edit-error"></div>
+
                     <div class="account-actions" id="account-actions">
-                        <button class="account-btn">Edit Profil</button>
-                        <button class="account-btn">Keluar</button>
+                        <button class="account-btn view-only" id="btn-edit-profil" style="cursor:pointer; opacity:1;">Edit Profil</button>
+                        <button class="account-btn view-only" id="btn-logout" style="cursor:pointer; opacity:1;">Keluar</button>
+                        <button class="account-btn account-btn-primary edit-only" id="btn-save-profil">Simpan</button>
+                        <button class="account-btn edit-only" id="btn-cancel-edit" style="cursor:pointer; opacity:1;">Batal</button>
                     </div>
                 </div>
             </div>
+
 
             <!-- Ditampilin gantiin account-card di atas selama BELUM login. -->
             <div class="account-card login-gate" id="login-gate" style="display:none; padding: 34px 20px; text-align:center;">
@@ -611,7 +663,16 @@
 
         const avatarSrc = u.avatarUrl || u.picture;
         if (avatarSrc) {
-            document.getElementById('account-avatar').innerHTML = `<img src="${avatarSrc}" alt="${u.nickname || ''}">`;
+            const avatarEl = document.getElementById('account-avatar');
+            let avatarImg = avatarEl.querySelector('img');
+            if (!avatarImg) {
+                avatarImg = document.createElement('img');
+                avatarImg.style.cssText = 'width:100%; height:100%; border-radius:50%; object-fit:cover;';
+                avatarEl.querySelector('svg')?.remove();
+                avatarEl.prepend(avatarImg);
+            }
+            avatarImg.src = avatarSrc;
+            avatarImg.alt = u.nickname || '';
         }
         const bannerEl = document.getElementById('self-account-card').querySelector('.account-banner');
         if (u.bannerUrl) {
@@ -645,10 +706,190 @@
             socialsEl.style.display = 'none';
         }
 
-        document.getElementById('account-actions').innerHTML = `
-            <button class="account-btn" style="cursor:pointer; opacity:1;" onclick="openWizard(currentUser, {isEdit:true})">Edit Profil</button>
-            <button class="account-btn" onclick="logoutAccount()" style="cursor:pointer; opacity:1;">Keluar</button>`;
+        document.getElementById('account-actions'); // tombol view/edit statis di HTML, gak ditulis ulang lagi di sini
     }
+
+    /* ==================== Edit Profil: satu board yang sama, TOGGLE ke mode edit ====================
+       Beda sama wizard pendaftaran (4 langkah terpisah) -- ini gak ganti halaman/kartu, cuma
+       elemen "view" disembunyiin & elemen "edit" (input) dimunculin di slot yang sama. */
+    let editAvatarBase64 = null;
+    let editBannerBase64 = null;
+    let editUsernameOk = true;
+    let editUsernameTimer = null;
+
+    function enterEditMode(){
+        const u = currentUser || {};
+        document.getElementById('edit-nickname').value = u.nickname || '';
+        document.getElementById('edit-username').value = u.username || '';
+        document.getElementById('edit-desc').value = u.bio || '';
+        document.getElementById('edit-error').textContent = '';
+        editUsernameOk = true;
+        editAvatarBase64 = null;
+        editBannerBase64 = null;
+
+        const roles = Array.isArray(u.roles) ? u.roles : [];
+        document.querySelectorAll('#edit-role-grid .role-chip').forEach(chip => {
+            chip.classList.toggle('selected', roles.includes(chip.dataset.role));
+        });
+
+        const socials = u.socials || {};
+        ['yt','ig','fb','tk','wa','dc'].forEach(key => {
+            document.getElementById('edit-social-' + key).value = socials[key] || '';
+        });
+
+        document.getElementById('self-account-card').classList.add('editing');
+        window.scrollTo({ top: document.getElementById('self-account-card').offsetTop - 70, behavior: 'smooth' });
+    }
+
+    function exitEditMode(){
+        // Batal: balikin preview avatar/banner ke yang tersimpan kalau sempat diganti pas edit.
+        if (editAvatarBase64 && currentUser) {
+            const avatarEl = document.getElementById('account-avatar');
+            const img = avatarEl.querySelector('img');
+            if (img) img.src = currentUser.avatarUrl || currentUser.picture || '';
+        }
+        if (editBannerBase64 && currentUser) {
+            const bannerEl = document.getElementById('account-banner');
+            const img = bannerEl.querySelector('img');
+            if (img && currentUser.bannerUrl) img.src = currentUser.bannerUrl;
+            else if (img && !currentUser.bannerUrl) img.remove();
+        }
+        editAvatarBase64 = null;
+        editBannerBase64 = null;
+        document.getElementById('self-account-card').classList.remove('editing');
+        document.getElementById('edit-error').textContent = '';
+    }
+
+    document.getElementById('btn-edit-profil').addEventListener('click', enterEditMode);
+    document.getElementById('account-edit-btn').addEventListener('click', enterEditMode);
+    document.getElementById('btn-cancel-edit').addEventListener('click', exitEditMode);
+    document.getElementById('btn-logout').addEventListener('click', logoutAccount);
+
+    document.querySelectorAll('#edit-role-grid .role-chip').forEach(chip => {
+        chip.addEventListener('click', () => chip.classList.toggle('selected'));
+    });
+
+    document.getElementById('edit-username').addEventListener('input', (e) => {
+        const val = e.target.value.trim().toLowerCase();
+        e.target.value = val;
+        const statusEl = document.getElementById('edit-username-status');
+        clearTimeout(editUsernameTimer);
+        editUsernameOk = false;
+
+        if (!val) { statusEl.textContent = ''; statusEl.className = 'username-status edit-only'; return; }
+        if (!/^[a-z0-9_]{3,20}$/.test(val)) {
+            statusEl.textContent = 'Format belum pas: 3-20 karakter, huruf kecil/angka/underscore.';
+            statusEl.className = 'username-status edit-only bad';
+            return;
+        }
+        if (currentUser && val === currentUser.username) {
+            editUsernameOk = true;
+            statusEl.textContent = '';
+            statusEl.className = 'username-status edit-only';
+            return;
+        }
+        statusEl.textContent = 'Mengecek ketersediaan...';
+        statusEl.className = 'username-status edit-only checking';
+        editUsernameTimer = setTimeout(() => {
+            fetch('/api/auth?action=check-username&username=' + encodeURIComponent(val))
+                .then(r => r.json())
+                .then(res => {
+                    if (document.getElementById('edit-username').value !== val) return;
+                    if (res.available) {
+                        statusEl.textContent = 'Tersedia.';
+                        statusEl.className = 'username-status edit-only ok';
+                        editUsernameOk = true;
+                    } else {
+                        statusEl.textContent = 'Sudah dipakai orang lain, coba nama lain.';
+                        statusEl.className = 'username-status edit-only bad';
+                    }
+                })
+                .catch(() => { statusEl.textContent = ''; statusEl.className = 'username-status edit-only'; });
+        }, 400);
+    });
+
+    document.getElementById('edit-avatar-pick').addEventListener('click', () => document.getElementById('edit-avatar-input').click());
+    document.getElementById('edit-avatar-input').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            editAvatarBase64 = await fileToResizedBase64(file, 640);
+            document.getElementById('account-avatar').querySelector('svg')?.remove();
+            let img = document.getElementById('account-avatar').querySelector('img');
+            if (!img) { img = document.createElement('img'); document.getElementById('account-avatar').prepend(img); }
+            img.src = editAvatarBase64;
+        } catch (err) {
+            document.getElementById('edit-error').textContent = err.message;
+        }
+    });
+
+    document.getElementById('edit-banner-pick').addEventListener('click', () => document.getElementById('edit-banner-input').click());
+    document.getElementById('edit-banner-input').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            editBannerBase64 = await fileToResizedBase64(file, 1400);
+            const bannerEl = document.getElementById('account-banner');
+            let img = bannerEl.querySelector('img');
+            if (!img) {
+                img = document.createElement('img');
+                img.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;';
+                bannerEl.prepend(img);
+            }
+            img.src = editBannerBase64;
+        } catch (err) {
+            document.getElementById('edit-error').textContent = err.message;
+        }
+    });
+
+    document.getElementById('btn-save-profil').addEventListener('click', async () => {
+        const errEl = document.getElementById('edit-error');
+        errEl.textContent = '';
+        const nickname = document.getElementById('edit-nickname').value.trim();
+        if (nickname.length < 2) { errEl.textContent = 'Isi nickname minimal 2 karakter dulu ya.'; return; }
+        if (!editUsernameOk) { errEl.textContent = 'Isi username yang valid & masih tersedia dulu ya.'; return; }
+        const roles = Array.from(document.querySelectorAll('#edit-role-grid .role-chip.selected')).map(c => c.dataset.role);
+        if (roles.length === 0) { errEl.textContent = 'Pilih minimal 1 peran dulu ya.'; return; }
+
+        const btn = document.getElementById('btn-save-profil');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+        try {
+            const payload = {
+                nickname,
+                username: document.getElementById('edit-username').value.trim(),
+                roles,
+                socials: {
+                    yt: document.getElementById('edit-social-yt').value.trim(),
+                    ig: document.getElementById('edit-social-ig').value.trim(),
+                    fb: document.getElementById('edit-social-fb').value.trim(),
+                    tk: document.getElementById('edit-social-tk').value.trim(),
+                    wa: document.getElementById('edit-social-wa').value.trim(),
+                    dc: document.getElementById('edit-social-dc').value.trim(),
+                },
+                bio: document.getElementById('edit-desc').value.trim(),
+            };
+            if (editAvatarBase64) payload.avatarBase64 = editAvatarBase64;
+            if (editBannerBase64) payload.bannerBase64 = editBannerBase64;
+
+            const resp = await fetch('/api/auth?action=complete-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Gagal simpan profil.');
+
+            currentUser = data.user;
+            renderAccountCard(currentUser);
+            exitEditMode();
+        } catch (err) {
+            errEl.textContent = err.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Simpan';
+        }
+    });
 
     /* ==================== Wizard pendaftaran / edit profil ==================== */
     let wzStep = 1;

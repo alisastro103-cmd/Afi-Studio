@@ -66,11 +66,15 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 14px 20px;
             position: sticky; top: 0; z-index: 40;
-            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            background: var(--bg);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
         }
-        .top-bar-brand { display: flex; align-items: center; gap: 8px; font-family: 'CreatoDisplay', sans-serif; font-weight: 700; font-size: 18px; }
+        .top-bar-brand { display: flex; align-items: center; gap: 8px; }
+        .top-bar-brand img { width: 34px; height: 34px; object-fit: contain; }
+        .top-bar-brand span { font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text); }
+        .welcome-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .welcome-head img { width: 30px; height: 30px; object-fit: contain; flex-shrink: 0; }
         .theme-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
 
         .wrap { max-width: 460px; margin: 0 auto; padding: 28px 18px 60px; }
@@ -189,7 +193,7 @@
 <body>
 
     <div class="top-bar">
-        <div class="top-bar-brand">🪴 Afi Studio</div>
+        <div class="top-bar-brand"><img src="../icon.png" alt="Afi Studio"><span>Afi-Studio</span></div>
         <button class="theme-btn" id="theme-toggle-btn" aria-label="Ganti tema">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
         </button>
@@ -202,7 +206,7 @@
         <!-- STEP 1 -->
         <div class="step-panel active" data-step="1">
             <div class="card">
-                <h1 class="card-title">Selamat Datang</h1>
+                <div class="welcome-head"><img src="../icon.png" alt=""><h1 class="card-title" style="margin-bottom:0;">Selamat Datang</h1></div>
                 <p class="card-subtitle">Selamat datang di Afi Studio. Siapin profil lengkapnya bang, biar bisa dikenal banyak orang.</p>
 
                 <div class="field">
