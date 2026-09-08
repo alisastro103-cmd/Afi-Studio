@@ -31,13 +31,14 @@ const USER_PREFIX = 'afi-accounts:user:'; // key = Google "sub" (ID akun Google,
 const USERNAME_PREFIX = 'afi-accounts:username:'; // key = username (lowercase) -> Google "sub" pemiliknya
 const SESSION_TTL_SEC = 60 * 60 * 24 * 30; // sesi login bertahan 30 hari
 
-// 5 peran yang bisa dipilih user pas daftar akun (nyambung ke field
+// 12 peran/skill yang bisa dipilih user pas daftar/edit profil (nyambung ke field
 // creator/converter di Models/models.json -- lihat data.schema.md).
-export const ROLES = ['Designer', 'Animator', 'Renderer', 'Modeller', 'Converter Model'];
+export const ROLES = ['Designer', 'Artist', 'Modeler', 'Animator', 'Converter Model', 'Singer', 'Voice Actor', 'Artist 3D', 'Renderer', 'SFX', 'GFX', 'VFX'];
 
-// 6 platform sosmed, sama persis kayak yang dipakai di member-Afi-Studio/member.json
-// (field "socials": yt/ig/fb/tk/wa/dc), biar konsisten satu situs.
-const SOCIAL_KEYS = ['yt', 'ig', 'fb', 'tk', 'wa', 'dc'];
+// 8 platform sosmed (nambahin gh/tg dari 6 yang lama -- yt/ig/fb/tk/wa/dc -- biar
+// samain sama sketsa onboarding). member-Afi-Studio/member.json masih pake 6 lama,
+// perlu disamain kalau mau tampil penuh di situ juga.
+const SOCIAL_KEYS = ['yt', 'ig', 'fb', 'tk', 'wa', 'dc', 'gh', 'tg'];
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 

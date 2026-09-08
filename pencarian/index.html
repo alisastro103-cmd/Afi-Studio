@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script src="../config.js"></script>
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencarian - Afi Studio</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="apple-touch-icon" href="../favicon.png">
+
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', function () { if (window.lucide) window.lucide.createIcons(); });</script>
+    <link rel="stylesheet" href="/fonts/fonts.css?v=3fonts">
+
+
+    <style>
+        /* ---------- halaman pencarian global ---------- */
+        .search-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+
+        .search-box-big {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--surface); border: 1.5px solid var(--border);
+            border-radius: 999px; padding: 14px 20px; margin-bottom: 18px;
+        }
+        .search-box-big svg { width: 20px; height: 20px; color: var(--text-sub); flex-shrink: 0; }
+        .search-box-big input {
+            flex: 1; border: none; background: none; outline: none;
+            font-size: 15px; color: var(--text); font-family: 'Geist', sans-serif;
+        }
+        .search-box-big input::placeholder { color: var(--text-sub); }
+
+        .search-tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--border); margin-bottom: 20px; overflow-x: auto; }
+        .search-tab {
+            background: none; border: none; padding: 6px 2px 12px;
+            font-size: 14.5px; color: var(--text-sub); font-weight: 600;
+            border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer;
+        }
+        .search-tab.active { color: var(--text); border-bottom-color: var(--accent-hover); }
+
+        .search-section-title { display: flex; align-items: baseline; gap: 8px; margin: 22px 0 12px; }
+        .search-section-title h2 { font-size: 17px; }
+        .search-section-title span { font-size: 12.5px; color: var(--text-sub); }
+
+        .search-result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+        .result-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+            overflow: hidden; text-decoration: none; color: var(--text); display: block;
+        }
+        .result-card-thumb { aspect-ratio: 4/3; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
+        .result-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .result-card-body { padding: 10px 12px; }
+        .result-card-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .result-card-sub { font-size: 11.5px; color: var(--text-sub); }
+        .result-card-type { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--accent); margin-top: 6px; }
+
+        .result-profile-row {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            padding: 10px 14px; text-decoration: none; color: var(--text); margin-bottom: 10px;
+        }
+        .result-profile-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--bg); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--text-sub); overflow: hidden; }
+        .result-profile-avatar svg { width: 20px; height: 20px; }
+        .result-profile-name { font-size: 13.5px; font-weight: 700; }
+        .result-profile-sub { font-size: 11.5px; color: var(--text-sub); }
+
+        .search-empty { text-align: center; padding: 50px 20px; color: var(--text-sub); font-size: 13.5px; }
+        .search-empty svg { width: 40px; height: 40px; margin: 0 auto 10px; opacity: .6; }
+
+        .dev-note-inline {
+            font-size: 11px; color: var(--text-sub);
+            background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+            border: 1px dashed var(--accent-hover); border-radius: 10px;
+            padding: 10px 12px; margin: 18px 0; line-height: 1.5;
+        }
+    </style>
+</head>
+<body class="h-full">
+    <div id="app" class="h-full overflow-auto w-full">
+        <nav class="nav-bar">
+            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between nav-row-flex">
+                <div class="cursor-pointer flex items-center gap-1 nav-brand" onclick="window.location.reload()">
+                    <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                    <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
+                        Afi-Studio
+                    </div>
+                </div>
+
+                <div class="flex items-center nav-actions">
+                    <nav class="nav-links" aria-label="Navigasi halaman">
+                        <a href="../" class="nav-link">Beranda</a>
+                        <a href="../about/index.html" class="nav-link">About</a>
+                        <a href="../Models/index.html" class="nav-link nav-link-wide">Models</a>
+                        <a href="../tutorial/index.html" class="nav-link">Video</a>
+                        <a href="../member-Afi-Studio/index.html" class="nav-link nav-link-wide">Member</a>
+                    </nav>
+
+                    <div class="flex items-center gap-4"> 
+                    
+                    <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </button>
+
+                    <div class="page-menu">
+                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+                        </button>
+                        <div id="page-menu-dropdown" class="page-menu-dropdown">
+                            <div class="page-menu-profile-preview" aria-disabled="true">
+                              <span class="page-menu-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg></span>
+                              <span class="page-menu-profile-text">
+                                <span class="page-menu-profile-cta">Lihat Profil</span>
+                                <span class="page-menu-profile-sub">Segera hadir</span>
+                              </span>
+                            </div>
+                            <div class="page-menu-profile-auth" aria-disabled="true">
+                              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--solid">Masuk</span>
+                              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--outline">Daftar</span>
+                            </div>
+                                                        <div class="page-menu-divider"></div>
+                            <a href="../" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
+                            <a href="../member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
+                            <a href="../event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
+                            <a href="../ranking/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 5H5a2 2 0 0 0 0 4h1M16 5h3a2 2 0 0 1 0 4h-1"/><path d="M12 13v3M9 20h6M10 17h4v3h-4z"/></svg><span class="page-menu-label">Ranking Render</span></a>
+                            <a href="../tutorial/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><span class="page-menu-label">Video &amp; Tutorial</span></a>
+                            <a href="../bantuan/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg><span class="page-menu-label">Bantuan</span></a>
+                            <a href="../feedback/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"/></svg><span class="page-menu-label">Feedback</span></a>
+                            <a href="../favorit/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.6-9.5 9-9.5 9z"/></svg><span class="page-menu-label">Favorit</span></a><a href="../survey/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/></svg><span class="page-menu-label">Survey</span></a>
+                            <a href="../about/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/></svg><span class="page-menu-label">Tentang Kami</span></a>
+                <a href="../privacy/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg><span class="page-menu-label">Kebijakan Privasi</span></a>
+                <div class="page-menu-divider"></div>
+                            <a href="../daftar-model/index.html" class="link-daftar-model page-menu-item page-menu-item-cta" rel="noopener"  onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span class="page-menu-label">Daftar Model 3D</span></a>
+                            <a id="link-daftar-member" href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6.2 6-6.2s6 2.7 6 6.2"/><path d="M18 8v6M15 11h6"/></svg><span class="page-menu-label">Daftar Member</span></a>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="search-wrap">
+            <div class="search-box-big">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                <input type="text" id="search-input" placeholder="Carikan..." autocomplete="off">
+            </div>
+
+            <div class="search-tabs" id="search-tabs">
+                <button type="button" class="search-tab active" data-tab="semua">Semua</button>
+                <button type="button" class="search-tab" data-tab="profil">Profil</button>
+                <button type="button" class="search-tab" data-tab="models">Models</button>
+                <button type="button" class="search-tab" data-tab="video">Video</button>
+            </div>
+
+            <div class="dev-note-inline">Halaman ini masih tahap dev &mdash; belum ditautkan ke navbar/beranda, dan hasilnya masih data contoh (dummy) sambil nunggu API pencarian beneran di sistem.</div>
+
+            <div id="search-results"></div>
+        </div>
+
+    <script>
+        // ---- data contoh (dummy) -- nanti diganti fetch ke API pencarian beneran ----
+        const DUMMY_DATA = {
+            profil: [
+                { name: 'Ali Sastro', username: 'alisastro', sub: 'Designer · Artist 3D' },
+                { name: 'Rina Kreatif', username: 'rinakreatif', sub: 'Animator' },
+            ],
+            models: [
+                { title: 'Rig Mob Minecraft', sub: 'ASTR-0123 · Prisma3D', type: 'Model' },
+                { title: 'Furniture Set Kayu', sub: 'RinaKreatif · Blender', type: 'Model' },
+                { title: 'Map Survival Island', sub: 'ASTR-0123 · Mine-Imator', type: 'Model' },
+            ],
+            video: [
+                { title: 'Tutorial Rig Dasar', sub: 'YouTube · Afi Studio', type: 'Video' },
+            ],
+        };
+
+        const tabs = document.querySelectorAll('.search-tab');
+        const input = document.getElementById('search-input');
+        const resultsEl = document.getElementById('search-results');
+        let activeTab = 'semua';
+
+        function cardModel(m) {
+            return `<a href="#" class="result-card">
+                <div class="result-card-thumb"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
+                <div class="result-card-body">
+                    <div class="result-card-title">${m.title}</div>
+                    <div class="result-card-sub">${m.sub}</div>
+                    <span class="result-card-type">${m.type}</span>
+                </div>
+            </a>`;
+        }
+        function rowProfil(p) {
+            return `<a href="/@${p.username}" class="result-profile-row">
+                <div class="result-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"/></svg></div>
+                <div>
+                    <div class="result-profile-name">${p.name}</div>
+                    <div class="result-profile-sub">@${p.username} &middot; ${p.sub}</div>
+                </div>
+            </a>`;
+        }
+
+        function render() {
+            const q = input.value.trim().toLowerCase();
+            const matchesQ = (text) => !q || text.toLowerCase().includes(q);
+
+            const profil = DUMMY_DATA.profil.filter(p => matchesQ(p.name + p.username));
+            const models = DUMMY_DATA.models.filter(m => matchesQ(m.title + m.sub));
+            const video = DUMMY_DATA.video.filter(v => matchesQ(v.title + v.sub));
+
+            let html = '';
+            const showProfil = activeTab === 'semua' || activeTab === 'profil';
+            const showModels = activeTab === 'semua' || activeTab === 'models';
+            const showVideo = activeTab === 'semua' || activeTab === 'video';
+
+            const total = (showProfil ? profil.length : 0) + (showModels ? models.length : 0) + (showVideo ? video.length : 0);
+
+            if (showProfil && profil.length) {
+                html += `<div class="search-section-title"><h2>Profil</h2><span>(${profil.length} hasil)</span></div>`;
+                html += profil.map(rowProfil).join('');
+            }
+            if (showModels && models.length) {
+                html += `<div class="search-section-title"><h2>Models</h2><span>(${models.length} hasil)</span></div>`;
+                html += `<div class="search-result-grid">${models.map(cardModel).join('')}</div>`;
+            }
+            if (showVideo && video.length) {
+                html += `<div class="search-section-title"><h2>Video</h2><span>(${video.length} hasil)</span></div>`;
+                html += `<div class="search-result-grid">${video.map(cardModel).join('')}</div>`;
+            }
+            if (!total) {
+                html = `<div class="search-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                    Gak ada hasil buat "${input.value}"
+                </div>`;
+            }
+            resultsEl.innerHTML = html;
+        }
+
+        tabs.forEach(tab => tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeTab = tab.dataset.tab;
+            render();
+        }));
+        input.addEventListener('input', render);
+        render();
+    </script>
+
+        <footer class="footer-text" style="text-align:center; padding:26px 16px; color:var(--text-sub); font-size:12px;">
+            <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+        </footer>
+    </div>
+
+    <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
+
+    <script src="/favorites.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+    <script src="/page-menu-drawer.js" defer></script>
+</body>
+</html>
