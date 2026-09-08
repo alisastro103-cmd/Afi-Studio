@@ -160,9 +160,8 @@
         .chip.active { background: var(--accent-hover); border-color: var(--accent-hover); color: #0B1220; font-weight: 600; }
 
         /* step 4 - sosmed */
-        .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 380px) { .social-grid { grid-template-columns: 1fr; } }
-        .social-field { display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--border); border-radius: 12px; padding: 4px 4px 4px 10px; background: color-mix(in srgb, var(--surface) 60%, var(--bg)); }
+        .social-grid { display: flex; flex-direction: column; gap: 10px; }
+        .social-field { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--border); border-radius: 12px; padding: 4px 4px 4px 14px; background: color-mix(in srgb, var(--surface) 60%, var(--bg)); }
         .social-field svg, .social-field .gh-icon { width: 18px; height: 18px; flex-shrink: 0; filter: brightness(0) invert(1); }
         .social-field .gh-icon { filter: none; color: #fff; }
         .social-field input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--text); font-size: 12.5px; padding: 9px 6px; font-family: 'Geist', sans-serif; }

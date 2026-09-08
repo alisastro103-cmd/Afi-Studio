@@ -2,7 +2,7 @@
 <html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <script src="../config.js"></script>
+    <script src="/config.js"></script>
     <script>
         (function () {
             var saved = localStorage.getItem('afi-theme');
@@ -22,6 +22,13 @@
     <script>document.addEventListener('DOMContentLoaded', function () { if (window.lucide) window.lucide.createIcons(); });</script>
     <link rel="stylesheet" href="/fonts/fonts.css?v=3fonts">
 
+    <link rel="stylesheet" href="/css/theme-tokens.css">
+    <link rel="stylesheet" href="/css/sponsor-slot.css">
+    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
+    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="/css/page-menu-drawer.css">
+    <link rel="stylesheet" href="/css/skeleton-shimmer.css">
+    <link rel="stylesheet" href="/css/nav-links.css">
 
     <style>
         /* --- RESET & ROOT --- */
@@ -521,7 +528,7 @@
 
         .search-result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
         .result-card {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 28px;
             overflow: hidden; text-decoration: none; color: var(--text); display: block;
         }
         .result-card-thumb { aspect-ratio: 4/3; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
@@ -533,8 +540,8 @@
 
         .result-profile-row {
             display: flex; align-items: center; gap: 12px;
-            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-            padding: 10px 14px; text-decoration: none; color: var(--text); margin-bottom: 10px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+            padding: 10px 18px; text-decoration: none; color: var(--text); margin-bottom: 10px;
         }
         .result-profile-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--bg); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--text-sub); overflow: hidden; }
         .result-profile-avatar svg { width: 20px; height: 20px; }
@@ -547,8 +554,8 @@
         .dev-note-inline {
             font-size: 11px; color: var(--text-sub);
             background: color-mix(in srgb, var(--accent) 12%, var(--surface));
-            border: 1px dashed var(--accent-hover); border-radius: 10px;
-            padding: 10px 12px; margin: 18px 0; line-height: 1.5;
+            border: 1px dashed var(--accent-hover); border-radius: 24px;
+            padding: 12px 18px; margin: 18px 0; line-height: 1.5;
         }
     </style>
 </head>
