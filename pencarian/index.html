@@ -24,6 +24,474 @@
 
 
     <style>
+        /* --- RESET & ROOT --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'Geist', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'CreatoDisplay', sans-serif; }
+ 
+        :root {
+            --accent: #93C5FD;
+            --accent-hover: #7DD3FC;
+            --bg: #D0D7E1;
+            --surface: #E1E7EE;
+            --text: #334155;
+            --text-sub: #64748B;
+            --border: #B9C4D3;
+            --grid-line: rgba(100,116,139,0.22);
+        }
+ 
+        .dark {
+            --accent: #3B5578;
+            --accent-hover: #4A6690;
+            --bg: #1E293B;
+            --surface: #334155;
+            --text: #CBD5E1;
+            --text-sub: #94A3B8;
+            --border: #475569;
+            --grid-line: rgba(148,163,184,0.16);
+        }
+ 
+        body { 
+            background-color: var(--bg); 
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-attachment: fixed; /* grid tetep nempel di layar, gak ikut scroll konten */
+            color: var(--text); 
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; 
+            zoom: 0.75;
+        }
+ 
+        .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* PERBAIKAN CLS (layout shift): #category-filter dan #content-grid
+           kosong total di HTML awal, baru diisi lewat JS setelah data model
+           selesai di-fetch dari API. Tanpa ruang yang dicadangkan lebih dulu,
+           area ini 0px tingginya di render pertama, terus tiba-tiba melonjak
+           setinggi beberapa baris kartu begitu datanya sampai — bikin tombol
+           "Lihat Model lainnya" dan footer di bawahnya kedorong turun
+           mendadak (ini kemungkinan besar biang utama skor CLS 0.5 yang
+           "Gagal" di PageSpeed Insights). min-height di sini gak mengubah
+           tampilan SETELAH kontennya kemuat — cuma nyadangin ruang selagi
+           nunggu, biar gak ada lompatan mendadak. */
+        #category-filter { min-height: 40px; }
+        #content-grid.grid-loading { min-height: 380px; }
+        @media (min-width: 1024px) { #content-grid.grid-loading { min-height: 480px; } }
+ 
+        /* --- VIDEO & TUTORIAL --- */
+        .video-scroll { scroll-snap-type: x proximity; }
+        .video-card {
+            flex: 0 0 auto;
+            width: 460px;
+            cursor: pointer;
+            scroll-snap-align: start;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .video-viewall-thumb {
+            aspect-ratio: 16/9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 18px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            transition: filter 0.2s;
+        }
+        .video-card:hover .video-viewall-thumb { filter: brightness(1.08); }
+        .video-viewall-icon { color: var(--text); }
+        html.dark .video-viewall-icon { color: #fff; }
+        .video-viewall-text { font-size: 14px; font-weight: 700; line-height: 1.4; color: var(--text); }
+        html.dark .video-viewall-text { color: #fff; }
+        .video-thumb-wrap {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--surface);
+        }
+        .video-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; transition: transform 0.25s; }
+        .video-card:hover .video-thumb { transform: scale(1.05); }
+        .video-play-badge {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.15);
+            transition: background 0.2s;
+        }
+        .video-card:hover .video-play-badge { background: rgba(0,0,0,0.3); }
+        .video-play-badge svg { width: 80px; height: 80px; color: #fff; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
+        .new-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: #EF4444;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 999px;
+            z-index: 2;
+            letter-spacing: 0.02em;
+        }
+        .view-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+        .video-card-title {
+            margin-top: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.35;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .video-modal-box { max-width: 760px; width: 94%; border-radius: 3px !important; position: relative; }
+        .modal-fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.45);
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            transition: background 0.2s, color 0.2s, transform 0.15s;
+        }
+        .modal-fav-btn:hover { background: rgba(0,0,0,0.65); }
+        .modal-fav-btn:active { transform: scale(0.9); }
+        .modal-fav-btn svg { width: 17px; height: 17px; }
+        .modal-fav-btn.is-favorited { color: #FBBF24; }
+        /* Tombol share ditaruh SATU KELOMPOK dengan tombol favorit (sama-sama pojok
+           kanan-atas thumbnail modal), cuma digeser ke kiri dikit biar gak numpuk. */
+        .modal-share-btn { right: 50px; }
+        .video-frame-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+        .video-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+        .video-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .video-youtube-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .video-youtube-btn:hover { background: var(--accent); color: #fff; }
+        .video-youtube-btn:focus, .video-youtube-btn:focus-visible { outline: none; }
+        .video-youtube-btn { -webkit-tap-highlight-color: transparent; }
+        .video-youtube-btn svg { width: 16px; height: 16px; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; position: relative; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        /* --- Sheet pilihan "Bagikan" (WhatsApp / Telegram / Salin Link) --- */
+        .share-sheet-box { max-width: 360px; }
+        .share-option-btn {
+            display: flex; align-items: center; gap: 12px; width: 100%;
+            padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text); font-weight: 700; font-size: 14px;
+            cursor: pointer; transition: background 0.15s, transform 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .share-option-btn:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+        .share-option-btn:active { transform: scale(0.98); }
+        .share-option-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+        /* fill:currentColor buat WhatsApp & Telegram -- dua-duanya logo solid
+           (bukan outline), dan path-nya sendiri gak punya atribut fill,
+           jadi defaultnya hitam dan gak otomatis ngikutin `color` di atas
+           kalau gak di-set eksplisit. Ikon Salin Link beda gaya (outline,
+           stroke="currentColor" udah di-set langsung di elemen <svg>-nya),
+           makanya dia gak perlu fill di sini. Warnanya ngikutin --text-sub
+           biar otomatis nyesuain tema: gelap di tema terang, terang di
+           tema gelap. */
+        .share-option-icon-wa,
+        .share-option-icon-tg { color: var(--text-sub); fill: currentColor; }
+        .share-option-icon-link { color: var(--text-sub); }
+
+        /* Toast "Link disalin" -- override durasi transisi bawaan Tailwind
+           (.transition-transform cuma 150ms, kerasa buru-buru banget).
+           300ms di sini HARUS senilai sama dengan TOAST_HIDE_TRANSITION_MS
+           di script.js supaya teksnya baru di-reset pas toast udah bener2
+           gak keliatan. */
+        #toast { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        /* --- PERBAIKAN BANNER --- */
+        .banner-container { 
+            width: 100%; 
+            position: relative; 
+            overflow: hidden;
+            border-bottom: 1px solid var(--border); 
+            touch-action: pan-y; 
+            cursor: grab; 
+            background: var(--surface);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        .banner-container:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        /* Padding-top trick: rasio banner 2:1 (mis. 1600x800), jadi 800/1600 * 100 = 50% */
+        .banner-container::before {
+            content: '';
+            display: block;
+            padding-top: 50%;
+        }
+        .banner-container:active { cursor: grabbing; }
+        
+        @media (min-width: 640px) { 
+            .banner-container { 
+                max-width: 1280px; 
+                margin: 0 auto; 
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            } 
+        }
+ 
+        .banner-wrapper { display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
+        .banner-link { min-width: 100%; height: 100%; display: block; flex-shrink: 0; pointer-events: auto; -webkit-user-drag: none; user-drag: none; }
+        .banner-slide { width: 100%; height: 100%; object-fit: cover; object-position: center; -webkit-user-drag: none; user-drag: none; }
+ 
+        /* Progress bar banner -- gantiin titik-titik indikator. Nempel pas di
+           sudut/tepi paling bawah board banner, lebarnya penuh ngikutin lebar
+           banner (gak ada jarak/inset dari kiri-kanan). Defaultnya
+           tersembunyi (opacity 0) -- CUMA nongol pas board digeser manual
+           (drag/panah kiri-kanan), pas auto-slide jalan sendiri dia tetep
+           disembunyiin (lihat showBannerProgress() di script). */
+        .banner-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,0.25); overflow: hidden; z-index: 10; opacity: 0; transition: opacity 0.35s ease; pointer-events: none; }
+        .banner-progress.visible { opacity: 1; }
+        .banner-progress-fill { height: 100%; width: 0%; background: #fff; }
+        .banner-progress-fill.animating { transition: width linear; }
+ 
+        .marquee-bar { 
+            background: var(--surface); 
+            border-bottom: 1px solid var(--border); 
+            padding: 4px 0; 
+            font-size: 12px; 
+            color: var(--text); 
+            overflow: hidden; 
+            line-height: 1.1; 
+            font-weight: 500;
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            white-space: nowrap;
+            will-change: transform;
+            animation: marquee-scroll linear infinite;
+        }
+        .marquee-track.marquee-paused {
+            animation-play-state: paused;
+        }
+        .marquee-content {
+            display: inline-flex;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        @keyframes marquee-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+ 
+        /* .category-header sekarang ada di /css/category-header.css (shared,
+           supaya format-nya pasti sama persis di semua halaman). */
+ 
+        .site-footer {
+            margin-top: 10px;
+            width: 100%;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+        }
+        .site-footer-inner {
+            max-width: 1152px;
+            margin: 0 auto;
+            padding: 16px 20px 2px;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+            gap: 16px;
+        }
+        /* Tablet: 5 kolom sempit jadi susah dibaca — pindah ke 3 kolom
+           supaya tetap rapi & gak makan tempat vertikal berlebih. */
+        @media (max-width: 900px) {
+            .site-footer-inner { grid-template-columns: repeat(3, 1fr); gap: 20px 16px; }
+            .footer-brand { grid-column: 1 / -1; }
+        }
+        /* Mobile: 2 kolom (bukan numpuk 1 kolom penuh) biar footer gak
+           jadi panjang banget — brand tetap full-width di atas. */
+        @media (max-width: 640px) {
+            .site-footer-inner { grid-template-columns: 1fr 1fr; gap: 22px 16px; padding: 14px 20px 2px; }
+            .footer-col { grid-column: span 1; }
+            .footer-brand { grid-column: 1 / -1; }
+        }
+        .footer-brand-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-brand-icon { width: 40px; height: 40px; object-fit: contain; }
+        .footer-brand-name {
+            font-family: 'Dancing Script', cursive;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .footer-brand-tagline {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        .footer-col-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-sub);
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+        .footer-col a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text);
+            text-decoration: none;
+            margin-bottom: 10px;
+            width: fit-content;
+            max-width: 100%;
+            transition: color 0.2s;
+        }
+        .footer-col a:hover { color: var(--accent-hover); }
+        .footer-col a svg { width: 24px; height: 24px; flex-shrink: 0; }
+        .footer-social-row { display: flex; align-items: center; gap: 18px; }
+        .footer-social-row a { display: flex; align-items: center; justify-content: center; margin-bottom: 0; padding: 4px; }
+        .footer-social-row a svg { width: 30px; height: 30px; fill: currentColor; }
+        .site-footer-bottom {
+            padding: 16px 0 28px;
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+        /* Menu pindah halaman */
+        /* Navigasi teks di navbar (gaya mikrotik.com): daftar link langsung
+           terlihat, tanpa perlu buka menu hamburger. Disembunyikan total di
+           bawah 1024px (mobile/tablet pakai layout-mobile.css yang tidak
+           boleh diubah) — di lebar itu ruang tidak akan cukup, jadi cukup
+           andalkan tombol menu (☰) saja. Antara 1024px–1279px hanya
+           sebagian link yang muncul (biar tidak sesak), sisanya baru
+           tampil mulai 1280px ke atas.
+           Di desktop (>=1024px), logo tetap rata kiri dan nav-links+tombol
+           tetap rata kanan (justify-between, gaya asli) — TAPI baris navbar
+           dibatasi max-width yang sama dengan konten utama (var(--afi-max),
+           dipusatkan) supaya logo & menu sejajar dengan tepi banner/konten
+           di bawahnya, tidak mepet ke ujung layar penuh.
+           Mobile/tablet (<1024px) TIDAK disentuh — tetap justify-between
+           seperti desain awal (logo kiri, tombol kanan). */
+        /* .nav-links / .nav-link sekarang ada di /css/nav-links.css (shared,
+           termasuk animasi garis bawah aktif/hover), supaya sama persis di
+           semua halaman. */
+        /* Title 'Afi-Studio' diberi sedikit jarak dari tepi kiri banner
+           (bukan mepet 0px), sesuai gaya mikrotik.com. */
+        .nav-brand { margin-left: 6px; }
+
+        /* Posisi navbar (logo rata kiri, nav-links+tombol rata kanan) kini
+           diatur terpusat di css/layout-desktop.css supaya SAMA persis di
+           semua halaman, bukan hanya di beranda. Lihat rule
+           ".nav-bar > .max-w-7xl, .navbar" di file itu. */
+
+        .page-menu { position: relative; }
+        .page-menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            padding: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 220px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; line-height: 1.15; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 400; font-family: 'Geist', sans-serif; }
+        .page-menu-item .page-menu-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.75; }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item:active { opacity: 0.6; }
+        .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); font-weight: 700; }
+        html.dark .page-menu-item.active { color: #fff; }
+        
+        .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+        .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: flex-start; }
+        html.dark .page-menu-item-cta { color: #fff; }
+        .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item-cta:active { opacity: 0.6; }
+
+    </style>
+
+    <style>
         /* ---------- halaman pencarian global ---------- */
         .search-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
 
