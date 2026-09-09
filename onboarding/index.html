@@ -172,7 +172,7 @@
         .step-count { font-size: 12.5px; color: var(--text-sub); }
         .step-actions { display: flex; gap: 8px; }
         .btn { font-size: 13.5px; font-weight: 600; padding: 10px 20px; border-radius: 999px; border: none; cursor: pointer; transition: all .15s ease; }
-        .btn-primary { background: var(--accent-hover); color: #0B1220; }
+        .btn-primary { background: var(--accent-hover); color: #fff; }
         .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
         .btn-primary:not(:disabled):active { transform: scale(.96); }
         .btn-ghost { background: transparent; color: var(--text-sub); border: 1.5px solid var(--border); }
@@ -195,9 +195,6 @@
 
     <div class="top-bar">
         <div class="top-bar-brand"><img src="../icon.png" alt="Afi Studio"><span>Afi-Studio</span></div>
-        <button class="theme-btn" id="theme-toggle-btn" aria-label="Ganti tema">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
-        </button>
     </div>
 
     <div class="wrap">
@@ -355,7 +352,7 @@
                         <input type="url" id="s-instagram" placeholder="Link Profil Instagram">
                     </div>
                     <div class="social-field">
-                        <img src="../icons/telegram.svg" alt="Telegram" style="width:18px;height:18px;">
+                        <svg viewBox="0 0 24 24"><use href="../icons/social-icons.svg#icon-tg"></use></svg>
                         <input type="url" id="s-telegram" placeholder="Link Profil Telegram">
                     </div>
                 </div>
@@ -568,12 +565,6 @@
             document.getElementById('preview-user').textContent = 'username';
             dotsWrap.style.display = '';
             goTo(1);
-        });
-
-        // ---------- theme toggle (fallback ringan kalau theme-toggle.js beda selector) ----------
-        document.getElementById('theme-toggle-btn').addEventListener('click', function () {
-            var isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('afi-theme', isDark ? 'dark' : 'light');
         });
     </script>
 </body>

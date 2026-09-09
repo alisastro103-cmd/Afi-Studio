@@ -2,6 +2,7 @@
 <html lang="id" class="h-full">
 <head>
     <meta charset="UTF-8">
+    <!-- Kontrol jalur pendaftaran: diatur terpusat di /config.js, cukup ubah satu file itu agar berlaku di semua halaman -->
     <script src="/config.js"></script>
     <script>
         (function () {
@@ -11,27 +12,35 @@
         })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pencarian - Afi Studio</title>
-    <meta name="robots" content="noindex, nofollow">
-
+    <title>Afi Studio - Pencarian Global</title>
+    
     <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="../favicon.png">
 
+    <!-- Open Graph -->
+    <link rel="canonical" href="https://afi-studio.vercel.app/pencarian/">
+    <meta name="description" content="Cari profil, model, dan video di seluruh Afi Studio dalam satu halaman.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://afi-studio.vercel.app/pencarian/">
+    <meta property="og:title" content="Afi Studio - Pencarian Global">
+    <meta property="og:site_name" content="Afi Studio">
+    <meta property="og:description" content="Cari profil, model, dan video di seluruh Afi Studio dalam satu halaman.">
+    <meta property="og:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Afi Studio - Pencarian Global">
+    <meta name="twitter:description" content="Cari profil, model, dan video di seluruh Afi Studio dalam satu halaman.">
+    <meta name="twitter:image" content="https://afi-studio.vercel.app/thumbnail.webp">
+ 
     <link rel="stylesheet" href="/dist/output.css">
     <script src="/icons/lucide-local.js"></script>
     <script>document.addEventListener('DOMContentLoaded', function () { if (window.lucide) window.lucide.createIcons(); });</script>
     <link rel="stylesheet" href="/fonts/fonts.css?v=3fonts">
-
-    <link rel="stylesheet" href="/css/theme-tokens.css">
-    <link rel="stylesheet" href="/css/sponsor-slot.css">
-    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
-    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
-    <link rel="stylesheet" href="/css/page-menu-drawer.css">
-    <link rel="stylesheet" href="/css/skeleton-shimmer.css">
-    <link rel="stylesheet" href="/css/nav-links.css">
-
+ 
     <style>
-        /* --- RESET & ROOT --- */
+        /* CSS TETAP SESUAI ASLINYA */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; font-family: 'Geist', sans-serif; scroll-behavior: smooth; }
         h1, h2, h3, h4 { font-family: 'CreatoDisplay', sans-serif; }
@@ -46,8 +55,8 @@
             --border: #B9C4D3;
             --grid-line: rgba(100,116,139,0.22);
         }
- 
-        .dark {
+
+        html.dark {
             --accent: #3B5578;
             --accent-hover: #4A6690;
             --bg: #1E293B;
@@ -58,170 +67,47 @@
             --grid-line: rgba(148,163,184,0.16);
         }
  
-        body { 
-            background-color: var(--bg); 
-            background-image: 
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; zoom: 0.75; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
                 linear-gradient(var(--grid-line) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
             background-size: 32px 32px;
             background-attachment: fixed; /* grid tetep nempel di layar, gak ikut scroll konten */
-            color: var(--text); 
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; 
-            zoom: 0.75;
+            pointer-events: none;
+            z-index: -1;
         }
  
         .nav-bar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-
+        
+        .nav-brand { margin-left: 6px; }
+        /* .nav-links / .nav-link sekarang ada di /css/nav-links.css (shared,
+           termasuk animasi garis bawah aktif/hover), supaya sama persis di
+           semua halaman. */
+ 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* PERBAIKAN CLS (layout shift): #category-filter dan #content-grid
-           kosong total di HTML awal, baru diisi lewat JS setelah data model
-           selesai di-fetch dari API. Tanpa ruang yang dicadangkan lebih dulu,
-           area ini 0px tingginya di render pertama, terus tiba-tiba melonjak
-           setinggi beberapa baris kartu begitu datanya sampai — bikin tombol
-           "Lihat Model lainnya" dan footer di bawahnya kedorong turun
-           mendadak (ini kemungkinan besar biang utama skor CLS 0.5 yang
-           "Gagal" di PageSpeed Insights). min-height di sini gak mengubah
-           tampilan SETELAH kontennya kemuat — cuma nyadangin ruang selagi
-           nunggu, biar gak ada lompatan mendadak. */
+        /* .model-card / .card-image / .card-title / .card-caption sekarang ada
+           di /css/model-card.css (shared dengan Beranda), supaya perbaikan
+           (mis. ellipsis titik-tiga) cukup diubah sekali. */
+
+        /* Sama kayak fix CLS di Beranda (index.html) — lihat komentar di
+           sana buat penjelasan lengkap kenapa ruang ini perlu dicadangkan. */
         #category-filter { min-height: 40px; }
         #content-grid.grid-loading { min-height: 380px; }
         @media (min-width: 1024px) { #content-grid.grid-loading { min-height: 480px; } }
  
-        /* --- VIDEO & TUTORIAL --- */
-        .video-scroll { scroll-snap-type: x proximity; }
-        .video-card {
-            flex: 0 0 auto;
-            width: 460px;
-            cursor: pointer;
-            scroll-snap-align: start;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-        .video-viewall-thumb {
-            aspect-ratio: 16/9;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            padding: 18px;
-            text-align: center;
-            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-            transition: filter 0.2s;
-        }
-        .video-card:hover .video-viewall-thumb { filter: brightness(1.08); }
-        .video-viewall-icon { color: var(--text); }
-        html.dark .video-viewall-icon { color: #fff; }
-        .video-viewall-text { font-size: 14px; font-weight: 700; line-height: 1.4; color: var(--text); }
-        html.dark .video-viewall-text { color: #fff; }
-        .video-thumb-wrap {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            background: var(--surface);
-        }
-        .video-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; transition: transform 0.25s; }
-        .video-card:hover .video-thumb { transform: scale(1.05); }
-        .video-play-badge {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.15);
-            transition: background 0.2s;
-        }
-        .video-card:hover .video-play-badge { background: rgba(0,0,0,0.3); }
-        .video-play-badge svg { width: 80px; height: 80px; color: #fff; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); }
-        .new-badge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: #EF4444;
-            color: #fff;
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 999px;
-            z-index: 2;
-            letter-spacing: 0.02em;
-        }
-        .view-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-sub);
-        }
-        .video-card-title {
-            margin-top: 8px;
-            font-size: 15px;
-            font-weight: 700;
-            line-height: 1.35;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-        .video-modal-box { max-width: 760px; width: 94%; border-radius: 3px !important; position: relative; }
-        .modal-fav-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 5;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.45);
-            border: none;
-            cursor: pointer;
-            color: #fff;
-            transition: background 0.2s, color 0.2s, transform 0.15s;
-        }
-        .modal-fav-btn:hover { background: rgba(0,0,0,0.65); }
-        .modal-fav-btn:active { transform: scale(0.9); }
-        .modal-fav-btn svg { width: 17px; height: 17px; }
-        .modal-fav-btn.is-favorited { color: #FBBF24; }
-        /* Tombol share ditaruh SATU KELOMPOK dengan tombol favorit (sama-sama pojok
-           kanan-atas thumbnail modal), cuma digeser ke kiri dikit biar gak numpuk. */
-        .modal-share-btn { right: 50px; }
-        .video-frame-wrap { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
-        .video-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-        .video-modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-        .video-youtube-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text);
-            text-decoration: none;
-            transition: background 0.2s, color 0.2s;
-        }
-        .video-youtube-btn:hover { background: var(--accent); color: #fff; }
-        .video-youtube-btn:focus, .video-youtube-btn:focus-visible { outline: none; }
-        .video-youtube-btn { -webkit-tap-highlight-color: transparent; }
-        .video-youtube-btn svg { width: 16px; height: 16px; }
-
+        /* Modal Styling */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(4px); }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 480px; width: 92%; overflow: hidden; transform: scale(0.92); transition: transform 0.25s; position: relative; }
         .modal-overlay.active .modal-box { transform: scale(1); }
+
         /* --- Sheet pilihan "Bagikan" (WhatsApp / Telegram / Salin Link) --- */
         .share-sheet-box { max-width: 360px; }
         .share-option-btn {
@@ -252,165 +138,40 @@
            di script.js supaya teksnya baru di-reset pas toast udah bener2
            gak keliatan. */
         #toast { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        /* --- PERBAIKAN BANNER --- */
-        .banner-container { 
-            width: 100%; 
-            position: relative; 
-            overflow: hidden;
-            border-bottom: 1px solid var(--border); 
-            touch-action: pan-y; 
-            cursor: grab; 
-            background: var(--surface);
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-        }
-        .banner-container:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-        /* Padding-top trick: rasio banner 2:1 (mis. 1600x800), jadi 800/1600 * 100 = 50% */
-        .banner-container::before {
-            content: '';
-            display: block;
-            padding-top: 50%;
-        }
-        .banner-container:active { cursor: grabbing; }
-        
-        @media (min-width: 640px) { 
-            .banner-container { 
-                max-width: 1280px; 
-                margin: 0 auto; 
-                border-left: 1px solid var(--border);
-                border-right: 1px solid var(--border);
-            } 
-        }
- 
-        .banner-wrapper { display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none; }
-        .banner-link { min-width: 100%; height: 100%; display: block; flex-shrink: 0; pointer-events: auto; -webkit-user-drag: none; user-drag: none; }
-        .banner-slide { width: 100%; height: 100%; object-fit: cover; object-position: center; -webkit-user-drag: none; user-drag: none; }
- 
-        /* Progress bar banner -- gantiin titik-titik indikator. Nempel pas di
-           sudut/tepi paling bawah board banner, lebarnya penuh ngikutin lebar
-           banner (gak ada jarak/inset dari kiri-kanan). Defaultnya
-           tersembunyi (opacity 0) -- CUMA nongol pas board digeser manual
-           (drag/panah kiri-kanan), pas auto-slide jalan sendiri dia tetep
-           disembunyiin (lihat showBannerProgress() di script). */
-        .banner-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,0.25); overflow: hidden; z-index: 10; opacity: 0; transition: opacity 0.35s ease; pointer-events: none; }
-        .banner-progress.visible { opacity: 1; }
-        .banner-progress-fill { height: 100%; width: 0%; background: #fff; }
-        .banner-progress-fill.animating { transition: width linear; }
- 
-        .marquee-bar { 
-            background: var(--surface); 
-            border-bottom: 1px solid var(--border); 
-            padding: 4px 0; 
-            font-size: 12px; 
-            color: var(--text); 
-            overflow: hidden; 
-            line-height: 1.1; 
-            font-weight: 500;
-            width: 100%;
-            max-width: 1280px;
-            margin: 0 auto;
-            position: relative;
-        }
-        .marquee-track {
+
+        /* Tombol bintang favorit - nempel di ujung board popup model */
+        .modal-fav-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             display: flex;
-            width: max-content;
-            white-space: nowrap;
-            will-change: transform;
-            animation: marquee-scroll linear infinite;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.45);
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            transition: background 0.2s, color 0.2s, transform 0.15s;
         }
-        .marquee-track.marquee-paused {
-            animation-play-state: paused;
-        }
-        .marquee-content {
-            display: inline-flex;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        @keyframes marquee-scroll {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
+        .modal-fav-btn:hover { background: rgba(0,0,0,0.65); }
+        .modal-fav-btn:active { transform: scale(0.9); }
+        .modal-fav-btn svg { width: 17px; height: 17px; }
+        .modal-fav-btn.is-favorited { color: #FBBF24; }
+        .modal-share-btn { right: 50px; }
  
         /* .category-header sekarang ada di /css/category-header.css (shared,
-           supaya format-nya pasti sama persis di semua halaman). */
- 
-        .site-footer {
-            margin-top: 10px;
-            width: 100%;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-        }
-        .site-footer-inner {
-            max-width: 1152px;
-            margin: 0 auto;
-            padding: 16px 20px 2px;
-            display: grid;
-            grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
-            gap: 16px;
-        }
-        /* Tablet: 5 kolom sempit jadi susah dibaca — pindah ke 3 kolom
-           supaya tetap rapi & gak makan tempat vertikal berlebih. */
-        @media (max-width: 900px) {
-            .site-footer-inner { grid-template-columns: repeat(3, 1fr); gap: 20px 16px; }
-            .footer-brand { grid-column: 1 / -1; }
-        }
-        /* Mobile: 2 kolom (bukan numpuk 1 kolom penuh) biar footer gak
-           jadi panjang banget — brand tetap full-width di atas. */
-        @media (max-width: 640px) {
-            .site-footer-inner { grid-template-columns: 1fr 1fr; gap: 22px 16px; padding: 14px 20px 2px; }
-            .footer-col { grid-column: span 1; }
-            .footer-brand { grid-column: 1 / -1; }
-        }
-        .footer-brand-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .footer-brand-icon { width: 40px; height: 40px; object-fit: contain; }
-        .footer-brand-name {
-            font-family: 'Dancing Script', cursive;
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text);
-        }
-        .footer-brand-tagline {
-            font-size: 12px;
-            color: var(--text-sub);
-            margin-top: 6px;
-            line-height: 1.5;
-        }
-        .footer-col-title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text-sub);
-            opacity: 0.7;
-            margin-bottom: 12px;
-        }
-        .footer-col a {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: var(--text);
-            text-decoration: none;
-            margin-bottom: 10px;
-            width: fit-content;
-            max-width: 100%;
-            transition: color 0.2s;
-        }
-        .footer-col a:hover { color: var(--accent-hover); }
-        .footer-col a svg { width: 24px; height: 24px; flex-shrink: 0; }
-        .footer-social-row { display: flex; align-items: center; gap: 18px; }
-        .footer-social-row a { display: flex; align-items: center; justify-content: center; margin-bottom: 0; padding: 4px; }
-        .footer-social-row a svg { width: 30px; height: 30px; fill: currentColor; }
-        .site-footer-bottom {
-            padding: 16px 0 28px;
+           supaya format-nya pasti sama persis di semua halaman, kalau nanti
+           dipakai juga di halaman ini). */
+
+        .footer-text {
             text-align: center;
             font-size: 11px;
             color: var(--text-sub);
+            padding: 16px 0 28px;
             font-weight: 500;
         }
 
@@ -419,32 +180,6 @@
         html.dark #theme-toggle-btn .icon-moon { display: block; }
 
         /* Menu pindah halaman */
-        /* Navigasi teks di navbar (gaya mikrotik.com): daftar link langsung
-           terlihat, tanpa perlu buka menu hamburger. Disembunyikan total di
-           bawah 1024px (mobile/tablet pakai layout-mobile.css yang tidak
-           boleh diubah) — di lebar itu ruang tidak akan cukup, jadi cukup
-           andalkan tombol menu (☰) saja. Antara 1024px–1279px hanya
-           sebagian link yang muncul (biar tidak sesak), sisanya baru
-           tampil mulai 1280px ke atas.
-           Di desktop (>=1024px), logo tetap rata kiri dan nav-links+tombol
-           tetap rata kanan (justify-between, gaya asli) — TAPI baris navbar
-           dibatasi max-width yang sama dengan konten utama (var(--afi-max),
-           dipusatkan) supaya logo & menu sejajar dengan tepi banner/konten
-           di bawahnya, tidak mepet ke ujung layar penuh.
-           Mobile/tablet (<1024px) TIDAK disentuh — tetap justify-between
-           seperti desain awal (logo kiri, tombol kanan). */
-        /* .nav-links / .nav-link sekarang ada di /css/nav-links.css (shared,
-           termasuk animasi garis bawah aktif/hover), supaya sama persis di
-           semua halaman. */
-        /* Title 'Afi-Studio' diberi sedikit jarak dari tepi kiri banner
-           (bukan mepet 0px), sesuai gaya mikrotik.com. */
-        .nav-brand { margin-left: 6px; }
-
-        /* Posisi navbar (logo rata kiri, nav-links+tombol rata kanan) kini
-           diatur terpusat di css/layout-desktop.css supaya SAMA persis di
-           semua halaman, bukan hanya di beranda. Lihat rule
-           ".nav-bar > .max-w-7xl, .navbar" di file itu. */
-
         .page-menu { position: relative; }
         .page-menu-btn {
             display: flex;
@@ -495,26 +230,33 @@
         html.dark .page-menu-item-cta { color: #fff; }
         .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
         .page-menu-item-cta:active { opacity: 0.6; }
-
     </style>
 
     <style>
-        /* ---------- halaman pencarian global ---------- */
-        .search-wrap { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
-
-        .search-box-big {
-            display: flex; align-items: center; gap: 10px;
-            background: var(--surface); border: 1.5px solid var(--border);
-            border-radius: 999px; padding: 14px 20px; margin-bottom: 18px;
+        .toast-daftar {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translate(-50%, 80px);
+            background: var(--accent, #6c5ce7); color: #fff;
+            padding: 12px 24px; border-radius: 999px;
+            font-weight: 700; font-size: 14px;
+            transition: transform 0.3s ease; z-index: 5000;
         }
-        .search-box-big svg { width: 20px; height: 20px; color: var(--text-sub); flex-shrink: 0; }
-        .search-box-big input {
-            flex: 1; border: none; background: none; outline: none;
-            font-size: 15px; color: var(--text); font-family: 'Geist', sans-serif;
-        }
-        .search-box-big input::placeholder { color: var(--text-sub); }
+        .toast-daftar.show { transform: translate(-50%, 0); }
+    </style>
+    <link rel="stylesheet" href="/css/theme-tokens.css">
+    <link rel="stylesheet" href="/css/sponsor-slot.css">
+    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
+    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="/css/page-menu-drawer.css">
+    <link rel="stylesheet" href="/css/skeleton-shimmer.css">
+    <link rel="stylesheet" href="/css/filter-board.css">
+    <link rel="stylesheet" href="/css/category-header.css">
+    <link rel="stylesheet" href="/css/model-card.css">
+    <link rel="stylesheet" href="/css/nav-links.css">
 
-        .search-tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--border); margin-bottom: 20px; overflow-x: auto; }
+    <style>
+        /* ---------- tab Semua/Profil/Models/Video (gabungan Pencarian Global) ---------- */
+        .search-tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--border); margin-bottom: 16px; overflow-x: auto; }
         .search-tab {
             background: none; border: none; padding: 6px 2px 12px;
             font-size: 14.5px; color: var(--text-sub); font-weight: 600;
@@ -522,21 +264,12 @@
         }
         .search-tab.active { color: var(--text); border-bottom-color: var(--accent-hover); }
 
-        .search-section-title { display: flex; align-items: baseline; gap: 8px; margin: 22px 0 12px; }
-        .search-section-title h2 { font-size: 17px; }
-        .search-section-title span { font-size: 12.5px; color: var(--text-sub); }
-
-        .search-result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-        .result-card {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-            overflow: hidden; text-decoration: none; color: var(--text); display: block;
+        .dev-note-inline {
+            font-size: 11px; color: var(--text-sub);
+            background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+            border: 1px dashed var(--accent-hover); border-radius: 10px;
+            padding: 10px 12px; margin: 10px 0 16px; line-height: 1.5;
         }
-        .result-card-thumb { aspect-ratio: 4/3; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
-        .result-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .result-card-body { padding: 10px 12px; }
-        .result-card-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .result-card-sub { font-size: 11.5px; color: var(--text-sub); }
-        .result-card-type { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--accent); margin-top: 6px; }
 
         .result-profile-row {
             display: flex; align-items: center; gap: 12px;
@@ -548,196 +281,280 @@
         .result-profile-name { font-size: 13.5px; font-weight: 700; }
         .result-profile-sub { font-size: 11.5px; color: var(--text-sub); }
 
-        .search-empty { text-align: center; padding: 50px 20px; color: var(--text-sub); font-size: 13.5px; }
-        .search-empty svg { width: 40px; height: 40px; margin: 0 auto 10px; opacity: .6; }
-
-        .dev-note-inline {
-            font-size: 11px; color: var(--text-sub);
-            background: color-mix(in srgb, var(--accent) 12%, var(--surface));
-            border: 1px dashed var(--accent-hover); border-radius: 10px;
-            padding: 10px 12px; margin: 18px 0; line-height: 1.5;
+        .video-result-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+            overflow: hidden; text-decoration: none; color: var(--text); display: block;
         }
+        .video-result-thumb { aspect-ratio: 16/9; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
+        .video-result-body { padding: 10px 12px; }
+        .video-result-title { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-result-sub { font-size: 11.5px; color: var(--text-sub); }
+
+        .search-empty { text-align: center; padding: 40px 20px; color: var(--text-sub); font-size: 13px; }
     </style>
 </head>
+ 
 <body class="h-full">
-    <div id="app" class="h-full overflow-auto w-full">
-        <nav class="nav-bar">
-            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between nav-row-flex">
-                <div class="cursor-pointer flex items-center gap-1 nav-brand" onclick="window.location.reload()">
-                    <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
-                    <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
-                        Afi-Studio
+    <div id="app" class="h-full overflow-auto w-full flex flex-col justify-between">
+        <div>
+            <nav class="nav-bar">
+                <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="cursor-pointer flex items-center gap-1 nav-brand">
+                            <img src="../icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                            <div style="font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text);">
+                                Afi-Studio
+                            </div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="flex items-center nav-actions">
-                    <nav class="nav-links" aria-label="Navigasi halaman">
-                        <a href="../" class="nav-link">Beranda</a>
-                        <a href="../about/index.html" class="nav-link">About</a>
-                        <a href="../Models/index.html" class="nav-link nav-link-wide">Models</a>
-                        <a href="../tutorial/index.html" class="nav-link">Video</a>
-                        <a href="../member-Afi-Studio/index.html" class="nav-link nav-link-wide">Member</a>
-                    </nav>
-
+     
                     <div class="flex items-center gap-4"> 
-                    
-                    <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
-                        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
-                        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-                    </button>
-
-                    <div class="page-menu">
-                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+                        <nav class="nav-links" aria-label="Navigasi halaman">
+                            <a href="../index.html" class="nav-link">Beranda</a>
+                            <a href="../about/index.html" class="nav-link">About</a>
+                            <a href="index.html" class="nav-link nav-link-wide active">Models</a>
+                            <a href="../tutorial/index.html" class="nav-link">Video</a>
+                            <a href="../member-Afi-Studio/index.html" class="nav-link nav-link-wide">Member</a>
+                        </nav>
+                        <button id="search-toggle-btn" class="search-toggle-btn" aria-label="Cari" aria-expanded="false" aria-controls="filter-board-main">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
                         </button>
-                        <div id="page-menu-dropdown" class="page-menu-dropdown">
-                            <div class="page-menu-profile-preview" aria-disabled="true">
-                              <span class="page-menu-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg></span>
-                              <span class="page-menu-profile-text">
-                                <span class="page-menu-profile-cta">Lihat Profil</span>
-                                <span class="page-menu-profile-sub">Segera hadir</span>
-                              </span>
-                            </div>
-                            <div class="page-menu-profile-auth" aria-disabled="true">
-                              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--solid">Masuk</span>
-                              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--outline">Daftar</span>
-                            </div>
-                                                        <div class="page-menu-divider"></div>
-                            <a href="../" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
-                            <a href="../member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
-                            <a href="../event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
-                            <a href="../ranking/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 5H5a2 2 0 0 0 0 4h1M16 5h3a2 2 0 0 1 0 4h-1"/><path d="M12 13v3M9 20h6M10 17h4v3h-4z"/></svg><span class="page-menu-label">Ranking Render</span></a>
-                            <a href="../tutorial/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><span class="page-menu-label">Video &amp; Tutorial</span></a>
-                            <a href="../bantuan/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg><span class="page-menu-label">Bantuan</span></a>
-                            <a href="../feedback/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"/></svg><span class="page-menu-label">Feedback</span></a>
-                            <a href="../favorit/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.6-9.5 9-9.5 9z"/></svg><span class="page-menu-label">Favorit</span></a><a href="../survey/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/></svg><span class="page-menu-label">Survey</span></a>
-                            <a href="../about/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/></svg><span class="page-menu-label">Tentang Kami</span></a>
+                        <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                            <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                            <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                        </button>
+
+                        <div class="page-menu">
+                            <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+                            </button>
+                            <div id="page-menu-dropdown" class="page-menu-dropdown">
+                                <div class="page-menu-profile-preview" aria-disabled="true">
+                                  <span class="page-menu-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg></span>
+                                  <span class="page-menu-profile-text">
+                                    <span class="page-menu-profile-cta">Lihat Profil</span>
+                                    <span class="page-menu-profile-sub">Segera hadir</span>
+                                  </span>
+                                </div>
+                                <div class="page-menu-profile-auth" aria-disabled="true">
+                                  <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--solid">Masuk</span>
+                                  <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--outline">Daftar</span>
+                                </div>
+                                                                <div class="page-menu-divider"></div>
+                                <a href="../index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
+                                <a href="../member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
+                                <a href="../event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
+                                <a href="../ranking/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 5H5a2 2 0 0 0 0 4h1M16 5h3a2 2 0 0 1 0 4h-1"/><path d="M12 13v3M9 20h6M10 17h4v3h-4z"/></svg><span class="page-menu-label">Ranking Render</span></a>
+                                <a href="../tutorial/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><span class="page-menu-label">Video &amp; Tutorial</span></a>
+                                <a href="../bantuan/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg><span class="page-menu-label">Bantuan</span></a>
+                                <a href="../feedback/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"/></svg><span class="page-menu-label">Feedback</span></a>
+                                <a href="../favorit/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.6-9.5 9-9.5 9z"/></svg><span class="page-menu-label">Favorit</span></a><a href="../survey/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/></svg><span class="page-menu-label">Survey</span></a>
+                                <a href="../about/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/></svg><span class="page-menu-label">Tentang Kami</span></a>
                 <a href="../privacy/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg><span class="page-menu-label">Kebijakan Privasi</span></a>
                 <div class="page-menu-divider"></div>
-                            <a href="../daftar-model/index.html" class="link-daftar-model page-menu-item page-menu-item-cta" rel="noopener"  onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span class="page-menu-label">Daftar Model 3D</span></a>
-                            <a id="link-daftar-member" href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6.2 6-6.2s6 2.7 6 6.2"/><path d="M18 8v6M15 11h6"/></svg><span class="page-menu-label">Daftar Member</span></a>
+                                <a class="link-daftar-model page-menu-item page-menu-item-cta" href="../daftar-model/index.html" rel="noopener"  onclick="if(!isDaftarModelOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span class="page-menu-label">Daftar Model 3D</span></a>
+                                <a id="link-daftar-member" href="https://forms.gle/JmYJ1S5GFCEscAnU7" rel="noopener" class="page-menu-item page-menu-item-cta" onclick="if(!isDaftarMemberOpen){ event.preventDefault(); showDaftarToast(); }"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6.2 6-6.2s6 2.7 6 6.2"/><path d="M18 8v6M15 11h6"/></svg><span class="page-menu-label">Daftar Member</span></a>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </nav>
+            <script>
+                (function () {
+                    function setNavHeight() {
+                        var nav = document.querySelector('.nav-bar');
+                        if (nav) document.documentElement.style.setProperty('--nav-h', nav.getBoundingClientRect().height + 'px');
+                    }
+                    setNavHeight();
+                    window.addEventListener('resize', setNavHeight);
+                    window.addEventListener('orientationchange', setNavHeight);
+                })();
+            </script>
+
+            <main class="max-w-6xl mx-auto px-4 pt-4 pb-6 sm:px-6">
+
+                <div class="search-tabs" id="search-tabs">
+                    <button type="button" class="search-tab active" data-tab="semua">Semua</button>
+                    <button type="button" class="search-tab" data-tab="profil">Profil</button>
+                    <button type="button" class="search-tab" data-tab="models">Models</button>
+                    <button type="button" class="search-tab" data-tab="video">Video</button>
                 </div>
-            </div>
-        </nav>
 
-        <div class="search-wrap">
-            <div class="search-box-big">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                <input type="text" id="search-input" placeholder="Carikan..." autocomplete="off">
-            </div>
+                <div id="tab-panel-models">
+                    <div class="filter-board" id="filter-board-main">
+                        <div class="filter-board-panel">
+                            <div class="filter-search">
+                                <svg data-lucide="search"></svg>
+                                <input type="text" id="search-input" class="filter-search-input" placeholder="Cari Model, Kategori, Creator...">
+                            </div>
+                            <div class="filter-board-divider"></div>
+                            <div class="filter-dropdown-wrap">
+                                <button type="button" class="filter-dropdown-btn" data-drawer-target="category-drawer" aria-expanded="false">
+                                    <span class="filter-dropdown-label" id="category-dropdown-label">Tipe</span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div class="filter-drawer" id="category-drawer">
+                                    <div class="filter-drawer-panel">
+                                        <div class="filter-drawer-chips" id="category-filter"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="filter-board-divider"></div>
+                            <div class="filter-dropdown-wrap">
+                                <button type="button" class="filter-dropdown-btn" data-drawer-target="app-category-drawer" aria-expanded="false">
+                                    <span class="filter-dropdown-label" id="app-category-dropdown-label">Aplikasi</span>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </button>
+                                <div class="filter-drawer" id="app-category-drawer">
+                                    <div class="filter-drawer-panel">
+                                        <div class="filter-drawer-chips" id="app-category-filter"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="search-tabs" id="search-tabs">
-                <button type="button" class="search-tab active" data-tab="semua">Semua</button>
-                <button type="button" class="search-tab" data-tab="profil">Profil</button>
-                <button type="button" class="search-tab" data-tab="models">Models</button>
-                <button type="button" class="search-tab" data-tab="video">Video</button>
-            </div>
+                    <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 grid-loading" id="content-grid" style="margin-top: 14px;"></section>
+                    <div id="ad-slot" class="mt-8"></div>
+                </div>
 
-            <div class="dev-note-inline">Halaman ini masih tahap dev &mdash; belum ditautkan ke navbar/beranda, dan hasilnya masih data contoh (dummy) sambil nunggu API pencarian beneran di sistem.</div>
+                <div id="tab-panel-profil" style="display:none;">
+                    <div class="dev-note-inline">Hasil Profil masih data contoh (dummy) sambil nunggu API pencarian profil beneran di sistem.</div>
+                    <div id="profil-results"></div>
+                </div>
 
-            <div id="search-results"></div>
+                <div id="tab-panel-video" style="display:none;">
+                    <div class="dev-note-inline">Hasil Video masih data contoh (dummy) sambil nunggu integrasi beneran.</div>
+                    <div id="video-results" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"></div>
+                </div>
+            </main>
         </div>
 
-    <script>
-        // ---- data contoh (dummy) -- nanti diganti fetch ke API pencarian beneran ----
-        const DUMMY_DATA = {
-            profil: [
-                { name: 'Ali Sastro', username: 'alisastro', sub: 'Designer · Artist 3D' },
-                { name: 'Rina Kreatif', username: 'rinakreatif', sub: 'Animator' },
-            ],
-            models: [
-                { title: 'Rig Mob Minecraft', sub: 'ASTR-0123 · Prisma3D', type: 'Model' },
-                { title: 'Furniture Set Kayu', sub: 'RinaKreatif · Blender', type: 'Model' },
-                { title: 'Map Survival Island', sub: 'ASTR-0123 · Mine-Imator', type: 'Model' },
-            ],
-            video: [
-                { title: 'Tutorial Rig Dasar', sub: 'YouTube · Afi Studio', type: 'Video' },
-            ],
-        };
-
-        const tabs = document.querySelectorAll('.search-tab');
-        const input = document.getElementById('search-input');
-        const resultsEl = document.getElementById('search-results');
-        let activeTab = 'semua';
-
-        function cardModel(m) {
-            return `<a href="#" class="result-card">
-                <div class="result-card-thumb"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
-                <div class="result-card-body">
-                    <div class="result-card-title">${m.title}</div>
-                    <div class="result-card-sub">${m.sub}</div>
-                    <span class="result-card-type">${m.type}</span>
-                </div>
-            </a>`;
-        }
-        function rowProfil(p) {
-            return `<a href="/@${p.username}" class="result-profile-row">
-                <div class="result-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"/></svg></div>
-                <div>
-                    <div class="result-profile-name">${p.name}</div>
-                    <div class="result-profile-sub">@${p.username} &middot; ${p.sub}</div>
-                </div>
-            </a>`;
-        }
-
-        function render() {
-            const q = input.value.trim().toLowerCase();
-            const matchesQ = (text) => !q || text.toLowerCase().includes(q);
-
-            const profil = DUMMY_DATA.profil.filter(p => matchesQ(p.name + p.username));
-            const models = DUMMY_DATA.models.filter(m => matchesQ(m.title + m.sub));
-            const video = DUMMY_DATA.video.filter(v => matchesQ(v.title + v.sub));
-
-            let html = '';
-            const showProfil = activeTab === 'semua' || activeTab === 'profil';
-            const showModels = activeTab === 'semua' || activeTab === 'models';
-            const showVideo = activeTab === 'semua' || activeTab === 'video';
-
-            const total = (showProfil ? profil.length : 0) + (showModels ? models.length : 0) + (showVideo ? video.length : 0);
-
-            if (showProfil && profil.length) {
-                html += `<div class="search-section-title"><h2>Profil</h2><span>(${profil.length} hasil)</span></div>`;
-                html += profil.map(rowProfil).join('');
-            }
-            if (showModels && models.length) {
-                html += `<div class="search-section-title"><h2>Models</h2><span>(${models.length} hasil)</span></div>`;
-                html += `<div class="search-result-grid">${models.map(cardModel).join('')}</div>`;
-            }
-            if (showVideo && video.length) {
-                html += `<div class="search-section-title"><h2>Video</h2><span>(${video.length} hasil)</span></div>`;
-                html += `<div class="search-result-grid">${video.map(cardModel).join('')}</div>`;
-            }
-            if (!total) {
-                html = `<div class="search-empty">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                    Gak ada hasil buat "${input.value}"
-                </div>`;
-            }
-            resultsEl.innerHTML = html;
-        }
-
-        tabs.forEach(tab => tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            activeTab = tab.dataset.tab;
-            render();
-        }));
-        input.addEventListener('input', render);
-        render();
-    </script>
-
-        <footer class="footer-text" style="text-align:center; padding:26px 16px; color:var(--text-sub); font-size:12px;">
+        <footer class="footer-text">
             <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
         </footer>
     </div>
+ 
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <button id="model-fav-btn" class="modal-fav-btn" onclick="toggleCurrentModelFavorite()" aria-label="Tandai favorit"></button>
+            <img id="modal-thumb" src="" class="w-full aspect-video object-cover">
+            <div class="p-5">
+                <h2 id="modal-title" class="text-xl font-bold mb-2"></h2>
+                <p id="modal-caption" class="text-xs mb-4 opacity-70"></p>
+                <div id="info-container" class="rounded-xl p-4 mb-5 text-xs space-y-2" style="background: color-mix(in srgb, var(--accent) 10%, var(--surface));"></div>
+                <div class="flex flex-col gap-2">
+                    <button class="w-full py-3.5 rounded-xl font-bold bg-[var(--accent)] text-white" onclick="handleDownload()">Download Now</button>
+                    <button class="w-full py-3.5 rounded-xl font-bold border border-[var(--border)]" onclick="handleShareModel()">Bagikan</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
-
+    <div id="share-sheet-overlay" class="modal-overlay" onclick="closeShareSheet()">
+        <div class="modal-box share-sheet-box" onclick="event.stopPropagation()">
+            <div class="p-5">
+                <h3 class="text-base font-bold mb-4">Bagikan Model</h3>
+                <div class="flex flex-col gap-3">
+                    <button type="button" class="share-option-btn" onclick="shareToWhatsApp()">
+                        <svg class="share-option-icon-wa" viewBox="0 0 512 512"><use href="/icons/social-icons.svg#icon-wa"></use></svg>
+                        <span>WhatsApp</span>
+                    </button>
+                    <button type="button" class="share-option-btn" onclick="shareToTelegram()">
+                        <svg class="share-option-icon-tg" viewBox="0 0 448 512"><path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-50.7 48.8c-5.6 5.6-10.3 10.3-21.1 10.3l7.5-106.5 193.1-174.5c8.4-7.5-1.8-11.7-13-4.2L118.5 285.3 16 253.7c-22.4-7-22.8-22.4 4.7-33.2L417.1 66.2c18.6-6.9 34.9 4.4 28.9 32.4z"/></svg>
+                        <span>Telegram</span>
+                    </button>
+                    <button type="button" class="share-option-btn" onclick="shareCopyLink()">
+                        <svg class="share-option-icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11.5 4.5"></path><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.5 19.5"></path></svg>
+                        <span>Salin Link</span>
+                    </button>
+                </div>
+                <button type="button" class="w-full mt-5 py-3 rounded-xl font-bold border border-[var(--border)]" onclick="closeShareSheet()">Batal</button>
+            </div>
+        </div>
+    </div>
+ 
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--accent)] text-white px-6 py-3 rounded-full font-bold text-sm translate-y-20 transition-transform shadow-lg" style="z-index: 200;">Link Disalin!</div>
+ 
     <script src="/favorites.js"></script>
+    <script src="/skeleton-loading.js"></script>
+    <script src="../Models/script.js"></script>
     <script src="/theme-toggle.js" defer></script>
+    <script src="/filter-board.js" defer></script>
+ 
+    <script>
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        /* Menu laci samping sekarang ditangani lewat file JS terpisah, lihat penutup dokumen */
+        /* Laci kategori/aplikasi sekarang ditangani lewat /filter-board.js, dipakai bareng
+           dengan halaman lain (Beranda, Video & Tutorial) yang punya board serupa. */
+    </script>
+    <div id="toast-daftar" class="toast-daftar">Segera Hadir</div>
+    <script src="/pwa-install.js" defer></script>
+    <script src="/ads-slot.js" defer></script>
     <script src="/page-menu-drawer.js" defer></script>
+
+    <script>
+        // ---------- tab Semua/Profil/Models/Video + data Profil/Video dummy ----------
+        (function () {
+            const DUMMY_PROFIL = [
+                { name: 'Ali Sastro', username: 'alisastro', sub: 'Designer · Artist 3D' },
+                { name: 'Rina Kreatif', username: 'rinakreatif', sub: 'Animator' },
+            ];
+            const DUMMY_VIDEO = [
+                { title: 'Tutorial Rig Dasar', sub: 'YouTube · Afi Studio' },
+            ];
+
+            function rowProfil(p) {
+                return `<a href="/@${p.username}" class="result-profile-row">
+                    <div class="result-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"/></svg></div>
+                    <div>
+                        <div class="result-profile-name">${p.name}</div>
+                        <div class="result-profile-sub">@${p.username} &middot; ${p.sub}</div>
+                    </div>
+                </a>`;
+            }
+            function cardVideo(v) {
+                return `<a href="#" class="video-result-card">
+                    <div class="video-result-thumb"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg></div>
+                    <div class="video-result-body">
+                        <div class="video-result-title">${v.title}</div>
+                        <div class="video-result-sub">${v.sub}</div>
+                    </div>
+                </a>`;
+            }
+
+            function renderDummyResults(query) {
+                const q = (query || '').trim().toLowerCase();
+                const matches = (text) => !q || text.toLowerCase().includes(q);
+
+                const profil = DUMMY_PROFIL.filter(p => matches(p.name + p.username));
+                const video = DUMMY_VIDEO.filter(v => matches(v.title));
+
+                const profilEl = document.getElementById('profil-results');
+                profilEl.innerHTML = profil.length ? profil.map(rowProfil).join('')
+                    : `<div class="search-empty">Gak ada profil buat "${query}"</div>`;
+
+                const videoEl = document.getElementById('video-results');
+                videoEl.innerHTML = video.length ? video.map(cardVideo).join('')
+                    : `<div class="search-empty">Gak ada video buat "${query}"</div>`;
+            }
+            renderDummyResults('');
+
+            // Input pencarian yang sama (punya Models/script.js) juga dipakai buat
+            // nyaring hasil Profil & Video dummy, biar satu kotak cari buat semua tab.
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.addEventListener('input', (e) => renderDummyResults(e.target.value));
+
+            // ---------- tab switching ----------
+            function setTab(tab) {
+                document.querySelectorAll('.search-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+                document.getElementById('tab-panel-models').style.display = (tab === 'semua' || tab === 'models') ? '' : 'none';
+                document.getElementById('tab-panel-profil').style.display = (tab === 'semua' || tab === 'profil') ? '' : 'none';
+                document.getElementById('tab-panel-video').style.display = (tab === 'semua' || tab === 'video') ? '' : 'none';
+            }
+            document.querySelectorAll('.search-tab').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+        })();
+    </script>
 </body>
 </html>
