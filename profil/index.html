@@ -158,12 +158,14 @@
         }
         .account-avatar svg { width: 44px; height: 44px; }
 
-        .account-stats { display: flex; gap: 26px; margin-left: auto; margin-right: -6px; }
+        .account-stats { display: flex; gap: 34px; padding-right: 4px; }
         .account-stat { text-align: center; }
         .account-stat-num { font-family: 'Minercraftory', 'Geist', sans-serif; font-size: 26px; font-weight: 400; letter-spacing: 0.02em; }
         .account-stat-label { font-size: 11px; color: var(--text-sub); }
 
-        .account-name-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+        .account-name-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+        .account-name-block { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+        .account-name-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .account-name { font-family: 'CreatoDisplay', sans-serif; font-size: 30px; font-weight: 800; line-height: 1.2; }
         .account-copy-btn {
             display: flex; align-items: center; justify-content: center;
@@ -173,7 +175,7 @@
         .account-copy-btn svg { width: 15px; height: 15px; }
         .account-copy-btn:hover { color: var(--text); }
         .account-copy-btn.copied { color: #2e9e5b; }
-        .account-username { display: inline-block; font-size: 16px; color: var(--text-sub); margin-top: -12px; text-decoration: none; }
+        .account-username { display: inline-block; font-size: 16px; color: var(--text-sub); text-decoration: none; }
         .account-username:hover { text-decoration: underline; }
 
         .account-role-badge {
@@ -184,12 +186,13 @@
         }
 
         .desc-board {
-            margin-top: 16px; padding: 14px 16px; border-radius: 14px;
+            margin-top: 16px; margin-left: -10px; margin-right: -10px;
+            padding: 14px 18px; border-radius: 14px;
             border: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 60%, transparent);
         }
         /* Mode edit: hilangkan kotak luar biar textarea deskripsi gak keliatan kotak-dalam-kotak */
         .account-card.editing .desc-board {
-            padding: 0; border: none; background: none;
+            padding: 0; margin-left: 0; margin-right: 0; border: none; background: none;
         }
         .account-section { margin-top: 16px; }
         .account-section-title { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
@@ -412,22 +415,26 @@
                     </div>
 
                     <div class="account-name-row">
-                        <div class="account-name view-only" id="account-name">Ali Sastro</div>
-                        <input class="field-input edit-only" id="edit-nickname" maxlength="30" placeholder="Nickname" style="max-width:220px;">
-                        <button type="button" class="account-copy-btn view-only" id="account-copy-btn" title="Salin link profil">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        </button>
+                        <div class="account-name-block">
+                            <div class="account-name-line">
+                                <div class="account-name view-only" id="account-name">Ali Sastro</div>
+                                <input class="field-input edit-only" id="edit-nickname" maxlength="30" placeholder="Nickname" style="max-width:220px;">
+                                <button type="button" class="account-copy-btn view-only" id="account-copy-btn" title="Salin link profil">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                </button>
+                            </div>
+                            <a href="#" class="account-username view-only" id="account-username">@alisastro</a>
+                            <div class="username-input-row edit-only" style="max-width:240px;">
+                                <span class="username-at">@</span>
+                                <input class="field-input" id="edit-username" maxlength="20" placeholder="username">
+                            </div>
+                            <div class="username-status edit-only" id="edit-username-status"></div>
+                        </div>
                         <div class="account-stats view-only" id="account-stats">
                             <div class="account-stat"><div class="account-stat-label">Models</div><div class="account-stat-num" id="stat-models">4</div></div>
                             <div class="account-stat"><div class="account-stat-label">Like</div><div class="account-stat-num" id="stat-like">128</div></div>
                         </div>
                     </div>
-                    <a href="#" class="account-username view-only" id="account-username">@alisastro</a>
-                    <div class="username-input-row edit-only" style="max-width:240px;">
-                        <span class="username-at">@</span>
-                        <input class="field-input" id="edit-username" maxlength="20" placeholder="username">
-                    </div>
-                    <div class="username-status edit-only" id="edit-username-status"></div>
 
                     <div class="desc-board">
                         <div class="account-section-title">Deskripsi</div>
