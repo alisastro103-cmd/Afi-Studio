@@ -100,10 +100,11 @@
 
         .footer-text { text-align: center; font-size: 11px; color: var(--text-sub); padding: 16px 0 28px; font-weight: 500; }
 
-        .social-container { display: flex; flex-direction: row; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+        .social-container { display: flex; flex-direction: row; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
         .social-btn {
             display: flex; align-items: center; justify-content: center;
-            width: 28px; height: 28px;
+            width: 42px; height: 42px; border-radius: 10px;
+            background: var(--bg); border: 1px solid var(--border);
             text-decoration: none; transition: transform 0.2s;
         }
         .social-btn:hover { transform: translateY(-2px); }
@@ -164,7 +165,7 @@
         .account-stat-label { font-size: 11px; color: var(--text-sub); }
 
         .account-name-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-        .account-name { font-size: 20px; font-weight: 800; line-height: 1.2; }
+        .account-name { font-size: 24px; font-weight: 800; line-height: 1.2; }
         .account-copy-btn {
             display: flex; align-items: center; justify-content: center;
             width: 24px; height: 24px; border-radius: 6px;
@@ -186,6 +187,10 @@
         .desc-board {
             margin-top: 16px; padding: 14px 16px; border-radius: 14px;
             border: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 60%, transparent);
+        }
+        /* Mode edit: hilangkan kotak luar biar textarea deskripsi gak keliatan kotak-dalam-kotak */
+        .account-card.editing .desc-board {
+            padding: 0; border: none; background: none;
         }
         .account-section { margin-top: 16px; }
         .account-section-title { font-size: 12.5px; font-weight: 800; margin-bottom: 6px; }
@@ -211,7 +216,7 @@
             cursor: pointer;
         }
         .avatar-edit-overlay svg { width: 22px; height: 22px; }
-        .account-name-row .field-input { padding: 6px 10px; font-size: 15px; font-weight: 700; }
+        .account-name-row .field-input { padding: 8px 12px; font-size: 20px; font-weight: 800; max-width: 260px !important; }
         .username-input-row.edit-only { margin-top: 4px; }
 
         .profile-section { max-width: 640px; margin: 24px auto 0; padding: 0 20px 40px; }
@@ -267,7 +272,7 @@
         .username-status.bad { color: #d9534f; }
         .username-status.checking { color: var(--text-sub); font-weight: 400; }
 
-        .role-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .role-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
         .role-chip {
             padding: 9px 14px; border-radius: 999px; border: 1px solid var(--border);
             background: var(--bg); color: var(--text); font-size: 12.5px; font-weight: 700;
@@ -278,12 +283,12 @@
 
         .social-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .social-row .social-icon-badge {
-            width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+            width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
             background: var(--bg); border: 1px solid var(--border);
         }
-        .social-row .social-icon-badge svg { width: 17px; height: 17px; fill: var(--text-sub); }
-        .social-row .social-icon-badge img { width: 15px; height: 15px; object-fit: contain; }
+        .social-row .social-icon-badge svg { width: 20px; height: 20px; fill: var(--text-sub); }
+        .social-row .social-icon-badge img { width: 18px; height: 18px; object-fit: contain; }
         .social-row .field-input { font-size: 12.5px; }
 
         .upload-row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
