@@ -181,8 +181,8 @@
         .account-role-badge {
             font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
             padding: 4px 10px; border-radius: 999px;
-            background: color-mix(in srgb, var(--accent) 20%, transparent);
-            color: var(--accent);
+            background: color-mix(in srgb, var(--accent) 32%, black 25%);
+            color: #fff;
         }
 
         .desc-board {
@@ -218,7 +218,10 @@
             cursor: pointer;
         }
         .avatar-edit-overlay svg { width: 22px; height: 22px; }
-        .account-name-row .field-input { padding: 8px 12px; font-family: 'CreatoDisplay', sans-serif; font-size: 24px; font-weight: 800; max-width: 260px !important; }
+        .account-name-row .field-input {
+            padding: 4px 2px; font-family: 'CreatoDisplay', sans-serif; font-size: 24px; font-weight: 800;
+            max-width: 260px !important; border: none; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent;
+        }
         .username-input-row.edit-only { margin-top: 0; }
 
         .profile-section { max-width: 640px; margin: 24px auto 0; padding: 0 20px 40px; }
@@ -267,8 +270,11 @@
         }
         .field-input:focus { outline: none; border-color: var(--accent); }
         .username-input-row { position: relative; }
-        .username-at { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 14.5px; pointer-events: none; }
-        .username-input-row .field-input { padding-left: 26px; font-size: 14.5px; }
+        .username-at { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 14.5px; pointer-events: none; }
+        .username-input-row .field-input {
+            padding: 4px 4px 4px 22px; font-size: 14.5px;
+            border: none; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent;
+        }
         .username-status { font-size: 11.5px; margin-top: 6px; font-weight: 700; min-height: 15px; }
         .username-status.ok { color: #2e9e5b; }
         .username-status.bad { color: #d9534f; }
@@ -439,7 +445,7 @@
                     <div class="desc-board">
                         <div class="account-section-title">Deskripsi</div>
                         <p class="account-desc view-only" id="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
-                        <textarea class="field-input edit-only" id="edit-desc" maxlength="200" style="width:100%; min-height:80px; resize:vertical;" placeholder="Ceritain tentang diri kamu..."></textarea>
+                        <textarea class="field-input edit-only" id="edit-desc" maxlength="200" style="width:100%; min-height:80px; resize:none; overflow:hidden;" placeholder="Ceritain tentang diri kamu..."></textarea>
 
                         <div class="account-role-badges view-only" id="account-role-badges">
                             <span class="account-role-badge">Creator</span>
@@ -640,6 +646,7 @@
         document.getElementById('edit-nickname').value = u.nickname || '';
         document.getElementById('edit-username').value = u.username || '';
         document.getElementById('edit-desc').value = u.bio || '';
+        autoGrowTextarea(document.getElementById('edit-desc'));
         document.getElementById('edit-error').textContent = '';
         editUsernameOk = true;
         editAvatarBase64 = null;
@@ -677,6 +684,13 @@
         document.getElementById('self-account-card').classList.remove('editing');
         document.getElementById('edit-error').textContent = '';
     }
+
+    /* Textarea deskripsi: tinggi ngikutin panjang teks, biar gak kepotong/berdempetan */
+    function autoGrowTextarea(el){
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    }
+    document.getElementById('edit-desc').addEventListener('input', function(){ autoGrowTextarea(this); });
 
     document.getElementById('btn-edit-profil').addEventListener('click', enterEditMode);
     document.getElementById('btn-cancel-edit').addEventListener('click', exitEditMode);
