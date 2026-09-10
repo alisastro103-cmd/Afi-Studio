@@ -191,17 +191,22 @@
         .step-panel.active { display: block; }
 
         /* ---------- splash sambutan (intro) & penutup (outro) ---------- */
+        /* Ditaruh gantiin posisi board/card, bukan overlay layar penuh, biar gak berasa pindah halaman */
         .splash-overlay {
-            position: fixed; inset: 0; z-index: 200;
-            background: var(--bg);
             display: none; align-items: center; justify-content: center;
-            text-align: center; padding: 40px 24px;
+            text-align: center; position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px -12px rgba(0,0,0,0.25);
+            padding: 50px 20px;
+            min-height: 220px;
         }
         .splash-overlay.show { display: flex; }
         .splash-line {
-            position: absolute; max-width: 680px;
+            position: absolute; max-width: 460px; width: 100%; padding: 0 8px;
             font-family: 'CreatoDisplay', sans-serif; font-weight: 800;
-            font-size: clamp(22px, 6vw, 40px); line-height: 1.35;
+            font-size: clamp(16px, 4.4vw, 26px); line-height: 1.35;
             color: var(--text);
             opacity: 0; visibility: hidden;
         }
@@ -230,17 +235,6 @@
 </head>
 <body>
 
-    <div class="splash-overlay" id="intro-splash">
-        <div class="splash-line" data-anim="zoom">SELAMAT DATANG DI AFI STUDIO</div>
-        <div class="splash-line" data-anim="slide-left">MASUK DAN JELAJAHI SEMUA MODEL DISINI</div>
-        <div class="splash-line" data-anim="pop">KAMU JUGA BISA DAFTARIN MODEL KAMU DISINI JUGA</div>
-    </div>
-
-    <div class="splash-overlay" id="outro-splash">
-        <div class="splash-line" data-anim="flip">MAKASIH BANG UDAH ISI FORM NYA</div>
-        <div class="splash-line" data-anim="slide-up">LU BEBAS JELAJAHI SEMUA MODEL YANG ADA DISINI</div>
-    </div>
-
     <div class="page-shell">
 
     <div class="top-bar">
@@ -249,8 +243,15 @@
 
     <div class="wrap">
 
+        <!-- SAMBUTAN AWAL: nempatin posisi board, cuma diganti board step 1 setelah ini kelar -->
+        <div class="splash-overlay" id="intro-splash">
+            <div class="splash-line" data-anim="zoom">SELAMAT DATANG DI AFI STUDIO</div>
+            <div class="splash-line" data-anim="slide-left">MASUK DAN JELAJAHI SEMUA MODEL DISINI</div>
+            <div class="splash-line" data-anim="pop">KAMU JUGA BISA DAFTARIN MODEL KAMU DISINI JUGA</div>
+        </div>
+
         <!-- STEP 1 -->
-        <div class="step-panel active" data-step="1">
+        <div class="step-panel" data-step="1">
             <div class="card">
                 <div class="welcome-head"><img src="../icon.png" alt=""><h1 class="card-title" style="margin-bottom:0;">Selamat Datang</h1></div>
                 <p class="card-subtitle">Selamat datang di Afi Studio. Siapin profil lengkapnya bang, biar bisa dikenal banyak orang.</p>
@@ -441,6 +442,12 @@
             </div>
         </div>
 
+        <!-- SAMBUTAN AKHIR: nempatin posisi board juga, abis itu baru ganti ke board ringkasan (step 6) -->
+        <div class="splash-overlay" id="outro-splash">
+            <div class="splash-line" data-anim="flip">MAKASIH BANG UDAH ISI FORM NYA</div>
+            <div class="splash-line" data-anim="slide-up">LU BEBAS JELAJAHI SEMUA MODEL YANG ADA DISINI</div>
+        </div>
+
         <!-- STEP 6 - ringkasan (dev only) -->
         <div class="step-panel" data-step="6">
             <div class="card" style="text-align: center;">
@@ -494,10 +501,14 @@
         }
 
         var INTRO_SEEN_KEY = 'afi_onboarding_intro_seen';
+        var step1Panel = document.querySelector('.step-panel[data-step="1"]');
         if (!localStorage.getItem(INTRO_SEEN_KEY)) {
             playSplash('intro-splash', function () {
                 localStorage.setItem(INTRO_SEEN_KEY, '1');
+                step1Panel.classList.add('active');
             });
+        } else {
+            step1Panel.classList.add('active');
         }
 
         // ---------- state ----------
@@ -626,6 +637,8 @@
             state.email = document.getElementById('f-email').value.trim();
             state.wa = document.getElementById('f-wa').value.trim();
             document.getElementById('summary-json').textContent = JSON.stringify(state, null, 2);
+            document.querySelector('.step-panel[data-step="5"]').classList.remove('active');
+            dotsWrap.style.display = 'none';
             playSplash('outro-splash', function () { goTo(6); });
         }
         document.getElementById('finish-5').addEventListener('click', finishStep5);
