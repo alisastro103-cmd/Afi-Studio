@@ -191,46 +191,29 @@
         .step-panel.active { display: block; }
 
         /* ---------- splash sambutan (intro) & penutup (outro) ---------- */
-        /* Ditaruh gantiin posisi board/card, bukan overlay layar penuh, biar gak berasa pindah halaman */
+        /* Ditaruh gantiin posisi board/card, bukan overlay layar penuh, biar gak berasa
+           pindah halaman. SENGAJA gak ada background/border/shadow "board" lagi --
+           cuma teksnya doang yang keliatan ngambang di atas background grid halaman.
+           Satu jenis transisi aja dipakai konsisten (fade + naik dikit), gak ada lagi
+           macem-macem arah (zoom/slide/flip/pop) biar gak keliatan norak/beda-beda. */
         .splash-overlay {
             display: none; align-items: center; justify-content: center;
             text-align: center; position: relative;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px -12px rgba(0,0,0,0.25);
-            padding: 50px 20px;
-            min-height: 220px;
+            padding: 40px 16px;
+            min-height: 200px;
         }
         .splash-overlay.show { display: flex; }
         .splash-line {
-            position: absolute; max-width: 460px; width: 100%; padding: 0 8px;
+            max-width: 480px; width: 100%; padding: 0 10px;
             font-family: 'CreatoDisplay', sans-serif; font-weight: 800;
-            font-size: clamp(16px, 4.4vw, 26px); line-height: 1.35;
+            font-size: clamp(17px, 5vw, 26px); line-height: 1.4;
             color: var(--text);
-            opacity: 0; visibility: hidden;
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity .4s cubic-bezier(.2,.8,.2,1), transform .4s cubic-bezier(.2,.8,.2,1);
         }
-        .splash-line.active { visibility: visible; }
-        .splash-line.active[data-anim="zoom"] { animation: splashZoom .7s cubic-bezier(.2,.8,.2,1) forwards; }
-        .splash-line.active[data-anim="slide-left"] { animation: splashSlideLeft .7s cubic-bezier(.2,.8,.2,1) forwards; }
-        .splash-line.active[data-anim="pop"] { animation: splashPop .6s cubic-bezier(.34,1.56,.64,1) forwards; }
-        .splash-line.active[data-anim="flip"] { animation: splashFlip .8s cubic-bezier(.2,.8,.2,1) forwards; }
-        .splash-line.active[data-anim="slide-up"] { animation: splashSlideUp .7s cubic-bezier(.2,.8,.2,1) forwards; }
-        .splash-line.leaving { animation: splashOut .4s ease forwards !important; }
-
-        @keyframes splashZoom { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
-        @keyframes splashSlideLeft { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes splashPop { from { opacity: 0; transform: translateY(30px) scale(.85); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes splashFlip { from { opacity: 0; transform: rotateX(70deg); } to { opacity: 1; transform: rotateX(0deg); } }
-        @keyframes splashSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes splashOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.9); } }
-
-        .replay-bar { display: flex; justify-content: center; margin-top: 16px; }
-        .replay-btn { font-size: 12px; color: var(--text-sub); background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .replay-btn:hover { color: var(--text); }
-
-        .summary-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 12px; color: var(--text-sub); white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow: auto; margin-top: 14px; }
-        .done-icon { width: 52px; height: 52px; border-radius: 999px; background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+        .splash-line.active { opacity: 1; transform: translateY(0); }
+        .splash-line.leaving { opacity: 0; transform: translateY(-14px); }
     </style>
 </head>
 <body>
@@ -243,12 +226,9 @@
 
     <div class="wrap">
 
-        <!-- SAMBUTAN AWAL: nempatin posisi board, cuma diganti board step 1 setelah ini kelar -->
-        <div class="splash-overlay" id="intro-splash">
-            <div class="splash-line" data-anim="zoom">SELAMAT DATANG DI AFI STUDIO</div>
-            <div class="splash-line" data-anim="slide-left">MASUK DAN JELAJAHI SEMUA MODEL DISINI</div>
-            <div class="splash-line" data-anim="pop">KAMU JUGA BISA DAFTARIN MODEL KAMU DISINI JUGA</div>
-        </div>
+        <!-- SAMBUTAN AWAL: nempatin posisi board, cuma diganti board step 1 setelah ini kelar.
+             Isi teksnya diisi dinamis lewat JS (lihat playSplashSequence). -->
+        <div class="splash-overlay" id="intro-splash"></div>
 
         <!-- STEP 1 -->
         <div class="step-panel" data-step="1">
@@ -442,29 +422,9 @@
             </div>
         </div>
 
-        <!-- SAMBUTAN AKHIR: nempatin posisi board juga, abis itu baru ganti ke board ringkasan (step 6) -->
-        <div class="splash-overlay" id="outro-splash">
-            <div class="splash-line" data-anim="flip">MAKASIH BANG UDAH ISI FORM NYA</div>
-            <div class="splash-line" data-anim="slide-up">LU BEBAS JELAJAHI SEMUA MODEL YANG ADA DISINI</div>
-        </div>
-
-        <!-- STEP 6 - ringkasan (dev only) -->
-        <div class="step-panel" data-step="6">
-            <div class="card" style="text-align: center;">
-                <div class="done-icon">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
-                </div>
-                <h1 class="card-title">Data Siap</h1>
-                <p class="card-subtitle">Ini baru pratinjau frontend — belum dikirim ke server mana pun. Kalau layout &amp; alurnya udah pas, tinggal kita sambungkan ke sistem pendaftaran akun beneran.</p>
-                <div class="summary-box" id="summary-json"></div>
-                <div class="replay-bar">
-                    <button class="replay-btn" id="replay-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-                        Ulangi dari awal
-                    </button>
-                </div>
-            </div>
-        </div>
+        <!-- SAMBUTAN AKHIR: nempatin posisi board juga, abis itu auto-redirect balik ke
+             halaman user sebelum login (lihat finishStep5 di script). Isi teks dinamis. -->
+        <div class="splash-overlay" id="outro-splash"></div>
 
         <div class="step-dots" id="step-dots"></div>
 
@@ -473,43 +433,57 @@
     </div>
 
     <script>
-        // ---------- splash sambutan (intro, sekali doang per browser) & penutup (outro) ----------
-        function playSplash(overlayId, onDone) {
+        // ---------- splash sambutan (intro) & penutup (outro) ----------
+        // Satu baris teks ditampilin bergantian, satu jenis transisi doang (fade + naik
+        // dikit, lihat CSS .splash-line), gak ada lagi macem-macem arah animasi.
+        // `lines`: array {text, duration} -- duration = lama teks itu nampil (ms).
+        // `leadDelay`: jeda kosong sebelum baris pertama muncul.
+        // `trailDelay`: jeda kosong setelah baris terakhir ilang, sebelum onDone jalan.
+        function playSplashSequence(overlayId, lines, opts, onDone) {
+            opts = opts || {};
+            var leadDelay = opts.leadDelay || 0;
+            var trailDelay = opts.trailDelay || 0;
+            var TRANSITION = 400; // ms, samain sama durasi transition di CSS .splash-line
             var overlay = document.getElementById(overlayId);
-            var lines = Array.prototype.slice.call(overlay.querySelectorAll('.splash-line'));
+            overlay.innerHTML = '';
             overlay.classList.add('show');
-            var HOLD = 1900;
-            var idx = 0;
-            function step() {
-                if (idx > 0) {
-                    var prevLine = lines[idx - 1];
-                    prevLine.classList.add('leaving');
-                    setTimeout(function () { prevLine.classList.remove('active', 'leaving'); }, 420);
-                }
+
+            function showLine(idx) {
                 if (idx >= lines.length) {
                     setTimeout(function () {
                         overlay.classList.remove('show');
-                        if (onDone) onDone();
-                    }, 450);
+                        overlay.innerHTML = '';
+                        if (onDone) setTimeout(onDone, trailDelay);
+                    }, TRANSITION);
                     return;
                 }
-                lines[idx].classList.add('active');
-                idx++;
-                setTimeout(step, HOLD);
+                var el = document.createElement('div');
+                el.className = 'splash-line';
+                el.textContent = lines[idx].text;
+                overlay.appendChild(el);
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () { el.classList.add('active'); });
+                });
+                var dwell = Math.max(lines[idx].duration - TRANSITION, 60);
+                setTimeout(function () {
+                    el.classList.remove('active');
+                    el.classList.add('leaving');
+                    setTimeout(function () { el.remove(); showLine(idx + 1); }, TRANSITION);
+                }, dwell);
             }
-            step();
+
+            setTimeout(function () { showLine(0); }, leadDelay);
         }
 
-        var INTRO_SEEN_KEY = 'afi_onboarding_intro_seen';
         var step1Panel = document.querySelector('.step-panel[data-step="1"]');
-        if (!localStorage.getItem(INTRO_SEEN_KEY)) {
-            playSplash('intro-splash', function () {
-                localStorage.setItem(INTRO_SEEN_KEY, '1');
-                step1Panel.classList.add('active');
-            });
-        } else {
+        // Layar kosong (cuma background + navbar) 1.2 detik, baru sambutannya muncul,
+        // lalu kosong lagi 1 detik sebelum board form step 1 kebuka.
+        playSplashSequence('intro-splash', [
+            { text: 'Selamat datang di Afi Studio', duration: 1500 },
+            { text: 'Lengkapi akun mu dulu bang', duration: 1500 }
+        ], { leadDelay: 1200, trailDelay: 1000 }, function () {
             step1Panel.classList.add('active');
-        }
+        });
 
         // ---------- state ----------
         var totalSteps = 5;
@@ -636,35 +610,25 @@
         function finishStep5() {
             state.email = document.getElementById('f-email').value.trim();
             state.wa = document.getElementById('f-wa').value.trim();
-            document.getElementById('summary-json').textContent = JSON.stringify(state, null, 2);
             document.querySelector('.step-panel[data-step="5"]').classList.remove('active');
             dotsWrap.style.display = 'none';
-            playSplash('outro-splash', function () { goTo(6); });
+            // Board form-nya diem sejenak 0.8 detik dulu, baru ucapan penutupnya muncul.
+            setTimeout(function () {
+                playSplashSequence('outro-splash', [
+                    { text: 'Makasih bang udah join di Afi Studio', duration: 1200 },
+                    { text: 'Mampir aja kapanpun', duration: 110 },
+                    { text: 'Kalo punya rig, boleh sharing disini', duration: 1000 },
+                    { text: 'Jangan lupa kasih saran kalo ada sesuatu yang pengen mau ditambahin', duration: 1500 }
+                ], {}, function () {
+                    // Balik otomatis ke halaman terakhir user sebelum login Google.
+                    var returnTo = sessionStorage.getItem('afi_return_to') || '/';
+                    sessionStorage.removeItem('afi_return_to');
+                    window.location.href = returnTo;
+                });
+            }, 800);
         }
         document.getElementById('finish-5').addEventListener('click', finishStep5);
         document.getElementById('skip-5').addEventListener('click', finishStep5);
-
-        // ---------- replay (biar bisa dibuka & dicoba berkali-kali) ----------
-        document.getElementById('replay-btn').addEventListener('click', function () {
-            state = { username: '', nickname: '', banner: null, avatar: null, desc: '', roles: [], social: {}, email: '', wa: '' };
-            fUsername.value = ''; fNickname.value = ''; fDesc.value = '';
-            usernameCount.textContent = '0'; descCount.textContent = '0';
-            fUsername.classList.remove('is-valid', 'is-invalid');
-            usernameStatus.textContent = '';
-            document.querySelectorAll('#role-chips .chip.active').forEach(function (c) { c.classList.remove('active'); });
-            ['discord', 'tiktok', 'facebook', 'whatsapp', 'github', 'youtube', 'instagram', 'telegram'].forEach(function (key) {
-                document.getElementById('s-' + key).value = '';
-            });
-            document.getElementById('f-email').value = ''; document.getElementById('f-wa').value = '';
-            document.getElementById('banner-preview').style.backgroundImage = '';
-            document.getElementById('banner-hint-text').style.display = '';
-            var avEl = document.getElementById('avatar-preview');
-            avEl.style.backgroundImage = ''; avEl.querySelector('svg').style.display = '';
-            document.getElementById('preview-nick').textContent = 'Nickname';
-            document.getElementById('preview-user').textContent = 'username';
-            dotsWrap.style.display = '';
-            goTo(1);
-        });
     </script>
 </body>
 </html>

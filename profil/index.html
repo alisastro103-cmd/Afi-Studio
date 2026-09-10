@@ -196,7 +196,22 @@
         }
         .account-section { margin-top: 16px; }
         .account-section-title { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
-        .account-desc { font-size: 13px; color: var(--text-sub); line-height: 1.55; }
+        /* Prinsip kayak deskripsi channel YouTube: dibatasi beberapa baris dulu,
+           gak dibiarkan memanjang bebas ke bawah (yang bikin role/skill ketarik
+           turun ikut panjangnya teks). Full text baru muncul kalau di-expand. */
+        .account-desc {
+            font-size: 13px; color: var(--text-sub); line-height: 1.55;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .account-desc.expanded { -webkit-line-clamp: unset; overflow: visible; }
+        .desc-more-btn {
+            display: none; margin-top: 6px; padding: 0; border: none; background: none;
+            font-size: 12px; font-weight: 700; color: var(--accent); cursor: pointer;
+            font-family: 'Geist', sans-serif;
+        }
+        .desc-more-btn.show { display: inline-block; }
+        .desc-more-btn:hover { text-decoration: underline; }
 
         .account-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; }
         .account-btn {
@@ -445,6 +460,7 @@
                     <div class="desc-board">
                         <div class="account-section-title">Deskripsi</div>
                         <p class="account-desc view-only" id="account-desc">3D artist &amp; rig maker. Suka eksperimen sama pose dinamis dan environment low-poly.</p>
+                        <button type="button" class="desc-more-btn view-only" id="desc-more-btn">Lihat selengkapnya</button>
                         <textarea class="field-input edit-only" id="edit-desc" maxlength="200" style="width:100%; min-height:80px; resize:none; overflow:hidden;" placeholder="Ceritain tentang diri kamu..."></textarea>
 
                         <div class="account-role-badges view-only" id="account-role-badges">
@@ -535,6 +551,16 @@
     };
     let currentUser = null; // cache hasil /api/auth?action=me, dipakai buat prefill wizard pas Edit Profil
 
+    // Simpan halaman terakhir sebelum user mampir ke sini buat login, biar abis
+    // kelar onboarding, dia balik lagi ke situ (bukan otomatis nyangkut di /profil/).
+    (function rememberReturnPath(){
+        if (sessionStorage.getItem('afi_return_to')) return;
+        const ref = document.referrer;
+        if (ref && !ref.includes('/profil') && !ref.includes('/onboarding')) {
+            sessionStorage.setItem('afi_return_to', ref);
+        }
+    })();
+
     // Cek sesi login Google asli. 3 kemungkinan tampilan:
     //   1. Belum login sama sekali           -> login-gate
     //   2. Login tapi belum isi username      -> wizard pendaftaran (account-wizard)
@@ -548,7 +574,8 @@
                 renderAccountCard(currentUser);
             } else {
                 document.getElementById('self-account-card').style.display = 'none';
-                document.getElementById('account-wizard').style.display = 'block';
+                // Langsung arahin ke onboarding, gak perlu nunggu klik "Isi Sekarang" lagi.
+                window.location.replace('../onboarding/');
             }
         })
         .catch(() => {
@@ -562,6 +589,13 @@
     }
 
     // Tombol salin link profil: https://afi-studio.vercel.app/@username
+    document.getElementById('desc-more-btn').addEventListener('click', () => {
+        const descEl = document.getElementById('account-desc');
+        const btn = document.getElementById('desc-more-btn');
+        const isExpanded = descEl.classList.toggle('expanded');
+        btn.textContent = isExpanded ? 'Sembunyikan' : 'Lihat selengkapnya';
+    });
+
     document.getElementById('account-copy-btn').addEventListener('click', () => {
         const usernameEl = document.getElementById('account-username');
         const handle = usernameEl.textContent.replace(/^@/, '');
@@ -582,7 +616,17 @@
         document.getElementById('account-name').textContent = u.nickname || u.name;
         document.getElementById('account-username').textContent = '@' + u.username;
         document.getElementById('account-username').href = 'https://afi-studio.vercel.app/@' + u.username;
-        document.getElementById('account-desc').textContent = u.bio || 'Belum ada deskripsi.';
+        const descEl = document.getElementById('account-desc');
+        descEl.textContent = u.bio || 'Belum ada deskripsi.';
+        descEl.classList.remove('expanded');
+        const moreBtn = document.getElementById('desc-more-btn');
+        moreBtn.textContent = 'Lihat selengkapnya';
+        moreBtn.classList.remove('show');
+        // Cek abis render: kalo teksnya kepotong sama clamp 3 baris, baru tampilin
+        // tombol expand-nya (kayak "...selengkapnya" di deskripsi channel YouTube).
+        requestAnimationFrame(() => {
+            if (descEl.scrollHeight > descEl.clientHeight + 1) moreBtn.classList.add('show');
+        });
 
         const avatarSrc = u.avatarUrl || u.picture;
         if (avatarSrc) {
