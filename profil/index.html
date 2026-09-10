@@ -160,11 +160,11 @@
 
         .account-stats { display: flex; gap: 18px; margin-left: auto; }
         .account-stat { text-align: center; }
-        .account-stat-num { font-family: 'Minercraftory', 'Geist', sans-serif; font-size: 18px; font-weight: 400; letter-spacing: 0.02em; }
+        .account-stat-num { font-family: 'Minercraftory', 'Geist', sans-serif; font-size: 26px; font-weight: 400; letter-spacing: 0.02em; }
         .account-stat-label { font-size: 11px; color: var(--text-sub); }
 
         .account-name-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
-        .account-name { font-size: 26px; font-weight: 800; line-height: 1.2; }
+        .account-name { font-family: 'CreatoDisplay', sans-serif; font-size: 30px; font-weight: 800; line-height: 1.2; }
         .account-copy-btn {
             display: flex; align-items: center; justify-content: center;
             width: 24px; height: 24px; border-radius: 6px;
@@ -173,7 +173,7 @@
         .account-copy-btn svg { width: 15px; height: 15px; }
         .account-copy-btn:hover { color: var(--text); }
         .account-copy-btn.copied { color: #2e9e5b; }
-        .account-username { display: inline-block; font-size: 14.5px; color: var(--text-sub); margin-top: -2px; text-decoration: none; }
+        .account-username { display: inline-block; font-size: 16px; color: var(--text-sub); margin-top: -6px; text-decoration: none; }
         .account-username:hover { text-decoration: underline; }
 
         .account-role-badge {
@@ -215,7 +215,7 @@
             cursor: pointer;
         }
         .avatar-edit-overlay svg { width: 22px; height: 22px; }
-        .account-name-row .field-input { padding: 8px 12px; font-size: 22px; font-weight: 800; max-width: 260px !important; }
+        .account-name-row .field-input { padding: 8px 12px; font-family: 'CreatoDisplay', sans-serif; font-size: 24px; font-weight: 800; max-width: 260px !important; }
         .username-input-row.edit-only { margin-top: 0; }
 
         .profile-section { max-width: 640px; margin: 24px auto 0; padding: 0 20px 40px; }
@@ -398,10 +398,6 @@
             <div class="account-card" id="self-account-card">
                 <div class="account-banner" id="account-banner">
                     <input type="file" accept="image/*" id="edit-banner-input" hidden>
-                    <button type="button" class="account-edit-btn view-only" id="account-edit-btn">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                        Edit
-                    </button>
                     <button type="button" class="account-edit-btn edit-only" id="edit-banner-pick" style="right:auto; left:12px;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 15 5-5 4 4 3-3 6 6"/></svg>
                         Ganti Banner
@@ -425,8 +421,8 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                         </button>
                         <div class="account-stats view-only" id="account-stats">
-                            <div class="account-stat"><div class="account-stat-num" id="stat-models">4</div><div class="account-stat-label">Models</div></div>
-                            <div class="account-stat"><div class="account-stat-num" id="stat-like">128</div><div class="account-stat-label">Like</div></div>
+                            <div class="account-stat"><div class="account-stat-label">Models</div><div class="account-stat-num" id="stat-models">4</div></div>
+                            <div class="account-stat"><div class="account-stat-label">Like</div><div class="account-stat-num" id="stat-like">128</div></div>
                         </div>
                     </div>
                     <a href="#" class="account-username view-only" id="account-username">@alisastro</a>
@@ -679,7 +675,6 @@
     }
 
     document.getElementById('btn-edit-profil').addEventListener('click', enterEditMode);
-    document.getElementById('account-edit-btn').addEventListener('click', enterEditMode);
     document.getElementById('btn-cancel-edit').addEventListener('click', exitEditMode);
     document.getElementById('btn-logout').addEventListener('click', logoutAccount);
 
