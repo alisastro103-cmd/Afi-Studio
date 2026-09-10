@@ -190,6 +190,36 @@
         .step-panel { display: none; }
         .step-panel.active { display: block; }
 
+        /* ---------- splash sambutan (intro) & penutup (outro) ---------- */
+        .splash-overlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: var(--bg);
+            display: none; align-items: center; justify-content: center;
+            text-align: center; padding: 40px 24px;
+        }
+        .splash-overlay.show { display: flex; }
+        .splash-line {
+            position: absolute; max-width: 680px;
+            font-family: 'CreatoDisplay', sans-serif; font-weight: 800;
+            font-size: clamp(22px, 6vw, 40px); line-height: 1.35;
+            color: var(--text);
+            opacity: 0; visibility: hidden;
+        }
+        .splash-line.active { visibility: visible; }
+        .splash-line.active[data-anim="zoom"] { animation: splashZoom .7s cubic-bezier(.2,.8,.2,1) forwards; }
+        .splash-line.active[data-anim="slide-left"] { animation: splashSlideLeft .7s cubic-bezier(.2,.8,.2,1) forwards; }
+        .splash-line.active[data-anim="pop"] { animation: splashPop .6s cubic-bezier(.34,1.56,.64,1) forwards; }
+        .splash-line.active[data-anim="flip"] { animation: splashFlip .8s cubic-bezier(.2,.8,.2,1) forwards; }
+        .splash-line.active[data-anim="slide-up"] { animation: splashSlideUp .7s cubic-bezier(.2,.8,.2,1) forwards; }
+        .splash-line.leaving { animation: splashOut .4s ease forwards !important; }
+
+        @keyframes splashZoom { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+        @keyframes splashSlideLeft { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes splashPop { from { opacity: 0; transform: translateY(30px) scale(.85); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes splashFlip { from { opacity: 0; transform: rotateX(70deg); } to { opacity: 1; transform: rotateX(0deg); } }
+        @keyframes splashSlideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes splashOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.9); } }
+
         .replay-bar { display: flex; justify-content: center; margin-top: 16px; }
         .replay-btn { font-size: 12px; color: var(--text-sub); background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .replay-btn:hover { color: var(--text); }
@@ -199,6 +229,18 @@
     </style>
 </head>
 <body>
+
+    <div class="splash-overlay" id="intro-splash">
+        <div class="splash-line" data-anim="zoom">SELAMAT DATANG DI AFI STUDIO</div>
+        <div class="splash-line" data-anim="slide-left">MASUK DAN JELAJAHI SEMUA MODEL DISINI</div>
+        <div class="splash-line" data-anim="pop">KAMU JUGA BISA DAFTARIN MODEL KAMU DISINI JUGA</div>
+    </div>
+
+    <div class="splash-overlay" id="outro-splash">
+        <div class="splash-line" data-anim="flip">MAKASIH BANG UDAH ISI FORM NYA</div>
+        <div class="splash-line" data-anim="slide-up">LU BEBAS JELAJAHI SEMUA MODEL YANG ADA DISINI</div>
+    </div>
+
     <div class="page-shell">
 
     <div class="top-bar">
@@ -424,6 +466,40 @@
     </div>
 
     <script>
+        // ---------- splash sambutan (intro, sekali doang per browser) & penutup (outro) ----------
+        function playSplash(overlayId, onDone) {
+            var overlay = document.getElementById(overlayId);
+            var lines = Array.prototype.slice.call(overlay.querySelectorAll('.splash-line'));
+            overlay.classList.add('show');
+            var HOLD = 1900;
+            var idx = 0;
+            function step() {
+                if (idx > 0) {
+                    var prevLine = lines[idx - 1];
+                    prevLine.classList.add('leaving');
+                    setTimeout(function () { prevLine.classList.remove('active', 'leaving'); }, 420);
+                }
+                if (idx >= lines.length) {
+                    setTimeout(function () {
+                        overlay.classList.remove('show');
+                        if (onDone) onDone();
+                    }, 450);
+                    return;
+                }
+                lines[idx].classList.add('active');
+                idx++;
+                setTimeout(step, HOLD);
+            }
+            step();
+        }
+
+        var INTRO_SEEN_KEY = 'afi_onboarding_intro_seen';
+        if (!localStorage.getItem(INTRO_SEEN_KEY)) {
+            playSplash('intro-splash', function () {
+                localStorage.setItem(INTRO_SEEN_KEY, '1');
+            });
+        }
+
         // ---------- state ----------
         var totalSteps = 5;
         var state = { username: '', nickname: '', banner: null, avatar: null, desc: '', roles: [], social: {}, email: '', wa: '' };
@@ -550,7 +626,7 @@
             state.email = document.getElementById('f-email').value.trim();
             state.wa = document.getElementById('f-wa').value.trim();
             document.getElementById('summary-json').textContent = JSON.stringify(state, null, 2);
-            goTo(6);
+            playSplash('outro-splash', function () { goTo(6); });
         }
         document.getElementById('finish-5').addEventListener('click', finishStep5);
         document.getElementById('skip-5').addEventListener('click', finishStep5);
