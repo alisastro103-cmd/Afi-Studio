@@ -131,7 +131,7 @@
 
         /* step 2 - foto: gaya disamain kayak banner+avatar di halaman profil (pill "Ganti Banner"
            yang overlay, avatar bulat overlap banner), avatar-nya sengaja dibikin lebih gede lagi */
-        .photo-box { border: 1.5px dashed var(--border); border-radius: 16px; overflow: hidden; position: relative; background: var(--bg); }
+        .photo-box { border: 1.5px dashed var(--border); border-radius: 16px; overflow: hidden; position: relative; background: var(--surface); }
         .banner-area { display: block; aspect-ratio: 3 / 1; width: 100%; background-color: var(--bg); background-size: cover; background-position: center; position: relative; }
         .banner-edit-btn {
             position: absolute; right: 12px; top: 12px;
@@ -145,23 +145,23 @@
         .banner-edit-btn:hover { background: rgba(0,0,0,0.6); }
         .banner-edit-btn svg { width: 13px; height: 13px; }
         .avatar-area {
-            width: 148px; height: 148px; border-radius: 999px; overflow: hidden;
+            width: 108px; height: 108px; border-radius: 999px; overflow: hidden;
             border: 4px solid var(--surface); background: var(--bg);
             background-size: cover; background-position: center;
-            margin: -74px 0 0 20px;
+            margin: -54px 0 0 20px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; position: relative; z-index: 2;
         }
-        .avatar-area svg.avatar-placeholder-icon { width: 46px; height: 46px; color: var(--text-sub); }
+        .avatar-area svg.avatar-placeholder-icon { width: 34px; height: 34px; color: var(--text-sub); }
         .avatar-edit-btn {
             position: absolute; right: 2px; bottom: 2px; z-index: 3;
-            width: 34px; height: 34px; border-radius: 50%;
+            width: 28px; height: 28px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             background: rgba(0,0,0,0.55); color: #fff; backdrop-filter: blur(4px);
             border: 2px solid var(--surface); cursor: pointer;
         }
         .avatar-edit-btn:hover { background: rgba(0,0,0,0.7); }
-        .avatar-edit-btn svg { width: 15px; height: 15px; }
+        .avatar-edit-btn svg { width: 13px; height: 13px; }
         .preview-namecard { padding: 30px 18px 16px; }
         .preview-nick { font-size: 20px; font-weight: 700; }
         .preview-user { font-size: 13px; color: var(--text-sub); }
@@ -370,19 +370,19 @@
 
                 <div class="social-grid">
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-dc"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=3#icon-dc"></use></svg></span>
                         <input type="url" id="s-discord" placeholder="Link Server atau Person">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-tk"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=3#icon-tk"></use></svg></span>
                         <input type="url" id="s-tiktok" placeholder="Link Profil TikTok">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-fb"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=3#icon-fb"></use></svg></span>
                         <input type="url" id="s-facebook" placeholder="Link profil Facebook">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-wa"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=3#icon-wa"></use></svg></span>
                         <input id="s-whatsapp" placeholder="Bisa No WA atau Channel WhatsApp">
                     </div>
                     <div class="social-field">
@@ -390,15 +390,15 @@
                         <input type="url" id="s-github" placeholder="Link Profil GitHub">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-yt"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=3#icon-yt"></use></svg></span>
                         <input type="url" id="s-youtube" placeholder="Link Channel YouTube">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-ig"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=3#icon-ig"></use></svg></span>
                         <input type="url" id="s-instagram" placeholder="Link Profil Instagram">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 24 24"><use href="../icons/social-icons.svg?v=2#icon-tg"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 1280 1280"><use href="../icons/social-icons.svg?v=3#icon-tg"></use></svg></span>
                         <input type="url" id="s-telegram" placeholder="Link Profil Telegram">
                     </div>
                 </div>
