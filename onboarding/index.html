@@ -81,10 +81,7 @@
 
         .wrap { max-width: 620px; width: 100%; margin: 0 auto; padding: 24px 20px 40px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
-        .step-dots { display: flex; gap: 6px; justify-content: center; margin-top: 22px; }
-        .step-dot { height: 4px; flex: 1; max-width: 46px; border-radius: 999px; background: var(--border); transition: background .25s ease; }
-        .step-dot.active { background: var(--accent-hover); }
-        .step-dot.done { background: var(--accent); }
+        /* step-dots (progress bar) sengaja dihapus dari step-nav, dianggap ganggu */
 
         .card {
             background: var(--surface);
@@ -125,27 +122,46 @@
         .username-wrap { position: relative; }
         .username-at { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 14.5px; pointer-events: none; }
         .username-wrap .input { padding-left: 26px; }
-        .username-status { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; }
+        .username-status { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; }
+        .username-status svg { width: 18px; height: 18px; }
         .username-status.ok { color: var(--ok); }
         .username-status.bad { color: var(--danger); }
 
         textarea.input { min-height: 96px; resize: vertical; }
 
-        /* step 2 - foto */
+        /* step 2 - foto: gaya disamain kayak banner+avatar di halaman profil (pill "Ganti Banner"
+           yang overlay, avatar bulat overlap banner), avatar-nya sengaja dibikin lebih gede lagi */
         .photo-box { border: 1.5px dashed var(--border); border-radius: 16px; overflow: hidden; position: relative; background: var(--bg); }
-        .banner-area { aspect-ratio: 3 / 1; width: 100%; background-color: var(--bg); background-size: cover; background-position: center; display: flex; align-items: flex-start; justify-content: flex-end; }
-        .banner-fill-hint { padding: 4px 10px; font-size: 11px; color: var(--text-sub); background: color-mix(in srgb, var(--bg) 70%, #000 10%); border-radius: 999px; margin: 10px; }
+        .banner-area { aspect-ratio: 3 / 1; width: 100%; background-color: var(--bg); background-size: cover; background-position: center; position: relative; }
+        .banner-edit-btn {
+            position: absolute; right: 12px; top: 12px;
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 999px;
+            background: rgba(0,0,0,0.45); color: #fff;
+            font-size: 11.5px; font-weight: 700;
+            backdrop-filter: blur(4px);
+            border: none; cursor: pointer;
+        }
+        .banner-edit-btn:hover { background: rgba(0,0,0,0.6); }
+        .banner-edit-btn svg { width: 13px; height: 13px; }
         .avatar-area {
-            width: 88px; height: 88px; border-radius: 999px; overflow: hidden;
-            border: 3px solid var(--surface); background: var(--bg);
+            width: 148px; height: 148px; border-radius: 999px; overflow: hidden;
+            border: 4px solid var(--surface); background: var(--bg);
             background-size: cover; background-position: center;
-            margin: -44px 0 0 18px;
+            margin: -74px 0 0 20px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; position: relative; z-index: 2;
         }
-        .avatar-area svg { width: 26px; height: 26px; color: var(--text-sub); }
-        .photo-links { display: flex; gap: 16px; padding: 12px 18px 4px; font-size: 12.5px; }
-        .photo-links button { background: none; border: none; color: var(--accent-hover); font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+        .avatar-area svg.avatar-placeholder-icon { width: 46px; height: 46px; color: var(--text-sub); }
+        .avatar-edit-btn {
+            position: absolute; right: 2px; bottom: 2px; z-index: 3;
+            width: 34px; height: 34px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.55); color: #fff; backdrop-filter: blur(4px);
+            border: 2px solid var(--surface); cursor: pointer;
+        }
+        .avatar-edit-btn:hover { background: rgba(0,0,0,0.7); }
+        .avatar-edit-btn svg { width: 15px; height: 15px; }
         .preview-namecard { padding: 30px 18px 16px; }
         .preview-nick { font-size: 20px; font-weight: 700; }
         .preview-user { font-size: 13px; color: var(--text-sub); }
@@ -270,19 +286,20 @@
             <div class="card" style="padding: 0; overflow: hidden;">
                 <div class="photo-box" style="border: none; border-radius: 0;">
                     <label class="banner-area" id="banner-preview" for="f-banner">
-                        <span class="banner-fill-hint" id="banner-hint-text">Rasio banner 1:3</span>
+                        <button type="button" class="banner-edit-btn" id="btn-pick-banner">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 15 5-5 4 4 3-3 6 6"/></svg>
+                            Ganti Banner
+                        </button>
                     </label>
                     <input type="file" accept="image/*" id="f-banner" hidden>
 
                     <label class="avatar-area" id="avatar-preview" for="f-avatar">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4"/><circle cx="12" cy="7" r="4"/></svg>
+                        <svg class="avatar-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span class="avatar-edit-btn" id="btn-pick-avatar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 15 5-5 4 4 3-3 6 6"/></svg>
+                        </span>
                     </label>
                     <input type="file" accept="image/*" id="f-avatar" hidden>
-
-                    <div class="photo-links">
-                        <button type="button" id="btn-pick-banner">Tambahkan Banner</button>
-                        <button type="button" id="btn-pick-avatar">Tambahkan Foto Profil</button>
-                    </div>
 
                     <div class="preview-namecard">
                         <div class="preview-nick" id="preview-nick">Nickname</div>
@@ -426,8 +443,6 @@
              halaman user sebelum login (lihat finishStep5 di script). Isi teks dinamis. -->
         <div class="splash-overlay" id="outro-splash"></div>
 
-        <div class="step-dots" id="step-dots"></div>
-
     </div>
 
     </div>
@@ -478,9 +493,10 @@
         var step1Panel = document.querySelector('.step-panel[data-step="1"]');
         // Layar kosong (cuma background + navbar) 1.2 detik, baru sambutannya muncul,
         // lalu kosong lagi 1 detik sebelum board form step 1 kebuka.
+        // Durasi tiap baris dilambatin dikit dari draft awal biar lebih nyaman dibaca.
         playSplashSequence('intro-splash', [
-            { text: 'Selamat datang di Afi Studio', duration: 1500 },
-            { text: 'Lengkapi akun mu dulu bang', duration: 1500 }
+            { text: 'Selamat datang di Afi Studio', duration: 2000 },
+            { text: 'Lengkapi akun mu dulu bang', duration: 2000 }
         ], { leadDelay: 1200, trailDelay: 1000 }, function () {
             step1Panel.classList.add('active');
         });
@@ -491,28 +507,12 @@
         var current = 1;
 
         var panels = document.querySelectorAll('.step-panel');
-        var dotsWrap = document.getElementById('step-dots');
-        for (var i = 1; i <= totalSteps; i++) {
-            var d = document.createElement('div');
-            d.className = 'step-dot';
-            d.dataset.step = i;
-            dotsWrap.appendChild(d);
-        }
-
-        function renderDots() {
-            dotsWrap.querySelectorAll('.step-dot').forEach(function (d) {
-                var n = Number(d.dataset.step);
-                d.classList.toggle('active', n === current);
-                d.classList.toggle('done', n < current);
-            });
-        }
 
         function goTo(step) {
             current = step;
             panels.forEach(function (p) {
                 p.classList.toggle('active', Number(p.dataset.step) === step);
             });
-            if (step <= totalSteps) renderDots(); else dotsWrap.style.display = 'none';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -537,7 +537,9 @@
             var ok = USERNAME_RE.test(v) && v.length <= 20;
             fUsername.classList.toggle('is-valid', ok);
             fUsername.classList.toggle('is-invalid', !ok);
-            usernameStatus.textContent = ok ? '✓' : '✕';
+            usernameStatus.innerHTML = ok
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
             usernameStatus.className = 'username-status ' + (ok ? 'ok' : 'bad');
             usernameHint.style.color = ok ? '' : 'var(--danger)';
             next1.disabled = !ok;
@@ -554,8 +556,10 @@
         // ---------- step 2: banner & avatar ----------
         var bannerInput = document.getElementById('f-banner');
         var avatarInput = document.getElementById('f-avatar');
-        document.getElementById('btn-pick-banner').addEventListener('click', function () { bannerInput.click(); });
-        document.getElementById('btn-pick-avatar').addEventListener('click', function () { avatarInput.click(); });
+        document.getElementById('btn-pick-banner').addEventListener('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            bannerInput.click();
+        });
         document.getElementById('avatar-preview').addEventListener('click', function (e) { e.preventDefault(); avatarInput.click(); });
 
         bannerInput.addEventListener('change', function () {
@@ -563,7 +567,6 @@
             var url = URL.createObjectURL(bannerInput.files[0]);
             var el = document.getElementById('banner-preview');
             el.style.backgroundImage = 'url(' + url + ')';
-            document.getElementById('banner-hint-text').style.display = 'none';
             state.banner = bannerInput.files[0].name;
         });
         avatarInput.addEventListener('change', function () {
@@ -571,7 +574,7 @@
             var url = URL.createObjectURL(avatarInput.files[0]);
             var el = document.getElementById('avatar-preview');
             el.style.backgroundImage = 'url(' + url + ')';
-            el.querySelector('svg').style.display = 'none';
+            el.querySelector('.avatar-placeholder-icon').style.display = 'none';
             state.avatar = avatarInput.files[0].name;
         });
 
@@ -611,14 +614,13 @@
             state.email = document.getElementById('f-email').value.trim();
             state.wa = document.getElementById('f-wa').value.trim();
             document.querySelector('.step-panel[data-step="5"]').classList.remove('active');
-            dotsWrap.style.display = 'none';
             // Board form-nya diem sejenak 0.8 detik dulu, baru ucapan penutupnya muncul.
             setTimeout(function () {
                 playSplashSequence('outro-splash', [
-                    { text: 'Makasih bang udah join di Afi Studio', duration: 1200 },
-                    { text: 'Mampir aja kapanpun', duration: 110 },
-                    { text: 'Kalo punya rig, boleh sharing disini', duration: 1000 },
-                    { text: 'Jangan lupa kasih saran kalo ada sesuatu yang pengen mau ditambahin', duration: 1500 }
+                    { text: 'Makasih bang udah join di Afi Studio', duration: 1800 },
+                    { text: 'Mampir aja kapanpun', duration: 900 },
+                    { text: 'Kalo punya rig, boleh sharing disini', duration: 1500 },
+                    { text: 'Jangan lupa kasih saran kalo ada sesuatu yang pengen mau ditambahin', duration: 2200 }
                 ], {}, function () {
                     // Balik otomatis ke halaman terakhir user sebelum login Google.
                     var returnTo = sessionStorage.getItem('afi_return_to') || '/';
