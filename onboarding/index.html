@@ -132,7 +132,7 @@
         /* step 2 - foto: gaya disamain kayak banner+avatar di halaman profil (pill "Ganti Banner"
            yang overlay, avatar bulat overlap banner), avatar-nya sengaja dibikin lebih gede lagi */
         .photo-box { border: 1.5px dashed var(--border); border-radius: 16px; overflow: hidden; position: relative; background: var(--bg); }
-        .banner-area { aspect-ratio: 3 / 1; width: 100%; background-color: var(--bg); background-size: cover; background-position: center; position: relative; }
+        .banner-area { display: block; aspect-ratio: 3 / 1; width: 100%; background-color: var(--bg); background-size: cover; background-position: center; position: relative; }
         .banner-edit-btn {
             position: absolute; right: 12px; top: 12px;
             display: flex; align-items: center; gap: 6px;
@@ -370,19 +370,19 @@
 
                 <div class="social-grid">
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-dc"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-dc"></use></svg></span>
                         <input type="url" id="s-discord" placeholder="Link Server atau Person">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-tk"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-tk"></use></svg></span>
                         <input type="url" id="s-tiktok" placeholder="Link Profil TikTok">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-fb"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-fb"></use></svg></span>
                         <input type="url" id="s-facebook" placeholder="Link profil Facebook">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-wa"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-wa"></use></svg></span>
                         <input id="s-whatsapp" placeholder="Bisa No WA atau Channel WhatsApp">
                     </div>
                     <div class="social-field">
@@ -390,15 +390,15 @@
                         <input type="url" id="s-github" placeholder="Link Profil GitHub">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-yt"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-yt"></use></svg></span>
                         <input type="url" id="s-youtube" placeholder="Link Channel YouTube">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg#icon-ig"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=2#icon-ig"></use></svg></span>
                         <input type="url" id="s-instagram" placeholder="Link Profil Instagram">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 24 24"><use href="../icons/social-icons.svg#icon-tg"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 24 24"><use href="../icons/social-icons.svg?v=2#icon-tg"></use></svg></span>
                         <input type="url" id="s-telegram" placeholder="Link Profil Telegram">
                     </div>
                 </div>
@@ -617,10 +617,10 @@
             // Board form-nya diem sejenak 0.8 detik dulu, baru ucapan penutupnya muncul.
             setTimeout(function () {
                 playSplashSequence('outro-splash', [
-                    { text: 'Makasih bang udah join di Afi Studio', duration: 1800 },
-                    { text: 'Mampir aja kapanpun', duration: 900 },
-                    { text: 'Kalo punya rig, boleh sharing disini', duration: 1500 },
-                    { text: 'Jangan lupa kasih saran kalo ada sesuatu yang pengen mau ditambahin', duration: 2200 }
+                    { text: 'Makasih bang udah join di Afi Studio', duration: 2000 },
+                    { text: 'Mampir aja kapanpun', duration: 2000 },
+                    { text: 'Kalo punya rig, boleh sharing disini', duration: 2000 },
+                    { text: 'Jangan lupa kasih saran kalo ada sesuatu yang pengen mau ditambahin', duration: 2000 }
                 ], {}, function () {
                     // Balik otomatis ke halaman terakhir user sebelum login Google.
                     var returnTo = sessionStorage.getItem('afi_return_to') || '/';
