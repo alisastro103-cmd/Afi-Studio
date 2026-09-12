@@ -271,17 +271,40 @@
            punya z-index eksplisit lebih tinggi. */
         .search-tabs-row {
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            border-bottom: 1px solid var(--border); margin-bottom: 16px;
+            margin-bottom: 16px;
             position: relative; z-index: 30;
         }
-        .search-tabs { display: flex; gap: 22px; overflow-x: auto; flex: 1 1 auto; min-width: 0; }
+        .search-tabs { display: flex; gap: 8px; overflow-x: auto; flex: 1 1 auto; min-width: 0; }
         .search-tabs-filters { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+        /* Papan/background di tiap teks tab (Semua/Profil/Models/Video) --
+           sebelumnya cuma teks polos + garis bawah aktif, sekarang tiap tab
+           punya "board" pil sendiri (mirip chip), aktif/non-aktif dibedakan
+           lewat warna board-nya, bukan garis bawah lagi. */
         .search-tab {
-            background: none; border: none; padding: 6px 2px 12px;
+            background: var(--bg); border: 1px solid var(--border); border-radius: 999px;
+            padding: 8px 16px;
             font-size: 14.5px; color: var(--text-sub); font-weight: 600;
-            border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer;
+            white-space: nowrap; cursor: pointer;
         }
-        .search-tab.active { color: var(--text); border-bottom-color: var(--accent-hover); }
+        .search-tab.active { color: #fff; background: var(--accent-hover); border-color: var(--accent-hover); }
+
+        /* Font tombol filter Tipe/Aplikasi disamain persis sama font tab
+           (Semua/Profil/Models/Video) di sebelahnya, biar satu baris itu
+           kelihatan konsisten -- panah dropdown-nya (svg polyline) TETAP
+           ada, cuma ukuran tulisannya yang diseragamkan. Discope ke
+           #search-tabs-row doang (bukan ubah filter-board.css langsung)
+           supaya halaman lain yang masih pakai board versi lama
+           (Beranda/Models/Video & Tutorial) gak ikut berubah. */
+        #search-tabs-row .filter-dropdown-btn {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--text-sub);
+        }
+        #search-tabs-row .filter-dropdown-btn:hover,
+        #search-tabs-row .filter-dropdown-btn.open,
+        #search-tabs-row .filter-dropdown-btn.has-active {
+            color: var(--text);
+        }
 
         .dev-note-inline {
             font-size: 11px; color: var(--text-sub);
