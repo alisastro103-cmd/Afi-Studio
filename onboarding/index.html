@@ -27,8 +27,16 @@
            cuma ngisi 75% tinggi layar kalau min-height-nya cuma 100dvh polos (dvh
            gak ngikutin zoom). Makanya di-bagi 0.75 lagi biar abis di-zoom hasilnya
            pas ngisi tinggi layar penuh, dan konten yang di-center beneran sejajar
-           ke titik tengah layar. */
+           ke titik tengah layar. Zoom-nya sendiri naik ke 0.9 di tablet dan balik
+           ke 1 di desktop (lihat body{zoom} di bawah), jadi kompensasinya ikutan
+           disesuaikan per breakpoint. */
         .page-shell { min-height: calc(100dvh / 0.75); display: flex; flex-direction: column; }
+        @media (min-width: 768px) and (max-width: 1023.98px) {
+            .page-shell { min-height: calc(100dvh / 0.9); }
+        }
+        @media (min-width: 1024px) {
+            .page-shell { min-height: 100dvh; }
+        }
         h1, h2, h3 { font-family: 'CreatoDisplay', sans-serif; font-weight: 700; }
 
         :root {
@@ -68,25 +76,51 @@
             transition: background-color .3s ease, color .3s ease, border-color .3s ease;
             zoom: 0.75;
         }
+        /* Halaman lain di situs ini nurunin skala zoom bertahap: 0.75 di HP,
+           0.9 di tablet, balik ke 1 di desktop (lihat layout-mobile.css /
+           layout-desktop.css). Onboarding ini halaman berdiri sendiri (gak
+           nge-import file itu), jadi disamain manual di sini biar navbar
+           (dan posisi board yang di-center) konsisten sama halaman lain di
+           semua ukuran layar, bukan cuma ke-set 0.75 terus di semua ukuran. */
+        @media (min-width: 768px) and (max-width: 1023.98px) {
+            body { zoom: 0.9; }
+        }
+        @media (min-width: 1024px) {
+            body { zoom: 1; }
+        }
 
         .top-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 20px;
             position: sticky; top: 0; z-index: 40;
             background: var(--bg);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
         }
+        /* posisi logo+title disamain kayak navbar halaman lain: edge-to-edge,
+           padding 16px sisi / 6px atas-bawah di HP & tablet (24px sisi khusus
+           tablet), 16px/10px di desktop. Angka dibagi dulu sama faktor zoom
+           yang lagi aktif di breakpoint itu, biar hasil visualnya PAS sama. */
+        .top-bar-inner {
+            width: 100%;
+            padding: calc(6px / 0.75) calc(16px / 0.75);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        @media (min-width: 768px) and (max-width: 1023.98px) {
+            .top-bar-inner { padding: calc(6px / 0.9) calc(24px / 0.9); }
+        }
+        @media (min-width: 1024px) {
+            .top-bar-inner { padding: 10px 16px; }
+        }
         .top-bar-brand { display: flex; align-items: center; gap: 4px; margin-left: 6px; }
         .top-bar-brand img { width: 40px; height: 40px; object-fit: contain; }
         .top-bar-brand span { font-family: 'Dancing Script', cursive; font-size: 20px; font-weight: 700; color: var(--text); }
-        .welcome-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-        .welcome-head img { width: 30px; height: 30px; object-fit: contain; flex-shrink: 0; }
+        .welcome-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+        .welcome-head img { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
         .theme-btn { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
 
-        .wrap { max-width: 620px; width: 100%; margin: 0 auto; padding: 24px 20px 40px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .wrap { max-width: 620px; width: 100%; margin: 0 auto; padding: 24px 20px 70px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
 
         /* step-dots (progress bar) sengaja dihapus dari step-nav, dianggap ganggu */
+
 
         .card {
             background: var(--surface);
@@ -98,7 +132,7 @@
         }
         @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card-title { font-size: 22px; margin-bottom: 4px; }
+        .card-title { font-size: clamp(23px, 5vw, 27px); margin-bottom: 6px; }
         .card-subtitle { font-size: 13.5px; color: var(--text-sub); line-height: 1.5; margin-bottom: 20px; }
 
         .field { margin-bottom: 18px; }
@@ -165,8 +199,8 @@
         }
         .avatar-area svg.avatar-placeholder-icon { width: 40px; height: 40px; color: var(--text-sub); }
         .preview-namecard { padding: 12px 18px 16px; }
-        .preview-nick { font-size: 20px; font-weight: 700; }
-        .preview-user { font-size: 13px; color: var(--text-sub); }
+        .preview-nick { font-size: 23px; font-weight: 700; }
+        .preview-user { font-size: 15px; color: var(--text-sub); }
 
         /* step 3 - chips */
         .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -239,7 +273,9 @@
     <div class="page-shell">
 
     <div class="top-bar">
-        <div class="top-bar-brand"><img src="../icon.png" alt="Afi Studio"><span>Afi-Studio</span></div>
+        <div class="top-bar-inner">
+            <div class="top-bar-brand"><img src="../icon.png" alt="Afi Studio"><span>Afi-Studio</span></div>
+        </div>
     </div>
 
     <div class="wrap">
@@ -286,6 +322,9 @@
         <!-- STEP 2 -->
         <div class="step-panel" data-step="2">
             <div class="card" style="padding: 0; overflow: hidden;">
+                <div style="padding: 22px 22px 12px;">
+                    <div class="welcome-head"><img src="../icon.png" alt=""><h1 class="card-title" style="margin-bottom:0;">Foto Profil &amp; Banner</h1></div>
+                </div>
                 <div class="photo-box" style="border: none; border-radius: 0;">
                     <label class="banner-area" id="banner-preview" for="f-banner"></label>
                     <input type="file" accept="image/*" id="f-banner" hidden>
