@@ -50,6 +50,15 @@
             --grid-line: rgba(100,116,139,0.22);
             --danger: #EF4444;
             --ok: #22C55E;
+            /* dipakai buat kompensasi ukuran font yang ikut nyusut kena `zoom`
+               di body (lihat catatan di rule body{zoom} di bawah) */
+            --page-zoom: 0.75;
+        }
+        @media (min-width: 768px) and (max-width: 1023.98px) {
+            :root { --page-zoom: 0.9; }
+        }
+        @media (min-width: 1024px) {
+            :root { --page-zoom: 1; }
         }
         .dark {
             --accent: #3B5578;
@@ -132,7 +141,7 @@
         }
         @keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card-title { font-size: clamp(23px, 5vw, 27px); margin-bottom: 6px; }
+        .card-title { font-size: calc(clamp(23px, 5vw, 27px) / var(--page-zoom)); margin-bottom: 6px; }
         .card-subtitle { font-size: 13.5px; color: var(--text-sub); line-height: 1.5; margin-bottom: 20px; }
 
         .field { margin-bottom: 18px; }
@@ -172,20 +181,20 @@
            yang overlay, avatar bulat overlap banner), avatar-nya sengaja dibikin lebih gede lagi */
         .photo-box { border: 1.5px dashed var(--border); border-radius: 16px; overflow: hidden; position: relative; background: var(--surface); }
         .banner-area { display: block; aspect-ratio: 3 / 1; width: 100%; background-color: var(--bg); background-size: cover; background-position: center; position: relative; }
-        /* tombol "Ganti Banner"/"Ganti Profil" (pill + icon) diganti jadi teks polos
-           yang ngambang di atas banner, biar lebih simpel & gak keliatan berat */
+        /* tombol "Ganti Banner"/"Ganti Profil" (pill + icon) diganti jadi teks polos.
+           Dipindah ke bawah set thumbnail (banner+avatar+namecard), bukan lagi ngambang
+           di atas banner, biar gak nutupin banner-nya. */
         .photo-hint-row {
-            position: absolute; top: 14px; left: 0; right: 0; z-index: 4;
             display: flex; align-items: center; justify-content: center; gap: 28px;
-            pointer-events: none;
+            padding: 2px 18px 16px;
         }
         .photo-hint {
-            pointer-events: auto; cursor: pointer;
-            background: none; border: none; padding: 2px;
+            cursor: pointer;
+            background: none; border: none; padding: 4px 2px;
             font-family: 'Geist', sans-serif; font-size: 12.5px; font-weight: 700;
-            color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.55);
+            color: var(--text-sub);
         }
-        .photo-hint:hover { text-decoration: underline; text-underline-offset: 3px; }
+        .photo-hint:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
         .avatar-area {
             display: block; width: 128px; height: 128px; border-radius: 999px;
             margin: -64px 0 0 20px;
@@ -199,8 +208,8 @@
         }
         .avatar-area svg.avatar-placeholder-icon { width: 40px; height: 40px; color: var(--text-sub); }
         .preview-namecard { padding: 12px 18px 16px; }
-        .preview-nick { font-size: 23px; font-weight: 700; }
-        .preview-user { font-size: 15px; color: var(--text-sub); }
+        .preview-nick { font-size: calc(23px / var(--page-zoom)); font-weight: 700; }
+        .preview-user { font-size: calc(15px / var(--page-zoom)); color: var(--text-sub); }
 
         /* step 3 - chips */
         .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -258,7 +267,7 @@
         .splash-line {
             max-width: 540px; width: 100%; padding: 0 10px;
             font-family: 'CreatoDisplay', sans-serif; font-weight: 800;
-            font-size: clamp(20px, 5.8vw, 32px); line-height: 1.4;
+            font-size: calc(clamp(20px, 5.8vw, 32px) / var(--page-zoom)); line-height: 1.4;
             color: var(--text);
             opacity: 0;
             transform: translateY(14px);
@@ -322,17 +331,9 @@
         <!-- STEP 2 -->
         <div class="step-panel" data-step="2">
             <div class="card" style="padding: 0; overflow: hidden;">
-                <div style="padding: 22px 22px 12px;">
-                    <div class="welcome-head"><img src="../icon.png" alt=""><h1 class="card-title" style="margin-bottom:0;">Foto Profil &amp; Banner</h1></div>
-                </div>
                 <div class="photo-box" style="border: none; border-radius: 0;">
                     <label class="banner-area" id="banner-preview" for="f-banner"></label>
                     <input type="file" accept="image/*" id="f-banner" hidden>
-
-                    <div class="photo-hint-row">
-                        <span class="photo-hint" id="btn-pick-avatar">Tambahkan Profil</span>
-                        <span class="photo-hint" id="btn-pick-banner">Tambahkan Banner</span>
-                    </div>
 
                     <label class="avatar-area" id="avatar-preview" for="f-avatar">
                         <span class="avatar-visual">
@@ -344,6 +345,11 @@
                     <div class="preview-namecard">
                         <div class="preview-nick" id="preview-nick">Nickname</div>
                         <div class="preview-user">@<span id="preview-user">username</span></div>
+                    </div>
+
+                    <div class="photo-hint-row">
+                        <span class="photo-hint" id="btn-pick-avatar">Tambahkan Profil</span>
+                        <span class="photo-hint" id="btn-pick-banner">Tambahkan Banner</span>
                     </div>
                 </div>
 
@@ -410,19 +416,19 @@
 
                 <div class="social-grid">
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=4#icon-dc"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=5#icon-dc"></use></svg></span>
                         <input type="url" id="s-discord" placeholder="Link Server atau Person">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=4#icon-tk"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=5#icon-tk"></use></svg></span>
                         <input type="url" id="s-tiktok" placeholder="Link Profil TikTok">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=4#icon-fb"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=5#icon-fb"></use></svg></span>
                         <input type="url" id="s-facebook" placeholder="Link profil Facebook">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=4#icon-wa"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=5#icon-wa"></use></svg></span>
                         <input id="s-whatsapp" placeholder="Bisa No WA atau Channel WhatsApp">
                     </div>
                     <div class="social-field">
@@ -430,15 +436,15 @@
                         <input type="url" id="s-github" placeholder="Link Profil GitHub">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=4#icon-yt"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=5#icon-yt"></use></svg></span>
                         <input type="url" id="s-youtube" placeholder="Link Channel YouTube">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=4#icon-ig"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 512 512"><use href="../icons/social-icons.svg?v=5#icon-ig"></use></svg></span>
                         <input type="url" id="s-instagram" placeholder="Link Profil Instagram">
                     </div>
                     <div class="social-field">
-                        <span class="social-icon-badge"><svg viewBox="0 0 1280 1280"><use href="../icons/social-icons.svg?v=4#icon-tg"></use></svg></span>
+                        <span class="social-icon-badge"><svg viewBox="0 0 1280 1280"><use href="../icons/social-icons.svg?v=5#icon-tg"></use></svg></span>
                         <input type="url" id="s-telegram" placeholder="Link Profil Telegram">
                     </div>
                 </div>
