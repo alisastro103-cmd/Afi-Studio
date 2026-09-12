@@ -197,13 +197,42 @@
        (bukan ke-override balik sama var(--bg) punya .model-thumb). */
     .model-thumb.skeleton-shimmer { background: var(--border); }
     .model-body { padding: 20px; }
-    .model-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
-    .model-caption { font-size: 14px; color: var(--text-light); margin-bottom: 16px; }
 
-    .model-info { font-size: 13px; border-top: 1px solid var(--border); padding-top: 14px; margin-bottom: 18px; }
-    .model-info-row { display: flex; justify-content: space-between; padding: 4px 6px; }
-    .model-info-row span:first-child { color: var(--text-light); }
-    .model-info-row b { font-weight: 700; text-align: right; }
+    /* Baris judul + tombol Favorit (ikon bulat di kanan), sesuai sketsa --
+       ganti posisi tombol Favorit yang sebelumnya ada di baris aksi bawah
+       bareng tombol Bagikan. */
+    .model-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    .model-title { font-size: 22px; font-weight: 800; }
+    .fav-icon-btn {
+      flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg); border: 1px solid var(--border); color: var(--text);
+      cursor: pointer; margin-top: 2px;
+    }
+    .fav-icon-btn svg { width: 19px; height: 19px; }
+    .fav-icon-btn:active { opacity: 0.8; }
+    .fav-icon-btn.is-favorited { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); color: #F59E0B; }
+
+    /* Kartu publisher: avatar generik + nama + peran (Converter/Creator).
+       Avatar-nya sengaja generik (bukan foto asli) -- model lama ini belum
+       tertaut ke akun manapun, jadi belum ada foto profil asli yg dipakai.
+       Lihat catatan publisher di init(). */
+    .publisher-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .publisher-avatar {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg); border: 1px solid var(--border); color: var(--text-light);
+    }
+    .publisher-avatar svg { width: 24px; height: 24px; }
+    .publisher-info { min-width: 0; }
+    .publisher-name { display: block; font-size: 14.5px; font-weight: 800; line-height: 1.25; }
+    .publisher-role { display: block; font-size: 12.5px; color: var(--text-light); font-style: italic; margin-top: 1px; }
+
+    /* Kotak "Caption :" -- sebelumnya cuma teks polos nempel di bawah judul,
+       sekarang dibungkus kotak sendiri sesuai sketsa. */
+    .caption-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; }
+    .caption-label { font-size: 12.5px; font-weight: 800; margin-bottom: 4px; }
+    .caption-text { font-size: 13.5px; color: var(--text-light); line-height: 1.5; }
 
     .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
     .tag { font-size: 13.5px; font-weight: 600; background: var(--bg); border: 1px solid var(--border); color: var(--text-light); padding: 6px 14px; border-radius: 999px; }
@@ -369,10 +398,18 @@
       <div id="skeleton-box" class="model-card skeleton-card" aria-hidden="true">
         <div class="model-thumb skeleton-shimmer"></div>
         <div class="model-body">
-          <div class="skeleton-shimmer skeleton-line" style="width:65%;height:22px;margin-top:0;"></div>
-          <div class="skeleton-shimmer skeleton-line" style="width:90%;margin-top:12px;margin-bottom:16px;"></div>
-          <div class="skeleton-shimmer skeleton-line" style="width:100%;margin-top:14px;"></div>
-          <div class="skeleton-shimmer skeleton-line" style="width:80%;margin-top:8px;margin-bottom:16px;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;">
+            <div class="skeleton-shimmer skeleton-line" style="width:65%;height:22px;margin-top:0;"></div>
+            <div class="skeleton-shimmer" style="width:36px;height:36px;border-radius:50%;flex-shrink:0;"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div class="skeleton-shimmer" style="width:44px;height:44px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div class="skeleton-shimmer skeleton-line" style="width:55%;height:12px;margin-top:0;"></div>
+              <div class="skeleton-shimmer skeleton-line" style="width:35%;height:10px;margin-top:6px;"></div>
+            </div>
+          </div>
+          <div class="skeleton-shimmer" style="width:100%;height:56px;border-radius:10px;margin-bottom:18px;"></div>
           <div style="display:flex;gap:8px;margin-bottom:18px;">
             <div class="skeleton-shimmer" style="width:64px;height:26px;border-radius:999px;"></div>
             <div class="skeleton-shimmer" style="width:64px;height:26px;border-radius:999px;"></div>
@@ -385,9 +422,17 @@
         <div class="model-card">
           <img id="m-thumb" class="model-thumb" src="" alt="" loading="lazy">
           <div class="model-body">
-            <div id="m-title" class="model-title"></div>
-            <div id="m-caption" class="model-caption"></div>
-            <div id="m-info" class="model-info"></div>
+            <div class="model-title-row">
+              <div id="m-title" class="model-title"></div>
+              <button type="button" id="m-fav-btn" class="fav-icon-btn" onclick="toggleFavoriteModel()" aria-label="Tandai favorit">
+                <span id="m-fav-icon"></span>
+              </button>
+            </div>
+            <div id="m-publisher" class="publisher-row"></div>
+            <div class="caption-box">
+              <div class="caption-label">Caption :</div>
+              <div id="m-caption" class="caption-text"></div>
+            </div>
             <div id="m-tags" class="tag-row"></div>
             <div class="action-row">
               <a id="m-download" class="download-btn" href="#" target="_blank" rel="noopener">
@@ -398,9 +443,6 @@
                 <button type="button" class="share-btn" onclick="handleShareModel()">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                   Bagikan
-                </button>
-                <button type="button" id="m-fav-btn" class="fav-btn" onclick="toggleFavoriteModel()" aria-label="Tandai favorit">
-                  <span id="m-fav-icon"></span> Favorit
                 </button>
               </div>
             </div>
@@ -772,11 +814,21 @@
       document.getElementById('m-title').textContent = model.name || '';
       document.getElementById('m-caption').textContent = model.caption || '';
 
-      let infoHtml = '';
-      if (model.creator) infoHtml += `<div class="model-info-row"><span>Creator</span><b>${escapeHtml(model.creator)}</b></div>`;
-      if (model.converter) infoHtml += `<div class="model-info-row"><span>Converter</span><b>${escapeHtml(model.converter)}</b></div>`;
-      if (model.app_target) infoHtml += `<div class="model-info-row"><span>Untuk Aplikasi</span><b>${escapeHtml(model.app_target)}</b></div>`;
-      document.getElementById('m-info').innerHTML = infoHtml;
+      // Kartu publisher: model lama ini belum tertaut ke akun manapun (sistem
+      // login/akun belum jalan), jadi avatar-nya SELALU generik -- bukan foto
+      // profil asli siapapun. Nama Converter/Creator yang tersimpan di data
+      // cuma teks bebas dari form submit, jadi tetap ditampilkan sebagai
+      // nama publisher; kalau kosong dua-duanya, baru ditampilkan "Anonim".
+      // Nanti kalau sistem akun sudah jalan, model ini baru bisa "diklaim"
+      // pemiliknya -- untuk sekarang statusnya anonim/belum tertaut.
+      const publisherName = model.converter || model.creator || 'Anonim';
+      const publisherRole = model.converter ? 'Converter' : (model.creator ? 'Creator' : 'Publisher');
+      document.getElementById('m-publisher').innerHTML = `
+        <span class="publisher-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg></span>
+        <span class="publisher-info">
+          <span class="publisher-name">${escapeHtml(publisherName)}</span>
+          <span class="publisher-role">${escapeHtml(publisherRole)}</span>
+        </span>`;
 
       const cats = Array.isArray(model.category) ? model.category : (model.category ? [model.category] : []);
       document.getElementById('m-tags').innerHTML = cats.map(c => `<span class="tag">${escapeHtml(c)}</span>`).join('');
