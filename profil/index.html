@@ -166,16 +166,25 @@
         .account-name-block { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
         .account-name-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .account-name { font-family: 'CreatoDisplay', sans-serif; font-size: calc(23px / 0.75); font-weight: 800; line-height: 1.2; }
-        .account-copy-btn {
-            display: flex; align-items: center; justify-content: center;
-            width: 24px; height: 24px; border-radius: 6px;
-            border: none; background: none; color: var(--text-sub); cursor: pointer;
+        .account-username { display: inline-block; font-size: calc(15px / 0.75); color: var(--text-sub); text-decoration: underline; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+        /* Popup kecil "Link tersalin" -- muncul nempel di bawah teks
+           username begitu di-tap (gantiin tombol salin link yang lama). */
+        .username-copy-wrap { position: relative; display: inline-block; }
+        .username-copy-popup {
+            position: absolute; left: 0; top: calc(100% + 8px); z-index: 30;
+            display: flex; align-items: center; gap: 10px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            padding: 10px 14px; box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+            opacity: 0; visibility: hidden; transform: translateY(-6px) scale(0.96);
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+            pointer-events: none; white-space: nowrap;
         }
-        .account-copy-btn svg { width: 15px; height: 15px; }
-        .account-copy-btn:hover { color: var(--text); }
-        .account-copy-btn.copied { color: #2e9e5b; }
-        .account-username { display: inline-block; font-size: calc(15px / 0.75); color: var(--text-sub); text-decoration: none; }
-        .account-username:hover { text-decoration: underline; }
+        .username-copy-popup.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        .username-copy-popup-icon { width: 18px; height: 18px; color: #2e9e5b; flex-shrink: 0; }
+        .username-copy-popup-text { display: flex; flex-direction: column; line-height: 1.25; }
+        .username-copy-popup-title { font-size: 12.5px; font-weight: 800; }
+        .username-copy-popup-sub { font-size: 11px; color: var(--text-sub); }
 
         .account-role-badge {
             font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
@@ -439,11 +448,17 @@
                             <div class="account-name-line">
                                 <div class="account-name view-only" id="account-name">Ali Sastro</div>
                                 <input class="field-input edit-only" id="edit-nickname" maxlength="30" placeholder="Nickname" style="max-width:220px;">
-                                <button type="button" class="account-copy-btn view-only" id="account-copy-btn" title="Salin link profil">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                </button>
                             </div>
-                            <a href="#" class="account-username view-only" id="account-username">@alisastro</a>
+                            <div class="username-copy-wrap view-only">
+                                <a href="#" class="account-username" id="account-username">@alisastro</a>
+                                <div class="username-copy-popup" id="username-copy-popup">
+                                    <svg class="username-copy-popup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    <span class="username-copy-popup-text">
+                                        <span class="username-copy-popup-title">Link tersalin</span>
+                                        <span class="username-copy-popup-sub">Siap ditempel &amp; dibagikan ke mana aja</span>
+                                    </span>
+                                </div>
+                            </div>
                             <div class="username-input-row edit-only" style="max-width:240px;">
                                 <span class="username-at">@</span>
                                 <input class="field-input" id="edit-username" maxlength="20" placeholder="username">
@@ -593,15 +608,20 @@
         btn.textContent = isExpanded ? 'Sembunyikan' : 'Lihat selengkapnya';
     });
 
-    document.getElementById('account-copy-btn').addEventListener('click', () => {
+    // Tap teks username -> otomatis salin link profil (gantiin tombol salin
+    // link yang lama), lalu tampilin popup kecil "Link tersalin" di bawahnya
+    // sebentar. Klik dicegah supaya nggak ikut "menavigasi" ke href-nya sendiri.
+    document.getElementById('account-username').addEventListener('click', (e) => {
+        e.preventDefault();
         const usernameEl = document.getElementById('account-username');
         const handle = usernameEl.textContent.replace(/^@/, '');
         if (!handle) return;
         const link = 'https://afi-studio.vercel.app/@' + handle;
         navigator.clipboard.writeText(link).then(() => {
-            const btn = document.getElementById('account-copy-btn');
-            btn.classList.add('copied');
-            setTimeout(() => btn.classList.remove('copied'), 1200);
+            const popup = document.getElementById('username-copy-popup');
+            popup.classList.add('show');
+            clearTimeout(popup._hideTimer);
+            popup._hideTimer = setTimeout(() => popup.classList.remove('show'), 1800);
         }).catch(() => {});
     });
 

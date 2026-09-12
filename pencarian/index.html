@@ -291,6 +291,28 @@
         .video-result-sub { font-size: 11.5px; color: var(--text-sub); }
 
         .search-empty { text-align: center; padding: 40px 20px; color: var(--text-sub); font-size: 13px; }
+
+        /* Override khusus halaman Pencarian: filter-board (search + Tipe +
+           Aplikasi) di halaman lain (Beranda/Models/Video) itu papan
+           melayang (position:fixed) yang cuma muncul kalau tombol kaca
+           pembesar di navbar ditekan. Di halaman INI tombolnya sengaja
+           dihapus -- papannya langsung ditaruh statis di alur halaman,
+           di atas tab Semua/Profil/Models/Video, dan selalu kelihatan
+           tanpa perlu di-toggle. Pakai selector ID (#filter-board-main)
+           supaya menang lawan aturan .filter-board dari file bersama
+           filter-board.css tanpa perlu mengubah file itu (yang masih
+           dipakai apa adanya oleh halaman lain). */
+        #filter-board-main {
+            position: static;
+            max-width: none;
+            margin: 0 0 16px;
+            padding: 0;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: none;
+            z-index: auto;
+        }
     </style>
 </head>
  
@@ -316,9 +338,6 @@
                             <a href="../tutorial/index.html" class="nav-link">Video</a>
                             <a href="../member-Afi-Studio/index.html" class="nav-link nav-link-wide">Member</a>
                         </nav>
-                        <button id="search-toggle-btn" class="search-toggle-btn" aria-label="Cari" aria-expanded="false" aria-controls="filter-board-main">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                        </button>
                         <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
                             <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
                             <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
@@ -373,6 +392,39 @@
 
             <main class="max-w-6xl mx-auto px-4 pt-4 pb-6 sm:px-6">
 
+                <div class="filter-board" id="filter-board-main">
+                    <div class="filter-board-panel">
+                        <div class="filter-search">
+                            <svg data-lucide="search"></svg>
+                            <input type="text" id="search-input" class="filter-search-input" placeholder="Cari Model, Kategori, Creator...">
+                        </div>
+                        <div class="filter-board-divider"></div>
+                        <div class="filter-dropdown-wrap">
+                            <button type="button" class="filter-dropdown-btn" data-drawer-target="category-drawer" aria-expanded="false">
+                                <span class="filter-dropdown-label" id="category-dropdown-label">Tipe</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </button>
+                            <div class="filter-drawer" id="category-drawer">
+                                <div class="filter-drawer-panel">
+                                    <div class="filter-drawer-chips" id="category-filter"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-board-divider"></div>
+                        <div class="filter-dropdown-wrap">
+                            <button type="button" class="filter-dropdown-btn" data-drawer-target="app-category-drawer" aria-expanded="false">
+                                <span class="filter-dropdown-label" id="app-category-dropdown-label">Aplikasi</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </button>
+                            <div class="filter-drawer" id="app-category-drawer">
+                                <div class="filter-drawer-panel">
+                                    <div class="filter-drawer-chips" id="app-category-filter"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="search-tabs" id="search-tabs">
                     <button type="button" class="search-tab active" data-tab="semua">Semua</button>
                     <button type="button" class="search-tab" data-tab="profil">Profil</button>
@@ -381,39 +433,6 @@
                 </div>
 
                 <div id="tab-panel-models">
-                    <div class="filter-board" id="filter-board-main">
-                        <div class="filter-board-panel">
-                            <div class="filter-search">
-                                <svg data-lucide="search"></svg>
-                                <input type="text" id="search-input" class="filter-search-input" placeholder="Cari Model, Kategori, Creator...">
-                            </div>
-                            <div class="filter-board-divider"></div>
-                            <div class="filter-dropdown-wrap">
-                                <button type="button" class="filter-dropdown-btn" data-drawer-target="category-drawer" aria-expanded="false">
-                                    <span class="filter-dropdown-label" id="category-dropdown-label">Tipe</span>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                                </button>
-                                <div class="filter-drawer" id="category-drawer">
-                                    <div class="filter-drawer-panel">
-                                        <div class="filter-drawer-chips" id="category-filter"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="filter-board-divider"></div>
-                            <div class="filter-dropdown-wrap">
-                                <button type="button" class="filter-dropdown-btn" data-drawer-target="app-category-drawer" aria-expanded="false">
-                                    <span class="filter-dropdown-label" id="app-category-dropdown-label">Aplikasi</span>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                                </button>
-                                <div class="filter-drawer" id="app-category-drawer">
-                                    <div class="filter-drawer-panel">
-                                        <div class="filter-drawer-chips" id="app-category-filter"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5 grid-loading" id="content-grid" style="margin-top: 14px;"></section>
                     <div id="ad-slot" class="mt-8"></div>
                 </div>
