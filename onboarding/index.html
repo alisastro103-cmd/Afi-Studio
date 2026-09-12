@@ -182,15 +182,16 @@
         .photo-box { border: 1.5px dashed var(--border); border-radius: 16px; overflow: hidden; position: relative; background: var(--surface); }
         .banner-area { display: block; aspect-ratio: 3 / 1; width: 100%; background-color: var(--bg); background-size: cover; background-position: center; position: relative; }
         /* tombol "Ganti Banner"/"Ganti Profil" (pill + icon) diganti jadi teks polos.
-           Dipindah ke bawah set thumbnail (banner+avatar+namecard), bukan lagi ngambang
-           di atas banner, biar gak nutupin banner-nya. */
+           Ditaruh sejajar sama Nickname & Username (dalam baris yang sama), rata
+           kanan, bukan lagi row terpisah di bawah. */
         .photo-hint-row {
-            display: flex; align-items: center; justify-content: center; gap: 28px;
-            padding: 2px 18px 16px;
+            display: flex; flex-direction: column; align-items: flex-end;
+            justify-content: center; gap: 4px;
+            flex-shrink: 0; padding-left: 12px;
         }
         .photo-hint {
             cursor: pointer;
-            background: none; border: none; padding: 4px 2px;
+            background: none; border: none; padding: 2px;
             font-family: 'Geist', sans-serif; font-size: 12.5px; font-weight: 700;
             color: var(--text-sub);
             user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
@@ -208,7 +209,8 @@
             display: flex; align-items: center; justify-content: center;
         }
         .avatar-area svg.avatar-placeholder-icon { width: 40px; height: 40px; color: var(--text-sub); }
-        .preview-namecard { padding: 12px 18px 16px; }
+        .preview-namecard { padding: 12px 18px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .preview-name-block { min-width: 0; }
         .preview-nick { font-size: calc(23px / var(--page-zoom)); font-weight: 700; }
         .preview-user { font-size: calc(15px / var(--page-zoom)); color: var(--text-sub); }
 
@@ -226,8 +228,8 @@
         .social-grid { display: flex; flex-direction: column; gap: 10px; }
         .social-field { display: flex; align-items: center; gap: 10px; }
         .social-field .social-icon-badge { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .social-field svg, .social-field .gh-icon { width: 26px; height: 26px; flex-shrink: 0; filter: brightness(0) invert(1); }
-        .social-field .gh-icon { filter: none; color: #fff; }
+        .social-field svg, .social-field .gh-icon { width: 26px; height: 26px; flex-shrink: 0; fill: var(--text-sub); }
+        .social-field .gh-icon { color: var(--text-sub); }
         .social-field input {
             flex: 1; min-width: 0; color: var(--text); font-size: 12.5px; font-family: 'Geist', sans-serif;
             border: 1.5px solid var(--border); border-radius: 12px; background: color-mix(in srgb, var(--surface) 60%, var(--bg));
@@ -344,13 +346,14 @@
                     <input type="file" accept="image/*" id="f-avatar" hidden>
 
                     <div class="preview-namecard">
-                        <div class="preview-nick" id="preview-nick">Nickname</div>
-                        <div class="preview-user">@<span id="preview-user">username</span></div>
-                    </div>
-
-                    <div class="photo-hint-row">
-                        <span class="photo-hint" id="btn-pick-avatar">Tambahkan Profil</span>
-                        <span class="photo-hint" id="btn-pick-banner">Tambahkan Banner</span>
+                        <div class="preview-name-block">
+                            <div class="preview-nick" id="preview-nick">Nickname</div>
+                            <div class="preview-user">@<span id="preview-user">username</span></div>
+                        </div>
+                        <div class="photo-hint-row">
+                            <span class="photo-hint" id="btn-pick-avatar">Tambahkan Profil</span>
+                            <span class="photo-hint" id="btn-pick-banner">Tambahkan Banner</span>
+                        </div>
                     </div>
                 </div>
 
@@ -606,6 +609,10 @@
         document.getElementById('btn-pick-banner').addEventListener('click', function (e) {
             e.preventDefault(); e.stopPropagation();
             bannerInput.click();
+        });
+        document.getElementById('btn-pick-avatar').addEventListener('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            avatarInput.click();
         });
         document.getElementById('avatar-preview').addEventListener('click', function (e) { e.preventDefault(); avatarInput.click(); });
 
