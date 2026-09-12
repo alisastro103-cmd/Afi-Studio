@@ -256,7 +256,26 @@
 
     <style>
         /* ---------- tab Semua/Profil/Models/Video (gabungan Pencarian Global) ---------- */
-        .search-tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--border); margin-bottom: 16px; overflow-x: auto; }
+        /* Baris gabungan: tab (Semua/Profil/Models/Video) di kiri, filter
+           Tipe & Aplikasi di kanan -- sejajar satu baris. Border-bottom &
+           margin-bottom yang tadinya nempel di .search-tabs sendiri,
+           sekarang pindah ke baris pembungkus ini.
+           position:relative + z-index eksplisit di sini SENGAJA dikasih
+           tinggi supaya laci dropdown Tipe/Aplikasi (.filter-drawer, lihat
+           filter-board.css, z-index:46) yang muncul di bawah baris ini
+           gak ketutup/kealahan tumpukan sama board Models (.model-card
+           yang juga position:relative) yang dirender belakangan di DOM.
+           Tanpa ini, dua elemen position:relative dengan z-index:auto
+           bakal ditumpuk berdasar urutan DOM -- board Models (belakangan)
+           bisa menang lawan baris tab (duluan) walau laci-nya sendiri
+           punya z-index eksplisit lebih tinggi. */
+        .search-tabs-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            border-bottom: 1px solid var(--border); margin-bottom: 16px;
+            position: relative; z-index: 30;
+        }
+        .search-tabs { display: flex; gap: 22px; overflow-x: auto; flex: 1 1 auto; min-width: 0; }
+        .search-tabs-filters { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
         .search-tab {
             background: none; border: none; padding: 6px 2px 12px;
             font-size: 14.5px; color: var(--text-sub); font-weight: 600;
@@ -398,7 +417,17 @@
                             <svg data-lucide="search"></svg>
                             <input type="text" id="search-input" class="filter-search-input" placeholder="Cari Model, Kategori, Creator...">
                         </div>
-                        <div class="filter-board-divider"></div>
+                    </div>
+                </div>
+
+                <div class="search-tabs-row" id="search-tabs-row">
+                    <div class="search-tabs" id="search-tabs">
+                        <button type="button" class="search-tab active" data-tab="semua">Semua</button>
+                        <button type="button" class="search-tab" data-tab="profil">Profil</button>
+                        <button type="button" class="search-tab" data-tab="models">Models</button>
+                        <button type="button" class="search-tab" data-tab="video">Video</button>
+                    </div>
+                    <div class="search-tabs-filters">
                         <div class="filter-dropdown-wrap">
                             <button type="button" class="filter-dropdown-btn" data-drawer-target="category-drawer" aria-expanded="false">
                                 <span class="filter-dropdown-label" id="category-dropdown-label">Tipe</span>
@@ -410,7 +439,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="filter-board-divider"></div>
                         <div class="filter-dropdown-wrap">
                             <button type="button" class="filter-dropdown-btn" data-drawer-target="app-category-drawer" aria-expanded="false">
                                 <span class="filter-dropdown-label" id="app-category-dropdown-label">Aplikasi</span>
@@ -423,13 +451,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="search-tabs" id="search-tabs">
-                    <button type="button" class="search-tab active" data-tab="semua">Semua</button>
-                    <button type="button" class="search-tab" data-tab="profil">Profil</button>
-                    <button type="button" class="search-tab" data-tab="models">Models</button>
-                    <button type="button" class="search-tab" data-tab="video">Video</button>
                 </div>
 
                 <div id="tab-panel-models">
