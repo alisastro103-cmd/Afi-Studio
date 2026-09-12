@@ -100,15 +100,15 @@
 
         .footer-text { text-align: center; font-size: 11px; color: var(--text-sub); padding: 16px 0 28px; font-weight: 500; }
 
-        .social-container { display: flex; flex-direction: row; gap: 16px; margin-top: 14px; flex-wrap: wrap; }
+        .social-container { display: flex; flex-direction: row; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
         .social-btn {
             display: flex; align-items: center; justify-content: center;
-            width: 42px; height: 42px;
+            width: 36px; height: 36px;
             text-decoration: none; transition: transform 0.2s;
         }
         .social-btn:hover { transform: translateY(-2px); }
-        .social-btn svg { width: 30px; height: 30px; fill: var(--text-sub); }
-        .social-btn img { width: 28px; height: 28px; object-fit: contain; }
+        .social-btn svg { width: 24px; height: 24px; fill: var(--text-sub); }
+        .social-btn img { width: 22px; height: 22px; object-fit: contain; }
 
         /* ---- Sketsa banner: catatan buat versi nyata ---- */
         .sketch-note {
@@ -132,7 +132,6 @@
         .account-banner {
             width: 100%;
             aspect-ratio: 3 / 1;
-            max-height: 180px;
             background: linear-gradient(135deg, #4c7bc0 0%, #6c5ce7 100%);
             position: relative;
         }
@@ -149,14 +148,14 @@
         .account-body { padding: 0 18px 18px; position: relative; }
         .account-top-row { display: flex; align-items: flex-end; }
         .account-avatar {
-            width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0;
+            width: 128px; height: 128px; border-radius: 50%; flex-shrink: 0;
             background: var(--bg);
             border: 4px solid var(--surface);
-            margin-top: -46px;
+            margin-top: -64px;
             display: flex; align-items: center; justify-content: center;
             color: var(--text-sub);
         }
-        .account-avatar svg { width: 44px; height: 44px; }
+        .account-avatar svg { width: 40px; height: 40px; }
 
         .account-stats { display: flex; gap: 34px; padding-right: 4px; }
         .account-stat { text-align: center; }
@@ -166,7 +165,7 @@
         .account-name-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
         .account-name-block { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
         .account-name-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .account-name { font-family: 'CreatoDisplay', sans-serif; font-size: 30px; font-weight: 800; line-height: 1.2; }
+        .account-name { font-family: 'CreatoDisplay', sans-serif; font-size: calc(23px / 0.75); font-weight: 800; line-height: 1.2; }
         .account-copy-btn {
             display: flex; align-items: center; justify-content: center;
             width: 24px; height: 24px; border-radius: 6px;
@@ -175,7 +174,7 @@
         .account-copy-btn svg { width: 15px; height: 15px; }
         .account-copy-btn:hover { color: var(--text); }
         .account-copy-btn.copied { color: #2e9e5b; }
-        .account-username { display: inline-block; font-size: 16px; color: var(--text-sub); text-decoration: none; }
+        .account-username { display: inline-block; font-size: calc(15px / 0.75); color: var(--text-sub); text-decoration: none; }
         .account-username:hover { text-decoration: underline; }
 
         .account-role-badge {
