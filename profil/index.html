@@ -586,8 +586,15 @@
                 renderAccountCard(currentUser);
             } else {
                 document.getElementById('self-account-card').style.display = 'none';
-                // Langsung arahin ke onboarding, gak perlu nunggu klik "Isi Sekarang" lagi.
-                window.location.replace('../onboarding/');
+                // Sebelumnya di sini langsung window.location.replace('../onboarding/') --
+                // otomatis "nyeret" siapapun yang buka /profil/ ke /onboarding/ tanpa
+                // pilihan. Onboarding seharusnya khusus buat yang BENERAN belum pernah
+                // isi profil, dan idealnya orangnya sendiri yang milih kapan mau isi
+                // (bukan dipaksa pindah halaman). Sistem "first-time user" yang beneran
+                // (backend-nya) belum ada, jadi buat sekarang cukup tampilin kartu
+                // ajakan "Isi Sekarang" ini -- link ke onboarding tetap ada, tinggal
+                // user yang klik sendiri kalau mau.
+                document.getElementById('account-wizard').style.display = 'block';
             }
         })
         .catch(() => {

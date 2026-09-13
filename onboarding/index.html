@@ -498,6 +498,22 @@
     </div>
 
     <script>
+        // Onboarding cuma buat user yang BELUM pernah isi profil. Kalau ternyata
+        // udah terdaftar (misal buka linknya lagi via bookmark/history lama),
+        // balikin ke halaman profil -- bukan disuruh isi ulang dari awal.
+        // Pakai endpoint /api/auth?action=me yang sama kayak yang dipakai
+        // halaman profil (belum ada sistem "first-time user" yang lebih
+        // lengkap dari ini, jadi ini pengecekan paling dasar yang bisa
+        // dilakukan sekarang).
+        fetch('/api/auth?action=me')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (data && data.user && data.user.registered) {
+                    window.location.replace('../profil/');
+                }
+            })
+            .catch(() => {});
+
         // ---------- splash sambutan (intro) & penutup (outro) ----------
         // Satu baris teks ditampilin bergantian, satu jenis transisi doang (fade + naik
         // dikit, lihat CSS .splash-line), gak ada lagi macem-macem arah animasi.
