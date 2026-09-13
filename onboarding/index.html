@@ -312,7 +312,7 @@
                         <input class="input" id="f-username" maxlength="20" placeholder="username" autocomplete="off">
                         <span class="username-status" id="username-status"></span>
                     </div>
-                    <p class="field-hint" id="username-hint">Huruf besar/kecil, angka, dan simbol keyboard biasa (& - _ | * ! ? % dll) boleh dipakai. Tidak bisa diganti lagi setelah dibuat.</p>
+                    <p class="field-hint" id="username-hint">Huruf kecil, angka, dan underscore. Tidak bisa diganti lagi setelah dibuat.</p>
                 </div>
 
                 <div class="field">
@@ -358,7 +358,7 @@
                 </div>
 
                 <div style="padding: 0 22px 22px;">
-                    <p class="field-hint">Foto profil 1:1, banner 1:3. Cuma pratinjau di sisi kamu dulu — kompresi &amp; penyimpanan permanennya nanti kita sambungkan ke sistem.</p>
+                    <p class="field-hint">Foto profil 1:1, banner 1:3. Ukuran file jangan kegedean biar cepet keupload.</p>
                     <div class="step-nav">
                         <span class="step-count">2 dari 5</span>
                         <div class="step-actions">
@@ -479,6 +479,8 @@
                     <input class="input" type="tel" id="f-wa" placeholder="08xxxxxxxxxx">
                 </div>
 
+                <p class="field-hint" id="step5-error" style="color:var(--danger);"></p>
+
                 <div class="step-nav">
                     <span class="step-count">5 dari 5</span>
                     <div class="step-actions">
@@ -569,7 +571,7 @@
 
         // ---------- state ----------
         var totalSteps = 5;
-        var state = { username: '', nickname: '', banner: null, avatar: null, desc: '', roles: [], social: {}, email: '', wa: '' };
+        var state = { username: '', nickname: '', banner: null, avatar: null, avatarBase64: null, bannerBase64: null, desc: '', roles: [], social: {}, email: '', wa: '' };
         var current = 1;
 
         var panels = document.querySelectorAll('.step-panel');
@@ -589,26 +591,74 @@
         var usernameStatus = document.getElementById('username-status');
         var usernameHint = document.getElementById('username-hint');
         var next1 = document.getElementById('next-1');
-        var USERNAME_RE = /^[A-Za-z0-9!@#$%^&*()\-_=+|;:,.<>?~]+$/;
+        var USERNAME_RE = /^[a-z0-9_]{3,20}$/;
+        var usernameCheckTimer = null;
+        var usernameAvailable = false;
 
         function validateUsername() {
-            var v = fUsername.value;
+            // Sanitasi otomatis: huruf besar->kecil, karakter di luar a-z0-9_
+            // dibuang. Aturan ini WAJIB sama persis kayak server (api/auth.js,
+            // USERNAME_RE) -- kalau beda, username bisa keliatan "valid" di
+            // form tapi ditolak server pas submit di step 5.
+            var raw = fUsername.value;
+            var cleaned = raw.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20);
+            if (cleaned !== raw) fUsername.value = cleaned;
+            var v = cleaned;
             usernameCount.textContent = v.length;
+            usernameAvailable = false;
+            clearTimeout(usernameCheckTimer);
+
             if (v.length === 0) {
                 fUsername.classList.remove('is-valid', 'is-invalid');
-                usernameStatus.textContent = '';
+                usernameStatus.innerHTML = '';
+                usernameHint.textContent = 'Huruf kecil, angka, dan underscore. Tidak bisa diganti lagi setelah dibuat.';
+                usernameHint.style.color = '';
                 next1.disabled = true;
                 return;
             }
-            var ok = USERNAME_RE.test(v) && v.length <= 20;
-            fUsername.classList.toggle('is-valid', ok);
-            fUsername.classList.toggle('is-invalid', !ok);
-            usernameStatus.innerHTML = ok
-                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
-                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
-            usernameStatus.className = 'username-status ' + (ok ? 'ok' : 'bad');
-            usernameHint.style.color = ok ? '' : 'var(--danger)';
-            next1.disabled = !ok;
+            if (!USERNAME_RE.test(v)) {
+                fUsername.classList.remove('is-valid');
+                fUsername.classList.add('is-invalid');
+                usernameStatus.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+                usernameStatus.className = 'username-status bad';
+                usernameHint.textContent = 'Minimal 3 karakter (huruf kecil, angka, underscore).';
+                usernameHint.style.color = 'var(--danger)';
+                next1.disabled = true;
+                return;
+            }
+
+            // Format-nya udah bener -- sekarang cek ke server apa usernamenya
+            // masih kosong (debounce 400ms biar gak nembak request tiap ketikan).
+            fUsername.classList.remove('is-valid', 'is-invalid');
+            usernameStatus.innerHTML = '';
+            usernameHint.textContent = 'Mengecek ketersediaan...';
+            usernameHint.style.color = '';
+            next1.disabled = true;
+            usernameCheckTimer = setTimeout(function () {
+                fetch('/api/auth?action=check-username&username=' + encodeURIComponent(v))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (fUsername.value !== v) return; // udah diketik ulang sebelum hasil balik
+                        usernameAvailable = !!data.available;
+                        fUsername.classList.toggle('is-valid', usernameAvailable);
+                        fUsername.classList.toggle('is-invalid', !usernameAvailable);
+                        usernameStatus.innerHTML = usernameAvailable
+                            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+                            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+                        usernameStatus.className = 'username-status ' + (usernameAvailable ? 'ok' : 'bad');
+                        usernameHint.textContent = usernameAvailable ? 'Huruf kecil, angka, dan underscore. Tidak bisa diganti lagi setelah dibuat.' : 'Username ini udah dipakai orang lain, coba yang lain ya.';
+                        usernameHint.style.color = usernameAvailable ? '' : 'var(--danger)';
+                        next1.disabled = !usernameAvailable;
+                    })
+                    .catch(function () {
+                        // Gagal ngecek (mis. lagi offline) -- jangan blokir user total,
+                        // validasi FINAL tetap diulang lagi di server pas step 5 submit.
+                        usernameAvailable = true;
+                        usernameHint.textContent = 'Gak bisa ngecek ketersediaan sekarang, nanti dicek ulang pas kamu selesai isi profil.';
+                        usernameHint.style.color = '';
+                        next1.disabled = false;
+                    });
+            }, 400);
         }
         fUsername.addEventListener('input', validateUsername);
         next1.addEventListener('click', function () {
@@ -634,18 +684,26 @@
 
         bannerInput.addEventListener('change', function () {
             if (!bannerInput.files[0]) return;
-            var url = URL.createObjectURL(bannerInput.files[0]);
+            var file = bannerInput.files[0];
+            var url = URL.createObjectURL(file);
             var el = document.getElementById('banner-preview');
             el.style.backgroundImage = 'url(' + url + ')';
-            state.banner = bannerInput.files[0].name;
+            state.banner = file.name;
+            var reader = new FileReader();
+            reader.onload = function () { state.bannerBase64 = reader.result; };
+            reader.readAsDataURL(file);
         });
         avatarInput.addEventListener('change', function () {
             if (!avatarInput.files[0]) return;
-            var url = URL.createObjectURL(avatarInput.files[0]);
+            var file = avatarInput.files[0];
+            var url = URL.createObjectURL(file);
             var el = document.querySelector('#avatar-preview .avatar-visual');
             el.style.backgroundImage = 'url(' + url + ')';
             el.querySelector('.avatar-placeholder-icon').style.display = 'none';
-            state.avatar = avatarInput.files[0].name;
+            state.avatar = file.name;
+            var reader = new FileReader();
+            reader.onload = function () { state.avatarBase64 = reader.result; };
+            reader.readAsDataURL(file);
         });
 
         document.getElementById('back-2').addEventListener('click', function () { goTo(1); });
@@ -680,24 +738,77 @@
         });
 
         // ---------- step 5: email & wa (opsional) ----------
+        // Catatan: field email & No WA di step ini ("biar admin bisa kenali
+        // kamu lebih jelas") itu buat kontak internal ke admin, BUKAN data
+        // publik akun -- server (api/auth.js) belum punya kolom buat nyimpen
+        // ini, jadi buat sekarang cuma kesimpen di state lokal browser, gak
+        // ikut dikirim ke complete-profile. Kalau nanti mau beneran disimpen,
+        // perlu nambah field baru di server dulu.
+        var SOCIAL_KEY_MAP = { discord: 'dc', tiktok: 'tk', facebook: 'fb', whatsapp: 'wa', github: 'gh', youtube: 'yt', instagram: 'ig', telegram: 'tg' };
+
         function finishStep5() {
             state.email = document.getElementById('f-email').value.trim();
             state.wa = document.getElementById('f-wa').value.trim();
-            document.querySelector('.step-panel[data-step="5"]').classList.remove('active');
-            // Board form-nya diem sejenak 0.8 detik dulu, baru ucapan penutupnya muncul.
-            setTimeout(function () {
-                playSplashSequence('outro-splash', [
-                    { text: 'Makasih bang udah join di Afi Studio', duration: 2000 },
-                    { text: 'Mampir aja kapanpun', duration: 2000 },
-                    { text: 'Kalo punya rig, boleh sharing disini', duration: 2000 },
-                    { text: 'Jangan lupa kasih saran kalo ada sesuatu yang pengen mau ditambahin', duration: 2000 }
-                ], {}, function () {
-                    // Balik otomatis ke halaman terakhir user sebelum login Google.
-                    var returnTo = sessionStorage.getItem('afi_return_to') || '/';
-                    sessionStorage.removeItem('afi_return_to');
-                    window.location.href = returnTo;
+
+            var finishBtn = document.getElementById('finish-5');
+            var skipBtn = document.getElementById('skip-5');
+            var errorEl = document.getElementById('step5-error');
+            errorEl.textContent = '';
+            finishBtn.disabled = true;
+            skipBtn.disabled = true;
+            var originalLabel = finishBtn.textContent;
+            finishBtn.textContent = 'Menyimpan...';
+
+            var socials = {};
+            Object.keys(SOCIAL_KEY_MAP).forEach(function (longKey) {
+                var shortKey = SOCIAL_KEY_MAP[longKey];
+                var v = state.social[longKey];
+                if (!v) return;
+                if (shortKey === 'wa' && !/^https?:\/\//i.test(v)) {
+                    // Field WA di step 4 ("Bisa No WA atau Channel WhatsApp") boleh
+                    // diisi nomor polos -- server mewajibkan http/https buat semua
+                    // link sosmed, jadi nomor diubah otomatis jadi link wa.me.
+                    var digits = v.replace(/[^0-9]/g, '');
+                    if (digits.length >= 8) v = 'https://wa.me/' + digits;
+                }
+                if (/^https?:\/\//i.test(v)) socials[shortKey] = v;
+            });
+
+            var payload = { nickname: state.nickname, username: state.username, roles: state.roles, socials: socials };
+            if (state.avatarBase64) payload.avatarBase64 = state.avatarBase64;
+            if (state.bannerBase64) payload.bannerBase64 = state.bannerBase64;
+
+            fetch('/api/auth?action=complete-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            })
+                .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+                .then(function (result) {
+                    if (!result.ok) throw new Error((result.data && result.data.error) || 'Gagal menyimpan profil.');
+                    document.querySelector('.step-panel[data-step="5"]').classList.remove('active');
+                    // Board form-nya diem sejenak 0.8 detik dulu, baru ucapan penutupnya muncul.
+                    setTimeout(function () {
+                        playSplashSequence('outro-splash', [
+                            { text: 'Makasih bang udah join di Afi Studio', duration: 2000 },
+                            { text: 'Mampir aja kapanpun', duration: 2000 },
+                            { text: 'Kalo punya rig, boleh sharing disini', duration: 2000 },
+                            { text: 'Jangan lupa kasih saran kalo ada sesuatu yang pengen mau ditambahin', duration: 2000 }
+                        ], {}, function () {
+                            // Balik otomatis ke halaman terakhir user sebelum login Google
+                            // (fallback ke /profil/ kalau gak ada catatan halaman sebelumnya).
+                            var returnTo = sessionStorage.getItem('afi_return_to');
+                            sessionStorage.removeItem('afi_return_to');
+                            window.location.href = (returnTo && !returnTo.includes('/onboarding')) ? returnTo : '../profil/';
+                        });
+                    }, 800);
+                })
+                .catch(function (err) {
+                    errorEl.textContent = err.message || 'Gagal menyimpan profil, coba lagi.';
+                    finishBtn.disabled = false;
+                    skipBtn.disabled = false;
+                    finishBtn.textContent = originalLabel;
                 });
-            }, 800);
         }
         document.getElementById('finish-5').addEventListener('click', finishStep5);
         document.getElementById('skip-5').addEventListener('click', finishStep5);
