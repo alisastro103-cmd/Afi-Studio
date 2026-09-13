@@ -393,8 +393,21 @@
                (board ini sendiri) jadi position:relative + z-index tinggi,
                biar seluruh board (termasuk laci di dalamnya) ketarik jadi
                satu lapisan yang emang beneran ada di atas board Models,
-               bukan cuma "menang" di dalam stacking context-nya sendiri. */
+               bukan cuma "menang" di dalam stacking context-nya sendiri.
+
+               PENTING: filter-board.css aslinya didesain buat mode
+               position:fixed, dan di situ dia punya "top: calc(navbar-height
+               + 10px)" (lihat filter-board.css) supaya nongol pas di bawah
+               navbar waktu MELAYANG di atas layar. Punya kita sekarang
+               position:relative, bukan fixed lagi -- tapi top/left/right itu
+               TETAP kebaca sebagai offset relatif dari posisi normalnya
+               (beda dari position:static yang ngabaikan top/left/right sama
+               sekali). Makanya kemarin board-nya keliatan "ngejauh dari
+               navbar" -- itu bukan jarak baru, itu sisa nilai top:74px dari
+               mode fixed yang gak sengaja aktif lagi. Di-nol-in eksplisit
+               di bawah. */
             position: relative;
+            top: 0; left: auto; right: auto;
             z-index: 50;
             max-width: none;
             margin: 0 0 16px;
@@ -403,6 +416,14 @@
             visibility: visible;
             pointer-events: auto;
             transform: none;
+        }
+        /* Ikon kaca pembesar dibesarin & ditebelin dikit -- stroke-width
+           di-override lewat CSS (menang lawan atribut stroke-width bawaan
+           dari lucide-local.js karena atribut presentasi kalah sama aturan
+           stylesheet biasa). */
+        #filter-board-main .filter-search svg { width: 20px; height: 20px; stroke-width: 2.4; }
+        @media (max-width: 430px) {
+            #filter-board-main .filter-search svg { width: 18px; height: 18px; }
         }
     </style>
 </head>
