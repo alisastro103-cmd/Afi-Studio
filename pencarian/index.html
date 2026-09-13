@@ -269,24 +269,30 @@
            bakal ditumpuk berdasar urutan DOM -- board Models (belakangan)
            bisa menang lawan baris tab (duluan) walau laci-nya sendiri
            punya z-index eksplisit lebih tinggi. */
+        /* Digabung jadi SATU board bareng kolom pencarian (bukan lagi kotak
+           terpisah di bawahnya) -- panel-nya (.filter-board-panel, dari
+           filter-board.css) di-scope jadi flex-column KHUSUS di halaman ini,
+           barisnya: [pencarian] -> garis pemisah horizontal -> [tab + filter]. */
+        #filter-board-main .filter-board-panel { flex-direction: column; align-items: stretch; }
+        .filter-board-divider-h { height: 1px; background: var(--border); margin: 0; }
+
         .search-tabs-row {
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            margin-bottom: 16px;
+            padding: 6px 12px 10px;
             position: relative; z-index: 30;
         }
-        .search-tabs { display: flex; gap: 8px; overflow-x: auto; flex: 1 1 auto; min-width: 0; }
+        .search-tabs { display: flex; gap: 18px; overflow-x: auto; flex: 1 1 auto; min-width: 0; }
         .search-tabs-filters { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-        /* Papan/background di tiap teks tab (Semua/Profil/Models/Video) --
-           sebelumnya cuma teks polos + garis bawah aktif, sekarang tiap tab
-           punya "board" pil sendiri (mirip chip), aktif/non-aktif dibedakan
-           lewat warna board-nya, bukan garis bawah lagi. */
+        /* Teks tab (Semua/Profil/Models/Video) -- background pil dihapus,
+           sekarang nyatu jadi bagian dari board pencarian yang sama; yang
+           lagi aktif dibedain lewat warna & ketebalan teks aja, bukan
+           background lagi. */
         .search-tab {
-            background: var(--bg); border: 1px solid var(--border); border-radius: 999px;
-            padding: 8px 16px;
+            background: none; border: none; padding: 4px 0;
             font-size: 14.5px; color: var(--text-sub); font-weight: 600;
             white-space: nowrap; cursor: pointer;
         }
-        .search-tab.active { color: #fff; background: var(--accent-hover); border-color: var(--accent-hover); }
+        .search-tab.active { color: var(--text); font-weight: 800; }
 
         /* Font tombol filter Tipe/Aplikasi disamain persis sama font tab
            (Semua/Profil/Models/Video) di sebelahnya, biar satu baris itu
@@ -440,36 +446,36 @@
                             <svg data-lucide="search"></svg>
                             <input type="text" id="search-input" class="filter-search-input" placeholder="Cari Model, Kategori, Creator...">
                         </div>
-                    </div>
-                </div>
-
-                <div class="search-tabs-row" id="search-tabs-row">
-                    <div class="search-tabs" id="search-tabs">
-                        <button type="button" class="search-tab active" data-tab="semua">Semua</button>
-                        <button type="button" class="search-tab" data-tab="profil">Profil</button>
-                        <button type="button" class="search-tab" data-tab="models">Models</button>
-                        <button type="button" class="search-tab" data-tab="video">Video</button>
-                    </div>
-                    <div class="search-tabs-filters">
-                        <div class="filter-dropdown-wrap">
-                            <button type="button" class="filter-dropdown-btn" data-drawer-target="category-drawer" aria-expanded="false">
-                                <span class="filter-dropdown-label" id="category-dropdown-label">Tipe</span>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </button>
-                            <div class="filter-drawer" id="category-drawer">
-                                <div class="filter-drawer-panel">
-                                    <div class="filter-drawer-chips" id="category-filter"></div>
-                                </div>
+                        <div class="filter-board-divider-h"></div>
+                        <div class="search-tabs-row" id="search-tabs-row">
+                            <div class="search-tabs" id="search-tabs">
+                                <button type="button" class="search-tab active" data-tab="semua">Semua</button>
+                                <button type="button" class="search-tab" data-tab="profil">Profil</button>
+                                <button type="button" class="search-tab" data-tab="models">Models</button>
+                                <button type="button" class="search-tab" data-tab="video">Video</button>
                             </div>
-                        </div>
-                        <div class="filter-dropdown-wrap">
-                            <button type="button" class="filter-dropdown-btn" data-drawer-target="app-category-drawer" aria-expanded="false">
-                                <span class="filter-dropdown-label" id="app-category-dropdown-label">Aplikasi</span>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </button>
-                            <div class="filter-drawer" id="app-category-drawer">
-                                <div class="filter-drawer-panel">
-                                    <div class="filter-drawer-chips" id="app-category-filter"></div>
+                            <div class="search-tabs-filters">
+                                <div class="filter-dropdown-wrap">
+                                    <button type="button" class="filter-dropdown-btn" data-drawer-target="category-drawer" aria-expanded="false">
+                                        <span class="filter-dropdown-label" id="category-dropdown-label">Tipe</span>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </button>
+                                    <div class="filter-drawer" id="category-drawer">
+                                        <div class="filter-drawer-panel">
+                                            <div class="filter-drawer-chips" id="category-filter"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="filter-dropdown-wrap">
+                                    <button type="button" class="filter-dropdown-btn" data-drawer-target="app-category-drawer" aria-expanded="false">
+                                        <span class="filter-dropdown-label" id="app-category-dropdown-label">Aplikasi</span>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </button>
+                                    <div class="filter-drawer" id="app-category-drawer">
+                                        <div class="filter-drawer-panel">
+                                            <div class="filter-drawer-chips" id="app-category-filter"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
