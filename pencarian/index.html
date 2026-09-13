@@ -274,15 +274,28 @@
            filter-board.css) di-scope jadi flex-column KHUSUS di halaman ini,
            barisnya: [pencarian] -> garis pemisah horizontal -> [tab + filter]. */
         #filter-board-main .filter-board-panel { flex-direction: column; align-items: stretch; }
-        .filter-board-divider-h { height: 1px; background: var(--border); margin: 0; }
+        /* Garis pemisah dipendekin (dikasih inset kiri-kanan, gak nempel
+           tepi board) dan dipudarin (opacity, bukan warna solid var(--border)). */
+        .filter-board-divider-h { height: 1px; background: var(--border); opacity: 0.5; margin: 0 16px; }
+
+        /* Font input pencarian disamain sama font baris tab/filter di
+           bawahnya (14.5px/600), biar satu board kelihatan konsisten dari
+           atas sampai bawah -- sebelumnya input pencarian pakai font lebih
+           kecil (13.5px/500) bawaan filter-board.css. Discope ke halaman
+           ini aja lewat #filter-board-main, gak ubah file filter-board.css
+           yg dipakai bareng halaman lain. */
+        #filter-board-main .filter-search-input { font-size: 14.5px; font-weight: 600; }
 
         .search-tabs-row {
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            padding: 6px 12px 10px;
+            padding: 6px 8px 10px 12px;
             position: relative; z-index: 30;
         }
         .search-tabs { display: flex; gap: 18px; overflow-x: auto; flex: 1 1 auto; min-width: 0; }
-        .search-tabs-filters { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+        /* Digeser dikit ke kiri (margin-right) supaya label "Aplik..." gak
+           mepet/ketutup elemen di tepi kanan layar (mis. indikator
+           scroll/gesture bar HP). */
+        .search-tabs-filters { display: flex; align-items: center; gap: 2px; flex-shrink: 0; margin-right: 8px; }
         /* Teks tab (Semua/Profil/Models/Video) -- background pil dihapus,
            sekarang nyatu jadi bagian dari board pencarian yang sama; yang
            lagi aktif dibedain lewat warna & ketebalan teks aja, bukan
@@ -310,6 +323,14 @@
         #search-tabs-row .filter-dropdown-btn.open,
         #search-tabs-row .filter-dropdown-btn.has-active {
             color: var(--text);
+        }
+        /* filter-board.css punya aturan max-width:84px khusus layar sempit
+           (<=430px) yang dihitung buat font kecil bawaannya (11.5px). Karena
+           di halaman ini fontnya udah dibesarin nyamain tab (14.5px), lebar
+           84px itu kekecilan buat muat teks "Aplikasi" -> kepotong jadi
+           "Aplik...". Dilebarin dikit khusus di sini. */
+        @media (max-width: 430px) {
+            #search-tabs-row .filter-dropdown-btn { max-width: 116px; padding: 8px 8px; }
         }
 
         .dev-note-inline {
