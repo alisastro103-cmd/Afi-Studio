@@ -197,36 +197,16 @@
        (bukan ke-override balik sama var(--bg) punya .model-thumb). */
     .model-thumb.skeleton-shimmer { background: var(--border); }
     .model-body { padding: 20px; }
-    .model-title { font-size: 22px; font-weight: 800; margin-bottom: 14px; }
+    .model-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .model-caption { font-size: 14px; color: var(--text-light); margin-bottom: 16px; }
 
-    /* Kartu publisher: avatar generik + nama + peran (Converter/Creator).
-       Avatar-nya sengaja generik (bukan foto asli) -- model lama ini belum
-       tertaut ke akun manapun, jadi belum ada foto profil asli yg dipakai.
-       Lihat catatan publisher di init(). Ukuran avatar & nama dibesarin lagi
-       sesuai revisi (60px->72px avatar, 18px->20px nama). */
-    .publisher-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-    .publisher-avatar {
-      width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--bg); border: 1px solid var(--border); color: var(--text-light);
-    }
-    .publisher-avatar svg { width: 38px; height: 38px; }
-    .publisher-info { min-width: 0; }
-    .publisher-name { display: block; font-size: 20px; font-weight: 800; line-height: 1.25; }
-    .publisher-role { display: block; font-size: 15px; color: var(--text-light); font-style: italic; margin-top: 2px; }
+    .model-info { font-size: 13px; border-top: 1px solid var(--border); padding-top: 14px; margin-bottom: 18px; }
+    .model-info-row { display: flex; justify-content: space-between; padding: 4px 6px; }
+    .model-info-row span:first-child { color: var(--text-light); }
+    .model-info-row b { font-weight: 700; text-align: right; }
 
-    /* Kotak "Caption :" -- kategori/tag ikut masuk di kolom ini, nempel di
-       bawah teks caption. Padding & jarak ke tag dilonggarin (dipanjangin)
-       biar kategori kelihatan lega di dalam kotak, bukan mepet. */
-    .caption-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 18px; }
-    .caption-label { font-size: 12.5px; font-weight: 800; margin-bottom: 6px; }
-    .caption-text { font-size: 13.5px; color: var(--text-light); line-height: 1.5; }
-
-    /* Papan kategori dikecilin (padding & font lebih kecil dari sebelumnya),
-       dan background-nya var(--surface) supaya kebeda dari var(--bg) punya
-       .caption-box yang jadi wadahnya. */
-    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-    .tag { font-size: 11.5px; font-weight: 600; background: var(--surface); border: 1px solid var(--border); color: var(--text-light); padding: 4px 10px; border-radius: 999px; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+    .tag { font-size: 13.5px; font-weight: 600; background: var(--bg); border: 1px solid var(--border); color: var(--text-light); padding: 6px 14px; border-radius: 999px; }
 
     .action-row { display: flex; flex-direction: column; gap: 10px; }
     .download-btn {
@@ -239,13 +219,9 @@
     .download-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
     .download-btn:active { opacity: 0.85; }
 
-    /* Bagikan & Favorit sejajar berdampingan di bawah Download. flex-basis:0
-       + min-width:0 dipakai supaya dua-duanya SELALU dapat lebar yang sama
-       persis dan gak ada yang "kepental" ke baris baru gara-gara konten
-       (ikon+teks)-nya kepanjangan buat setengah lebar kolom. */
-    .secondary-actions { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 10px; }
+    .secondary-actions { display: flex; gap: 10px; }
     .share-btn, .fav-btn {
-      flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px;
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
       text-align: center;
       /* Sebelumnya pakai var(--surface), sama persis dengan background
          .model-card yang jadi wadahnya -- makanya papan tombolnya nyaris
@@ -253,7 +229,7 @@
          "tingkat" dari --surface) + border tipis biar bentuk tombolnya jelas. */
       background: var(--bg); border: 1px solid var(--border); color: var(--text); font-weight: 700;
       font-family: 'Geist', sans-serif; padding: 12px; border-radius: 10px;
-      font-size: 14px; cursor: pointer; text-decoration: none; white-space: nowrap;
+      font-size: 14px; cursor: pointer; text-decoration: none;
     }
     .share-btn:active, .fav-btn:active { opacity: 0.85; }
     .share-btn svg, .fav-btn svg { width: 17px; height: 17px; flex-shrink: 0; }
@@ -393,20 +369,15 @@
       <div id="skeleton-box" class="model-card skeleton-card" aria-hidden="true">
         <div class="model-thumb skeleton-shimmer"></div>
         <div class="model-body">
-          <div class="skeleton-shimmer skeleton-line" style="width:65%;height:22px;margin-top:0;margin-bottom:14px;"></div>
-          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-            <div class="skeleton-shimmer" style="width:72px;height:72px;border-radius:50%;flex-shrink:0;"></div>
-            <div style="flex:1;">
-              <div class="skeleton-shimmer skeleton-line" style="width:55%;height:15px;margin-top:0;"></div>
-              <div class="skeleton-shimmer skeleton-line" style="width:35%;height:12px;margin-top:6px;"></div>
-            </div>
+          <div class="skeleton-shimmer skeleton-line" style="width:65%;height:22px;margin-top:0;"></div>
+          <div class="skeleton-shimmer skeleton-line" style="width:90%;margin-top:12px;margin-bottom:16px;"></div>
+          <div class="skeleton-shimmer skeleton-line" style="width:100%;margin-top:14px;"></div>
+          <div class="skeleton-shimmer skeleton-line" style="width:80%;margin-top:8px;margin-bottom:16px;"></div>
+          <div style="display:flex;gap:8px;margin-bottom:18px;">
+            <div class="skeleton-shimmer" style="width:64px;height:26px;border-radius:999px;"></div>
+            <div class="skeleton-shimmer" style="width:64px;height:26px;border-radius:999px;"></div>
           </div>
-          <div class="skeleton-shimmer" style="width:100%;height:96px;border-radius:10px;margin-bottom:18px;"></div>
-          <div class="skeleton-shimmer" style="width:100%;height:48px;border-radius:10px;margin-bottom:10px;"></div>
-          <div style="display:flex;gap:10px;">
-            <div class="skeleton-shimmer" style="flex:1;height:44px;border-radius:10px;"></div>
-            <div class="skeleton-shimmer" style="flex:1;height:44px;border-radius:10px;"></div>
-          </div>
+          <div class="skeleton-shimmer" style="width:100%;height:48px;border-radius:10px;"></div>
         </div>
       </div>
 
@@ -415,12 +386,9 @@
           <img id="m-thumb" class="model-thumb" src="" alt="" loading="lazy">
           <div class="model-body">
             <div id="m-title" class="model-title"></div>
-            <div id="m-publisher" class="publisher-row"></div>
-            <div class="caption-box">
-              <div class="caption-label">Caption :</div>
-              <div id="m-caption" class="caption-text"></div>
-              <div id="m-tags" class="tag-row"></div>
-            </div>
+            <div id="m-caption" class="model-caption"></div>
+            <div id="m-info" class="model-info"></div>
+            <div id="m-tags" class="tag-row"></div>
             <div class="action-row">
               <a id="m-download" class="download-btn" href="#" target="_blank" rel="noopener">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
@@ -804,21 +772,11 @@
       document.getElementById('m-title').textContent = model.name || '';
       document.getElementById('m-caption').textContent = model.caption || '';
 
-      // Kartu publisher: model lama ini belum tertaut ke akun manapun (sistem
-      // login/akun belum jalan), jadi avatar-nya SELALU generik -- bukan foto
-      // profil asli siapapun. Nama Converter/Creator yang tersimpan di data
-      // cuma teks bebas dari form submit, jadi tetap ditampilkan sebagai
-      // nama publisher; kalau kosong dua-duanya, baru ditampilkan "Anonim".
-      // Nanti kalau sistem akun sudah jalan, model ini baru bisa "diklaim"
-      // pemiliknya -- untuk sekarang statusnya anonim/belum tertaut.
-      const publisherName = model.converter || model.creator || 'Anonim';
-      const publisherRole = model.converter ? 'Converter' : (model.creator ? 'Creator' : 'Publisher');
-      document.getElementById('m-publisher').innerHTML = `
-        <span class="publisher-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg></span>
-        <span class="publisher-info">
-          <span class="publisher-name">${escapeHtml(publisherName)}</span>
-          <span class="publisher-role">${escapeHtml(publisherRole)}</span>
-        </span>`;
+      let infoHtml = '';
+      if (model.creator) infoHtml += `<div class="model-info-row"><span>Creator</span><b>${escapeHtml(model.creator)}</b></div>`;
+      if (model.converter) infoHtml += `<div class="model-info-row"><span>Converter</span><b>${escapeHtml(model.converter)}</b></div>`;
+      if (model.app_target) infoHtml += `<div class="model-info-row"><span>Untuk Aplikasi</span><b>${escapeHtml(model.app_target)}</b></div>`;
+      document.getElementById('m-info').innerHTML = infoHtml;
 
       const cats = Array.isArray(model.category) ? model.category : (model.category ? [model.category] : []);
       document.getElementById('m-tags').innerHTML = cats.map(c => `<span class="tag">${escapeHtml(c)}</span>`).join('');

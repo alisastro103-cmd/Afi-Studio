@@ -123,6 +123,77 @@
     window.addEventListener('resize', function () {
       if (isDesktop()) closeDrawer();
     });
+
+    initAccountMenu(drawer);
+  }
+
+  // Bagian "Lihat Profil" + avatar (kalau udah login) atau tombol "Masuk"/
+  // "Daftar" (kalau belum) di paling atas laci. Markup-nya SAMA PERSIS di
+  // 17 halaman (lihat page-menu-profile-preview/-auth) -- sengaja dibikin
+  // dimmed & non-interaktif dari awal ("Segera hadir") sampai sistem login
+  // Google-nya jadi. Sekarang udah jadi (lihat api/auth.js), jadi diaktifin
+  // di sini SEKALI di script bersama ini -- gak perlu ubah markup 17
+  // halaman itu satu-satu.
+  function initAccountMenu(drawer) {
+    var preview = drawer.querySelector('.page-menu-profile-preview');
+    var auth = drawer.querySelector('.page-menu-profile-auth');
+    if (!preview || !auth) return;
+
+    var avatarEl = preview.querySelector('.page-menu-profile-avatar');
+    var ctaEl = preview.querySelector('.page-menu-profile-cta');
+    var subEl = preview.querySelector('.page-menu-profile-sub');
+    var authBtns = Array.prototype.slice.call(auth.querySelectorAll('.page-menu-profile-auth-btn'));
+
+    var loginUrl = '/api/auth?action=google-login&next=' + encodeURIComponent(window.location.pathname);
+
+    function goToProfile() { window.location.href = '/profil/'; }
+    function goToLogin() { window.location.href = loginUrl; }
+
+    function activatePreview(user) {
+      auth.style.display = 'none';
+      preview.classList.add('is-ready');
+      preview.removeAttribute('aria-disabled');
+      preview.setAttribute('role', 'link');
+      preview.setAttribute('tabindex', '0');
+      preview.addEventListener('click', goToProfile);
+      preview.addEventListener('keydown', function (e) { if (e.key === 'Enter') goToProfile(); });
+
+      var photo = user.avatarUrl || user.picture;
+      if (photo) {
+        avatarEl.innerHTML = '';
+        avatarEl.style.backgroundImage = 'url(' + photo + ')';
+        avatarEl.style.backgroundSize = 'cover';
+        avatarEl.style.backgroundPosition = 'center';
+      }
+      ctaEl.textContent = user.nickname || user.name || 'Profil';
+      subEl.textContent = user.username ? ('@' + user.username) : 'Lihat profil';
+    }
+
+    function activateAuth() {
+      preview.style.display = 'none';
+      auth.classList.add('is-ready');
+      auth.removeAttribute('aria-disabled');
+      authBtns.forEach(function (btn) {
+        btn.setAttribute('role', 'link');
+        btn.setAttribute('tabindex', '0');
+        btn.addEventListener('click', goToLogin);
+        btn.addEventListener('keydown', function (e) { if (e.key === 'Enter') goToLogin(); });
+      });
+    }
+
+    fetch('/api/auth?action=me')
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (result) {
+        if (result.ok && result.data && result.data.user) {
+          activatePreview(result.data.user);
+        } else {
+          activateAuth();
+        }
+      })
+      .catch(function () {
+        // Gagal ngecek (mis. lagi offline) -- biarin placeholder dimmed
+        // default apa adanya, daripada nampilin tombol yang salah.
+      });
   }
 
   if (document.readyState === 'loading') {

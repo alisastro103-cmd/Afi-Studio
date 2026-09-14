@@ -214,6 +214,13 @@
   color: var(--text);
 }
 
+/* Diaktifin lewat page-menu-drawer.js begitu status login diketahui --
+   .is-ready menghapus efek "dimmed" placeholder & bikin elemennya beneran
+   bisa dipencet. */
+.page-menu-profile-preview.is-ready { opacity: 1; cursor: pointer; }
+.page-menu-profile-auth.is-ready { opacity: 1; cursor: default; }
+.page-menu-profile-auth.is-ready .page-menu-profile-auth-btn { cursor: pointer; }
+
 /* Kunci scroll body saat laci terbuka di mobile */
 body.page-menu-locked { overflow: hidden; }
 
