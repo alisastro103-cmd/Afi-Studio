@@ -21,6 +21,9 @@
     },
     "api/cron/pending-reminder.js": {
       "maxDuration": 15
+    },
+    "api/profile-page.js": {
+      "includeFiles": "profile-view/template.html"
     }
   },
   "crons": [
@@ -35,7 +38,8 @@
     { "source": "/api/survey-thumbnail", "destination": "/api/survey?mode=thumbnail" },
     { "source": "/model", "destination": "/api/model-page" },
     { "source": "/model/", "destination": "/api/model-page" },
-    { "source": "/m/:slug", "destination": "/api/model-page?slug=:slug" }
+    { "source": "/m/:slug", "destination": "/api/model-page?slug=:slug" },
+    { "source": "/@:username", "destination": "/api/profile-page?username=:username" }
   ],
   "headers": [
     {

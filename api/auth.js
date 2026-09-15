@@ -29,6 +29,7 @@ const STATE_COOKIE = 'afi_oauth_state';
 const SESSION_PREFIX = 'afi-accounts:session:';
 const USER_PREFIX = 'afi-accounts:user:'; // key = Google "sub" (ID akun Google, permanen & unik)
 const USERNAME_PREFIX = 'afi-accounts:username:'; // key = username (lowercase) -> Google "sub" pemiliknya
+const NICKNAME_PREFIX = 'afi-accounts:nickname:'; // key = nickname (lowercase, exact match) -> Google "sub" pemiliknya
 const SESSION_TTL_SEC = 60 * 60 * 24 * 30; // sesi login bertahan 30 hari
 
 // 12 peran/skill yang bisa dipilih user pas daftar/edit profil (nyambung ke field
@@ -40,7 +41,11 @@ export const ROLES = ['Designer', 'Artist', 'Modeler', 'Animator', 'Converter Mo
 // perlu disamain kalau mau tampil penuh di situ juga.
 const SOCIAL_KEYS = ['yt', 'ig', 'fb', 'tk', 'wa', 'dc', 'gh', 'tg'];
 
-const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
+// "-" dan "_" sengaja diizinin sebagai pengganti spasi (biar bisa misahin kata
+// per kata) -- lihat catatan di onboarding/index.html step 1. Spasi ASLI tetap
+// gak boleh, karena username ini dipakai buat link profil (/@username) dan
+// sistem tag/panggil, bukan cuma kosmetik.
+const USERNAME_RE = /^[a-z0-9_-]{3,20}$/;
 
 const SITE_URL = 'https://afi-studio.vercel.app';
 const REDIRECT_URI = `${SITE_URL}/api/auth?action=google-callback`;
@@ -136,6 +141,65 @@ async function actionCheckUsername(req, res) {
   return res.status(200).json({ available: false, reason: 'taken' });
 }
 
+/* ---------------- action: check-nickname ---------------- */
+// GET ?nickname=xxx  -> { available: true/false, reason? }
+// Beda sama username: nickname BEBAS format-nya, cuma harus UNIK PERSIS
+// (case-insensitive). Nickname yang cuma beda dikit (misal beda 1 huruf,
+// atau beda kapitalisasi TAPI beda ejaan) tetap dianggap beda & boleh dipakai
+// -- cuma yang PERSIS SAMA (abaikan besar/kecil huruf) yang ditolak.
+async function actionCheckNickname(req, res) {
+  if (!accountsRedis) return res.status(500).json({ error: 'Database akun belum tersambung.' });
+
+  const raw = String(req.query.nickname || '').trim();
+  if (raw.length < 2) {
+    return res.status(200).json({ available: false, reason: 'format' });
+  }
+
+  const key = raw.toLowerCase();
+  const ownerId = await accountsRedis.get(NICKNAME_PREFIX + key);
+  if (!ownerId) return res.status(200).json({ available: true });
+
+  const cookies = parseCookies(req);
+  const sessionId = cookies[SESSION_COOKIE];
+  const session = sessionId ? await accountsRedis.get(SESSION_PREFIX + sessionId) : null;
+  if (session && session.googleId === ownerId) {
+    return res.status(200).json({ available: true });
+  }
+  return res.status(200).json({ available: false, reason: 'taken' });
+}
+
+/* ---------------- action: public-profile ---------------- */
+// GET ?username=xxx -> { user: {...} } (404 kalau gak ketemu)
+// Data yang dibalikin SENGAJA subset terbatas -- gak ada email/googleId,
+// beda sama publicUser() yang dipakai buat pemilik akun sendiri di
+// action=me. Ini yang dipanggil dari halaman publik /@username.
+function publicProfileView(u) {
+  return {
+    nickname: u.nickname || null,
+    username: u.username || null,
+    bio: u.bio || '',
+    roles: Array.isArray(u.roles) ? u.roles : [],
+    socials: u.socials || {},
+    avatarUrl: u.avatarUrl || u.picture || null,
+    bannerUrl: u.bannerUrl || null,
+  };
+}
+
+async function actionPublicProfile(req, res) {
+  if (!accountsRedis) return res.status(500).json({ error: 'Database akun belum tersambung.' });
+
+  const raw = String(req.query.username || '').trim().toLowerCase();
+  if (!raw) return res.status(400).json({ error: 'Username kosong.' });
+
+  const ownerId = await accountsRedis.get(USERNAME_PREFIX + raw);
+  if (!ownerId) return res.status(404).json({ error: 'Profil tidak ditemukan.' });
+
+  const user = await accountsRedis.get(USER_PREFIX + ownerId);
+  if (!user || !user.nickname) return res.status(404).json({ error: 'Profil tidak ditemukan.' });
+
+  return res.status(200).json({ ok: true, user: publicProfileView(user) });
+}
+
 /* ---------------- action: complete-profile ---------------- */
 // POST body (JSON): { nickname, username, roles: [...], socials: {yt,ig,fb,tk,wa,dc},
 //                      avatarBase64?, bannerBase64? }
@@ -156,7 +220,18 @@ async function actionCompleteProfile(req, res) {
 
   const username = String(body.username || '').trim().toLowerCase();
   if (!USERNAME_RE.test(username)) {
-    return res.status(400).json({ error: 'Username 3-20 karakter, cuma huruf kecil, angka, dan underscore.' });
+    return res.status(400).json({ error: 'Username 3-20 karakter, cuma huruf kecil, angka, - dan _.' });
+  }
+
+  // Nickname WAJIB unik PERSIS (case-insensitive) -- dicek ulang di server,
+  // jangan cuma percaya live-check di form (bisa aja kesamber orang lain di
+  // antara waktu itu sama waktu submit). Nickname yang cuma beda 1 huruf
+  // (atau lebih) TETAP dianggap beda & boleh dipakai -- ini bukan pengecekan
+  // "mirip", cuma pengecekan sama-persis.
+  const nicknameKey = nickname.toLowerCase();
+  const existingNickOwner = await accountsRedis.get(NICKNAME_PREFIX + nicknameKey);
+  if (existingNickOwner && existingNickOwner !== user.googleId) {
+    return res.status(409).json({ error: 'Nickname itu udah dipakai orang lain, coba yang lain ya.' });
   }
 
   const roles = Array.isArray(body.roles) ? body.roles.filter((r) => ROLES.includes(r)) : [];
@@ -211,6 +286,16 @@ async function actionCompleteProfile(req, res) {
     await accountsRedis.del(USERNAME_PREFIX + user.username).catch(() => {});
   }
   await accountsRedis.set(USERNAME_PREFIX + username, user.googleId);
+
+  // Sama kayak index username -- pindahin index nickname (key lowercase)
+  // kalau berubah, biar nickname lama bebas dipakai orang lain lagi. Kalau
+  // yang berubah cuma kapitalisasinya doang (key lowercase-nya sama), gak
+  // perlu mindahin apa-apa.
+  const oldNicknameKey = user.nickname ? user.nickname.toLowerCase() : null;
+  if (oldNicknameKey && oldNicknameKey !== nicknameKey) {
+    await accountsRedis.del(NICKNAME_PREFIX + oldNicknameKey).catch(() => {});
+  }
+  await accountsRedis.set(NICKNAME_PREFIX + nicknameKey, user.googleId);
 
   const updated = {
     ...user,
@@ -359,6 +444,8 @@ const ACTIONS = {
   me: actionMe,
   logout: actionLogout,
   'check-username': actionCheckUsername,
+  'check-nickname': actionCheckNickname,
+  'public-profile': actionPublicProfile,
   'complete-profile': actionCompleteProfile,
 };
 

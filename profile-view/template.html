@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <script src="/config.js"></script>
+    <script>
+        (function () {
+            var saved = localStorage.getItem('afi-theme');
+            var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', isDark);
+        })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>%%PAGE_TITLE%%</title>
+    <meta name="description" content="%%OG_DESC%%">
+    <meta property="og:type" content="profile">
+    <meta property="og:url" content="%%OG_URL%%">
+    <meta property="og:title" content="%%OG_TITLE%%">
+    <meta property="og:site_name" content="Afi Studio">
+    <meta property="og:description" content="%%OG_DESC%%">
+    <meta property="og:image" content="%%OG_IMAGE%%">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="%%OG_TITLE%%">
+    <meta name="twitter:description" content="%%OG_DESC%%">
+    <meta name="twitter:image" content="%%OG_IMAGE%%">
+
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/favicon.png">
+
+    <link rel="stylesheet" href="/dist/output.css">
+    <script src="/icons/lucide-local.js"></script>
+    <script src="/theme-toggle.js" defer></script>
+    <link rel="stylesheet" href="/fonts/fonts.css?v=3fonts">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; font-family: 'Geist', sans-serif; scroll-behavior: smooth; }
+        h1, h2, h3, h4 { font-family: 'CreatoDisplay', sans-serif; }
+        body { background: var(--bg); color: var(--text); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; zoom: 0.75; }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-attachment: fixed;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-brand { margin-left: 6px; }
+
+        .page-menu { position: relative; }
+        .page-menu-btn { display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer; }
+        .page-menu-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-width: 220px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+        }
+        .page-menu-dropdown.open {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .page-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; line-height: 1.15; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 13px; font-weight: 400; font-family: 'Geist', sans-serif; }
+        .page-menu-item .page-menu-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.75; }
+        .page-menu-item:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item:active { opacity: 0.6; }
+        .page-menu-item.active { color: var(--text); background: color-mix(in srgb, var(--accent) 10%, transparent); font-weight: 700; }
+        html.dark .page-menu-item.active { color: #fff; }
+
+        .page-menu-divider { height: 1px; background: var(--border); margin: 6px 4px; }
+        .page-menu-item-cta { color: var(--text); display: flex; align-items: center; justify-content: flex-start; }
+        html.dark .page-menu-item-cta { color: #fff; }
+        .page-menu-item-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+        .page-menu-item-cta:active { opacity: 0.6; }
+
+        #theme-toggle-btn .icon-moon { display: none; }
+        html.dark #theme-toggle-btn .icon-sun { display: none; }
+        html.dark #theme-toggle-btn .icon-moon { display: block; }
+
+        .footer-text { text-align: center; font-size: 11px; color: var(--text-sub); padding: 16px 0 28px; font-weight: 500; }
+
+        .social-container { display: flex; flex-direction: row; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+        .social-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px;
+            text-decoration: none; transition: transform 0.2s;
+        }
+        .social-btn:hover { transform: translateY(-2px); }
+        .social-btn svg { width: 24px; height: 24px; fill: var(--text-sub); }
+        .social-btn img { width: 22px; height: 22px; object-fit: contain; }
+
+        /* ---- Sketsa banner: catatan buat versi nyata ---- */
+        .sketch-note {
+            max-width: 720px; margin: 14px auto 0; padding: 12px 16px;
+            background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+            border: 1px dashed var(--accent);
+            border-radius: 8px;
+            font-size: 12.5px; line-height: 1.6; color: var(--text-sub);
+        }
+        .sketch-note strong { color: var(--text); }
+
+        /* ---- Satu "board" akun: banner + avatar + nama + deskripsi + stat,
+           semuanya di DALAM satu kartu bordered, gak lagi kepisah-pisah. ---- */
+        .account-wrap { max-width: 640px; margin: 16px auto 0; padding: 0 20px; }
+        .account-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .account-banner {
+            width: 100%;
+            aspect-ratio: 3 / 1;
+            background: linear-gradient(135deg, #4c7bc0 0%, #6c5ce7 100%);
+            position: relative;
+        }
+        .account-edit-btn {
+            position: absolute; right: 12px; top: 12px;
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 999px;
+            background: rgba(0,0,0,0.45); color: #fff;
+            font-size: 11.5px; font-weight: 700;
+            backdrop-filter: blur(4px);
+            border: none; cursor: pointer;
+        }
+        .account-edit-btn:hover { background: rgba(0,0,0,0.6); }
+        .account-body { padding: 0 18px 18px; position: relative; }
+        .account-top-row { display: flex; align-items: flex-end; }
+        .account-avatar {
+            width: 128px; height: 128px; border-radius: 50%; flex-shrink: 0;
+            background: var(--bg);
+            border: 4px solid var(--surface);
+            margin-top: -64px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-sub);
+        }
+        .account-avatar svg { width: 40px; height: 40px; }
+
+        .account-stats { display: flex; gap: 34px; padding-right: 4px; }
+        .account-stat { text-align: center; }
+        .account-stat-num { font-family: 'Minercraftory', 'Geist', sans-serif; font-size: 26px; font-weight: 400; letter-spacing: 0.02em; }
+        .account-stat-label { font-size: 11px; color: var(--text-sub); }
+
+        .account-name-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+        .account-name-block { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+        .account-name-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .account-name { font-family: 'CreatoDisplay', sans-serif; font-size: calc(23px / 0.75); font-weight: 800; line-height: 1.2; }
+        .account-username { display: inline-block; font-size: calc(15px / 0.75); color: var(--text-sub); text-decoration: underline; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+        /* Popup kecil "Link tersalin" -- muncul nempel di bawah teks
+           username begitu di-tap (gantiin tombol salin link yang lama). */
+        .username-copy-wrap { position: relative; display: inline-block; }
+        .username-copy-popup {
+            position: absolute; left: 0; top: calc(100% + 8px); z-index: 30;
+            display: flex; align-items: center; gap: 10px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+            padding: 10px 14px; box-shadow: 0 10px 26px rgba(0,0,0,0.18);
+            opacity: 0; visibility: hidden; transform: translateY(-6px) scale(0.96);
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+            pointer-events: none; white-space: nowrap;
+        }
+        .username-copy-popup.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        .username-copy-popup-icon { width: 18px; height: 18px; color: #2e9e5b; flex-shrink: 0; }
+        .username-copy-popup-text { display: flex; flex-direction: column; line-height: 1.25; }
+        .username-copy-popup-title { font-size: 12.5px; font-weight: 800; }
+        .username-copy-popup-sub { font-size: 11px; color: var(--text-sub); }
+
+        .account-role-badge {
+            font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em;
+            padding: 4px 10px; border-radius: 999px;
+            background: color-mix(in srgb, var(--accent) 32%, black 25%);
+            color: #fff;
+        }
+
+        .desc-board {
+            margin-top: 16px; margin-left: -10px; margin-right: -10px;
+            padding: 14px 18px; border-radius: 14px;
+            border: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 60%, transparent);
+        }
+        /* Mode edit: hilangkan kotak luar biar textarea deskripsi gak keliatan kotak-dalam-kotak */
+        .account-card.editing .desc-board {
+            padding: 0; margin-left: 0; margin-right: 0; border: none; background: none;
+        }
+        .account-section { margin-top: 16px; }
+        .account-section-title { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+        /* Prinsip kayak deskripsi channel YouTube: dibatasi beberapa baris dulu,
+           gak dibiarkan memanjang bebas ke bawah (yang bikin role/skill ketarik
+           turun ikut panjangnya teks). Full text baru muncul kalau di-expand. */
+        .account-desc {
+            font-size: 13px; color: var(--text-sub); line-height: 1.55;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .account-desc.expanded { -webkit-line-clamp: unset; overflow: visible; }
+        .desc-more-btn {
+            display: none; margin-top: 6px; padding: 0; border: none; background: none;
+            font-size: 12px; font-weight: 700; color: var(--accent); cursor: pointer;
+            font-family: 'Geist', sans-serif;
+        }
+        .desc-more-btn.show { display: inline-block; }
+        .desc-more-btn:hover { text-decoration: underline; }
+
+        .account-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .account-btn {
+            font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text);
+            cursor: pointer;
+        }
+        .account-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .account-btn-primary:hover { background: var(--accent-hover); }
+
+        /* ---- toggle satu board: lihat vs edit, gak pindah halaman/wizard lagi ---- */
+        .account-card:not(.editing) .edit-only { display: none !important; }
+        .account-card.editing .view-only { display: none !important; }
+        .account-avatar { position: relative; }
+        .avatar-edit-overlay {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: rgba(0,0,0,0.5); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .avatar-edit-overlay svg { width: 22px; height: 22px; }
+        .account-name-row .field-input {
+            padding: 4px 2px; font-family: 'CreatoDisplay', sans-serif; font-size: 24px; font-weight: 800;
+            max-width: 260px !important; border: none; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent;
+        }
+        .username-input-row.edit-only { margin-top: 0; }
+
+        .profile-section { max-width: 640px; margin: 24px auto 0; padding: 0 20px 40px; }
+        .empty-note { font-size: 12.5px; color: var(--text-sub); margin-top: 10px; }
+
+        .google-login-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 11px 20px; border-radius: 8px;
+            background: #fff; color: #1f1f1f;
+            font-size: 13.5px; font-weight: 700;
+            border: 1px solid var(--border);
+            text-decoration: none;
+        }
+        .google-login-btn:hover { background: #f5f5f5; }
+        #account-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .account-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .account-role-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .account-social-empty { font-size: 12px; color: var(--text-sub); margin-top: 12px; }
+
+        /* ==================== Wizard pendaftaran akun ==================== */
+        .wizard-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 20px 22px;
+        }
+        .wizard-head { margin-bottom: 18px; }
+        .wizard-title { font-size: 17px; font-weight: 800; }
+        .wizard-sub { font-size: 12.5px; color: var(--text-sub); margin-top: 4px; line-height: 1.5; }
+
+        .wizard-progress { display: flex; gap: 6px; margin-top: 14px; }
+        .wizard-dot { flex: 1; height: 4px; border-radius: 999px; background: var(--border); transition: background 0.25s ease; }
+        .wizard-dot.done, .wizard-dot.active { background: var(--accent); }
+
+        .wizard-step { display: none; }
+        .wizard-step.active { display: block; }
+        .wizard-step-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+
+        .field-group { margin-bottom: 16px; }
+        .field-label { font-size: 12.5px; font-weight: 700; margin-bottom: 6px; display: block; }
+        .field-hint { font-size: 11.5px; color: var(--text-sub); margin-top: 5px; line-height: 1.5; }
+        .field-input {
+            width: 100%; padding: 10px 12px; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg); color: var(--text);
+            font-size: 13.5px; font-family: 'Geist', sans-serif;
+        }
+        .field-input:focus { outline: none; border-color: var(--accent); }
+        .username-input-row { position: relative; }
+        .username-at { position: absolute; left: 2px; top: 50%; transform: translateY(-50%); color: var(--text-sub); font-size: 14.5px; pointer-events: none; }
+        .username-input-row .field-input {
+            padding: 4px 4px 4px 22px; font-size: 14.5px;
+            border: none; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent;
+        }
+        .username-status { font-size: 11.5px; margin-top: 6px; font-weight: 700; min-height: 15px; }
+        .username-status.ok { color: #2e9e5b; }
+        .username-status.bad { color: #d9534f; }
+        .username-status.checking { color: var(--text-sub); font-weight: 400; }
+
+        .role-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+        .role-chip {
+            padding: 9px 14px; border-radius: 999px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); font-size: 12.5px; font-weight: 700;
+            cursor: pointer; user-select: none; transition: all 0.15s ease;
+        }
+        .role-chip:hover { border-color: var(--accent); }
+        .role-chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .social-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .social-row .social-icon-badge {
+            width: 42px; height: 42px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .social-row .social-icon-badge svg { width: 26px; height: 26px; fill: var(--text-sub); }
+        .social-row .social-icon-badge img { width: 24px; height: 24px; object-fit: contain; }
+        .social-row .field-input { font-size: 12.5px; }
+
+        .upload-row { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+        .upload-box { flex: 1; min-width: 140px; }
+        .upload-preview-avatar {
+            width: 84px; height: 84px; border-radius: 50%; background: var(--bg);
+            border: 2px dashed var(--border); display: flex; align-items: center;
+            justify-content: center; color: var(--text-sub); overflow: hidden; cursor: pointer;
+        }
+        .upload-preview-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .upload-preview-banner {
+            width: 100%; aspect-ratio: 3/1; border-radius: 10px; background: var(--bg);
+            border: 2px dashed var(--border); display: flex; align-items: center;
+            justify-content: center; color: var(--text-sub); overflow: hidden; cursor: pointer;
+        }
+        .upload-preview-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .upload-label { font-size: 11.5px; font-weight: 700; margin-bottom: 8px; }
+        .upload-input { display: none; }
+
+        .wizard-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 10px; }
+        .wizard-btn {
+            font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 8px;
+            border: 1px solid var(--border); cursor: pointer; font-family: 'Geist', sans-serif;
+        }
+        .wizard-btn-secondary { background: var(--bg); color: var(--text); }
+        .wizard-btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .wizard-btn-primary:hover { background: var(--accent-hover); }
+        .wizard-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .wizard-error { font-size: 12.5px; color: #d9534f; margin-top: 10px; min-height: 15px; }
+        .wizard-skip-note { font-size: 11.5px; color: var(--text-sub); margin-top: 12px; }
+    </style>
+
+    <link rel="stylesheet" href="/css/theme-tokens.css">
+    <link rel="stylesheet" href="/css/layout-mobile.css" media="(max-width: 1023.98px)">
+    <link rel="stylesheet" href="/css/layout-desktop.css" media="(min-width: 1024px)">
+    <link rel="stylesheet" href="/css/page-menu-drawer.css">
+    <link rel="stylesheet" href="/css/nav-links.css">
+    <link rel="stylesheet" href="/css/category-header.css">
+    <link rel="stylesheet" href="/css/model-card.css">
+</head>
+
+<body class="h-full">
+<div id="app" class="h-full overflow-auto w-full flex flex-col justify-between">
+    <div>
+        <nav class="nav-bar">
+            <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="cursor-pointer flex items-center gap-1 nav-brand">
+                        <img src="/icon.png" alt="Logo" class="w-10 h-10 object-contain">
+                        <div style="font-family:'Dancing Script',cursive;font-size:20px;font-weight:700;color:var(--text);">
+                            Afi-Studio
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <nav class="nav-links" aria-label="Navigasi halaman">
+                      <a href="/index.html" class="nav-link">Beranda</a>
+                      <a href="/about/index.html" class="nav-link">About</a>
+                      <a href="/pencarian/index.html" class="nav-link nav-link-wide">Models</a>
+                      <a href="/tutorial/index.html" class="nav-link">Video</a>
+                      <a href="/bantuan/index.html" class="nav-link">Bantuan</a>
+                    </nav>
+                    <button id="theme-toggle-btn" aria-label="Ganti tema" style="display: flex; align-items: center; justify-content: center; color: var(--text); padding: 5px; background: none; border: none; cursor: pointer;">
+                        <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                        <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                    </button>
+                    <div class="page-menu">
+                        <button id="page-menu-btn" class="page-menu-btn" aria-label="Menu Halaman">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+                        </button>
+                        <div id="page-menu-dropdown" class="page-menu-dropdown">
+                            <div class="page-menu-profile-preview" aria-disabled="true">
+                              <span class="page-menu-profile-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg></span>
+                              <span class="page-menu-profile-text">
+                                <span class="page-menu-profile-cta">Lihat Profil</span>
+                                <span class="page-menu-profile-sub">Segera hadir</span>
+                              </span>
+                            </div>
+                            <div class="page-menu-profile-auth" aria-disabled="true">
+                              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--solid">Masuk</span>
+                              <span class="page-menu-profile-auth-btn page-menu-profile-auth-btn--outline">Daftar</span>
+                            </div>
+                            <div class="page-menu-divider"></div>
+                            <a href="/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11 12 4l8 7"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg><span class="page-menu-label">Beranda</span></a>
+                            <a href="/member-Afi-Studio/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.3c2.4.4 4.5 2.5 4.5 5.7"/></svg><span class="page-menu-label">Member Afi-Studio</span></a>
+                            <a href="/event/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg><span class="page-menu-label">Event Render</span></a>
+                            <a href="/ranking/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 5H5a2 2 0 0 0 0 4h1M16 5h3a2 2 0 0 1 0 4h-1"/><path d="M12 13v3M9 20h6M10 17h4v3h-4z"/></svg><span class="page-menu-label">Ranking Render</span></a>
+                            <a href="/tutorial/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z"/></svg><span class="page-menu-label">Video &amp; Tutorial</span></a>
+                            <a href="/bantuan/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/><path d="M12 17h.01"/></svg><span class="page-menu-label">Bantuan</span></a>
+                            <a href="/feedback/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5z"/></svg><span class="page-menu-label">Feedback</span></a>
+                            <a href="/favorit/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.6-9.5 9-9.5 9z"/></svg><span class="page-menu-label">Favorit</span></a>
+                            <a href="/survey/" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/></svg><span class="page-menu-label">Survey</span></a>
+                            <a href="/about/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/></svg><span class="page-menu-label">Tentang Kami</span></a>
+                            <a href="/privacy/index.html" class="page-menu-item"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/></svg><span class="page-menu-label">Kebijakan Privasi</span></a>
+                            <div class="page-menu-divider"></div>
+                            <a href="/daftar-model/index.html" class="link-daftar-model page-menu-item page-menu-item-cta" rel="noopener"><svg class="page-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></svg><span class="page-menu-label">Daftar Model 3D</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="account-wrap" id="self-view" style="margin-top: 20px;">
+
+            <div class="account-card" id="self-account-card" style="display:none;">
+                <div class="account-banner" id="account-banner"></div>
+                <div class="account-body">
+                    <div class="account-top-row">
+                        <div class="account-avatar" id="account-avatar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"></path></svg>
+                        </div>
+                    </div>
+
+                    <div class="account-name-row">
+                        <div class="account-name-block">
+                            <div class="account-name-line">
+                                <div class="account-name" id="account-name">Ali Sastro</div>
+                            </div>
+                            <div class="username-copy-wrap">
+                                <a href="#" class="account-username" id="account-username">@alisastro</a>
+                                <div class="username-copy-popup" id="username-copy-popup">
+                                    <svg class="username-copy-popup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    <span class="username-copy-popup-text">
+                                        <span class="username-copy-popup-title">Link tersalin</span>
+                                        <span class="username-copy-popup-sub">Siap ditempel &amp; dibagikan ke mana aja</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="account-stats" id="account-stats">
+                            <div class="account-stat"><div class="account-stat-label">Models</div><div class="account-stat-num" id="stat-models">0</div></div>
+                        </div>
+                    </div>
+
+                    <div class="desc-board">
+                        <p class="account-desc" id="account-desc">Belum ada deskripsi.</p>
+                        <button type="button" class="desc-more-btn" id="desc-more-btn">Lihat selengkapnya</button>
+
+                        <div class="account-role-badges" id="account-role-badges">
+                            <span class="account-role-badge">Member</span>
+                        </div>
+                    </div>
+
+                    <div class="account-section" id="account-social-section">
+                        <div class="social-container">
+                            <a href="#" class="social-btn" title="Instagram"><svg viewBox="0 0 512 512"><use href="/icons/social-icons.svg?v=5#icon-ig"></use></svg></a>
+                            <a href="#" class="social-btn" title="YouTube"><svg viewBox="0 0 512 512"><use href="/icons/social-icons.svg?v=5#icon-yt"></use></svg></a>
+                            <a href="#" class="social-btn" title="WhatsApp"><svg viewBox="0 0 512 512"><use href="/icons/social-icons.svg?v=5#icon-wa"></use></svg></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ditampilin kalau username di URL gak ketemu akunnya (belum pernah
+                 daftar, atau salah ketik linknya). -->
+            <div class="account-card" id="profile-not-found" style="display:none; padding: 34px 20px; text-align:center;">
+                <p style="font-size:14px; font-weight:700; margin-bottom:6px;">Profil tidak ditemukan</p>
+                <p style="font-size:13px; color:var(--text-sub); margin-bottom:16px;">Akun dengan username ini belum ada, atau linknya salah ketik.</p>
+                <a href="/index.html" class="wizard-btn wizard-btn-primary" style="display:inline-block; text-decoration:none;">Kembali ke Beranda</a>
+            </div>
+
+            <div class="profile-section" id="profile-models-section" style="padding-left:0; padding-right:0; display:none;">
+                <div class="category-header">Model yang Diupload</div>
+                <section class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" style="margin-top:14px;" id="profile-models-grid"></section>
+                <p class="empty-note" id="profile-models-empty">Belum ada model yang tertaut ke akun ini.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-text">
+        <p>&copy; 2026 Afi-Studio&trade; &mdash; All rights reserved.</p>
+    </footer>
+</div>
+
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    const SOCIAL_META = {
+        yt: 'YouTube', ig: 'Instagram', fb: 'Facebook', tk: 'TikTok', wa: 'WhatsApp', dc: 'Discord', gh: 'GitHub', tg: 'Telegram',
+    };
+
+    // Username diambil dari path URL (/@username) -- vercel.json ngerewrite
+    // path itu ke api/profile-page.js buat nge-render tag OG doang (biar bot
+    // preview WA/Discord dapet judul & foto profil yg bener), tapi ISI
+    // halamannya (di bawah ini) tetep dirender client-side kayak halaman lain
+    // di situs ini. Makanya usernamenya kita baca sendiri dari address bar.
+    const pageUsername = decodeURIComponent(location.pathname.replace(/^\/@/, '').replace(/\/$/, ''));
+
+    function showNotFound() {
+        document.getElementById('self-account-card').style.display = 'none';
+        document.getElementById('profile-models-section').style.display = 'none';
+        document.getElementById('profile-not-found').style.display = 'block';
+    }
+
+    if (!pageUsername) {
+        showNotFound();
+    } else {
+        fetch('/api/auth?action=public-profile&username=' + encodeURIComponent(pageUsername))
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(data => renderPublicProfile(data.user))
+            .catch(() => showNotFound());
+    }
+
+    // Tap teks username -> salin link profil INI (bukan link akun sendiri,
+    // beda dari yang di /profil/ -- di sini yang lagi dibuka ya udah link
+    // profil yang mau dibagikan), lalu tampilin popup "Link tersalin".
+    document.getElementById('account-username').addEventListener('click', (e) => {
+        e.preventDefault();
+        navigator.clipboard.writeText(location.href).then(() => {
+            const popup = document.getElementById('username-copy-popup');
+            popup.classList.add('show');
+            clearTimeout(popup._hideTimer);
+            popup._hideTimer = setTimeout(() => popup.classList.remove('show'), 1800);
+        }).catch(() => {});
+    });
+
+    document.getElementById('desc-more-btn').addEventListener('click', () => {
+        const descEl = document.getElementById('account-desc');
+        const btn = document.getElementById('desc-more-btn');
+        const isExpanded = descEl.classList.toggle('expanded');
+        btn.textContent = isExpanded ? 'Sembunyikan' : 'Lihat selengkapnya';
+    });
+
+    function renderPublicProfile(u) {
+        document.getElementById('account-name').textContent = u.nickname;
+        document.getElementById('account-username').textContent = '@' + u.username;
+        document.getElementById('account-username').href = 'https://afi-studio.vercel.app/@' + u.username;
+
+        const descEl = document.getElementById('account-desc');
+        descEl.textContent = u.bio || 'Belum ada deskripsi.';
+        descEl.classList.remove('expanded');
+        const moreBtn = document.getElementById('desc-more-btn');
+        moreBtn.textContent = 'Lihat selengkapnya';
+        moreBtn.classList.remove('show');
+        requestAnimationFrame(() => {
+            if (descEl.scrollHeight > descEl.clientHeight + 1) moreBtn.classList.add('show');
+        });
+
+        if (u.avatarUrl) {
+            const avatarEl = document.getElementById('account-avatar');
+            const avatarImg = document.createElement('img');
+            avatarImg.style.cssText = 'width:100%; height:100%; border-radius:50%; object-fit:cover;';
+            avatarEl.querySelector('svg')?.remove();
+            avatarImg.src = u.avatarUrl;
+            avatarImg.alt = u.nickname || '';
+            avatarEl.prepend(avatarImg);
+        }
+        if (u.bannerUrl) {
+            const bannerEl = document.getElementById('account-banner');
+            const bannerImg = document.createElement('img');
+            bannerImg.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;';
+            bannerImg.src = u.bannerUrl;
+            bannerImg.alt = 'Banner ' + (u.nickname || '');
+            bannerEl.prepend(bannerImg);
+        }
+
+        const rolesHtml = (u.roles || []).length
+            ? u.roles.map(r => `<span class="account-role-badge">${r}</span>`).join('')
+            : '<span class="account-role-badge">Member</span>';
+        document.getElementById('account-role-badges').innerHTML = rolesHtml;
+
+        const GH_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.79 23.4c.6.11.82-.26.82-.58v-2.02c-3.34.73-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"/></svg>';
+        const socialEntries = Object.entries(u.socials || {}).filter(([, v]) => v);
+        const socialsEl = document.querySelector('.social-container');
+        if (socialEntries.length) {
+            socialsEl.style.display = 'flex';
+            socialsEl.innerHTML = socialEntries.map(([key, url]) => `
+                <a href="${url}" target="_blank" rel="noopener" class="social-btn" title="${SOCIAL_META[key] || key}">
+                    ${key === 'gh' ? GH_SVG : `<svg viewBox="0 0 512 512"><use href="/icons/social-icons.svg?v=5#icon-${key}"></use></svg>`}
+                </a>`).join('');
+        } else {
+            socialsEl.style.display = 'none';
+        }
+
+        document.getElementById('self-account-card').style.display = 'block';
+        document.getElementById('profile-models-section').style.display = 'block';
+        loadOwnedModels(u);
+    }
+
+    // ID pendek & slug URL model -- HARUS PERSIS SAMA kayak versi di
+    // Models/script.js & api/model-page.js, biar link yang dibuat di sini
+    // ketemu balik ke model yang benar.
+    function shortModelId(str) {
+        let hash = 0x811c9dc5;
+        const s = String(str || '');
+        for (let i = 0; i < s.length; i++) {
+            hash ^= s.charCodeAt(i);
+            hash = Math.imul(hash, 0x01000193);
+        }
+        return (hash >>> 0).toString(36).padStart(4, '0').slice(-4);
+    }
+    function slugifyModelName(name) {
+        const cleaned = String(name || '')
+            .toLowerCase()
+            .normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 20)
+            .replace(/-+$/g, '');
+        return cleaned || 'model';
+    }
+    function modelShareUrl(m) {
+        return `/m/${shortModelId(m.link)}-${slugifyModelName(m.name)}`;
+    }
+
+    // CATATAN PENTING soal keakuratan grid ini: model-model LAMA belum
+    // tertaut ke akun manapun (masih berstatus anonim -- lihat catatan
+    // publisher di model/template.html), dan sistem klaim kepemilikan yang
+    // beneran (link klaim sekali-pakai lewat verifikasi WA/Discord, sesuai
+    // rencana kita) BELUM dibangun. Jadi buat SEMENTARA, grid di sini cuma
+    // nyocokin field creator/converter model (teks bebas dari form submit
+    // lama) sama username ATAU nickname pemilik profil ini -- BUKAN
+    // pencocokan akun yang sesungguhnya, cuma tebakan berdasar teks. Begitu
+    // sistem klaim kepemilikan jadi, ganti fungsi ini jadi filter berdasar
+    // field owner/ownerId yang beneran tersimpan di data model.
+    function loadOwnedModels(u) {
+        fetch('/api/data/models')
+            .then(r => r.json())
+            .then(list => {
+                const needles = [u.username, u.nickname].filter(Boolean).map(s => s.toLowerCase());
+                const mine = (Array.isArray(list) ? list : []).filter(m => {
+                    const c = (m.creator || '').toLowerCase();
+                    const cv = (m.converter || '').toLowerCase();
+                    return (c && needles.includes(c)) || (cv && needles.includes(cv));
+                });
+                document.getElementById('stat-models').textContent = mine.length;
+                renderModelGrid('profile-models-grid', mine);
+                document.getElementById('profile-models-empty').style.display = mine.length ? 'none' : 'block';
+            })
+            .catch(() => {
+                document.getElementById('stat-models').textContent = '0';
+            });
+    }
+
+    function renderModelGrid(elId, list){
+        document.getElementById(elId).innerHTML = list.map(model => `
+            <article class="model-card" onclick="window.location.href='${modelShareUrl(model)}'">
+                <img src="${model.thumb}" class="card-image" loading="lazy" alt="${(model.name || 'Thumbnail model').replace(/"/g, '&quot;')}">
+                <div class="card-content">
+                    <div class="card-title">${model.name}</div>
+                    <div class="card-caption">${model.caption}</div>
+                </div>
+            </article>
+        `).join('');
+    }
+</script>
+<script src="/pwa-install.js" defer></script>
+<script src="/page-menu-drawer.js" defer></script>
+</body>
+</html>
