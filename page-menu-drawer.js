@@ -149,6 +149,12 @@
     function goToProfile() { window.location.href = '/profil/'; }
     function goToLogin() { window.location.href = loginUrl; }
 
+    function doLogout() {
+      fetch('/api/auth?action=logout', { method: 'POST' })
+        .catch(function () {})
+        .then(function () { window.location.href = '/'; });
+    }
+
     function activatePreview(user) {
       auth.style.display = 'none';
       preview.classList.add('is-ready');
@@ -167,6 +173,38 @@
       }
       ctaEl.textContent = user.nickname || user.name || 'Profil';
       subEl.textContent = user.username ? ('@' + user.username) : 'Lihat profil';
+
+      // Tombol "Lihat Profil" & "Keluar" eksplisit -- dibikin dinamis di sini
+      // (bukan nambahin markup baru ke 17 halaman satu-satu) supaya tetap satu
+      // titik perawatan. Ditaruh sebagai baris baru SETELAH preview (bukan di
+      // dalamnya), jadi klik di tombol ini gak bentrok sama klik di seluruh
+      // area preview yang udah ngarah ke profil juga.
+      if (!preview._afiActionsRow) {
+        var actionsRow = document.createElement('div');
+        actionsRow.className = 'page-menu-profile-auth is-ready';
+        actionsRow.style.marginTop = '8px';
+
+        var viewBtn = document.createElement('span');
+        viewBtn.className = 'page-menu-profile-auth-btn page-menu-profile-auth-btn--solid';
+        viewBtn.textContent = 'Lihat Profil';
+        viewBtn.setAttribute('role', 'link');
+        viewBtn.setAttribute('tabindex', '0');
+        viewBtn.addEventListener('click', goToProfile);
+        viewBtn.addEventListener('keydown', function (e) { if (e.key === 'Enter') goToProfile(); });
+
+        var logoutBtn = document.createElement('span');
+        logoutBtn.className = 'page-menu-profile-auth-btn page-menu-profile-auth-btn--outline';
+        logoutBtn.textContent = 'Keluar';
+        logoutBtn.setAttribute('role', 'link');
+        logoutBtn.setAttribute('tabindex', '0');
+        logoutBtn.addEventListener('click', doLogout);
+        logoutBtn.addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogout(); });
+
+        actionsRow.appendChild(viewBtn);
+        actionsRow.appendChild(logoutBtn);
+        preview.parentNode.insertBefore(actionsRow, preview.nextSibling);
+        preview._afiActionsRow = actionsRow;
+      }
     }
 
     function activateAuth() {

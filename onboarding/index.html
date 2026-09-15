@@ -317,8 +317,11 @@
 
                 <div class="field">
                     <label class="field-label" for="f-nickname">Nickname</label>
-                    <input class="input" id="f-nickname" maxlength="30" placeholder="nickname">
-                    <p class="field-hint">Nama panggilan kamu — bisa diganti kapan pun lewat pengaturan profil.</p>
+                    <div class="username-wrap">
+                        <input class="input" id="f-nickname" maxlength="30" placeholder="nickname">
+                        <span class="username-status" id="nickname-status"></span>
+                    </div>
+                    <p class="field-hint" id="nickname-hint">Bebas, tapi gak boleh sama persis kayak nickname yang udah dipakai orang lain. Bisa diganti kapan pun lewat pengaturan profil.</p>
                 </div>
 
                 <div class="step-nav">
@@ -511,18 +514,28 @@
         // halaman profil (belum ada sistem "first-time user" yang lebih
         // lengkap dari ini, jadi ini pengecekan paling dasar yang bisa
         // dilakukan sekarang).
-        fetch('/api/auth?action=me')
-            .then(r => r.json().then(data => ({ ok: r.ok, data })))
-            .then(({ ok, data }) => {
-                if (!ok || !data || !data.user) {
-                    window.location.replace('../profil/');
-                    return;
-                }
-                if (data.user.registered) {
-                    window.location.replace('../profil/');
-                }
-            })
-            .catch(() => {});
+        //
+        // PENGECUALIAN: ?preview=1 di URL (/onboarding/?preview=1) lewatin
+        // pengecekan di atas -- ini buat KAMU (developer/pemilik situs) yang
+        // mau lihat lagi tampilan halaman ini kapanpun walau akun kamu udah
+        // terdaftar, tanpa perlu bikin akun baru/logout tiap kali. Gak
+        // ditaruh di tombol/link manapun di situs, jadi user biasa gak bakal
+        // nemu ini gak sengaja.
+        var isPreview = new URLSearchParams(location.search).get('preview') === '1';
+        if (!isPreview) {
+            fetch('/api/auth?action=me')
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
+                    if (!ok || !data || !data.user) {
+                        window.location.replace('../profil/');
+                        return;
+                    }
+                    if (data.user.registered) {
+                        window.location.replace('../profil/');
+                    }
+                })
+                .catch(() => {});
+        }
 
         // ---------- splash sambutan (intro) & penutup (outro) ----------
         // Satu baris teks ditampilin bergantian, satu jenis transisi doang (fade + naik
@@ -598,30 +611,57 @@
         var usernameCount = document.getElementById('username-count');
         var usernameStatus = document.getElementById('username-status');
         var usernameHint = document.getElementById('username-hint');
+        var nicknameStatus = document.getElementById('nickname-status');
+        var nicknameHint = document.getElementById('nickname-hint');
         var next1 = document.getElementById('next-1');
-        var USERNAME_RE = /^[a-z0-9_]{3,20}$/;
+        // "-" dan "_" sengaja diizinin buat gantiin spasi (dipake pengganti kata
+        // per kata), tapi gak perlu diiklanin di hint -- biarin user nemu sendiri
+        // kalau butuh. Spasi ASLI tetap ditolak (lihat validateUsername) karena
+        // dipakai buat link profil (/@username) & sistem tag/panggil, bukan cuma
+        // kosmetik.
+        var USERNAME_RE = /^[a-z0-9_-]{3,20}$/;
         var usernameCheckTimer = null;
         var usernameAvailable = false;
+        var nicknameCheckTimer = null;
+        var nicknameAvailable = false;
+
+        function updateNext1State() {
+            next1.disabled = !(usernameAvailable && nicknameAvailable);
+        }
 
         function validateUsername() {
-            // Sanitasi otomatis: huruf besar->kecil, karakter di luar a-z0-9_
-            // dibuang. Aturan ini WAJIB sama persis kayak server (api/auth.js,
-            // USERNAME_RE) -- kalau beda, username bisa keliatan "valid" di
-            // form tapi ditolak server pas submit di step 5.
+            // Sanitasi otomatis: huruf besar->kecil, karakter di luar a-z0-9_-
+            // dibuang DIAM-DIAM -- KECUALI spasi, yang ditangkep sebagai error
+            // eksplisit (bukan cuma dibuang), karena kalau dibuang gitu aja user
+            // gak sadar kenapa username-nya "berubah" tiba-tiba. Aturan ini WAJIB
+            // sama persis kayak server (api/auth.js, USERNAME_RE) -- kalau beda,
+            // username bisa keliatan "valid" di form tapi ditolak server pas
+            // submit di step 5.
             var raw = fUsername.value;
-            var cleaned = raw.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20);
+            var hadSpace = /\s/.test(raw);
+            var cleaned = raw.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20);
             if (cleaned !== raw) fUsername.value = cleaned;
             var v = cleaned;
             usernameCount.textContent = v.length;
             usernameAvailable = false;
             clearTimeout(usernameCheckTimer);
 
+            if (hadSpace) {
+                fUsername.classList.remove('is-valid');
+                fUsername.classList.add('is-invalid');
+                usernameStatus.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+                usernameStatus.className = 'username-status bad';
+                usernameHint.textContent = 'Gak boleh pakai spasi.';
+                usernameHint.style.color = 'var(--danger)';
+                updateNext1State();
+                return;
+            }
             if (v.length === 0) {
                 fUsername.classList.remove('is-valid', 'is-invalid');
                 usernameStatus.innerHTML = '';
                 usernameHint.textContent = 'Huruf kecil, angka, dan underscore. Tidak bisa diganti lagi setelah dibuat.';
                 usernameHint.style.color = '';
-                next1.disabled = true;
+                updateNext1State();
                 return;
             }
             if (!USERNAME_RE.test(v)) {
@@ -631,7 +671,7 @@
                 usernameStatus.className = 'username-status bad';
                 usernameHint.textContent = 'Minimal 3 karakter (huruf kecil, angka, underscore).';
                 usernameHint.style.color = 'var(--danger)';
-                next1.disabled = true;
+                updateNext1State();
                 return;
             }
 
@@ -641,7 +681,7 @@
             usernameStatus.innerHTML = '';
             usernameHint.textContent = 'Mengecek ketersediaan...';
             usernameHint.style.color = '';
-            next1.disabled = true;
+            updateNext1State();
             usernameCheckTimer = setTimeout(function () {
                 fetch('/api/auth?action=check-username&username=' + encodeURIComponent(v))
                     .then(function (r) { return r.json(); })
@@ -656,7 +696,7 @@
                         usernameStatus.className = 'username-status ' + (usernameAvailable ? 'ok' : 'bad');
                         usernameHint.textContent = usernameAvailable ? 'Huruf kecil, angka, dan underscore. Tidak bisa diganti lagi setelah dibuat.' : 'Username ini udah dipakai orang lain, coba yang lain ya.';
                         usernameHint.style.color = usernameAvailable ? '' : 'var(--danger)';
-                        next1.disabled = !usernameAvailable;
+                        updateNext1State();
                     })
                     .catch(function () {
                         // Gagal ngecek (mis. lagi offline) -- jangan blokir user total,
@@ -664,11 +704,52 @@
                         usernameAvailable = true;
                         usernameHint.textContent = 'Gak bisa ngecek ketersediaan sekarang, nanti dicek ulang pas kamu selesai isi profil.';
                         usernameHint.style.color = '';
-                        next1.disabled = false;
+                        updateNext1State();
                     });
             }, 400);
         }
         fUsername.addEventListener('input', validateUsername);
+
+        function validateNickname() {
+            var v = fNickname.value.trim();
+            nicknameAvailable = false;
+            clearTimeout(nicknameCheckTimer);
+
+            if (v.length < 2) {
+                fNickname.classList.remove('is-valid', 'is-invalid');
+                nicknameStatus.innerHTML = '';
+                nicknameHint.style.color = '';
+                updateNext1State();
+                return;
+            }
+
+            fNickname.classList.remove('is-valid', 'is-invalid');
+            nicknameStatus.innerHTML = '';
+            updateNext1State();
+            nicknameCheckTimer = setTimeout(function () {
+                fetch('/api/auth?action=check-nickname&nickname=' + encodeURIComponent(v))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (fNickname.value.trim() !== v) return; // udah diketik ulang
+                        nicknameAvailable = !!data.available;
+                        fNickname.classList.toggle('is-valid', nicknameAvailable);
+                        fNickname.classList.toggle('is-invalid', !nicknameAvailable);
+                        nicknameStatus.innerHTML = nicknameAvailable
+                            ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+                            : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+                        nicknameStatus.className = 'username-status ' + (nicknameAvailable ? 'ok' : 'bad');
+                        nicknameHint.style.color = nicknameAvailable ? '' : 'var(--danger)';
+                        updateNext1State();
+                    })
+                    .catch(function () {
+                        // Gagal ngecek -- jangan blokir, divalidasi ulang di server pas submit.
+                        nicknameAvailable = true;
+                        updateNext1State();
+                    });
+            }, 400);
+        }
+        fNickname.addEventListener('input', validateNickname);
+
         next1.addEventListener('click', function () {
             state.username = fUsername.value.trim();
             state.nickname = fNickname.value.trim() || state.username;
@@ -766,6 +847,23 @@
             skipBtn.disabled = true;
             var originalLabel = finishBtn.textContent;
             finishBtn.textContent = 'Menyimpan...';
+
+            // Mode ?preview=1 -- ini cuma buat LIHAT tampilannya, jangan sampe
+            // isian coba-coba di sini beneran nimpa data akun asli. Langsung
+            // lompat ke splash penutup tanpa kirim apa-apa ke server.
+            if (isPreview) {
+                document.querySelector('.step-panel[data-step="5"]').classList.remove('active');
+                setTimeout(function () {
+                    playSplashSequence('outro-splash', [
+                        { text: '(Mode preview -- gak beneran kesimpen)', duration: 1600 },
+                        { text: 'Makasih bang udah join di Afi Studio', duration: 2000 },
+                        { text: 'Mampir aja kapanpun', duration: 2000 },
+                    ], {}, function () {
+                        window.location.href = '../onboarding/?preview=1';
+                    });
+                }, 800);
+                return;
+            }
 
             var socials = {};
             Object.keys(SOCIAL_KEY_MAP).forEach(function (longKey) {
